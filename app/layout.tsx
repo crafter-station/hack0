@@ -1,7 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { GeistMono } from "geist/font/mono"
-import "./globals.css"
+import "../styles/globals.css"
 
 export const metadata: Metadata = {
   title: "hack0.dev - Hackathons para Builders LATAM",
