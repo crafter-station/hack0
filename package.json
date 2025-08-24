@@ -9,6 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.31.4",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-slot": "^1.2.3",
     "autoprefixer": "^10.4.20",
