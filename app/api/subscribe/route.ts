@@ -48,10 +48,10 @@ export async function POST(request: Request) {
       const sub = existing[0];
 
       if (sub.isVerified && sub.isActive) {
-        return NextResponse.json(
-          { error: "Este email ya está suscrito" },
-          { status: 400 }
-        );
+        return NextResponse.json({
+          message: "Ya estás suscrito",
+          alreadySubscribed: true,
+        });
       }
 
       // If not verified, resend verification email

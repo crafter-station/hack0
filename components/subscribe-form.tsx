@@ -1,46 +1,77 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
-import { Check, Bell } from "lucide-react";
+import { Check, Bell, Mail } from "lucide-react";
 import Link from "next/link";
+
+type SubscriptionStatus = "idle" | "loading" | "pending" | "subscribed" | "error";
 
 export function SubscribeForm() {
   const { isSignedIn, isLoaded, user } = useUser();
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<SubscriptionStatus>("idle");
+  const [error, setError] = useState("");
+
+  const email = user?.primaryEmailAddress?.emailAddress;
+
+  // Check subscription status on mount
+  useEffect(() => {
+    if (!email) return;
+
+    const checkStatus = async () => {
+      try {
+        const response = await fetch(`/api/subscribe/status?email=${encodeURIComponent(email)}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.isVerified && data.isActive) {
+            setStatus("subscribed");
+          } else if (data.exists && !data.isVerified) {
+            setStatus("pending");
+          }
+        }
+      } catch {
+        // Ignore errors, default to idle
+      }
+    };
+
+    checkStatus();
+  }, [email]);
 
   const handleSubscribe = async () => {
-    if (!user?.primaryEmailAddress?.emailAddress) return;
+    if (!email) return;
 
     setStatus("loading");
-    setMessage("");
+    setError("");
 
     try {
       const response = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: user.primaryEmailAddress.emailAddress }),
+        body: JSON.stringify({ email }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
         setStatus("error");
-        setMessage(data.error || "Error al suscribirse");
+        setError(data.error || "Error al suscribirse");
         return;
       }
 
-      setStatus("success");
-      setMessage(data.message);
+      // Si ya estaba suscrito
+      if (data.alreadySubscribed) {
+        setStatus("subscribed");
+      } else {
+        setStatus("pending");
+      }
     } catch {
       setStatus("error");
-      setMessage("Error de conexión");
+      setError("Error de conexión");
     }
   };
 
-  // Suscrito exitosamente
-  if (status === "success") {
+  // Ya suscrito y verificado
+  if (status === "subscribed") {
     return (
       <button
         disabled
@@ -48,6 +79,19 @@ export function SubscribeForm() {
       >
         <Check className="h-3.5 w-3.5 text-emerald-500" />
         Suscrito
+      </button>
+    );
+  }
+
+  // Pendiente de verificación
+  if (status === "pending") {
+    return (
+      <button
+        disabled
+        className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-muted/50 px-3 text-sm text-muted-foreground cursor-default"
+      >
+        <Mail className="h-3.5 w-3.5" />
+        <span>Revisa <span className="text-foreground">{email}</span></span>
       </button>
     );
   }
@@ -92,9 +136,9 @@ export function SubscribeForm() {
         )}
         Alertas
       </button>
-      {status === "error" && message && (
+      {status === "error" && error && (
         <p className="absolute -bottom-5 left-0 text-xs text-red-500 whitespace-nowrap">
-          {message}
+          {error}
         </p>
       )}
     </div>
