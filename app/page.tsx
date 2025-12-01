@@ -59,60 +59,60 @@ async function HeroContent() {
 				</div>
 
 				{/* Right - Stats & Quick links */}
-				<div className="flex flex-col items-start lg:items-end gap-5">
+				<div className="flex flex-col items-start lg:items-end gap-6">
 					{/* Stats */}
-					<div className="flex items-center gap-6">
+					<div className="flex items-center gap-8">
 						<div className="text-right">
-							<p className="text-xl font-semibold tabular-nums">
+							<p className="text-2xl md:text-3xl font-semibold tabular-nums">
 								{stats.totalEvents}
 							</p>
-							<p className="text-xs text-muted-foreground uppercase tracking-wide">
+							<p className="text-sm text-muted-foreground uppercase tracking-wide">
 								Eventos
 							</p>
 						</div>
-						<div className="h-8 w-px bg-border" />
+						<div className="h-10 w-px bg-border" />
 						<div className="text-right">
-							<p className="text-xl font-semibold tabular-nums">
+							<p className="text-2xl md:text-3xl font-semibold tabular-nums">
 								{formatPrize(stats.totalPrizePool)}
 							</p>
-							<p className="text-xs text-muted-foreground uppercase tracking-wide">
+							<p className="text-sm text-muted-foreground uppercase tracking-wide">
 								En premios
 							</p>
 						</div>
-						<div className="h-8 w-px bg-border" />
+						<div className="h-10 w-px bg-border" />
 						<div className="text-right">
-							<p className="text-xl font-semibold tabular-nums">
+							<p className="text-2xl md:text-3xl font-semibold tabular-nums">
 								{stats.activeEvents}
 							</p>
-							<p className="text-xs text-muted-foreground uppercase tracking-wide">
+							<p className="text-sm text-muted-foreground uppercase tracking-wide">
 								Activos
 							</p>
 						</div>
 					</div>
 
 					{/* Quick category links */}
-					<div className="flex flex-wrap gap-2">
+					<div className="flex flex-wrap gap-2.5">
 						<a
 							href="/?eventType=hackathon"
-							className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+							className="rounded-full border border-border px-4 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
 						>
 							Hackathons
 						</a>
 						<a
 							href="/?domain=ai"
-							className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+							className="rounded-full border border-border px-4 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
 						>
 							IA
 						</a>
 						<a
 							href="/?juniorFriendly=true"
-							className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+							className="rounded-full border border-border px-4 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
 						>
 							Principiantes
 						</a>
 						<a
 							href="/?format=in-person"
-							className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+							className="rounded-full border border-border px-4 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
 						>
 							Presencial
 						</a>
