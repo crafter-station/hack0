@@ -55,12 +55,7 @@ async function HeroContent() {
 					</div>
 
 					{/* Subscribe inline */}
-					<div className="flex items-center gap-3">
-						<span className="text-sm text-muted-foreground hidden sm:block">
-							Alertas →
-						</span>
-						<SubscribeForm />
-					</div>
+					<SubscribeForm />
 				</div>
 
 				{/* Right - Stats & Quick links */}
