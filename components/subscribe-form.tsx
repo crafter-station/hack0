@@ -70,6 +70,31 @@ export function SubscribeForm() {
     }
   };
 
+  // Cargando Clerk - esto debe ir primero
+  if (!isLoaded) {
+    return (
+      <button
+        disabled
+        className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-3 text-sm font-medium text-background opacity-50"
+      >
+        <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-background border-t-transparent" />
+      </button>
+    );
+  }
+
+  // No logueado
+  if (!isSignedIn) {
+    return (
+      <Link
+        href="/sign-in"
+        className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+      >
+        <Bell className="h-3.5 w-3.5" />
+        Alertas
+      </Link>
+    );
+  }
+
   // Ya suscrito y verificado
   if (status === "subscribed") {
     return (
@@ -96,32 +121,7 @@ export function SubscribeForm() {
     );
   }
 
-  // Cargando Clerk
-  if (!isLoaded) {
-    return (
-      <button
-        disabled
-        className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-3 text-sm font-medium text-background opacity-50"
-      >
-        <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-background border-t-transparent" />
-      </button>
-    );
-  }
-
-  // No logueado
-  if (!isSignedIn) {
-    return (
-      <Link
-        href="/sign-in"
-        className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
-      >
-        <Bell className="h-3.5 w-3.5" />
-        Alertas
-      </Link>
-    );
-  }
-
-  // Logueado, puede suscribirse
+  // Logueado, puede suscribirse (status === "idle" | "loading" | "error")
   return (
     <div className="relative">
       <button

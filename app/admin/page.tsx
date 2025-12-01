@@ -113,14 +113,7 @@ export default async function AdminPage() {
 
         {/* Lists */}
         <div className="space-y-8">
-          {/* Pending Events */}
-          <section>
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Eventos Pendientes de Aprobación
-            </h2>
-            <PendingEventsList events={pendingEvents} />
-          </section>
+          <PendingEventsList events={pendingEvents} />
 
           <AdminClaimsList
             title="Solicitudes de Organizadores"

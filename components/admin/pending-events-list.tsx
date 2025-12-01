@@ -35,17 +35,36 @@ export function PendingEventsList({ events: initialEvents }: PendingEventsListPr
     setLoading(null);
   };
 
-  if (events.length === 0) {
-    return (
-      <div className="rounded-lg border border-dashed p-8 text-center">
-        <p className="text-muted-foreground">No hay eventos pendientes de aprobación</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="rounded-lg border divide-y">
-      {events.map((event) => (
+    <div className="rounded-lg border">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b px-4 py-3">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <h2 className="font-medium">Eventos Pendientes de Aprobación</h2>
+          {events.length > 0 && (
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500/10 px-1.5 text-xs font-medium text-amber-500">
+              {events.length}
+            </span>
+          )}
+        </div>
+
+        {/* Placeholder para mantener consistencia visual */}
+        <div className="flex gap-1 rounded-lg bg-muted p-1">
+          <span className="rounded-md px-2.5 py-1 text-xs font-medium bg-background text-foreground shadow-sm">
+            Pendientes
+          </span>
+        </div>
+      </div>
+
+      {/* List */}
+      <div className="divide-y">
+        {events.length === 0 ? (
+          <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+            No hay eventos pendientes de aprobación
+          </div>
+        ) : (
+          events.map((event) => (
         <div key={event.id} className="p-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
@@ -108,7 +127,9 @@ export function PendingEventsList({ events: initialEvents }: PendingEventsListPr
             </div>
           </div>
         </div>
-      ))}
+          ))
+        )}
+      </div>
     </div>
   );
 }
