@@ -1,0 +1,36 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { EditEventDialog } from "./edit-event-dialog";
+import { isVerifiedOrganizer } from "@/lib/actions/claims";
+import { Pencil } from "lucide-react";
+import type { Hackathon } from "@/lib/db/schema";
+
+interface EditEventButtonProps {
+  event: Hackathon;
+}
+
+export function EditEventButton({ event }: EditEventButtonProps) {
+  const [canEdit, setCanEdit] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    isVerifiedOrganizer(event.id).then((result) => {
+      setCanEdit(result);
+      setLoading(false);
+    });
+  }, [event.id]);
+
+  if (loading || !canEdit) {
+    return null;
+  }
+
+  return (
+    <EditEventDialog event={event}>
+      <button className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted">
+        <Pencil className="h-3.5 w-3.5" />
+        Editar evento
+      </button>
+    </EditEventDialog>
+  );
+}
