@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Github } from "lucide-react";
+import { Github, Rss } from "lucide-react";
 
 export function SiteFooter() {
   return (
@@ -13,6 +13,13 @@ export function SiteFooter() {
             </Link>
             <a href="mailto:hey@hack0.dev" className="hover:text-foreground transition-colors">
               Contacto
+            </a>
+            <a
+              href="/feed.xml"
+              className="hover:text-foreground transition-colors"
+              title="RSS Feed"
+            >
+              <Rss className="h-4 w-4" />
             </a>
             <a
               href="https://github.com/crafter-station/hack0"

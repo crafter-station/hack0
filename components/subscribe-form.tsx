@@ -5,18 +5,22 @@ import { useUser } from "@clerk/nextjs";
 import { Check, Bell, Mail } from "lucide-react";
 import Link from "next/link";
 
-type SubscriptionStatus = "idle" | "loading" | "pending" | "subscribed" | "error";
+type SubscriptionStatus = "checking" | "idle" | "loading" | "pending" | "subscribed" | "error";
 
 export function SubscribeForm() {
   const { isSignedIn, isLoaded, user } = useUser();
-  const [status, setStatus] = useState<SubscriptionStatus>("idle");
+  const [status, setStatus] = useState<SubscriptionStatus>("checking");
   const [error, setError] = useState("");
 
   const email = user?.primaryEmailAddress?.emailAddress;
 
   // Check subscription status on mount
   useEffect(() => {
-    if (!email) return;
+    if (!isLoaded) return;
+    if (!email) {
+      setStatus("idle");
+      return;
+    }
 
     const checkStatus = async () => {
       try {
@@ -27,15 +31,19 @@ export function SubscribeForm() {
             setStatus("subscribed");
           } else if (data.exists && !data.isVerified) {
             setStatus("pending");
+          } else {
+            setStatus("idle");
           }
+        } else {
+          setStatus("idle");
         }
       } catch {
-        // Ignore errors, default to idle
+        setStatus("idle");
       }
     };
 
     checkStatus();
-  }, [email]);
+  }, [email, isLoaded]);
 
   const handleSubscribe = async () => {
     if (!email) return;
@@ -70,8 +78,8 @@ export function SubscribeForm() {
     }
   };
 
-  // Cargando Clerk - esto debe ir primero
-  if (!isLoaded) {
+  // Cargando Clerk o verificando estado
+  if (!isLoaded || status === "checking") {
     return (
       <button
         disabled
@@ -88,9 +96,10 @@ export function SubscribeForm() {
       <Link
         href="/sign-in"
         className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+        title="Recibe alertas de nuevos eventos"
       >
         <Bell className="h-3.5 w-3.5" />
-        Alertas
+        No te pierdas nada
       </Link>
     );
   }
@@ -101,9 +110,10 @@ export function SubscribeForm() {
       <button
         disabled
         className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-muted/50 px-3 text-sm text-muted-foreground cursor-default"
+        title="Recibirás alertas de nuevos eventos"
       >
         <Check className="h-3.5 w-3.5 text-emerald-500" />
-        Suscrito
+        Notificaciones activas
       </button>
     );
   }
@@ -114,9 +124,10 @@ export function SubscribeForm() {
       <button
         disabled
         className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-muted/50 px-3 text-sm text-muted-foreground cursor-default"
+        title="Revisa tu bandeja de entrada"
       >
         <Mail className="h-3.5 w-3.5" />
-        <span>Revisa <span className="text-foreground">{email}</span></span>
+        <span>Confirma en <span className="text-foreground">{email}</span></span>
       </button>
     );
   }
@@ -128,13 +139,14 @@ export function SubscribeForm() {
         onClick={handleSubscribe}
         disabled={status === "loading"}
         className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:opacity-50"
+        title="Recibe alertas de nuevos eventos"
       >
         {status === "loading" ? (
           <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-background border-t-transparent" />
         ) : (
           <Bell className="h-3.5 w-3.5" />
         )}
-        Alertas
+        No te pierdas nada
       </button>
       {status === "error" && error && (
         <p className="absolute -bottom-5 left-0 text-xs text-red-500 whitespace-nowrap">
