@@ -8,6 +8,13 @@
       "when": 1764560022384,
       "tag": "0000_lowly_mastermind",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1764570021435,
+      "tag": "0001_tiresome_giant_man",
+      "breakpoints": true
     }
   ]
 }

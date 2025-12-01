@@ -369,6 +369,7 @@ export async function createEvent(input: CreateEventInput): Promise<CreateEventR
       prizePool: input.prizePool,
       status: "upcoming",
       isApproved: false, // Requires manual approval
+      approvalStatus: "pending",
       isFeatured: false,
     };
 
@@ -389,7 +390,7 @@ export async function approveEvent(eventId: string): Promise<{ success: boolean;
   try {
     await db
       .update(events)
-      .set({ isApproved: true })
+      .set({ isApproved: true, approvalStatus: "approved" })
       .where(eq(events.id, eventId));
 
     // Notify subscribers of the new event
@@ -405,7 +406,8 @@ export async function approveEvent(eventId: string): Promise<{ success: boolean;
 export async function rejectEvent(eventId: string): Promise<{ success: boolean; error?: string }> {
   try {
     await db
-      .delete(events)
+      .update(events)
+      .set({ isApproved: false, approvalStatus: "rejected" })
       .where(eq(events.id, eventId));
 
     return { success: true };
@@ -415,12 +417,31 @@ export async function rejectEvent(eventId: string): Promise<{ success: boolean; 
   }
 }
 
-export async function getPendingEvents(): Promise<Event[]> {
+export type ApprovalFilter = "all" | "pending" | "approved" | "rejected";
+
+export async function getEventsByApprovalStatus(filter: ApprovalFilter = "pending"): Promise<Event[]> {
+  let whereClause;
+
+  if (filter === "all") {
+    whereClause = undefined;
+  } else if (filter === "pending") {
+    whereClause = eq(events.approvalStatus, "pending");
+  } else if (filter === "approved") {
+    whereClause = eq(events.approvalStatus, "approved");
+  } else {
+    whereClause = eq(events.approvalStatus, "rejected");
+  }
+
   const result = await db
     .select()
     .from(events)
-    .where(eq(events.isApproved, false))
+    .where(whereClause)
     .orderBy(desc(events.createdAt));
 
   return result;
+}
+
+// Keep for backwards compatibility
+export async function getPendingEvents(): Promise<Event[]> {
+  return getEventsByApprovalStatus("pending");
 }

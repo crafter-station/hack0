@@ -79,6 +79,12 @@ export const statusEnum = pgEnum("status", [
   "ended",
 ]);
 
+export const approvalStatusEnum = pgEnum("approval_status", [
+  "pending",
+  "approved",
+  "rejected",
+]);
+
 // Events table (hackathons, conferences, workshops, etc.)
 export const events = pgTable("events", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -129,6 +135,7 @@ export const events = pgTable("events", {
   status: statusEnum("status").default("upcoming"),
   isFeatured: boolean("is_featured").default(false),
   isApproved: boolean("is_approved").default(true),
+  approvalStatus: approvalStatusEnum("approval_status").default("approved"),
 
   // Organizer verification
   isOrganizerVerified: boolean("is_organizer_verified").default(false),
