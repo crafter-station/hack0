@@ -1,9 +1,8 @@
 "use client";
 
-import { Search, X, Sparkles, Plus } from "lucide-react";
+import { Search, X, Sparkles } from "lucide-react";
 import { useQueryStates } from "nuqs";
 import { useState } from "react";
-import Link from "next/link";
 import { searchParamsParsers } from "@/lib/search-params";
 import {
   EVENT_TYPE_OPTIONS,
@@ -207,23 +206,14 @@ export function FilterBar() {
           )}
         </div>
 
-        {/* Right - CTAs */}
-        <div className="hidden md:flex items-center gap-2 flex-shrink-0">
-          <Link
-            href="/submit"
-            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Agregar
-          </Link>
-          <a
-            href="mailto:railly@crafterstation.com?subject=Quiero destacar mi evento en hack0.dev"
-            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 text-sm text-amber-500 transition-colors hover:bg-amber-500/10"
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-            Sponsored
-          </a>
-        </div>
+        {/* Right - Sponsor CTA */}
+        <a
+          href="mailto:railly@crafterstation.com?subject=Quiero destacar mi evento en hack0.dev"
+          className="hidden md:inline-flex h-8 items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 text-sm text-amber-500 transition-colors hover:bg-amber-500/10 flex-shrink-0"
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+          ¿Destacar tu evento?
+        </a>
       </div>
     </div>
   );
