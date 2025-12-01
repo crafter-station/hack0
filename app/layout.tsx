@@ -4,6 +4,7 @@ import "../styles/globals.css";
 
 import { ClerkProvider } from "@clerk/nextjs";
 import { shadcn } from "@clerk/themes";
+import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
@@ -181,6 +182,7 @@ export default function RootLayout({
 					>
 						<NuqsAdapter>{children}</NuqsAdapter>
 					</ThemeProvider>
+					<Analytics />
 				</body>
 			</html>
 		</ClerkProvider>
