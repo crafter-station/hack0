@@ -40,16 +40,16 @@ async function HeroContent() {
 	};
 
 	return (
-		<div className="relative mx-auto max-w-screen-xl px-4 lg:px-8 pt-12 pb-8 md:pt-16 md:pb-12">
-			<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+		<div className="relative mx-auto max-w-screen-xl px-4 lg:px-8 pt-8 pb-6 md:pt-12 md:pb-8">
+			<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
 				{/* Left - Title & Subscribe */}
-				<div className="space-y-5">
+				<div className="space-y-4">
 					<div>
-						<h1 className="text-3xl font-semibold tracking-tight md:text-4xl lg:text-5xl">
+						<h1 className="text-2xl font-semibold tracking-tight md:text-3xl lg:text-4xl">
 							Hackathons y eventos tech
 							<span className="text-muted-foreground"> en Perú 🇵🇪</span>
 						</h1>
-						<p className="text-muted-foreground text-base md:text-lg mt-2">
+						<p className="text-muted-foreground text-sm md:text-base mt-1.5">
 							Encuentra tu próximo hackathon, conferencia o taller.
 						</p>
 					</div>
@@ -59,60 +59,60 @@ async function HeroContent() {
 				</div>
 
 				{/* Right - Stats & Quick links */}
-				<div className="flex flex-col items-start lg:items-end gap-6">
+				<div className="flex flex-col items-start lg:items-end gap-4">
 					{/* Stats */}
-					<div className="flex items-center gap-8">
+					<div className="flex items-center gap-6">
 						<div className="text-right">
-							<p className="text-2xl md:text-3xl font-semibold tabular-nums">
+							<p className="text-xl md:text-2xl font-semibold tabular-nums">
 								{stats.totalEvents}
 							</p>
-							<p className="text-sm text-muted-foreground uppercase tracking-wide">
+							<p className="text-xs text-muted-foreground uppercase tracking-wide">
 								Eventos
 							</p>
 						</div>
-						<div className="h-10 w-px bg-border" />
+						<div className="h-8 w-px bg-border" />
 						<div className="text-right">
-							<p className="text-2xl md:text-3xl font-semibold tabular-nums">
+							<p className="text-xl md:text-2xl font-semibold tabular-nums">
 								{formatPrize(stats.totalPrizePool)}
 							</p>
-							<p className="text-sm text-muted-foreground uppercase tracking-wide">
+							<p className="text-xs text-muted-foreground uppercase tracking-wide">
 								En premios
 							</p>
 						</div>
-						<div className="h-10 w-px bg-border" />
+						<div className="h-8 w-px bg-border" />
 						<div className="text-right">
-							<p className="text-2xl md:text-3xl font-semibold tabular-nums">
+							<p className="text-xl md:text-2xl font-semibold tabular-nums">
 								{stats.activeEvents}
 							</p>
-							<p className="text-sm text-muted-foreground uppercase tracking-wide">
+							<p className="text-xs text-muted-foreground uppercase tracking-wide">
 								Activos
 							</p>
 						</div>
 					</div>
 
 					{/* Quick category links */}
-					<div className="flex flex-wrap gap-2.5">
+					<div className="flex flex-wrap gap-2">
 						<a
 							href="/?eventType=hackathon"
-							className="rounded-full border border-border px-4 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+							className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
 						>
 							Hackathons
 						</a>
 						<a
 							href="/?domain=ai"
-							className="rounded-full border border-border px-4 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+							className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
 						>
 							IA
 						</a>
 						<a
 							href="/?juniorFriendly=true"
-							className="rounded-full border border-border px-4 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+							className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
 						>
 							Principiantes
 						</a>
 						<a
 							href="/?format=in-person"
-							className="rounded-full border border-border px-4 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+							className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
 						>
 							Presencial
 						</a>
