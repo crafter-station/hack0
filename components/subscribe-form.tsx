@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useUser, SignInButton } from "@clerk/nextjs";
-import { ArrowRight, Check, Bell } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import { Check, Bell } from "lucide-react";
+import Link from "next/link";
 
 export function SubscribeForm() {
-  const { isSignedIn, user } = useUser();
+  const { isSignedIn, isLoaded, user } = useUser();
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
 
@@ -43,20 +44,31 @@ export function SubscribeForm() {
       <div className="flex h-10 items-center gap-2 rounded-full border border-border bg-muted/50 px-4">
         <Check className="h-4 w-4 shrink-0 text-emerald-500" />
         <span className="text-sm text-muted-foreground">
-          Revisa tu email para confirmar
+          Revisa <span className="text-foreground">{user?.primaryEmailAddress?.emailAddress}</span>
         </span>
+      </div>
+    );
+  }
+
+  // Show loading state while Clerk is loading
+  if (!isLoaded) {
+    return (
+      <div className="flex h-10 items-center gap-2 rounded-full border border-border bg-muted/50 px-4">
+        <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+        <span className="text-sm text-muted-foreground">Cargando...</span>
       </div>
     );
   }
 
   if (!isSignedIn) {
     return (
-      <SignInButton mode="redirect">
-        <button className="flex h-10 items-center gap-2 rounded-full border border-border bg-muted/50 px-4 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-          <Bell className="h-4 w-4" />
-          Inicia sesión para alertas
-        </button>
-      </SignInButton>
+      <Link
+        href="/sign-in"
+        className="flex h-10 items-center gap-2 rounded-full border border-border bg-muted/50 px-4 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      >
+        <Bell className="h-4 w-4" />
+        Inicia sesión para alertas
+      </Link>
     );
   }
 
