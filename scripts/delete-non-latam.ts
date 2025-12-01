@@ -2,8 +2,8 @@ import { db } from "@/lib/db";
 import { events } from "@/lib/db/schema";
 import { notInArray, isNull, or } from "drizzle-orm";
 
-// Solo mantener Peru y Global/LATAM
-const ALLOWED_CODES = ["PE", "GLOBAL", "LATAM"];
+// Solo mantener Peru
+const ALLOWED_CODES = ["PE"];
 
 async function deleteNonPeruEvents() {
   console.log("🔍 Finding non-Peru events...\n");
