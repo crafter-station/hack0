@@ -401,3 +401,26 @@ export async function approveEvent(eventId: string): Promise<{ success: boolean;
     return { success: false, error: "Error al aprobar el evento" };
   }
 }
+
+export async function rejectEvent(eventId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    await db
+      .delete(events)
+      .where(eq(events.id, eventId));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error rejecting event:", error);
+    return { success: false, error: "Error al rechazar el evento" };
+  }
+}
+
+export async function getPendingEvents(): Promise<Event[]> {
+  const result = await db
+    .select()
+    .from(events)
+    .where(eq(events.isApproved, false))
+    .orderBy(desc(events.createdAt));
+
+  return result;
+}

@@ -6,8 +6,10 @@ import {
   getAllOrganizerClaims,
   getAllWinnerClaims,
 } from "@/lib/actions/claims";
+import { getPendingEvents } from "@/lib/actions/hackathons";
 import { AdminClaimsList } from "@/components/admin/claims-list";
-import { Shield, UserCheck, Trophy } from "lucide-react";
+import { PendingEventsList } from "@/components/admin/pending-events-list";
+import { Shield, UserCheck, Calendar } from "lucide-react";
 import { TrophyIcon } from "@/components/icons/trophy";
 
 export default async function AdminPage() {
@@ -17,9 +19,10 @@ export default async function AdminPage() {
     redirect("/");
   }
 
-  const [organizerClaims, winnerClaims] = await Promise.all([
+  const [organizerClaims, winnerClaims, pendingEvents] = await Promise.all([
     getAllOrganizerClaims(),
     getAllWinnerClaims(),
+    getPendingEvents(),
   ]);
 
   const pendingOrganizers = organizerClaims.filter((c) => c.status === "pending");
@@ -46,7 +49,18 @@ export default async function AdminPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+          <div className="rounded-lg border bg-card p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-amber-500/10">
+                <Calendar className="h-4 w-4 text-amber-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-semibold">{pendingEvents.length}</p>
+                <p className="text-xs text-muted-foreground">Eventos pendientes</p>
+              </div>
+            </div>
+          </div>
           <div className="rounded-lg border bg-card p-4">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-md bg-amber-500/10">
@@ -54,7 +68,7 @@ export default async function AdminPage() {
               </div>
               <div>
                 <p className="text-2xl font-semibold">{pendingOrganizers.length}</p>
-                <p className="text-xs text-muted-foreground">Organizadores pendientes</p>
+                <p className="text-xs text-muted-foreground">Organizadores</p>
               </div>
             </div>
           </div>
@@ -65,7 +79,7 @@ export default async function AdminPage() {
               </div>
               <div>
                 <p className="text-2xl font-semibold">{pendingWinners.length}</p>
-                <p className="text-xs text-muted-foreground">Victorias pendientes</p>
+                <p className="text-xs text-muted-foreground">Victorias</p>
               </div>
             </div>
           </div>
@@ -78,7 +92,7 @@ export default async function AdminPage() {
                 <p className="text-2xl font-semibold">
                   {organizerClaims.filter((c) => c.status === "approved").length}
                 </p>
-                <p className="text-xs text-muted-foreground">Organizadores aprobados</p>
+                <p className="text-xs text-muted-foreground">Org. aprobados</p>
               </div>
             </div>
           </div>
@@ -91,14 +105,23 @@ export default async function AdminPage() {
                 <p className="text-2xl font-semibold">
                   {winnerClaims.filter((c) => c.status === "approved").length}
                 </p>
-                <p className="text-xs text-muted-foreground">Victorias aprobadas</p>
+                <p className="text-xs text-muted-foreground">Vic. aprobadas</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Claims Lists */}
+        {/* Lists */}
         <div className="space-y-8">
+          {/* Pending Events */}
+          <section>
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Eventos Pendientes de Aprobación
+            </h2>
+            <PendingEventsList events={pendingEvents} />
+          </section>
+
           <AdminClaimsList
             title="Solicitudes de Organizadores"
             type="organizer"
