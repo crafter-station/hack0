@@ -2,6 +2,7 @@ import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { SearchTrigger } from "@/components/search-command";
+import { ThemeSwitcherButton } from "@/components/theme-switcher-button";
 import { AdminLink } from "./admin-link";
 
 interface SiteHeaderProps {
@@ -58,6 +59,7 @@ export function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 					</div>
 					<div className="flex items-center gap-3">
 						<SearchTrigger />
+						<ThemeSwitcherButton />
 						<SignedOut>
 							<Link
 								href="/sign-in"
