@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
 	ArrowUpRight,
 	BadgeCheck,
@@ -10,7 +11,6 @@ import {
 import { TrophyIcon } from "@/components/icons/trophy";
 import { PinIcon } from "@/components/icons/pin";
 import { CalendarIcon } from "@/components/icons/calendar";
-import Link from "next/link";
 import { WinnerSection } from "@/components/hackathons/winner-section";
 import { OrganizerClaimSection } from "@/components/hackathons/organizer-claim-section";
 import { EditEventButton } from "@/components/hackathons/edit-event-button";
@@ -32,6 +32,56 @@ import { SiteFooter } from "@/components/layout/site-footer";
 
 interface HackathonPageProps {
 	params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({
+	params,
+}: HackathonPageProps): Promise<Metadata> {
+	const { slug } = await params;
+	const hackathon = await getHackathonBySlug(slug);
+
+	if (!hackathon) {
+		return {
+			title: "Evento no encontrado",
+		};
+	}
+
+	const title = `${hackathon.name} - ${getEventTypeLabel(hackathon.eventType)} en Perú`;
+	const description =
+		hackathon.description?.slice(0, 160) ||
+		`${getEventTypeLabel(hackathon.eventType)} ${hackathon.format === "virtual" ? "virtual" : `en ${hackathon.city || "Perú"}`}. ${hackathon.prizePool ? `Premio: $${hackathon.prizePool.toLocaleString()}` : ""}`;
+
+	return {
+		title,
+		description,
+		keywords: [
+			hackathon.name,
+			getEventTypeLabel(hackathon.eventType),
+			"peru",
+			hackathon.city || "",
+			...(hackathon.domains || []).map((d) => getDomainLabel(d)),
+			"hackathon peru",
+			"eventos tech peru",
+		].filter(Boolean),
+		openGraph: {
+			title,
+			description,
+			type: "website",
+			url: `https://hack0.dev/${hackathon.slug}`,
+			images: hackathon.bannerUrl
+				? [{ url: hackathon.bannerUrl, width: 1200, height: 630 }]
+				: [{ url: "https://hack0.dev/og.png", width: 1200, height: 630 }],
+		},
+		twitter: {
+			card: "summary_large_image",
+			title,
+			description,
+			images: hackathon.bannerUrl ? [hackathon.bannerUrl] : ["https://hack0.dev/og.png"],
+		},
+		alternates: {
+			canonical: `https://hack0.dev/${hackathon.slug}`,
+		},
+	};
 }
 
 export default async function HackathonPage({ params }: HackathonPageProps) {
@@ -57,8 +107,67 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
 	// Diagonal stripe pattern for the banner (Stripe-inspired)
 	const stripePattern = `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23888' fill-opacity='0.15'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E")`;
 
+	// JSON-LD structured data for the event
+	const eventJsonLd = {
+		"@context": "https://schema.org",
+		"@type": "Event",
+		name: hackathon.name,
+		description: hackathon.description || `${getEventTypeLabel(hackathon.eventType)} en Perú`,
+		startDate: startDate?.toISOString(),
+		endDate: endDate?.toISOString(),
+		eventStatus: isEnded
+			? "https://schema.org/EventCancelled"
+			: "https://schema.org/EventScheduled",
+		eventAttendanceMode:
+			hackathon.format === "virtual"
+				? "https://schema.org/OnlineEventAttendanceMode"
+				: hackathon.format === "hybrid"
+					? "https://schema.org/MixedEventAttendanceMode"
+					: "https://schema.org/OfflineEventAttendanceMode",
+		location:
+			hackathon.format === "virtual"
+				? {
+						"@type": "VirtualLocation",
+						url: hackathon.websiteUrl || hackathon.registrationUrl,
+					}
+				: {
+						"@type": "Place",
+						name: hackathon.city || "Perú",
+						address: {
+							"@type": "PostalAddress",
+							addressLocality: hackathon.city,
+							addressCountry: "PE",
+						},
+					},
+		image: hackathon.bannerUrl || hackathon.logoUrl,
+		url: `https://hack0.dev/${hackathon.slug}`,
+		organizer: hackathon.organizerName
+			? {
+					"@type": "Organization",
+					name: hackathon.organizerName,
+					url: hackathon.organizerUrl,
+				}
+			: undefined,
+		offers:
+			hackathon.prizePool && hackathon.prizePool > 0
+				? {
+						"@type": "Offer",
+						price: "0",
+						priceCurrency: "USD",
+						availability: isEnded
+							? "https://schema.org/SoldOut"
+							: "https://schema.org/InStock",
+						url: hackathon.registrationUrl,
+					}
+				: undefined,
+	};
+
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd) }}
+			/>
 			<SiteHeader showBackButton />
 
 			{/* Banner */}
