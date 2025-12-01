@@ -80,20 +80,20 @@ export function HackathonList({ hackathons, total, hasMore = false, filters = {}
       </div>
 
       {/* Submit CTA */}
-      <div className="flex flex-col items-center justify-center gap-2 py-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-8">
         <Link
           href="/submit"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="flex items-center justify-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-4 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground hover:border-muted-foreground/30"
         >
           <Plus className="h-4 w-4" />
-          ¿Conoces un evento? Agrégalo aquí
+          <span>¿Conoces un evento? <span className="text-foreground font-medium">Agrégalo</span></span>
         </Link>
         <a
           href="mailto:railly@crafterstation.com?subject=Quiero destacar mi evento en hack0.dev"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/60 transition-colors hover:text-amber-500"
+          className="flex items-center justify-center gap-3 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-4 text-sm text-muted-foreground transition-colors hover:bg-amber-500/10 hover:text-amber-500 hover:border-amber-500/30"
         >
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
-          ¿Quieres aparecer como Sponsored? Escríbenos
+          <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
+          <span>¿Quieres ser <span className="text-amber-500 font-medium">Sponsored</span>?</span>
         </a>
       </div>
     </div>

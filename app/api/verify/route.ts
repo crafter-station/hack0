@@ -2,18 +2,18 @@ import { db } from "@/lib/db";
 import { subscriptions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const token = searchParams.get("token");
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://hack0.dev";
+
+  if (!token) {
+    return NextResponse.redirect(`${baseUrl}/subscribe/error?reason=missing-token`);
+  }
+
   try {
-    const { searchParams } = new URL(request.url);
-    const token = searchParams.get("token");
-
-    if (!token) {
-      return redirect("/subscribe/error?reason=missing-token");
-    }
-
     const subscription = await db
       .select()
       .from(subscriptions)
@@ -21,13 +21,13 @@ export async function GET(request: Request) {
       .limit(1);
 
     if (subscription.length === 0) {
-      return redirect("/subscribe/error?reason=invalid-token");
+      return NextResponse.redirect(`${baseUrl}/subscribe/error?reason=invalid-token`);
     }
 
     const sub = subscription[0];
 
     if (sub.isVerified) {
-      return redirect("/subscribe/success?already=true");
+      return NextResponse.redirect(`${baseUrl}/subscribe/success?already=true`);
     }
 
     // Generate new unsubscribe token if needed
@@ -43,9 +43,9 @@ export async function GET(request: Request) {
       })
       .where(eq(subscriptions.id, sub.id));
 
-    return redirect("/subscribe/success");
+    return NextResponse.redirect(`${baseUrl}/subscribe/success`);
   } catch (error) {
     console.error("Verify error:", error);
-    return redirect("/subscribe/error?reason=unknown");
+    return NextResponse.redirect(`${baseUrl}/subscribe/error?reason=unknown`);
   }
 }
