@@ -9,7 +9,7 @@ export default function SuccessPage() {
       <SiteHeader showBackButton />
 
       {/* Content */}
-      <main className="mx-auto max-w-screen-2xl px-4 lg:px-8 flex-1 w-full">
+      <main className="mx-auto max-w-screen-xl px-4 lg:px-8 flex-1 w-full">
         <div className="flex flex-col items-center justify-center py-24">
           <div className="max-w-md text-center">
             {/* Success icon */}

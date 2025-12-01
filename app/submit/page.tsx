@@ -8,7 +8,7 @@ export default function SubmitEventPage() {
 			<SiteHeader showBackButton />
 
 			{/* Content */}
-			<main className="mx-auto max-w-screen-2xl px-4 lg:px-8 py-12 flex-1 w-full">
+			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-12 flex-1 w-full">
 				<div className="grid lg:grid-cols-[1fr_2fr] gap-12">
 					{/* Sidebar */}
 					<div className="lg:sticky lg:top-28 lg:self-start space-y-4">

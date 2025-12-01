@@ -190,7 +190,7 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
 				<div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
 			</div>
 
-			<main className="mx-auto max-w-screen-2xl px-4 lg:px-8 -mt-16 relative z-10 pb-8 flex-1 w-full">
+			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 -mt-16 relative z-10 pb-8 flex-1 w-full">
 				<div className="grid lg:grid-cols-[1fr_380px] gap-8 lg:gap-16">
 					{/* Main content */}
 					<div className="space-y-8">

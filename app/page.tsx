@@ -40,7 +40,7 @@ async function HeroContent() {
 	};
 
 	return (
-		<div className="relative mx-auto max-w-screen-2xl px-4 lg:px-8 pt-12 pb-8 md:pt-16 md:pb-12">
+		<div className="relative mx-auto max-w-screen-xl px-4 lg:px-8 pt-12 pb-8 md:pt-16 md:pb-12">
 			<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
 				{/* Left - Title & Subscribe */}
 				<div className="space-y-5">
@@ -203,7 +203,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
 			{/* Filter bar */}
 			<section className="sticky top-14 z-40 border-b bg-background/80 backdrop-blur-sm">
-				<div className="mx-auto max-w-screen-2xl px-4 lg:px-8">
+				<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
 					<Suspense fallback={<div className="h-12 animate-pulse" />}>
 						<FilterBar />
 					</Suspense>
@@ -211,7 +211,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 			</section>
 
 			{/* Main content */}
-			<main className="mx-auto max-w-screen-2xl px-4 lg:px-8 py-8 flex-1 w-full">
+			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-8 flex-1 w-full">
 				<Suspense fallback={<HackathonResultsSkeleton />}>
 					<HackathonResults filters={filters} />
 				</Suspense>

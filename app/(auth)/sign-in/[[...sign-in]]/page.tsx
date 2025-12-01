@@ -6,7 +6,7 @@ export default function SignInPage() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="border-b">
-        <div className="mx-auto max-w-screen-2xl px-4 lg:px-8">
+        <div className="mx-auto max-w-screen-xl px-4 lg:px-8">
           <div className="flex h-14 items-center">
             <Link href="/" className="flex items-center gap-2">
               <span className="text-lg font-semibold tracking-tight">

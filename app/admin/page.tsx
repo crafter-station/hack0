@@ -32,7 +32,7 @@ export default async function AdminPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <SiteHeader />
 
-      <main className="flex-1 mx-auto max-w-screen-xl w-full px-4 lg:px-8 py-8">
+      <main className="flex-1 mx-auto max-w-7xl w-full px-4 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">

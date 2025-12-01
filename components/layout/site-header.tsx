@@ -11,7 +11,7 @@ interface SiteHeaderProps {
 export function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 	return (
 		<header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
-			<div className="mx-auto max-w-screen-2xl px-4 lg:px-8">
+			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
 				<div className="flex h-14 items-center justify-between">
 					<div className="flex items-center gap-6">
 						{showBackButton && (
