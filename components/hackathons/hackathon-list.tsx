@@ -1,4 +1,4 @@
-import { Search, Sparkles, Plus } from "lucide-react";
+import { Search, Sparkles } from "lucide-react";
 import { EventRow } from "./event-row";
 import { LoadMoreButton } from "./load-more-button";
 import type { Hackathon } from "@/lib/db/schema";
@@ -77,24 +77,6 @@ export function HackathonList({ hackathons, total, hasMore = false, filters = {}
           initialPage={1}
           hasMore={hasMore}
         />
-      </div>
-
-      {/* Submit CTA */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-8">
-        <Link
-          href="/submit"
-          className="flex items-center justify-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-4 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground hover:border-muted-foreground/30"
-        >
-          <Plus className="h-4 w-4" />
-          <span>¿Conoces un evento? <span className="text-foreground font-medium">Agrégalo</span></span>
-        </Link>
-        <a
-          href="mailto:railly@crafterstation.com?subject=Quiero destacar mi evento en hack0.dev"
-          className="flex items-center justify-center gap-3 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-4 text-sm text-muted-foreground transition-colors hover:bg-amber-500/10 hover:text-amber-500 hover:border-amber-500/30"
-        >
-          <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
-          <span>¿Quieres ser <span className="text-amber-500 font-medium">Sponsored</span>?</span>
-        </a>
       </div>
     </div>
   );
