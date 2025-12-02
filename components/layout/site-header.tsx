@@ -1,5 +1,5 @@
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { Plus } from "lucide-react";
+import { LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import { SearchTrigger } from "@/components/search-command";
 import { ThemeSwitcherButton } from "@/components/theme-switcher-button";
@@ -49,12 +49,6 @@ export function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 							>
 								Eventos
 							</Link>
-							<Link
-								href="/?juniorFriendly=true"
-								className="hover:text-foreground transition-colors"
-							>
-								Para principiantes
-							</Link>
 						</nav>
 					</div>
 					<div className="flex items-center gap-3">
@@ -71,11 +65,11 @@ export function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 						<SignedIn>
 							<AdminLink />
 							<Link
-								href="/submit"
+								href="/dashboard"
 								className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
 							>
-								<Plus className="h-3.5 w-3.5" />
-								<span className="hidden sm:inline">Agregar</span>
+								<LayoutGrid className="h-3.5 w-3.5" />
+								<span className="hidden sm:inline">Dashboard</span>
 							</Link>
 							<UserButton
 								appearance={{

@@ -320,6 +320,7 @@ export interface CreateEventInput {
   organizerName?: string;
   prizePool?: number;
   registrationUrl?: string;
+  organizationId?: string;
 }
 
 export interface CreateEventResult {
@@ -371,6 +372,7 @@ export async function createEvent(input: CreateEventInput): Promise<CreateEventR
       isApproved: false, // Requires manual approval
       approvalStatus: "pending",
       isFeatured: false,
+      organizationId: input.organizationId,
     };
 
     const result = await db.insert(events).values(eventData).returning();

@@ -137,7 +137,10 @@ export const events = pgTable("events", {
   isApproved: boolean("is_approved").default(true),
   approvalStatus: approvalStatusEnum("approval_status").default("approved"),
 
-  // Organizer verification
+  // Organization (for self-service orgs)
+  organizationId: uuid("organization_id"),
+
+  // Organizer verification (legacy - for claimed events)
   isOrganizerVerified: boolean("is_organizer_verified").default(false),
   verifiedOrganizerId: varchar("verified_organizer_id", { length: 255 }), // Clerk user ID
 
@@ -428,3 +431,33 @@ export const LATAM_COUNTRIES = [
   { code: "VE", name: "Venezuela" },
   { code: "GLOBAL", name: "Global" },
 ] as const;
+
+// ============================================
+// ORGANIZATIONS - For self-service event publishing
+// ============================================
+
+export const organizations = pgTable("organizations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  slug: varchar("slug", { length: 255 }).unique().notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  type: organizerTypeEnum("type").default("community"),
+
+  // Links
+  websiteUrl: varchar("website_url", { length: 500 }),
+  logoUrl: varchar("logo_url", { length: 500 }),
+
+  // Owner (Clerk user ID)
+  ownerUserId: varchar("owner_user_id", { length: 255 }).notNull(),
+
+  // Status
+  isVerified: boolean("is_verified").default(false), // Admin can verify
+
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type Organization = typeof organizations.$inferSelect;
+export type NewOrganization = typeof organizations.$inferInsert;
+

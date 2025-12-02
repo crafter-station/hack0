@@ -1,10 +1,11 @@
 import type { SearchParams } from "nuqs/server";
 import { Suspense } from "react";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { FilterBar } from "@/components/hackathons/filter-bar";
 import { HackathonList } from "@/components/hackathons/hackathon-list";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { SearchCommand } from "@/components/search-command";
 import { SubscribeForm } from "@/components/subscribe-form";
 import {
 	getHackathons,
@@ -54,8 +55,17 @@ async function HeroContent() {
 						</p>
 					</div>
 
-					{/* Subscribe inline */}
-					<SubscribeForm />
+					{/* Actions */}
+					<div className="flex items-center gap-3">
+						<SubscribeForm />
+						<Link
+							href="/for-organizers"
+							className="inline-flex h-9 items-center gap-2 rounded-lg border border-border px-4 text-sm transition-colors hover:bg-muted"
+						>
+							Soy organizador
+							<ArrowRight className="h-3.5 w-3.5" />
+						</Link>
+					</div>
 				</div>
 
 				{/* Right - Stats & Quick links */}
@@ -91,7 +101,7 @@ async function HeroContent() {
 					</div>
 
 					{/* Quick category links */}
-					<div className="flex flex-wrap gap-2">
+					<div className="flex flex-wrap items-center gap-2">
 						<a
 							href="/?eventType=hackathon"
 							className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
@@ -121,11 +131,6 @@ async function HeroContent() {
 			</div>
 		</div>
 	);
-}
-
-async function SearchCommandWrapper() {
-	const result = await getHackathons({ limit: 50 });
-	return <SearchCommand hackathons={result.hackathons} />;
 }
 
 function HackathonResultsSkeleton() {
@@ -180,11 +185,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
-			{/* Search command (Cmd+K) */}
-			<Suspense fallback={null}>
-				<SearchCommandWrapper />
-			</Suspense>
-
 			<SiteHeader />
 
 			{/* Hero section */}

@@ -15,6 +15,13 @@
       "when": 1764570021435,
       "tag": "0001_tiresome_giant_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1764639468192,
+      "tag": "0002_fine_dragon_man",
+      "breakpoints": true
     }
   ]
 }

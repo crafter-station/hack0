@@ -94,7 +94,7 @@ export function SubscribeForm() {
   if (!isSignedIn) {
     return (
       <Link
-        href="/sign-in"
+        href="/sign-in?redirect_url=/"
         className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
         title="Recibe alertas de nuevos eventos"
       >

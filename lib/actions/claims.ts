@@ -10,13 +10,16 @@ import { revalidatePath } from "next/cache";
 // ADMIN CONFIGURATION
 // ============================================
 
-const ADMIN_EMAILS = ["railly@clerk.dev"];
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "railly@clerk.dev")
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
 
 export async function isAdmin(): Promise<boolean> {
   const user = await currentUser();
   if (!user) return false;
 
-  const email = user.emailAddresses?.[0]?.emailAddress;
+  const email = user.emailAddresses?.[0]?.emailAddress?.toLowerCase();
   return email ? ADMIN_EMAILS.includes(email) : false;
 }
 

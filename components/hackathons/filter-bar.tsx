@@ -9,7 +9,6 @@ import {
   FORMAT_OPTIONS,
   STATUS_OPTIONS,
   SKILL_LEVEL_OPTIONS,
-  COUNTRY_OPTIONS,
 } from "@/lib/event-utils";
 import {
   Popover,
@@ -96,7 +95,6 @@ export function FilterBar() {
     format,
     status,
     skillLevel,
-    country,
     juniorFriendly,
   } = filters;
 
@@ -105,7 +103,6 @@ export function FilterBar() {
     format.length +
     status.length +
     skillLevel.length +
-    country.length +
     (juniorFriendly ? 1 : 0);
 
   const clearAllFilters = () => {
@@ -182,13 +179,6 @@ export function FilterBar() {
             options={SKILL_LEVEL_OPTIONS}
             selected={skillLevel}
             onSelect={(v) => setFilters({ skillLevel: v, page: 1 })}
-          />
-
-          <FilterDropdown
-            label="País"
-            options={COUNTRY_OPTIONS}
-            selected={country}
-            onSelect={(v) => setFilters({ country: v, page: 1 })}
           />
 
           {/* Clear all button */}
