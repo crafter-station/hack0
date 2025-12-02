@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { EditEventDialog } from "./edit-event-dialog";
-import { isVerifiedOrganizer } from "@/lib/actions/claims";
+import { canEditEvent } from "@/lib/actions/claims";
 import { Pencil } from "lucide-react";
 import type { Hackathon } from "@/lib/db/schema";
 
@@ -15,7 +15,7 @@ export function EditEventButton({ event }: EditEventButtonProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    isVerifiedOrganizer(event.id).then((result) => {
+    canEditEvent(event.id).then((result) => {
       setCanEdit(result);
       setLoading(false);
     });

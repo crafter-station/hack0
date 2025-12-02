@@ -1,4 +1,4 @@
-import { format, formatDistanceToNow, isAfter, isBefore } from "date-fns";
+import { format, formatDistanceToNow, isAfter, isBefore, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
 import {
   EVENT_TYPE_LABELS,
@@ -187,6 +187,11 @@ export function formatEventDateRange(
   const startYear = start.getFullYear();
 
   if (!end) {
+    return formatEventDateSmart(startDate);
+  }
+
+  // Same day - don't repeat the date
+  if (isSameDay(start, end)) {
     return formatEventDateSmart(startDate);
   }
 

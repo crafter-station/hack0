@@ -2,13 +2,15 @@
 
 import { db } from "@/lib/db";
 import { events, type Event, type NewEvent } from "@/lib/db/schema";
-import { eq, and, or, ilike, sql, desc, asc } from "drizzle-orm";
+import { eq, and, or, ilike, sql, desc, asc, inArray } from "drizzle-orm";
 import { notifySubscribersOfNewEvent } from "@/lib/email/notify-subscribers";
+import { getCategoryById, type EventCategory } from "@/lib/event-categories";
 
 // Alias for backwards compatibility
 export type Hackathon = Event;
 
 export interface HackathonFilters {
+  category?: EventCategory;
   search?: string;
   eventType?: string[];
   organizerType?: string[];
@@ -34,6 +36,7 @@ export async function getHackathons(
   filters: HackathonFilters = {}
 ): Promise<HackathonsResult> {
   const {
+    category = "all",
     search,
     eventType,
     organizerType,
@@ -52,7 +55,15 @@ export async function getHackathons(
   // Only show approved events
   conditions.push(eq(events.isApproved, true));
 
-  // Event type filter
+  // Category filter - filter by event types in category (skip if "all" or no eventTypes)
+  const categoryConfig = getCategoryById(category);
+  if (categoryConfig && categoryConfig.eventTypes !== null) {
+    conditions.push(
+      inArray(events.eventType, categoryConfig.eventTypes as any)
+    );
+  }
+
+  // Event type filter (within category)
   if (eventType && eventType.length > 0) {
     conditions.push(
       or(
@@ -248,8 +259,15 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     db.select({ count: sql<number>`count(*)` })
       .from(events)
       .where(eq(events.isApproved, true)),
-    // Total prize pool
-    db.select({ total: sql<number>`COALESCE(SUM(${events.prizePool}), 0)` })
+    // Total prize pool (normalized to USD, PEN converted at 3.5 exchange rate)
+    db.select({
+      total: sql<number>`COALESCE(SUM(
+        CASE
+          WHEN ${events.prizeCurrency} = 'PEN' THEN ${events.prizePool} / 3.5
+          ELSE ${events.prizePool}
+        END
+      ), 0)`
+    })
       .from(events)
       .where(eq(events.isApproved, true)),
     // Unique cities

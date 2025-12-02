@@ -49,7 +49,7 @@ export async function generateMetadata({
 	const title = `${hackathon.name} - ${getEventTypeLabel(hackathon.eventType)} en Perú`;
 	const description =
 		hackathon.description?.slice(0, 160) ||
-		`${getEventTypeLabel(hackathon.eventType)} ${hackathon.format === "virtual" ? "virtual" : `en ${hackathon.city || "Perú"}`}. ${hackathon.prizePool ? `Premio: $${hackathon.prizePool.toLocaleString()}` : ""}`;
+		`${getEventTypeLabel(hackathon.eventType)} ${hackathon.format === "virtual" ? "virtual" : `en ${hackathon.city || "Perú"}`}. ${hackathon.prizePool ? `Premio: ${hackathon.prizeCurrency === "PEN" ? "S/" : "$"}${hackathon.prizePool.toLocaleString()}` : ""}`;
 
 	return {
 		title,
@@ -439,7 +439,8 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
 										Premio
 									</div>
 									<p className="font-semibold text-lg text-emerald-500">
-										${hackathon.prizePool.toLocaleString()}
+										{hackathon.prizeCurrency === "PEN" ? "S/" : "$"}
+										{hackathon.prizePool.toLocaleString()}
 									</p>
 									{hackathon.prizeDescription && (
 										<p className="text-sm text-muted-foreground mt-0.5">

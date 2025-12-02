@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -12,13 +10,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupTextarea,
+} from "@/components/ui/input-group";
+import {
+  Field,
+  FieldGroup,
+  FieldLabel,
+  FieldDescription,
+} from "@/components/ui/field";
 import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
 import {
   createOrganization,
   generateSlug,
   isSlugAvailable,
 } from "@/lib/actions/organizations";
-import { Loader2, ArrowRight, Check, X } from "lucide-react";
+import { ImageUpload } from "@/components/ui/image-upload";
+import { Loader2, ArrowRight, Check, X, Globe } from "lucide-react";
 
 const ORGANIZER_TYPE_OPTIONS = Object.entries(ORGANIZER_TYPE_LABELS).map(
   ([value, label]) => ({
@@ -38,6 +49,7 @@ export function OnboardingForm() {
   const [slugStatus, setSlugStatus] = useState<
     "idle" | "checking" | "available" | "taken"
   >("idle");
+  const [logoUrl, setLogoUrl] = useState("");
 
   // Auto-generate slug from name
   useEffect(() => {
@@ -76,7 +88,7 @@ export function OnboardingForm() {
         description: (formData.get("description") as string) || undefined,
         type: (formData.get("type") as string) || undefined,
         websiteUrl: (formData.get("websiteUrl") as string) || undefined,
-        logoUrl: (formData.get("logoUrl") as string) || undefined,
+        logoUrl: logoUrl || undefined,
       });
 
       router.push("/dashboard");
@@ -89,149 +101,136 @@ export function OnboardingForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Basic Info */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-          Información básica
-        </h2>
-        <div className="grid gap-4">
-          <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium">
-              Nombre de la organización *
-            </label>
-            <Input
-              id="name"
-              name="name"
-              placeholder="ej. GDG Lima, Universidad Nacional de Ingeniería"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
+    <form onSubmit={handleSubmit}>
+      {/* Two column layout */}
+      <div className="grid md:grid-cols-[1fr_180px] gap-6">
+        {/* Left column - Main info */}
+        <FieldGroup>
+          {/* Name */}
+          <Field>
+            <FieldLabel htmlFor="name">Nombre de la organización *</FieldLabel>
+            <InputGroup>
+              <InputGroupInput
+                id="name"
+                name="name"
+                placeholder="ej. GDG Lima, Universidad Nacional de Ingeniería"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </InputGroup>
+          </Field>
 
-          <div className="space-y-2">
-            <label htmlFor="slug" className="text-sm font-medium">
-              URL personalizada *
-            </label>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">hack0.dev/org/</span>
-              <div className="relative flex-1">
-                <Input
-                  id="slug"
-                  value={slug}
-                  onChange={(e) => {
-                    setSlugManuallyEdited(true);
-                    setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
-                  }}
-                  placeholder="mi-organizacion"
-                  required
-                  className="pr-8"
-                />
-                {slugStatus !== "idle" && (
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                    {slugStatus === "checking" && (
-                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    )}
-                    {slugStatus === "available" && (
-                      <Check className="h-4 w-4 text-emerald-500" />
-                    )}
-                    {slugStatus === "taken" && (
-                      <X className="h-4 w-4 text-red-500" />
-                    )}
-                  </div>
+          {/* Slug */}
+          <Field>
+            <FieldLabel htmlFor="slug">URL personalizada *</FieldLabel>
+            <InputGroup>
+              <InputGroupAddon align="inline-start">
+                <span className="text-muted-foreground">hack0.dev/org/</span>
+              </InputGroupAddon>
+              <InputGroupInput
+                id="slug"
+                value={slug}
+                onChange={(e) => {
+                  setSlugManuallyEdited(true);
+                  setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
+                }}
+                placeholder="mi-organizacion"
+                required
+              />
+              <InputGroupAddon align="inline-end">
+                {slugStatus === "checking" && (
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                 )}
-              </div>
-            </div>
+                {slugStatus === "available" && (
+                  <Check className="h-4 w-4 text-emerald-500" />
+                )}
+                {slugStatus === "taken" && (
+                  <X className="h-4 w-4 text-red-500" />
+                )}
+              </InputGroupAddon>
+            </InputGroup>
             {slugStatus === "taken" && (
               <p className="text-xs text-red-500">Esta URL ya está en uso</p>
             )}
+          </Field>
+
+          {/* Type + Website in same row */}
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field>
+              <FieldLabel htmlFor="type">Tipo *</FieldLabel>
+              <Select name="type" required>
+                <SelectTrigger id="type">
+                  <SelectValue placeholder="Selecciona un tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ORGANIZER_TYPE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="websiteUrl">Sitio web</FieldLabel>
+              <InputGroup>
+                <InputGroupAddon align="inline-start">
+                  <Globe className="h-4 w-4" />
+                </InputGroupAddon>
+                <InputGroupInput
+                  id="websiteUrl"
+                  name="websiteUrl"
+                  type="url"
+                  placeholder="https://..."
+                />
+              </InputGroup>
+            </Field>
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="description" className="text-sm font-medium">
-              Descripción
-            </label>
-            <Textarea
-              id="description"
-              name="description"
-              placeholder="Breve descripción de tu organización..."
-              className="min-h-20 resize-none"
-            />
-          </div>
-        </div>
-      </section>
+          {/* Description */}
+          <Field>
+            <FieldLabel htmlFor="description">Descripción</FieldLabel>
+            <InputGroup>
+              <InputGroupTextarea
+                id="description"
+                name="description"
+                placeholder="Breve descripción de tu organización..."
+                className="min-h-[80px]"
+              />
+            </InputGroup>
+            <FieldDescription>
+              Opcional. Aparecerá en tu perfil público.
+            </FieldDescription>
+          </Field>
+        </FieldGroup>
 
-      {/* Type */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-          Tipo de organización
-        </h2>
-        <div className="grid gap-4">
-          <div className="space-y-2">
-            <label htmlFor="type" className="text-sm font-medium">
-              Tipo *
-            </label>
-            <Select name="type" required>
-              <SelectTrigger id="type">
-                <SelectValue placeholder="Selecciona un tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                {ORGANIZER_TYPE_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </section>
-
-      {/* Links */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-          Enlaces (opcional)
-        </h2>
-        <div className="grid gap-4">
-          <div className="space-y-2">
-            <label htmlFor="websiteUrl" className="text-sm font-medium">
-              Sitio web
-            </label>
-            <Input
-              id="websiteUrl"
-              name="websiteUrl"
-              type="url"
-              placeholder="https://gdg.community.dev/gdg-lima"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="logoUrl" className="text-sm font-medium">
-              URL del logo
-            </label>
-            <Input
-              id="logoUrl"
-              name="logoUrl"
-              type="url"
-              placeholder="https://ejemplo.com/logo.png"
-            />
-            <p className="text-xs text-muted-foreground">
-              Sube tu logo a algún servicio y pega la URL aquí
-            </p>
-          </div>
-        </div>
-      </section>
+        {/* Right column - Logo */}
+        <Field>
+          <FieldLabel>Logo</FieldLabel>
+          <ImageUpload
+            value={logoUrl}
+            onChange={setLogoUrl}
+            onRemove={() => setLogoUrl("")}
+            endpoint="imageUploader"
+            aspectRatio="square"
+          />
+          <FieldDescription className="text-center">
+            Cuadrado, max 4MB
+          </FieldDescription>
+        </Field>
+      </div>
 
       {/* Error */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="mt-6 rounded-lg border border-red-500/20 bg-red-500/10 p-4">
+          <p className="text-sm text-red-500">{error}</p>
         </div>
       )}
 
       {/* Submit */}
-      <div className="flex justify-end pt-4 border-t">
+      <div className="flex justify-end mt-6 pt-4 border-t">
         <Button
           type="submit"
           disabled={isSubmitting || slugStatus === "taken" || slugStatus === "checking"}

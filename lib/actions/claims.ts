@@ -198,6 +198,14 @@ export async function isVerifiedOrganizer(eventId: string): Promise<boolean> {
   return event[0].isOrganizerVerified === true && event[0].verifiedOrganizerId === userId;
 }
 
+// Check if user can edit event (admin OR verified organizer)
+export async function canEditEvent(eventId: string): Promise<boolean> {
+  const admin = await isAdmin();
+  if (admin) return true;
+
+  return isVerifiedOrganizer(eventId);
+}
+
 export interface UpdateEventInput {
   eventId: string;
   name?: string;
@@ -224,10 +232,10 @@ export async function updateEvent(input: UpdateEventInput) {
     return { success: false, error: "Debes iniciar sesión" };
   }
 
-  // Verify user is the verified organizer
-  const isVerified = await isVerifiedOrganizer(input.eventId);
+  // Verify user can edit (admin or verified organizer)
+  const canEdit = await canEditEvent(input.eventId);
 
-  if (!isVerified) {
+  if (!canEdit) {
     return { success: false, error: "No tienes permiso para editar este evento" };
   }
 

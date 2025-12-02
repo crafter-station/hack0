@@ -23,7 +23,6 @@ import { searchParamsParsers } from "@/lib/search-params";
 // Event type options
 const eventTypeOptions = [
   { value: "hackathon", label: "Hackathon" },
-  { value: "innovation_challenge", label: "Reto de Innovación" },
   { value: "conference", label: "Congreso" },
   { value: "workshop", label: "Taller" },
   { value: "bootcamp", label: "Bootcamp" },

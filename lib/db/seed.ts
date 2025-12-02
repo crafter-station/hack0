@@ -520,7 +520,7 @@ const seedEvents: NewEvent[] = [
     name: "Hackathon CIP Lima: Smart Chancay",
     description:
       "Hub Eco-Tecnológico con IA. Iniciativa del Colegio de Ingenieros del Perú que impulsa el talento, la innovación y soluciones inteligentes para el futuro del país. Los equipos finalistas presentarán sus soluciones en la Semana de la Ingeniería Nacional 2026.",
-    eventType: "innovation_challenge",
+    eventType: "hackathon",
     startDate: new Date("2025-11-17T00:00:00"),
     endDate: new Date("2026-06-08T18:00:00"),
     registrationDeadline: new Date("2025-12-31T23:59:59"),
@@ -619,7 +619,7 @@ const seedEvents: NewEvent[] = [
     name: "Hackathon Soluciones Innovadoras - Municipalidad de Chiclayo",
     description:
       "Primera Hackathon de la Municipalidad Provincial de Chiclayo enfocada en soluciones innovadoras para la prestación de servicios públicos. Organizada con el Colegio de Ingenieros del Perú - Consejo Departamental Lambayeque.",
-    eventType: "innovation_challenge",
+    eventType: "hackathon",
     startDate: new Date("2025-11-15T09:00:00"),
     endDate: new Date("2025-11-17T18:00:00"),
     format: "in-person",

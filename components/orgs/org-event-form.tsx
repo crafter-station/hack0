@@ -19,6 +19,7 @@ import {
   COUNTRY_OPTIONS,
 } from "@/lib/event-utils";
 import { createEvent } from "@/lib/actions/hackathons";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Loader2, Send, Sparkles } from "lucide-react";
 
 interface OrgEventFormProps {
@@ -34,6 +35,8 @@ export function OrgEventForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isJuniorFriendly, setIsJuniorFriendly] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState("");
+  const [bannerUrl, setBannerUrl] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -61,6 +64,8 @@ export function OrgEventForm({
         ? Number(formData.get("prizePool"))
         : undefined,
       organizationId,
+      logoUrl: logoUrl || undefined,
+      bannerUrl: bannerUrl || undefined,
     });
 
     setIsSubmitting(false);
@@ -116,6 +121,43 @@ export function OrgEventForm({
               placeholder="https://..."
               required
             />
+          </div>
+        </div>
+      </section>
+
+      {/* Section: Imágenes */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+          Imágenes
+        </h2>
+        <div className="grid sm:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Logo del evento</label>
+            <ImageUpload
+              value={logoUrl}
+              onChange={setLogoUrl}
+              onRemove={() => setLogoUrl("")}
+              endpoint="imageUploader"
+              aspectRatio="square"
+              className="max-w-[150px]"
+            />
+            <p className="text-xs text-muted-foreground">
+              Cuadrado, max 4MB
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Banner del evento</label>
+            <ImageUpload
+              value={bannerUrl}
+              onChange={setBannerUrl}
+              onRemove={() => setBannerUrl("")}
+              endpoint="bannerUploader"
+              aspectRatio="video"
+            />
+            <p className="text-xs text-muted-foreground">
+              16:9, max 8MB
+            </p>
           </div>
         </div>
       </section>

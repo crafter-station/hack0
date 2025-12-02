@@ -286,9 +286,8 @@ export function inferEventType(
     ["conference", ["congreso", "conference", "simposio", "symposium", "cumbre", "summit"]],
     ["meetup", ["meetup", "meet-up", "encuentro", "gathering"]],
     ["networking", ["networking", "network event"]],
-    ["innovation_challenge", ["reto", "challenge", "desafío", "convocatoria"]],
-    ["competition", ["competencia", "competition", "concurso", "contest", "torneo"]],
-    ["hackathon", ["hackathon", "hackatón", "hack", "buildathon", "codeathon"]],
+    ["competition", ["competencia", "competition", "concurso", "contest", "torneo", "reto", "challenge", "desafío"]],
+    ["hackathon", ["hackathon", "hackatón", "hack", "buildathon", "codeathon", "convocatoria"]],
   ];
 
   for (const [type, keywords] of typeKeywords) {

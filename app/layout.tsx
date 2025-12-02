@@ -5,9 +5,12 @@ import "../styles/globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { shadcn } from "@clerk/themes";
 import { Analytics } from "@vercel/analytics/next";
+import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { extractRouterConfig } from "uploadthing/server";
+import { ourFileRouter } from "@/app/api/uploadthing/core";
 import { GlobalSearch } from "@/components/global-search";
 
 const geistSans = Geist({
@@ -179,6 +182,7 @@ export default function RootLayout({
 				<body
 					className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 				>
+					<NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
 					<ThemeProvider
 						attribute="class"
 						defaultTheme="dark"

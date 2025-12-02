@@ -3,6 +3,7 @@ import { EventRow } from "./event-row";
 import { LoadMoreButton } from "./load-more-button";
 import type { Hackathon } from "@/lib/db/schema";
 import type { HackathonFilters } from "@/lib/actions/hackathons";
+import { getCategoryById, type EventCategoryConfig } from "@/lib/event-categories";
 import Link from "next/link";
 
 interface HackathonListProps {
@@ -13,6 +14,8 @@ interface HackathonListProps {
 }
 
 export function HackathonList({ hackathons, total, hasMore = false, filters = {} }: HackathonListProps) {
+  // Get category config for dynamic columns
+  const categoryConfig = getCategoryById(filters.category || "all");
   if (hackathons.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -55,19 +58,26 @@ export function HackathonList({ hackathons, total, hasMore = false, filters = {}
 
       {/* Table */}
       <div className="rounded-lg border border-border overflow-hidden">
-        {/* Header - hidden on mobile */}
-        <div className="hidden lg:grid grid-cols-[1fr_180px_120px_100px_130px] gap-4 items-center px-5 py-2.5 border-b border-border bg-muted/30 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        {/* Header - hidden on mobile, dynamic based on category */}
+        <div className={`hidden lg:grid ${
+          categoryConfig?.showPrize
+            ? "grid-cols-[1fr_180px_120px_100px_130px]"
+            : categoryConfig?.showSkillLevel
+            ? "grid-cols-[1fr_180px_120px_120px_130px]"
+            : "grid-cols-[1fr_180px_120px_130px]"
+        } gap-4 items-center px-5 py-2.5 border-b border-border bg-muted/30 text-xs font-medium text-muted-foreground uppercase tracking-wider`}>
           <div>Evento</div>
           <div>Fecha</div>
           <div>Formato</div>
-          <div className="text-right">Premio</div>
+          {categoryConfig?.showPrize && <div className="text-right">Premio</div>}
+          {categoryConfig?.showSkillLevel && <div>Nivel</div>}
           <div className="text-right">Estado</div>
         </div>
 
         {/* Initial rows */}
         <div className="divide-y divide-border">
           {hackathons.map((hackathon) => (
-            <EventRow key={hackathon.id} event={hackathon} />
+            <EventRow key={hackathon.id} event={hackathon} categoryConfig={categoryConfig} />
           ))}
         </div>
 

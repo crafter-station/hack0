@@ -7,19 +7,25 @@ import { TrophyIcon } from "@/components/icons/trophy";
 import { PinIcon } from "@/components/icons/pin";
 import { CalendarIcon } from "@/components/icons/calendar";
 import type { Hackathon } from "@/lib/db/schema";
+import type { EventCategoryConfig } from "@/lib/event-categories";
 import {
   getEventStatus,
   getFormatLabel,
   getEventTypeLabel,
+  getSkillLevelLabel,
   formatEventDateRange,
   formatEventDateSmart,
 } from "@/lib/event-utils";
 
 interface EventRowProps {
   event: Hackathon;
+  categoryConfig?: EventCategoryConfig;
 }
 
-export function EventRow({ event }: EventRowProps) {
+export function EventRow({ event, categoryConfig }: EventRowProps) {
+  // Default to showing prize (competitions behavior)
+  const showPrize = categoryConfig?.showPrize ?? true;
+  const showSkillLevel = categoryConfig?.showSkillLevel ?? false;
   const startDate = event.startDate ? new Date(event.startDate) : null;
   const endDate = event.endDate ? new Date(event.endDate) : null;
   const status = getEventStatus(event);
@@ -34,21 +40,50 @@ export function EventRow({ event }: EventRowProps) {
   // Minimal amber stripe pattern for featured/sponsored events
   const featuredStripe = `url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 6L6 0' stroke='%23F59E0B' stroke-width='0.5' fill='none' opacity='0.15'/%3E%3C/svg%3E")`;
 
+  // Dynamic grid based on category
+  const gridCols = showPrize
+    ? "lg:grid-cols-[1fr_200px_120px_100px_130px]" // With prize column
+    : showSkillLevel
+    ? "lg:grid-cols-[1fr_200px_120px_120px_130px]" // With skill level column
+    : "lg:grid-cols-[1fr_200px_120px_130px]"; // Minimal
+
   return (
     <Link
       href={`/${event.slug}`}
-      className={`group relative grid grid-cols-[1fr_auto] lg:grid-cols-[1fr_200px_120px_100px_130px] gap-4 items-center px-5 py-4 transition-colors hover:bg-muted/50 ${
+      className={`group relative grid grid-cols-[1fr_auto] ${gridCols} gap-4 items-center px-5 py-4 transition-all overflow-hidden ${
         isEnded && !isFeatured ? "opacity-50" : ""
       } ${isFeatured ? "border-l-2 border-l-amber-500" : ""}`}
-      style={isFeatured ? {
-        backgroundImage: featuredStripe,
-        backgroundSize: "6px 6px",
-      } : undefined}
     >
+      {/* Banner background */}
+      {event.bannerUrl && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <Image
+            src={event.bannerUrl}
+            alt=""
+            fill
+            className="object-cover object-center opacity-20 group-hover:opacity-30 transition-opacity duration-300"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-background/50" />
+        </div>
+      )}
+
+      {/* Hover overlay */}
+      <div className="absolute inset-0 bg-transparent group-hover:bg-muted/40 transition-colors duration-200 pointer-events-none" />
+      {/* Featured stripe pattern */}
+      {isFeatured && (
+        <div
+          className="absolute inset-0 -z-10 pointer-events-none"
+          style={{
+            backgroundImage: featuredStripe,
+            backgroundSize: "6px 6px",
+          }}
+        />
+      )}
       {/* Name & Organizer */}
-      <div className="min-w-0 flex items-center gap-3">
+      <div className="min-w-0 flex items-center gap-3 relative z-10">
         {/* Thumbnail */}
-        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md bg-muted">
+        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md bg-muted border border-border">
           {event.logoUrl ? (
             <Image
               src={event.logoUrl}
@@ -101,7 +136,7 @@ export function EventRow({ event }: EventRowProps) {
       </div>
 
       {/* Date */}
-      <div className="hidden lg:block text-sm text-muted-foreground">
+      <div className="hidden lg:block text-sm text-muted-foreground relative z-10">
         {startDate ? (
           <div className="flex items-center gap-1.5">
             <CalendarIcon className="h-3.5 w-3.5" />
@@ -113,27 +148,39 @@ export function EventRow({ event }: EventRowProps) {
       </div>
 
       {/* Format */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block relative z-10">
         <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
           <PinIcon className="h-3.5 w-3.5" />
           {getFormatLabel(event.format)}
         </span>
       </div>
 
-      {/* Prize */}
-      <div className="hidden lg:block text-right">
-        {event.prizePool && event.prizePool > 0 ? (
-          <span className="inline-flex items-center gap-1 text-sm font-medium">
-            <TrophyIcon className="h-3.5 w-3.5 text-amber-500" />
-            ${event.prizePool.toLocaleString()}
+      {/* Prize - only for competitions */}
+      {showPrize && (
+        <div className="hidden lg:block text-right relative z-10">
+          {event.prizePool && event.prizePool > 0 ? (
+            <span className="inline-flex items-center gap-1 text-sm font-medium">
+              <TrophyIcon className="h-3.5 w-3.5 text-amber-500" />
+              {event.prizeCurrency === "PEN" ? "S/" : "$"}
+              {event.prizePool.toLocaleString()}
+            </span>
+          ) : (
+            <span className="text-sm text-muted-foreground/40">—</span>
+          )}
+        </div>
+      )}
+
+      {/* Skill Level - only for learning */}
+      {showSkillLevel && (
+        <div className="hidden lg:block relative z-10">
+          <span className="text-sm text-muted-foreground">
+            {getSkillLevelLabel(event.skillLevel)}
           </span>
-        ) : (
-          <span className="text-sm text-muted-foreground/40">—</span>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Status - with visual color coding */}
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end relative z-10">
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
             isEnded
@@ -161,7 +208,7 @@ export function EventRow({ event }: EventRowProps) {
       </div>
 
       {/* Mobile meta row */}
-      <div className="col-span-2 flex items-center gap-3 text-xs text-muted-foreground lg:hidden">
+      <div className="col-span-2 flex items-center gap-3 text-xs text-muted-foreground lg:hidden relative z-10">
         {startDate && (
           <span className="inline-flex items-center gap-1">
             <CalendarIcon className="h-3 w-3" />
@@ -172,10 +219,16 @@ export function EventRow({ event }: EventRowProps) {
           <PinIcon className="h-3 w-3" />
           {getFormatLabel(event.format)}
         </span>
-        {event.prizePool && event.prizePool > 0 && (
+        {showPrize && event.prizePool && event.prizePool > 0 && (
           <span className="inline-flex items-center gap-1 font-medium text-foreground">
             <TrophyIcon className="h-3 w-3 text-amber-500" />
-            ${event.prizePool.toLocaleString()}
+            {event.prizeCurrency === "PEN" ? "S/" : "$"}
+            {event.prizePool.toLocaleString()}
+          </span>
+        )}
+        {showSkillLevel && (
+          <span className="text-muted-foreground">
+            {getSkillLevelLabel(event.skillLevel)}
           </span>
         )}
       </div>

@@ -3,11 +3,16 @@ import {
   parseAsBoolean,
   parseAsInteger,
   parseAsArrayOf,
+  parseAsStringLiteral,
   createLoader,
 } from "nuqs/server";
+import type { EventCategory } from "./event-categories";
+
+const categoryValues = ["all", "competitions", "learning", "community"] as const;
 
 // Define all search param parsers
 export const searchParamsParsers = {
+  category: parseAsStringLiteral(categoryValues).withDefault("all" as EventCategory),
   search: parseAsString.withDefault(""),
   eventType: parseAsArrayOf(parseAsString).withDefault([]),
   organizerType: parseAsArrayOf(parseAsString).withDefault([]),

@@ -18,9 +18,6 @@ export const eventTypeEnum = pgEnum("event_type", [
   // Hackathones
   "hackathon",           // Competencias de desarrollo clásicas
 
-  // Retos de Innovación
-  "innovation_challenge", // Retos gov/corp/NGO
-
   // Eventos Académicos
   "conference",          // Congresos, simposios
   "seminar",             // Seminarios, ponencias
@@ -64,6 +61,8 @@ export const organizerTypeEnum = pgEnum("organizer_type", [
 ]);
 
 export const formatEnum = pgEnum("format", ["virtual", "in-person", "hybrid"]);
+
+export const currencyEnum = pgEnum("currency", ["USD", "PEN"]);
 
 export const skillLevelEnum = pgEnum("skill_level", [
   "beginner",
@@ -111,7 +110,8 @@ export const events = pgTable("events", {
   domains: text("domains").array(), // ['ai', 'web3', 'fintech', etc.]
 
   // Prizes
-  prizePool: integer("prize_pool"), // in USD
+  prizePool: integer("prize_pool"),
+  prizeCurrency: currencyEnum("prize_currency").default("USD"),
   prizeDescription: text("prize_description"),
 
   // Links
@@ -278,8 +278,6 @@ export type NewWinnerClaim = typeof winnerClaims.$inferInsert;
 export const EVENT_TYPES = [
   // Hackathones
   "hackathon",
-  // Retos
-  "innovation_challenge",
   // Académicos
   "conference",
   "seminar",
@@ -306,7 +304,6 @@ export const EVENT_TYPES = [
 
 export const EVENT_TYPE_LABELS: Record<string, string> = {
   hackathon: "Hackathon",
-  innovation_challenge: "Reto de Innovación",
   conference: "Congreso",
   seminar: "Seminario",
   research_fair: "Feria Científica",

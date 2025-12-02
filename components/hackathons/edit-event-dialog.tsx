@@ -11,9 +11,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -21,8 +18,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Pencil } from "lucide-react";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupTextarea,
+} from "@/components/ui/input-group";
+import {
+  Field,
+  FieldGroup,
+  FieldLabel,
+  FieldDescription,
+} from "@/components/ui/field";
+import { ImageUpload } from "@/components/ui/image-upload";
+import {
+  Pencil,
+  Globe,
+  Link as LinkIcon,
+  Calendar,
+  MapPin,
+  Trophy,
+  Sparkles,
+  Loader2,
+} from "lucide-react";
 import { updateEvent } from "@/lib/actions/claims";
 import type { Hackathon } from "@/lib/db/schema";
 
@@ -126,81 +144,115 @@ export function EditEventDialog({ event, children }: EditEventDialogProps) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Info */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">
-              Información básica
-            </h3>
+          {/* Banner */}
+          <Field>
+            <FieldLabel>Banner</FieldLabel>
+            <ImageUpload
+              value={bannerUrl}
+              onChange={setBannerUrl}
+              onRemove={() => setBannerUrl("")}
+              endpoint="bannerUploader"
+              aspectRatio="banner"
+            />
+          </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre del evento</Label>
-              <Input
+          {/* Title */}
+          <Field>
+            <FieldLabel htmlFor="name">Nombre del evento</FieldLabel>
+            <InputGroup>
+              <InputGroupInput
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
               />
-            </div>
+            </InputGroup>
+          </Field>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Descripción</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={4}
+          {/* Logo + Description */}
+          <div className="grid grid-cols-[120px_1fr] gap-4">
+            <Field>
+              <FieldLabel>Logo</FieldLabel>
+              <ImageUpload
+                value={logoUrl}
+                onChange={setLogoUrl}
+                onRemove={() => setLogoUrl("")}
+                endpoint="imageUploader"
+                aspectRatio="square"
               />
-            </div>
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="description">Descripción</FieldLabel>
+              <InputGroup>
+                <InputGroupTextarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="min-h-[100px]"
+                />
+              </InputGroup>
+            </Field>
           </div>
 
           {/* Dates */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">Fechas</h3>
+          <FieldGroup className="gap-4">
+            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Fechas
+            </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="startDate">Fecha de inicio</Label>
-                <Input
-                  id="startDate"
-                  type="datetime-local"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
-              </div>
+              <Field>
+                <FieldLabel htmlFor="startDate">Fecha de inicio</FieldLabel>
+                <InputGroup>
+                  <InputGroupInput
+                    id="startDate"
+                    type="datetime-local"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                </InputGroup>
+              </Field>
 
-              <div className="space-y-2">
-                <Label htmlFor="endDate">Fecha de fin</Label>
-                <Input
-                  id="endDate"
-                  type="datetime-local"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                />
-              </div>
+              <Field>
+                <FieldLabel htmlFor="endDate">Fecha de fin</FieldLabel>
+                <InputGroup>
+                  <InputGroupInput
+                    id="endDate"
+                    type="datetime-local"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                  />
+                </InputGroup>
+              </Field>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="registrationDeadline">
+            <Field>
+              <FieldLabel htmlFor="registrationDeadline">
                 Cierre de inscripciones
-              </Label>
-              <Input
-                id="registrationDeadline"
-                type="datetime-local"
-                value={registrationDeadline}
-                onChange={(e) => setRegistrationDeadline(e.target.value)}
-              />
-            </div>
-          </div>
+              </FieldLabel>
+              <InputGroup>
+                <InputGroupInput
+                  id="registrationDeadline"
+                  type="datetime-local"
+                  value={registrationDeadline}
+                  onChange={(e) => setRegistrationDeadline(e.target.value)}
+                />
+              </InputGroup>
+            </Field>
+          </FieldGroup>
 
           {/* Location */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">
+          <FieldGroup className="gap-4">
+            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
               Ubicación
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="format">Formato</Label>
+              <Field>
+                <FieldLabel htmlFor="format">Formato</FieldLabel>
                 <Select value={format} onValueChange={(v) => setFormat(v as typeof format)}>
                   <SelectTrigger>
                     <SelectValue />
@@ -211,113 +263,133 @@ export function EditEventDialog({ event, children }: EditEventDialogProps) {
                     <SelectItem value="hybrid">Híbrido</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </Field>
 
-              <div className="space-y-2">
-                <Label htmlFor="city">Ciudad</Label>
-                <Input
-                  id="city"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="Lima, Buenos Aires..."
-                />
-              </div>
+              <Field>
+                <FieldLabel htmlFor="city">Ciudad</FieldLabel>
+                <InputGroup>
+                  <InputGroupInput
+                    id="city"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="Lima, Arequipa..."
+                  />
+                </InputGroup>
+              </Field>
             </div>
-          </div>
+          </FieldGroup>
 
           {/* Prizes */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">Premios</h3>
+          <FieldGroup className="gap-4">
+            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Trophy className="h-4 w-4" />
+              Premios
+            </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="prizePool">Premio total (USD)</Label>
-                <Input
-                  id="prizePool"
-                  type="number"
-                  value={prizePool}
-                  onChange={(e) => setPrizePool(e.target.value)}
-                  placeholder="10000"
-                />
-              </div>
+              <Field>
+                <FieldLabel htmlFor="prizePool">Premio total (USD)</FieldLabel>
+                <InputGroup>
+                  <InputGroupAddon align="inline-start">$</InputGroupAddon>
+                  <InputGroupInput
+                    id="prizePool"
+                    type="number"
+                    value={prizePool}
+                    onChange={(e) => setPrizePool(e.target.value)}
+                    placeholder="10000"
+                  />
+                </InputGroup>
+              </Field>
 
-              <div className="space-y-2">
-                <Label htmlFor="prizeDescription">Descripción del premio</Label>
-                <Input
-                  id="prizeDescription"
-                  value={prizeDescription}
-                  onChange={(e) => setPrizeDescription(e.target.value)}
-                  placeholder="1er lugar: $5000..."
-                />
-              </div>
+              <Field>
+                <FieldLabel htmlFor="prizeDescription">Descripción</FieldLabel>
+                <InputGroup>
+                  <InputGroupInput
+                    id="prizeDescription"
+                    value={prizeDescription}
+                    onChange={(e) => setPrizeDescription(e.target.value)}
+                    placeholder="1er lugar: $5000..."
+                  />
+                </InputGroup>
+              </Field>
             </div>
-          </div>
+          </FieldGroup>
 
           {/* URLs */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">Enlaces</h3>
+          <FieldGroup className="gap-4">
+            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <LinkIcon className="h-4 w-4" />
+              Enlaces
+            </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="websiteUrl">Sitio web</Label>
-                <Input
-                  id="websiteUrl"
-                  type="url"
-                  value={websiteUrl}
-                  onChange={(e) => setWebsiteUrl(e.target.value)}
-                />
-              </div>
+              <Field>
+                <FieldLabel htmlFor="websiteUrl">Sitio web</FieldLabel>
+                <InputGroup>
+                  <InputGroupAddon align="inline-start">
+                    <Globe className="h-4 w-4" />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="websiteUrl"
+                    type="url"
+                    value={websiteUrl}
+                    onChange={(e) => setWebsiteUrl(e.target.value)}
+                    placeholder="https://..."
+                  />
+                </InputGroup>
+              </Field>
 
-              <div className="space-y-2">
-                <Label htmlFor="registrationUrl">URL de inscripción</Label>
-                <Input
-                  id="registrationUrl"
-                  type="url"
-                  value={registrationUrl}
-                  onChange={(e) => setRegistrationUrl(e.target.value)}
-                />
-              </div>
+              <Field>
+                <FieldLabel htmlFor="registrationUrl">Inscripción</FieldLabel>
+                <InputGroup>
+                  <InputGroupAddon align="inline-start">
+                    <LinkIcon className="h-4 w-4" />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id="registrationUrl"
+                    type="url"
+                    value={registrationUrl}
+                    onChange={(e) => setRegistrationUrl(e.target.value)}
+                    placeholder="https://..."
+                  />
+                </InputGroup>
+              </Field>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="logoUrl">URL del logo</Label>
-                <Input
-                  id="logoUrl"
-                  type="url"
-                  value={logoUrl}
-                  onChange={(e) => setLogoUrl(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="bannerUrl">URL del banner</Label>
-                <Input
-                  id="bannerUrl"
-                  type="url"
-                  value={bannerUrl}
-                  onChange={(e) => setBannerUrl(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
+          </FieldGroup>
 
           {/* Flags */}
           <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5">
-              <Label htmlFor="isJuniorFriendly">Junior Friendly</Label>
-              <p className="text-sm text-muted-foreground">
-                Marcar si el evento es apto para principiantes
-              </p>
+            <div className="flex items-center gap-3">
+              <Sparkles className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium">Junior Friendly</p>
+                <p className="text-xs text-muted-foreground">
+                  Apto para principiantes sin experiencia
+                </p>
+              </div>
             </div>
-            <Switch
-              id="isJuniorFriendly"
-              checked={isJuniorFriendly}
-              onCheckedChange={setIsJuniorFriendly}
-            />
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isJuniorFriendly}
+              onClick={() => setIsJuniorFriendly(!isJuniorFriendly)}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                isJuniorFriendly ? "bg-foreground" : "bg-muted"
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow ring-0 transition duration-200 ease-in-out ${
+                  isJuniorFriendly ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
           </div>
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          {error && (
+            <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3">
+              <p className="text-sm text-red-500">{error}</p>
+            </div>
+          )}
 
           <DialogFooter>
             <Button
@@ -329,7 +401,14 @@ export function EditEventDialog({ event, children }: EditEventDialogProps) {
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar cambios"}
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                "Guardar cambios"
+              )}
             </Button>
           </DialogFooter>
         </form>

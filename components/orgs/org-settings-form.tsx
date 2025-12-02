@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { ORGANIZER_TYPE_LABELS, type Organization } from "@/lib/db/schema";
 import { updateOrganization } from "@/lib/actions/organizations";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Loader2, Save } from "lucide-react";
 
 const ORGANIZER_TYPE_OPTIONS = Object.entries(ORGANIZER_TYPE_LABELS).map(
@@ -32,6 +33,7 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [logoUrl, setLogoUrl] = useState(organization.logoUrl || "");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -47,7 +49,7 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
         description: (formData.get("description") as string) || undefined,
         type: (formData.get("type") as string) || undefined,
         websiteUrl: (formData.get("websiteUrl") as string) || undefined,
-        logoUrl: (formData.get("logoUrl") as string) || undefined,
+        logoUrl: logoUrl || undefined,
       });
 
       setSuccess(true);
@@ -162,15 +164,14 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="logoUrl" className="text-sm font-medium">
-              URL del logo
-            </label>
-            <Input
-              id="logoUrl"
-              name="logoUrl"
-              type="url"
-              defaultValue={organization.logoUrl || ""}
-              placeholder="https://ejemplo.com/logo.png"
+            <label className="text-sm font-medium">Logo</label>
+            <ImageUpload
+              value={logoUrl}
+              onChange={setLogoUrl}
+              onRemove={() => setLogoUrl("")}
+              endpoint="imageUploader"
+              aspectRatio="square"
+              className="max-w-[150px]"
             />
           </div>
         </div>

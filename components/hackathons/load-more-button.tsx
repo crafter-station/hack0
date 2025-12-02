@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Loader2 } from "lucide-react";
 import { getHackathons, type HackathonFilters, type Hackathon } from "@/lib/actions/hackathons";
+import { getCategoryById } from "@/lib/event-categories";
 import { EventRow } from "./event-row";
 
 interface LoadMoreButtonProps {
@@ -12,6 +13,7 @@ interface LoadMoreButtonProps {
 }
 
 export function LoadMoreButton({ filters, initialPage, hasMore: initialHasMore }: LoadMoreButtonProps) {
+  const categoryConfig = getCategoryById(filters.category || "all");
   const [page, setPage] = useState(initialPage);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [additionalEvents, setAdditionalEvents] = useState<Hackathon[]>([]);
@@ -33,7 +35,7 @@ export function LoadMoreButton({ filters, initialPage, hasMore: initialHasMore }
       {additionalEvents.length > 0 && (
         <div className="divide-y divide-border border-t border-border">
           {additionalEvents.map((event) => (
-            <EventRow key={event.id} event={event} />
+            <EventRow key={event.id} event={event} categoryConfig={categoryConfig} />
           ))}
         </div>
       )}
