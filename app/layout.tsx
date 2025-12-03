@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type React from "react";
 import "../styles/globals.css";
-
+import { PostHogProvider } from "../app/providers/posthog";
 import { ClerkProvider } from "@clerk/nextjs";
 import { shadcn } from "@clerk/themes";
 import { Analytics } from "@vercel/analytics/next";
@@ -188,7 +188,9 @@ export default function RootLayout({
 						defaultTheme="dark"
 						enableSystem={false}
 					>
-						<NuqsAdapter>{children}</NuqsAdapter>
+						<PostHogProvider>
+							<NuqsAdapter>{children}</NuqsAdapter>
+						</PostHogProvider>
 						<GlobalSearch />
 					</ThemeProvider>
 					<Analytics />
