@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { events, type Event, type NewEvent } from "@/lib/db/schema";
-import { eq, and, or, ilike, sql, desc, asc, inArray } from "drizzle-orm";
+import { events, sponsors, type Event, type NewEvent, type Sponsor, type NewSponsor } from "@/lib/db/schema";
+import { eq, and, or, ilike, sql, desc, asc, inArray, isNull } from "drizzle-orm";
 import { notifySubscribersOfNewEvent } from "@/lib/email/notify-subscribers";
 import { getCategoryById, type EventCategory } from "@/lib/event-categories";
 
@@ -54,6 +54,9 @@ export async function getHackathons(
 
   // Only show approved events
   conditions.push(eq(events.isApproved, true));
+
+  // Exclude child events from main list (they appear nested under parent)
+  conditions.push(isNull(events.parentEventId));
 
   // Category filter - filter by event types in category (skip if "all" or no eventTypes)
   const categoryConfig = getCategoryById(category);
@@ -464,4 +467,132 @@ export async function getEventsByApprovalStatus(filter: ApprovalFilter = "pendin
 // Keep for backwards compatibility
 export async function getPendingEvents(): Promise<Event[]> {
   return getEventsByApprovalStatus("pending");
+}
+
+// ============================================
+// CHILD EVENTS - For multi-day/multi-venue events
+// ============================================
+
+export async function getChildEvents(parentEventId: string): Promise<Event[]> {
+  const results = await db
+    .select()
+    .from(events)
+    .where(and(
+      eq(events.parentEventId, parentEventId),
+      eq(events.isApproved, true)
+    ))
+    .orderBy(asc(events.dayNumber), asc(events.startDate));
+
+  return results;
+}
+
+export async function getParentEvents(): Promise<Event[]> {
+  // Get all events that have child events
+  const parentIds = await db
+    .selectDistinct({ parentEventId: events.parentEventId })
+    .from(events)
+    .where(sql`${events.parentEventId} IS NOT NULL`);
+
+  if (parentIds.length === 0) return [];
+
+  const ids = parentIds.map(p => p.parentEventId).filter(Boolean) as string[];
+
+  const results = await db
+    .select()
+    .from(events)
+    .where(inArray(events.id, ids));
+
+  return results;
+}
+
+// ============================================
+// SPONSORS - Event sponsors/partners
+// ============================================
+
+export async function getEventSponsors(eventId: string): Promise<Sponsor[]> {
+  const results = await db
+    .select()
+    .from(sponsors)
+    .where(eq(sponsors.eventId, eventId))
+    .orderBy(
+      asc(sql`
+        CASE ${sponsors.tier}
+          WHEN 'platinum' THEN 1
+          WHEN 'gold' THEN 2
+          WHEN 'silver' THEN 3
+          WHEN 'bronze' THEN 4
+          WHEN 'partner' THEN 5
+          WHEN 'community' THEN 6
+        END
+      `),
+      asc(sponsors.orderIndex)
+    );
+
+  return results;
+}
+
+export interface CreateSponsorInput {
+  eventId: string;
+  name: string;
+  logoUrl?: string;
+  websiteUrl?: string;
+  tier?: "platinum" | "gold" | "silver" | "bronze" | "partner" | "community";
+  orderIndex?: number;
+}
+
+export async function createSponsor(input: CreateSponsorInput): Promise<{ success: boolean; sponsor?: Sponsor; error?: string }> {
+  try {
+    const sponsorData: NewSponsor = {
+      eventId: input.eventId,
+      name: input.name,
+      logoUrl: input.logoUrl,
+      websiteUrl: input.websiteUrl,
+      tier: input.tier || "partner",
+      orderIndex: input.orderIndex || 0,
+    };
+
+    const result = await db.insert(sponsors).values(sponsorData).returning();
+
+    if (result.length === 0) {
+      return { success: false, error: "Error al crear el sponsor" };
+    }
+
+    return { success: true, sponsor: result[0] };
+  } catch (error) {
+    console.error("Error creating sponsor:", error);
+    return { success: false, error: "Error al crear el sponsor" };
+  }
+}
+
+export async function updateSponsor(
+  sponsorId: string,
+  input: Partial<CreateSponsorInput>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await db
+      .update(sponsors)
+      .set({
+        name: input.name,
+        logoUrl: input.logoUrl,
+        websiteUrl: input.websiteUrl,
+        tier: input.tier,
+        orderIndex: input.orderIndex,
+      })
+      .where(eq(sponsors.id, sponsorId));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating sponsor:", error);
+    return { success: false, error: "Error al actualizar el sponsor" };
+  }
+}
+
+export async function deleteSponsor(sponsorId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    await db.delete(sponsors).where(eq(sponsors.id, sponsorId));
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting sponsor:", error);
+    return { success: false, error: "Error al eliminar el sponsor" };
+  }
 }

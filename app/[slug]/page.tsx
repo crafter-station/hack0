@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import Image from "next/image";
 import {
 	ArrowUpRight,
 	BadgeCheck,
@@ -7,6 +9,9 @@ import {
 	Globe,
 	GraduationCap,
 	Sparkles,
+	Calendar,
+	MapPin,
+	Users,
 } from "lucide-react";
 import { TrophyIcon } from "@/components/icons/trophy";
 import { PinIcon } from "@/components/icons/pin";
@@ -15,7 +20,8 @@ import { WinnerSection } from "@/components/hackathons/winner-section";
 import { OrganizerClaimSection } from "@/components/hackathons/organizer-claim-section";
 import { EditEventButton } from "@/components/hackathons/edit-event-button";
 import { notFound } from "next/navigation";
-import { getHackathonBySlug } from "@/lib/actions/hackathons";
+import { getHackathonBySlug, getChildEvents, getEventSponsors } from "@/lib/actions/hackathons";
+import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
 import {
 	formatEventDate,
 	formatRelativeDate,
@@ -91,6 +97,15 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
 	if (!hackathon) {
 		notFound();
 	}
+
+	// Fetch child events and sponsors in parallel
+	const [childEvents, eventSponsors] = await Promise.all([
+		getChildEvents(hackathon.id),
+		getEventSponsors(hackathon.id),
+	]);
+
+	const hasChildEvents = childEvents.length > 0;
+	const hasSponsors = eventSponsors.length > 0;
 
 	const status = getEventStatus(hackathon);
 	const isEnded = status.status === "ended";
@@ -336,6 +351,138 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
 								<p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
 									{hackathon.description}
 								</p>
+							</div>
+						)}
+
+						{/* Child events section - for multi-day/multi-venue events */}
+						{hasChildEvents && (
+							<div className="space-y-4 border-t pt-6">
+								<h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+									Programa ({childEvents.length} días)
+								</h2>
+								<div className="space-y-3">
+									{childEvents.map((child) => {
+										const childStart = child.startDate ? new Date(child.startDate) : null;
+										const childStatus = getEventStatus(child);
+										return (
+											<Link
+												key={child.id}
+												href={`/${child.slug}`}
+												className="group block rounded-lg border p-4 transition-colors hover:bg-muted/50"
+											>
+												<div className="flex items-start gap-4">
+													{/* Day number */}
+													{child.dayNumber && (
+														<div className="shrink-0 flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-semibold">
+															Día {child.dayNumber}
+														</div>
+													)}
+													<div className="flex-1 min-w-0">
+														<h3 className="font-medium group-hover:underline underline-offset-2">
+															{child.name}
+														</h3>
+														<div className="flex flex-wrap items-center gap-3 mt-1.5 text-sm text-muted-foreground">
+															{childStart && (
+																<span className="inline-flex items-center gap-1.5">
+																	<Calendar className="h-3.5 w-3.5" />
+																	{formatEventDate(childStart)}
+																</span>
+															)}
+															{child.city && (
+																<span className="inline-flex items-center gap-1.5">
+																	<MapPin className="h-3.5 w-3.5" />
+																	{child.city}
+																</span>
+															)}
+														</div>
+													</div>
+													{/* Status badge */}
+													<span
+														className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+															childStatus.status === "ended"
+																? "bg-muted text-muted-foreground"
+																: childStatus.status === "ongoing"
+																? "bg-emerald-500/10 text-emerald-500"
+																: childStatus.status === "open"
+																? "bg-blue-500/10 text-blue-500"
+																: "bg-amber-500/10 text-amber-500"
+														}`}
+													>
+														<span
+															className={`h-1.5 w-1.5 rounded-full ${
+																childStatus.status === "ended"
+																	? "bg-muted-foreground/50"
+																	: childStatus.status === "ongoing"
+																	? "bg-emerald-500 animate-pulse"
+																	: childStatus.status === "open"
+																	? "bg-blue-500"
+																	: "bg-amber-500"
+															}`}
+														/>
+														{childStatus.label}
+													</span>
+												</div>
+											</Link>
+										);
+									})}
+								</div>
+							</div>
+						)}
+
+						{/* Sponsors section */}
+						{hasSponsors && (
+							<div className="space-y-4 border-t pt-6">
+								<h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+									Sponsors y Partners
+								</h2>
+								<div className="space-y-6">
+									{/* Group sponsors by tier */}
+									{(["platinum", "gold", "silver", "bronze", "partner", "community"] as const).map((tier) => {
+										const tierSponsors = eventSponsors.filter((s) => s.tier === tier);
+										if (tierSponsors.length === 0) return null;
+										return (
+											<div key={tier} className="space-y-3">
+												<h3 className="text-xs font-medium text-muted-foreground">
+													{SPONSOR_TIER_LABELS[tier]}
+												</h3>
+												<div className="flex flex-wrap gap-4">
+													{tierSponsors.map((sponsor) => (
+														<a
+															key={sponsor.id}
+															href={sponsor.websiteUrl || "#"}
+															target="_blank"
+															rel="noopener noreferrer"
+															className={`group flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50 ${
+																tier === "platinum" || tier === "gold"
+																	? "border-amber-500/30 bg-amber-500/5"
+																	: ""
+															}`}
+														>
+															{sponsor.logoUrl ? (
+																<div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md bg-muted">
+																	<Image
+																		src={sponsor.logoUrl}
+																		alt={sponsor.name}
+																		fill
+																		className="object-contain"
+																		sizes="40px"
+																	/>
+																</div>
+															) : (
+																<div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted text-sm font-medium text-muted-foreground">
+																	{sponsor.name.charAt(0)}
+																</div>
+															)}
+															<span className="text-sm font-medium group-hover:underline underline-offset-2">
+																{sponsor.name}
+															</span>
+														</a>
+													))}
+												</div>
+											</div>
+										);
+									})}
+								</div>
 							</div>
 						)}
 

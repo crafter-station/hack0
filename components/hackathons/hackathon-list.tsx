@@ -1,5 +1,5 @@
 import { Search, Sparkles } from "lucide-react";
-import { EventRow } from "./event-row";
+import { EventRowWithChildren } from "./event-row-with-children";
 import { LoadMoreButton } from "./load-more-button";
 import type { Hackathon } from "@/lib/db/schema";
 import type { HackathonFilters } from "@/lib/actions/hackathons";
@@ -77,7 +77,7 @@ export function HackathonList({ hackathons, total, hasMore = false, filters = {}
         {/* Initial rows */}
         <div className="divide-y divide-border">
           {hackathons.map((hackathon) => (
-            <EventRow key={hackathon.id} event={hackathon} categoryConfig={categoryConfig} />
+            <EventRowWithChildren key={hackathon.id} event={hackathon} categoryConfig={categoryConfig} />
           ))}
         </div>
 

@@ -94,6 +94,10 @@ export const events = pgTable("events", {
   // Type
   eventType: eventTypeEnum("event_type").default("hackathon"),
 
+  // Parent/Child relationship (for multi-day/multi-venue events)
+  parentEventId: uuid("parent_event_id"), // References another event as parent
+  dayNumber: integer("day_number"), // Day 1, 2, 3... for child events
+
   // Dates
   startDate: timestamp("start_date"),
   endDate: timestamp("end_date"),
@@ -457,4 +461,48 @@ export const organizations = pgTable("organizations", {
 
 export type Organization = typeof organizations.$inferSelect;
 export type NewOrganization = typeof organizations.$inferInsert;
+
+// ============================================
+// SPONSORS - Event sponsors/partners
+// ============================================
+
+export const sponsorTierEnum = pgEnum("sponsor_tier", [
+  "platinum",
+  "gold",
+  "silver",
+  "bronze",
+  "partner",
+  "community",
+]);
+
+export const sponsors = pgTable("sponsors", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: uuid("event_id").references(() => events.id).notNull(),
+
+  // Sponsor info
+  name: varchar("name", { length: 255 }).notNull(),
+  logoUrl: varchar("logo_url", { length: 500 }),
+  websiteUrl: varchar("website_url", { length: 500 }),
+
+  // Tier/level
+  tier: sponsorTierEnum("tier").default("partner"),
+  orderIndex: integer("order_index").default(0), // For custom ordering within tier
+
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type Sponsor = typeof sponsors.$inferSelect;
+export type NewSponsor = typeof sponsors.$inferInsert;
+
+export const SPONSOR_TIERS = ["platinum", "gold", "silver", "bronze", "partner", "community"] as const;
+
+export const SPONSOR_TIER_LABELS: Record<string, string> = {
+  platinum: "Platino",
+  gold: "Oro",
+  silver: "Plata",
+  bronze: "Bronce",
+  partner: "Partner",
+  community: "Comunidad",
+};
 
