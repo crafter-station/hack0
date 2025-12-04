@@ -47,6 +47,8 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-email/components": "^1.0.1",
+    "@trigger.dev/react-hooks": "^4.1.2",
+    "@trigger.dev/sdk": "4.1.2",
     "@uploadthing/react": "^7.3.3",
     "@vercel/analytics": "^1.5.0",
     "autoprefixer": "^10.4.22",
@@ -81,6 +83,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17",
+    "@trigger.dev/build": "4.1.2",
     "@types/node": "^22.19.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",

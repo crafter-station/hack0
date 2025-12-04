@@ -506,3 +506,34 @@ export const SPONSOR_TIER_LABELS: Record<string, string> = {
   community: "Comunidad",
 };
 
+// ============================================
+// IMPORT JOBS - For Luma/external event imports
+// ============================================
+
+export const importStatusEnum = pgEnum("import_status", [
+  "pending",
+  "processing",
+  "completed",
+  "failed",
+]);
+
+export const importJobs = pgTable("import_jobs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id")
+    .references(() => organizations.id)
+    .notNull(),
+  sourceUrl: varchar("source_url", { length: 500 }).notNull(),
+  sourceType: varchar("source_type", { length: 50 }).default("luma"),
+  status: importStatusEnum("status").default("pending"),
+  triggerRunId: varchar("trigger_run_id", { length: 255 }),
+  eventId: uuid("event_id").references(() => events.id),
+  extractedData: text("extracted_data"),
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+export type ImportJob = typeof importJobs.$inferSelect;
+export type NewImportJob = typeof importJobs.$inferInsert;
+
+export const IMPORT_STATUSES = ["pending", "processing", "completed", "failed"] as const;

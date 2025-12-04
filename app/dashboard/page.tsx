@@ -8,7 +8,8 @@ import {
   getOrganizationEvents,
   getOrganizationStats,
 } from "@/lib/actions/organizations";
-import { Plus, Calendar, Settings, ExternalLink } from "lucide-react";
+import { getOrgImportJobs } from "@/lib/actions/import";
+import { Calendar, Settings, ExternalLink, Loader2, Plus } from "lucide-react";
 import { formatEventDateRange } from "@/lib/event-utils";
 
 export default async function DashboardPage() {
@@ -24,10 +25,15 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
-  const [events, stats] = await Promise.all([
+  const [events, stats, importJobs] = await Promise.all([
     getOrganizationEvents(),
     getOrganizationStats(),
+    getOrgImportJobs(5),
   ]);
+
+  const pendingJobs = importJobs.filter(
+    (job) => job.status === "pending" || job.status === "processing"
+  );
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -52,7 +58,7 @@ export default async function DashboardPage() {
             </Link>
             <Link
               href="/dashboard/events/new"
-              className="inline-flex h-9 items-center gap-2 rounded-lg bg-foreground px-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-foreground text-background px-4 text-sm font-medium transition-colors hover:bg-foreground/90"
             >
               <Plus className="h-4 w-4" />
               Nuevo evento
@@ -88,7 +94,7 @@ export default async function DashboardPage() {
             <h2 className="font-medium">Tus eventos</h2>
           </div>
 
-          {events.length === 0 ? (
+          {events.length === 0 && pendingJobs.length === 0 ? (
             <div className="px-5 py-12 text-center">
               <Calendar className="h-10 w-10 text-muted-foreground/50 mx-auto mb-4" />
               <p className="text-muted-foreground mb-4">
@@ -96,14 +102,35 @@ export default async function DashboardPage() {
               </p>
               <Link
                 href="/dashboard/events/new"
-                className="inline-flex h-9 items-center gap-2 rounded-lg bg-foreground px-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+                className="inline-flex h-9 items-center gap-2 rounded-lg bg-foreground text-background px-4 text-sm font-medium transition-colors hover:bg-foreground/90"
               >
                 <Plus className="h-4 w-4" />
-                Crear tu primer evento
+                Nuevo evento
               </Link>
             </div>
           ) : (
             <div className="divide-y divide-border">
+              {pendingJobs.map((job) => (
+                <div
+                  key={job.id}
+                  className="px-5 py-4 flex items-center justify-between gap-4 bg-muted/30"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      <span className="font-medium text-muted-foreground">
+                        Importando evento...
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {job.sourceUrl}
+                    </p>
+                  </div>
+                  <div className="text-xs text-muted-foreground px-2 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                    {job.status === "pending" ? "En cola" : "Procesando"}
+                  </div>
+                </div>
+              ))}
               {events.map((event) => (
                 <div
                   key={event.id}
