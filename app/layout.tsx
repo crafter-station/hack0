@@ -170,6 +170,10 @@ export default function RootLayout({
 		>
 			<html lang="es" suppressHydrationWarning>
 				<head>
+					<link rel="preconnect" href="https://utfs.io" />
+					<link rel="dns-prefetch" href="https://utfs.io" />
+					<link rel="preconnect" href="https://images.clerk.dev" />
+					<link rel="dns-prefetch" href="https://images.clerk.dev" />
 					<script
 						type="application/ld+json"
 						dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

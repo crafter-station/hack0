@@ -5,11 +5,11 @@ import type { MetadataRoute } from "next";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	const baseUrl = "https://hack0.dev";
 
-	// Get all events for dynamic pages
 	const allEvents = await db
 		.select({
 			slug: events.slug,
 			updatedAt: events.updatedAt,
+			eventImageUrl: events.eventImageUrl,
 		})
 		.from(events);
 
@@ -18,6 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 		lastModified: event.updatedAt || new Date(),
 		changeFrequency: "weekly" as const,
 		priority: 0.8,
+		images: event.eventImageUrl ? [event.eventImageUrl] : [],
 	}));
 
 	return [

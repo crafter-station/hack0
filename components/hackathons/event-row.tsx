@@ -82,18 +82,18 @@ export function EventRow({ event, categoryConfig }: EventRowProps) {
       )}
 
       {/* Mobile Layout - Stacked */}
-      <div className="lg:hidden relative z-10 space-y-3">
+      <div className="lg:hidden relative z-10 space-y-2.5">
         {/* Header with thumbnail and title */}
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-2.5">
           {/* Thumbnail */}
-          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted border border-border">
+          <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted border border-border">
             {event.eventImageUrl ? (
               <Image
                 src={event.eventImageUrl}
                 alt={event.name}
                 fill
                 className="object-cover"
-                sizes="64px"
+                sizes="48px"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-sm font-medium text-muted-foreground">
@@ -103,35 +103,17 @@ export function EventRow({ event, categoryConfig }: EventRowProps) {
           </div>
 
           <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-base leading-tight mb-2 line-clamp-2 group-hover:underline underline-offset-2">
+            <h3 className="font-medium text-sm leading-tight mb-1.5 line-clamp-2 group-hover:underline underline-offset-2">
               {event.name}
             </h3>
-            {event.organizerName && (
-              <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-                {event.organizerName}
-                {event.isOrganizerVerified && (
-                  <BadgeCheck className="h-3.5 w-3.5 fill-foreground text-background" />
-                )}
-              </span>
-            )}
+            <div className="text-xs text-muted-foreground truncate">
+              {event.organizerName || getEventTypeLabel(event.eventType)}
+            </div>
           </div>
-        </div>
 
-        {/* Badges row */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {isFeatured && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-500">
-              Sponsored
-            </span>
-          )}
-          {event.isJuniorFriendly && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-500">
-              <Sparkles className="h-3 w-3" />
-              Junior
-            </span>
-          )}
+          {/* Status badge on mobile - top right */}
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+            className={`shrink-0 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-medium ${
               isEnded
                 ? "bg-muted text-muted-foreground"
                 : isOngoing
@@ -142,7 +124,7 @@ export function EventRow({ event, categoryConfig }: EventRowProps) {
             }`}
           >
             <span
-              className={`h-1.5 w-1.5 rounded-full ${
+              className={`h-1 w-1 rounded-full ${
                 isEnded
                   ? "bg-muted-foreground/50"
                   : isOngoing
@@ -156,26 +138,43 @@ export function EventRow({ event, categoryConfig }: EventRowProps) {
           </span>
         </div>
 
-        {/* Info row */}
-        <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
+        {/* Info row - date, location, prize */}
+        <div className="flex items-center gap-2.5 text-xs text-muted-foreground flex-wrap">
           {startDate && (
-            <span className="inline-flex items-center gap-1.5">
-              <CalendarIcon className="h-4 w-4" />
+            <span className="inline-flex items-center gap-1">
+              <CalendarIcon className="h-3 w-3" />
               {formatEventDateSmart(startDate)}
             </span>
           )}
-          <span className="inline-flex items-center gap-1.5">
-            <PinIcon className="h-4 w-4" />
+          <span className="inline-flex items-center gap-1">
+            <PinIcon className="h-3 w-3" />
             {getFormatLabel(event.format, event.department)}
           </span>
           {showPrize && event.prizePool && event.prizePool > 0 && (
-            <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
-              <TrophyIcon className="h-4 w-4 text-amber-500" />
+            <span className="inline-flex items-center gap-1 font-medium text-foreground">
+              <TrophyIcon className="h-3 w-3 text-amber-500" />
               {event.prizeCurrency === "PEN" ? "S/" : "$"}
               {event.prizePool.toLocaleString()}
             </span>
           )}
         </div>
+
+        {/* Badges row - bottom */}
+        {(isFeatured || event.isJuniorFriendly) && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {isFeatured && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-500">
+                Sponsored
+              </span>
+            )}
+            {event.isJuniorFriendly && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-500">
+                <Sparkles className="h-2.5 w-2.5" />
+                Junior
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Desktop Layout - Original Grid */}

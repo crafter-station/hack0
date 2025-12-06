@@ -4,7 +4,13 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,
+    remotePatterns: [
+      { hostname: "utfs.io" },
+      { hostname: "*.ufs.sh" },
+      { hostname: "d112y698adiu2z.cloudfront.net" },
+      { hostname: "images.lumacdn.com" },
+      { hostname: "cdn.lu.ma" },
+    ],
   },
 }
 

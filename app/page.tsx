@@ -207,7 +207,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 			{/* Category tabs + Search + Filters */}
 			<section className="sticky top-14 z-40 border-b bg-background/80 backdrop-blur-sm">
 				<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
-					<div className="flex items-center justify-between gap-4 py-2">
+					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 py-2">
 						<Suspense fallback={<div className="h-10 animate-pulse w-64" />}>
 							<CategoryTabs />
 						</Suspense>

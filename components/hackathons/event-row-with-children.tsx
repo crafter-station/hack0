@@ -84,7 +84,7 @@ export function EventRowWithChildren({ event, categoryConfig }: EventRowWithChil
       <div className={`relative ${isFeatured ? "border-l-2 border-l-amber-500" : ""}`}>
         <Link
           href={`/${event.slug}`}
-          className={`group relative grid grid-cols-[1fr_auto] ${gridCols} gap-4 items-center px-5 py-4 transition-all overflow-hidden ${
+          className={`group relative block lg:grid ${gridCols} lg:gap-4 lg:items-center px-4 py-4 lg:px-5 transition-all overflow-hidden ${
             isEnded && !isFeatured ? "opacity-50" : ""
           }`}
         >
@@ -116,8 +116,125 @@ export function EventRowWithChildren({ event, categoryConfig }: EventRowWithChil
             />
           )}
 
-          {/* Name & Organizer */}
-          <div className="min-w-0 flex items-center gap-3 relative z-10">
+          {/* Mobile Layout - Stacked */}
+          <div className="lg:hidden relative z-10 space-y-2.5">
+            {/* Header with thumbnail and title */}
+            <div className="flex items-start gap-2.5">
+              {/* Expand button for parent events with children */}
+              {hasChildren && (
+                <button
+                  onClick={handleToggle}
+                  className="shrink-0 p-0.5 mt-0.5 rounded hover:bg-muted transition-colors"
+                >
+                  {isLoading ? (
+                    <div className="h-4 w-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
+                  ) : isExpanded ? (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </button>
+              )}
+
+              {/* Thumbnail */}
+              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted border border-border">
+                {event.eventImageUrl ? (
+                  <Image
+                    src={event.eventImageUrl}
+                    alt={event.name}
+                    fill
+                    className="object-cover"
+                    sizes="48px"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-sm font-medium text-muted-foreground">
+                    {event.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <h3 className="font-medium text-sm leading-tight mb-1.5 line-clamp-2 group-hover:underline underline-offset-2">
+                  {event.name}
+                </h3>
+                <div className="text-xs text-muted-foreground truncate">
+                  {event.organizerName || getEventTypeLabel(event.eventType)}
+                </div>
+              </div>
+
+              {/* Status badge on mobile - top right */}
+              <span
+                className={`shrink-0 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-medium ${
+                  isEnded
+                    ? "bg-muted text-muted-foreground"
+                    : isOngoing
+                    ? "bg-emerald-500/10 text-emerald-500"
+                    : isOpen
+                    ? "bg-blue-500/10 text-blue-500"
+                    : "bg-amber-500/10 text-amber-500"
+                }`}
+              >
+                <span
+                  className={`h-1 w-1 rounded-full ${
+                    isEnded
+                      ? "bg-muted-foreground/50"
+                      : isOngoing
+                      ? "bg-emerald-500 animate-pulse"
+                      : isOpen
+                      ? "bg-blue-500"
+                      : "bg-amber-500"
+                  }`}
+                />
+                {status.label}
+              </span>
+            </div>
+
+            {/* Info row - date, location, prize */}
+            <div className="flex items-center gap-2.5 text-xs text-muted-foreground flex-wrap">
+              {startDate && (
+                <span className="inline-flex items-center gap-1">
+                  <CalendarIcon className="h-3 w-3" />
+                  {formatEventDateSmart(startDate)}
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1">
+                <PinIcon className="h-3 w-3" />
+                {getFormatLabel(event.format, event.department)}
+              </span>
+              {showPrize && event.prizePool && event.prizePool > 0 && (
+                <span className="inline-flex items-center gap-1 font-medium text-foreground">
+                  <TrophyIcon className="h-3 w-3 text-amber-500" />
+                  {event.prizeCurrency === "PEN" ? "S/" : "$"}
+                  {event.prizePool.toLocaleString()}
+                </span>
+              )}
+            </div>
+
+            {/* Badges row - bottom */}
+            {(hasChildren || isFeatured || event.isJuniorFriendly) && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {hasChildren && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-medium text-blue-500">
+                    {childEvents.length || "3"} días
+                  </span>
+                )}
+                {isFeatured && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-500">
+                    Sponsored
+                  </span>
+                )}
+                {event.isJuniorFriendly && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-500">
+                    <Sparkles className="h-2.5 w-2.5" />
+                    Junior
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Layout - Original Grid */}
+          <div className="hidden lg:flex min-w-0 items-center gap-3 relative z-10">
             {/* Expand button for parent events with children */}
             {hasChildren && (
               <button
@@ -185,7 +302,7 @@ export function EventRowWithChildren({ event, categoryConfig }: EventRowWithChil
                     )}
                   </span>
                 )}
-                <span className="hidden lg:inline text-xs text-muted-foreground/50">
+                <span className="text-xs text-muted-foreground/50">
                   {getEventTypeLabel(event.eventType)}
                 </span>
               </div>
@@ -236,8 +353,8 @@ export function EventRowWithChildren({ event, categoryConfig }: EventRowWithChil
             </div>
           )}
 
-          {/* Status */}
-          <div className="flex items-center justify-end relative z-10">
+          {/* Status - Desktop only */}
+          <div className="hidden lg:flex items-center justify-end relative z-10">
             <span
               className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
                 isEnded
@@ -262,27 +379,6 @@ export function EventRowWithChildren({ event, categoryConfig }: EventRowWithChil
               />
               {status.label}
             </span>
-          </div>
-
-          {/* Mobile meta row */}
-          <div className="col-span-2 flex items-center gap-3 text-xs text-muted-foreground lg:hidden relative z-10">
-            {startDate && (
-              <span className="inline-flex items-center gap-1">
-                <CalendarIcon className="h-3 w-3" />
-                {formatEventDateSmart(startDate)}
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1">
-              <PinIcon className="h-3 w-3" />
-              {getFormatLabel(event.format, event.department)}
-            </span>
-            {showPrize && event.prizePool && event.prizePool > 0 && (
-              <span className="inline-flex items-center gap-1 font-medium text-foreground">
-                <TrophyIcon className="h-3 w-3 text-amber-500" />
-                {event.prizeCurrency === "PEN" ? "S/" : "$"}
-                {event.prizePool.toLocaleString()}
-              </span>
-            )}
           </div>
         </Link>
       </div>
