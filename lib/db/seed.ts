@@ -23,7 +23,7 @@ const seedEvents: NewEvent[] = [
     websiteUrl: "https://hackmty.com",
     registrationUrl: "https://hackmty2025.devpost.com",
     devpostUrl: "https://hackmty2025.devpost.com",
-    logoUrl: "https://d112y698adiu2z.cloudfront.net/photos/production/challenge_thumbnails/002/897/234/datas/original.png",
+    eventImageUrl: "https://d112y698adiu2z.cloudfront.net/photos/production/challenge_thumbnails/002/897/234/datas/original.png",
     organizerName: "HackMTY",
     organizerUrl: "https://hackmty.com",
     status: "upcoming",
