@@ -220,8 +220,7 @@ export interface UpdateEventInput {
   prizeDescription?: string;
   websiteUrl?: string;
   registrationUrl?: string;
-  logoUrl?: string;
-  bannerUrl?: string;
+  eventImageUrl?: string;
   isJuniorFriendly?: boolean;
 }
 

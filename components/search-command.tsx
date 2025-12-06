@@ -113,9 +113,9 @@ export function SearchCommand({ hackathons }: SearchCommandProps) {
                 onSelect={() => runCommand(() => router.push(`/${event.slug}`))}
               >
                 <div className="flex items-center gap-3 w-full">
-                  {event.logoUrl ? (
+                  {event.eventImageUrl ? (
                     <img
-                      src={event.logoUrl}
+                      src={event.eventImageUrl}
                       alt=""
                       className="h-6 w-6 rounded object-cover"
                     />
@@ -147,9 +147,9 @@ export function SearchCommand({ hackathons }: SearchCommandProps) {
                 onSelect={() => runCommand(() => router.push(`/${event.slug}`))}
               >
                 <div className="flex items-center gap-3 w-full">
-                  {event.logoUrl ? (
+                  {event.eventImageUrl ? (
                     <img
-                      src={event.logoUrl}
+                      src={event.eventImageUrl}
                       alt=""
                       className="h-6 w-6 rounded object-cover"
                     />

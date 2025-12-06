@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
   Dialog,
   DialogContent,
@@ -18,18 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-  InputGroupTextarea,
-} from "@/components/ui/input-group";
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-  FieldDescription,
-} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/ui/image-upload";
 import {
   Pencil,
@@ -40,6 +31,8 @@ import {
   Trophy,
   Sparkles,
   Loader2,
+  ImageIcon,
+  X,
 } from "lucide-react";
 import { updateEvent } from "@/lib/actions/claims";
 import type { Hackathon } from "@/lib/db/schema";
@@ -54,7 +47,6 @@ export function EditEventDialog({ event, children }: EditEventDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Form state
   const [name, setName] = useState(event.name);
   const [description, setDescription] = useState(event.description || "");
   const [startDate, setStartDate] = useState(
@@ -82,8 +74,7 @@ export function EditEventDialog({ event, children }: EditEventDialogProps) {
   const [registrationUrl, setRegistrationUrl] = useState(
     event.registrationUrl || ""
   );
-  const [logoUrl, setLogoUrl] = useState(event.logoUrl || "");
-  const [bannerUrl, setBannerUrl] = useState(event.bannerUrl || "");
+  const [eventImageUrl, setEventImageUrl] = useState(event.eventImageUrl || "");
   const [isJuniorFriendly, setIsJuniorFriendly] = useState(
     event.isJuniorFriendly || false
   );
@@ -108,8 +99,7 @@ export function EditEventDialog({ event, children }: EditEventDialogProps) {
       prizeDescription: prizeDescription || undefined,
       websiteUrl: websiteUrl || undefined,
       registrationUrl: registrationUrl || undefined,
-      logoUrl: logoUrl || undefined,
-      bannerUrl: bannerUrl || undefined,
+      eventImageUrl: eventImageUrl || undefined,
       isJuniorFriendly,
     });
 
@@ -132,8 +122,8 @@ export function EditEventDialog({ event, children }: EditEventDialogProps) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+        <DialogHeader className="px-6 pt-6">
           <DialogTitle className="flex items-center gap-2">
             <Pencil className="h-5 w-5" />
             Editar evento
@@ -143,116 +133,132 @@ export function EditEventDialog({ event, children }: EditEventDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Banner */}
-          <Field>
-            <FieldLabel>Banner</FieldLabel>
-            <ImageUpload
-              value={bannerUrl}
-              onChange={setBannerUrl}
-              onRemove={() => setBannerUrl("")}
-              endpoint="bannerUploader"
-              aspectRatio="banner"
-            />
-          </Field>
-
-          {/* Title */}
-          <Field>
-            <FieldLabel htmlFor="name">Nombre del evento</FieldLabel>
-            <InputGroup>
-              <InputGroupInput
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </InputGroup>
-          </Field>
-
-          {/* Logo + Description */}
-          <div className="grid grid-cols-[120px_1fr] gap-4">
-            <Field>
-              <FieldLabel>Logo</FieldLabel>
-              <ImageUpload
-                value={logoUrl}
-                onChange={setLogoUrl}
-                onRemove={() => setLogoUrl("")}
-                endpoint="imageUploader"
-                aspectRatio="square"
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="description">Descripción</FieldLabel>
-              <InputGroup>
-                <InputGroupTextarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="min-h-[100px]"
-                />
-              </InputGroup>
-            </Field>
-          </div>
-
-          {/* Dates */}
-          <FieldGroup className="gap-4">
-            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Fechas
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field>
-                <FieldLabel htmlFor="startDate">Fecha de inicio</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput
-                    id="startDate"
-                    type="datetime-local"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                  />
-                </InputGroup>
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="endDate">Fecha de fin</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput
-                    id="endDate"
-                    type="datetime-local"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                  />
-                </InputGroup>
-              </Field>
+        <form onSubmit={handleSubmit} className="space-y-4 px-6 pb-6">
+          {/* Event Image Card */}
+          <div className="rounded-xl border bg-card p-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <ImageIcon className="h-4 w-4" />
+              Imagen del evento
             </div>
 
-            <Field>
-              <FieldLabel htmlFor="registrationDeadline">
-                Cierre de inscripciones
-              </FieldLabel>
-              <InputGroup>
-                <InputGroupInput
-                  id="registrationDeadline"
-                  type="datetime-local"
-                  value={registrationDeadline}
-                  onChange={(e) => setRegistrationDeadline(e.target.value)}
-                />
-              </InputGroup>
-            </Field>
-          </FieldGroup>
+            <div className="flex flex-col sm:flex-row gap-4">
+              {eventImageUrl ? (
+                <div className="relative w-28 sm:w-32 aspect-square rounded-xl overflow-hidden bg-muted border shrink-0">
+                  <Image
+                    src={eventImageUrl}
+                    alt="Event image"
+                    fill
+                    className="object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEventImageUrl("")}
+                    className="absolute top-1 right-1 h-6 w-6 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-28 sm:w-32 aspect-square shrink-0">
+                  <ImageUpload
+                    value={eventImageUrl}
+                    onChange={setEventImageUrl}
+                    onRemove={() => setEventImageUrl("")}
+                    endpoint="imageUploader"
+                    aspectRatio="square"
+                  />
+                </div>
+              )}
 
-          {/* Location */}
-          <FieldGroup className="gap-4">
-            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <div className="flex-1 space-y-2">
+                <label htmlFor="name" className="text-sm font-medium">
+                  Nombre del evento
+                </label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Description Card */}
+          <div className="rounded-xl border bg-card p-4 space-y-3">
+            <label htmlFor="description" className="text-sm font-medium">
+              Descripción (Markdown)
+            </label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="## Sobre el evento&#10;&#10;Descripción...&#10;&#10;## Premios&#10;&#10;- 1er lugar: $500"
+              className="min-h-[120px] font-mono text-sm"
+            />
+            <p className="text-xs text-muted-foreground">
+              Usa ## para títulos, - para listas, **texto** para negrita
+            </p>
+          </div>
+
+          {/* Dates Card */}
+          <div className="rounded-xl border bg-card p-4 space-y-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              Fechas
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label htmlFor="startDate" className="text-sm font-medium">
+                  Inicio
+                </label>
+                <Input
+                  id="startDate"
+                  type="datetime-local"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="endDate" className="text-sm font-medium">
+                  Fin
+                </label>
+                <Input
+                  id="endDate"
+                  type="datetime-local"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="registrationDeadline" className="text-sm font-medium">
+                Cierre de inscripciones
+              </label>
+              <Input
+                id="registrationDeadline"
+                type="datetime-local"
+                value={registrationDeadline}
+                onChange={(e) => setRegistrationDeadline(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Location Card */}
+          <div className="rounded-xl border bg-card p-4 space-y-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <MapPin className="h-4 w-4" />
               Ubicación
-            </h3>
+            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field>
-                <FieldLabel htmlFor="format">Formato</FieldLabel>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label htmlFor="format" className="text-sm font-medium">
+                  Formato
+                </label>
                 <Select value={format} onValueChange={(v) => setFormat(v as typeof format)}>
                   <SelectTrigger>
                     <SelectValue />
@@ -263,108 +269,113 @@ export function EditEventDialog({ event, children }: EditEventDialogProps) {
                     <SelectItem value="hybrid">Híbrido</SelectItem>
                   </SelectContent>
                 </Select>
-              </Field>
+              </div>
 
-              <Field>
-                <FieldLabel htmlFor="city">Ciudad</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput
-                    id="city"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="Lima, Arequipa..."
-                  />
-                </InputGroup>
-              </Field>
+              <div className="space-y-2">
+                <label htmlFor="city" className="text-sm font-medium">
+                  Ciudad
+                </label>
+                <Input
+                  id="city"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="Lima, Arequipa..."
+                />
+              </div>
             </div>
-          </FieldGroup>
+          </div>
 
-          {/* Prizes */}
-          <FieldGroup className="gap-4">
-            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          {/* Prizes Card */}
+          <div className="rounded-xl border bg-card p-4 space-y-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <Trophy className="h-4 w-4" />
               Premios
-            </h3>
+            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field>
-                <FieldLabel htmlFor="prizePool">Premio total (USD)</FieldLabel>
-                <InputGroup>
-                  <InputGroupAddon align="inline-start">$</InputGroupAddon>
-                  <InputGroupInput
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label htmlFor="prizePool" className="text-sm font-medium">
+                  Premio total (USD)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <Input
                     id="prizePool"
                     type="number"
                     value={prizePool}
                     onChange={(e) => setPrizePool(e.target.value)}
                     placeholder="10000"
+                    className="pl-7"
                   />
-                </InputGroup>
-              </Field>
+                </div>
+              </div>
 
-              <Field>
-                <FieldLabel htmlFor="prizeDescription">Descripción</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput
-                    id="prizeDescription"
-                    value={prizeDescription}
-                    onChange={(e) => setPrizeDescription(e.target.value)}
-                    placeholder="1er lugar: $5000..."
-                  />
-                </InputGroup>
-              </Field>
+              <div className="space-y-2">
+                <label htmlFor="prizeDescription" className="text-sm font-medium">
+                  Detalle de premios
+                </label>
+                <Input
+                  id="prizeDescription"
+                  value={prizeDescription}
+                  onChange={(e) => setPrizeDescription(e.target.value)}
+                  placeholder="1er: $5000, 2do: $3000..."
+                />
+              </div>
             </div>
-          </FieldGroup>
+          </div>
 
-          {/* URLs */}
-          <FieldGroup className="gap-4">
-            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          {/* URLs Card */}
+          <div className="rounded-xl border bg-card p-4 space-y-4">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <LinkIcon className="h-4 w-4" />
               Enlaces
-            </h3>
+            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field>
-                <FieldLabel htmlFor="websiteUrl">Sitio web</FieldLabel>
-                <InputGroup>
-                  <InputGroupAddon align="inline-start">
-                    <Globe className="h-4 w-4" />
-                  </InputGroupAddon>
-                  <InputGroupInput
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label htmlFor="websiteUrl" className="text-sm font-medium">
+                  Sitio web
+                </label>
+                <div className="relative">
+                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
                     id="websiteUrl"
                     type="url"
                     value={websiteUrl}
                     onChange={(e) => setWebsiteUrl(e.target.value)}
                     placeholder="https://..."
+                    className="pl-10"
                   />
-                </InputGroup>
-              </Field>
+                </div>
+              </div>
 
-              <Field>
-                <FieldLabel htmlFor="registrationUrl">Inscripción</FieldLabel>
-                <InputGroup>
-                  <InputGroupAddon align="inline-start">
-                    <LinkIcon className="h-4 w-4" />
-                  </InputGroupAddon>
-                  <InputGroupInput
+              <div className="space-y-2">
+                <label htmlFor="registrationUrl" className="text-sm font-medium">
+                  Inscripción
+                </label>
+                <div className="relative">
+                  <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
                     id="registrationUrl"
                     type="url"
                     value={registrationUrl}
                     onChange={(e) => setRegistrationUrl(e.target.value)}
                     placeholder="https://..."
+                    className="pl-10"
                   />
-                </InputGroup>
-              </Field>
+                </div>
+              </div>
             </div>
-          </FieldGroup>
+          </div>
 
-          {/* Flags */}
-          <div className="flex items-center justify-between rounded-lg border p-4">
+          {/* Junior Friendly Toggle */}
+          <div className="flex items-center justify-between rounded-xl border bg-card p-4">
             <div className="flex items-center gap-3">
               <Sparkles className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">Junior Friendly</p>
                 <p className="text-xs text-muted-foreground">
-                  Apto para principiantes sin experiencia
+                  Apto para principiantes
                 </p>
               </div>
             </div>
@@ -373,12 +384,12 @@ export function EditEventDialog({ event, children }: EditEventDialogProps) {
               role="switch"
               aria-checked={isJuniorFriendly}
               onClick={() => setIsJuniorFriendly(!isJuniorFriendly)}
-              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
                 isJuniorFriendly ? "bg-foreground" : "bg-muted"
               }`}
             >
               <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow ring-0 transition duration-200 ease-in-out ${
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow transition ${
                   isJuniorFriendly ? "translate-x-5" : "translate-x-0"
                 }`}
               />
@@ -386,12 +397,12 @@ export function EditEventDialog({ event, children }: EditEventDialogProps) {
           </div>
 
           {error && (
-            <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3">
+            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4">
               <p className="text-sm text-red-500">{error}</p>
             </div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button
               type="button"
               variant="outline"
