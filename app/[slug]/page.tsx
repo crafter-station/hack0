@@ -41,6 +41,16 @@ interface HackathonPageProps {
 	params: Promise<{ slug: string }>;
 }
 
+function stripMarkdown(text: string): string {
+	return text
+		.replace(/#{1,6}\s?/g, "")
+		.replace(/\*\*([^*]+)\*\*/g, "$1")
+		.replace(/\*([^*]+)\*/g, "$1")
+		.replace(/-\s/g, "")
+		.replace(/\n+/g, " ")
+		.trim();
+}
+
 export async function generateMetadata({
 	params,
 }: HackathonPageProps): Promise<Metadata> {
@@ -54,9 +64,9 @@ export async function generateMetadata({
 	}
 
 	const title = `${hackathon.name} - ${getEventTypeLabel(hackathon.eventType)} en Perú`;
-	const description =
-		hackathon.description?.slice(0, 160) ||
-		`${getEventTypeLabel(hackathon.eventType)} ${hackathon.format === "virtual" ? "virtual" : `en ${hackathon.city || "Perú"}`}. ${hackathon.prizePool ? `Premio: ${hackathon.prizeCurrency === "PEN" ? "S/" : "$"}${hackathon.prizePool.toLocaleString()}` : ""}`;
+	const description = hackathon.description
+		? stripMarkdown(hackathon.description).slice(0, 160)
+		: `${getEventTypeLabel(hackathon.eventType)} ${hackathon.format === "virtual" ? "virtual" : `en ${hackathon.city || "Perú"}`}. ${hackathon.prizePool ? `Premio: ${hackathon.prizeCurrency === "PEN" ? "S/" : "$"}${hackathon.prizePool.toLocaleString()}` : ""}`;
 
 	return {
 		title,
@@ -120,16 +130,35 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
 
 	const stripePattern = `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23888' fill-opacity='0.15'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E")`;
 
+	const breadcrumbJsonLd = {
+		"@context": "https://schema.org",
+		"@type": "BreadcrumbList",
+		itemListElement: [
+			{
+				"@type": "ListItem",
+				position: 1,
+				name: "Inicio",
+				item: "https://hack0.dev",
+			},
+			{
+				"@type": "ListItem",
+				position: 2,
+				name: hackathon.name,
+				item: `https://hack0.dev/${hackathon.slug}`,
+			},
+		],
+	};
+
 	const eventJsonLd = {
 		"@context": "https://schema.org",
 		"@type": "Event",
 		name: hackathon.name,
-		description: hackathon.description || `${getEventTypeLabel(hackathon.eventType)} en Perú`,
+		description: hackathon.description
+			? stripMarkdown(hackathon.description).slice(0, 300)
+			: `${getEventTypeLabel(hackathon.eventType)} en Perú`,
 		startDate: startDate?.toISOString(),
 		endDate: endDate?.toISOString(),
-		eventStatus: isEnded
-			? "https://schema.org/EventCancelled"
-			: "https://schema.org/EventScheduled",
+		eventStatus: "https://schema.org/EventScheduled",
 		eventAttendanceMode:
 			hackathon.format === "virtual"
 				? "https://schema.org/OnlineEventAttendanceMode"
@@ -177,6 +206,10 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+			/>
 			<script
 				type="application/ld+json"
 				dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd) }}

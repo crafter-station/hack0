@@ -52,16 +52,16 @@ export function FilterBar() {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
       {/* Search input - compact */}
-      <div className="relative">
+      <div className="relative flex-1 sm:flex-none">
         <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
         <input
           type="text"
-          placeholder="Buscar..."
+          placeholder=""
           value={search}
           onChange={(e) => setFilters({ search: e.target.value, page: 1 })}
-          className="h-8 w-32 sm:w-40 rounded-md border border-border bg-background pl-8 pr-3 text-sm placeholder:text-muted-foreground focus:border-foreground/20 focus:outline-none focus:ring-1 focus:ring-foreground/10 transition-all"
+          className="h-8 w-full sm:w-40 rounded-md border border-border bg-background pl-8 pr-8 text-sm placeholder:text-muted-foreground focus:border-foreground/20 focus:outline-none focus:ring-1 focus:ring-foreground/10 transition-all"
         />
         {search && (
           <button
