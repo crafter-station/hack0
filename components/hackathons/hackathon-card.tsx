@@ -26,9 +26,9 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
     >
       <div className="flex items-start gap-4">
         {/* Logo or flag */}
-        {hackathon.logoUrl ? (
+        {hackathon.eventImageUrl ? (
           <img
-            src={hackathon.logoUrl}
+            src={hackathon.eventImageUrl}
             alt=""
             className="h-10 w-10 rounded-md object-cover"
           />
@@ -81,7 +81,7 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
             {/* Location */}
             <span className="inline-flex items-center gap-1">
               <MapPin className="h-3 w-3" />
-              {getFormatLabel(hackathon.format)}
+              {getFormatLabel(hackathon.format, hackathon.department)}
               {hackathon.country && (
                 <span className="ml-0.5">{getCountryFlag(hackathon.country)}</span>
               )}

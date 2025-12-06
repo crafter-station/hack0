@@ -78,7 +78,7 @@ export async function notifySubscribersOfNewEvent({ eventId }: NotifySubscribers
             eventName: eventData.name,
             eventDescription: eventData.description || undefined,
             eventDate,
-            eventFormat: getFormatLabel(eventData.format || "virtual"),
+            eventFormat: getFormatLabel(eventData.format || "virtual", eventData.department),
             eventUrl,
             organizerName: eventData.organizerName || undefined,
             prizePool: eventData.prizePool || undefined,
