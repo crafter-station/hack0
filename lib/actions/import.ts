@@ -98,7 +98,7 @@ interface ExtractedEventData {
   city?: string;
   venue?: string;
   format?: "virtual" | "in-person" | "hybrid";
-  bannerUrl?: string;
+  eventImageUrl?: string;
   organizerName?: string;
   websiteUrl: string;
   registrationUrl?: string;
@@ -206,7 +206,7 @@ export async function createEventFromExtracted(
       city: data.city || null,
       websiteUrl: data.websiteUrl,
       registrationUrl: data.registrationUrl || data.websiteUrl,
-      bannerUrl: data.bannerUrl || null,
+      eventImageUrl: data.eventImageUrl || null,
       organizerName: data.organizerName || null,
       organizationId: org.id,
       isApproved: org.isVerified ?? false,

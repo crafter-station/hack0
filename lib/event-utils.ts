@@ -75,7 +75,10 @@ const SKILL_LEVEL_LABELS: Record<string, string> = {
   all: "Todos los niveles",
 };
 
-export function getFormatLabel(format: string | null): string {
+export function getFormatLabel(format: string | null, department?: string | null): string {
+  if (format === "in-person" && department) {
+    return department;
+  }
   return FORMAT_LABELS[format || "virtual"] || "Virtual";
 }
 
@@ -249,6 +252,35 @@ export const STATUS_OPTIONS = [
 export const COUNTRY_OPTIONS = [
   { value: "PE", label: "🇵🇪 Perú" },
   { value: "GLOBAL", label: "🌎 Global" },
+];
+
+// Peru departments/regions for filtering
+export const DEPARTMENT_OPTIONS = [
+  { value: "Lima", label: "Lima" },
+  { value: "Arequipa", label: "Arequipa" },
+  { value: "Cusco", label: "Cusco" },
+  { value: "La Libertad", label: "La Libertad" },
+  { value: "Lambayeque", label: "Lambayeque" },
+  { value: "Piura", label: "Piura" },
+  { value: "Junín", label: "Junín" },
+  { value: "Puno", label: "Puno" },
+  { value: "Huánuco", label: "Huánuco" },
+  { value: "Ica", label: "Ica" },
+  { value: "Ayacucho", label: "Ayacucho" },
+  { value: "Ancash", label: "Ancash" },
+  { value: "Loreto", label: "Loreto" },
+  { value: "Cajamarca", label: "Cajamarca" },
+  { value: "San Martín", label: "San Martín" },
+  { value: "Tacna", label: "Tacna" },
+  { value: "Ucayali", label: "Ucayali" },
+  { value: "Amazonas", label: "Amazonas" },
+  { value: "Apurímac", label: "Apurímac" },
+  { value: "Huancavelica", label: "Huancavelica" },
+  { value: "Madre de Dios", label: "Madre de Dios" },
+  { value: "Moquegua", label: "Moquegua" },
+  { value: "Pasco", label: "Pasco" },
+  { value: "Tumbes", label: "Tumbes" },
+  { value: "Callao", label: "Callao" },
 ];
 
 // =============================================================================

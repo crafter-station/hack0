@@ -106,7 +106,9 @@ export const events = pgTable("events", {
   // Location
   format: formatEnum("format").default("virtual"),
   country: varchar("country", { length: 10 }), // ISO code or region like "LATAM"
+  department: varchar("department", { length: 100 }), // Region/state (e.g., Lima, Puno, Arequipa)
   city: varchar("city", { length: 100 }),
+  venue: varchar("venue", { length: 255 }), // Exact venue name
   timezone: varchar("timezone", { length: 50 }),
 
   // Classification
@@ -124,8 +126,7 @@ export const events = pgTable("events", {
   devpostUrl: varchar("devpost_url", { length: 500 }),
 
   // Media
-  logoUrl: varchar("logo_url", { length: 500 }),
-  bannerUrl: varchar("banner_url", { length: 500 }),
+  eventImageUrl: varchar("event_image_url", { length: 500 }),
 
   // Organizer
   organizerName: varchar("organizer_name", { length: 255 }),

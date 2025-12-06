@@ -19,6 +19,7 @@ export interface HackathonFilters {
   status?: string[];
   domain?: string[];
   country?: string[];
+  department?: string[];
   juniorFriendly?: boolean;
   page?: number;
   limit?: number;
@@ -45,6 +46,7 @@ export async function getHackathons(
     status,
     domain,
     country,
+    department,
     juniorFriendly,
     page = 1,
     limit = 12,
@@ -165,6 +167,13 @@ export async function getHackathons(
     );
   }
 
+  // Department filter
+  if (department && department.length > 0) {
+    conditions.push(
+      or(...department.map((d) => eq(events.department, d)))!
+    );
+  }
+
   // Build where clause
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
@@ -176,17 +185,17 @@ export async function getHackathons(
   const total = Number(countResult[0]?.count || 0);
 
   // Compute sort priority based on event status
-  // 1 = ongoing (happening now)
-  // 2 = open (registration open)
-  // 3 = upcoming (hasn't started)
-  // 4 = ended
+  // 1 = upcoming (próximamente - hasn't started, no deadline or deadline passed)
+  // 2 = open (abierto - registration open)
+  // 3 = ongoing (en curso - happening now)
+  // 4 = ended (terminado)
   const statusPriority = sql<number>`
     CASE
       WHEN ${events.endDate} IS NOT NULL AND ${events.endDate} < NOW() THEN 4
       WHEN ${events.startDate} IS NOT NULL AND ${events.startDate} <= NOW()
-           AND (${events.endDate} IS NULL OR ${events.endDate} > NOW()) THEN 1
+           AND (${events.endDate} IS NULL OR ${events.endDate} > NOW()) THEN 3
       WHEN ${events.registrationDeadline} IS NOT NULL AND ${events.registrationDeadline} > NOW() THEN 2
-      ELSE 3
+      ELSE 1
     END
   `;
 
@@ -207,7 +216,7 @@ export async function getHackathons(
     .where(whereClause)
     .orderBy(
       desc(events.isFeatured),      // Featured events ALWAYS first
-      asc(statusPriority),          // Then: ongoing > open > upcoming > ended
+      asc(statusPriority),          // Then: upcoming > open > ongoing > ended
       asc(dateSortOrder)            // Ended: most recent first; Active: soonest first
     )
     .limit(limit)
@@ -233,7 +242,25 @@ export async function getHackathonBySlug(
     .where(and(eq(events.slug, slug), eq(events.isApproved, true)))
     .limit(1);
 
-  return results[0] || null;
+  const event = results[0] || null;
+
+  // If this is a child event, inherit eventImageUrl from parent
+  if (event && event.parentEventId) {
+    const [parent] = await db
+      .select({ eventImageUrl: events.eventImageUrl })
+      .from(events)
+      .where(eq(events.id, event.parentEventId))
+      .limit(1);
+
+    if (parent) {
+      return {
+        ...event,
+        eventImageUrl: event.eventImageUrl || parent.eventImageUrl,
+      };
+    }
+  }
+
+  return event;
 }
 
 export async function getFeaturedHackathons(
@@ -342,6 +369,7 @@ export interface CreateEventInput {
   prizePool?: number;
   registrationUrl?: string;
   organizationId?: string;
+  eventImageUrl?: string;
 }
 
 export interface CreateEventResult {
@@ -389,8 +417,9 @@ export async function createEvent(input: CreateEventInput): Promise<CreateEventR
         : undefined,
       organizerName: input.organizerName,
       prizePool: input.prizePool,
+      eventImageUrl: input.eventImageUrl,
       status: "upcoming",
-      isApproved: false, // Requires manual approval
+      isApproved: false,
       approvalStatus: "pending",
       isFeatured: false,
       organizationId: input.organizationId,
@@ -474,6 +503,12 @@ export async function getPendingEvents(): Promise<Event[]> {
 // ============================================
 
 export async function getChildEvents(parentEventId: string): Promise<Event[]> {
+  const [parent] = await db
+    .select({ eventImageUrl: events.eventImageUrl })
+    .from(events)
+    .where(eq(events.id, parentEventId))
+    .limit(1);
+
   const results = await db
     .select()
     .from(events)
@@ -482,6 +517,13 @@ export async function getChildEvents(parentEventId: string): Promise<Event[]> {
       eq(events.isApproved, true)
     ))
     .orderBy(asc(events.dayNumber), asc(events.startDate));
+
+  if (parent) {
+    return results.map(child => ({
+      ...child,
+      eventImageUrl: child.eventImageUrl || parent.eventImageUrl,
+    }));
+  }
 
   return results;
 }

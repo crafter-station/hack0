@@ -36,7 +36,7 @@ interface ExtractedData {
   city?: string;
   venue?: string;
   format?: string;
-  bannerUrl?: string;
+  eventImageUrl?: string;
   organizerName?: string;
   websiteUrl?: string;
   registrationUrl?: string;
@@ -190,16 +190,16 @@ function ImportProgress({
 
       {hasName && (
         <div className="rounded-lg border border-border overflow-hidden">
-          {metadata.bannerUrl && (
+          {metadata.eventImageUrl && (
             <div className="relative aspect-[3/1] w-full overflow-hidden bg-muted">
               <img
-                src={metadata.bannerUrl}
+                src={metadata.eventImageUrl}
                 alt={metadata.name}
                 className="object-cover w-full h-full"
               />
             </div>
           )}
-          {!metadata.bannerUrl && isUploadingImage && (
+          {!metadata.eventImageUrl && isUploadingImage && (
             <div className="aspect-[3/1] w-full bg-muted flex items-center justify-center">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />

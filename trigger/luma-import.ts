@@ -69,8 +69,15 @@ export const lumaImportTask = task({
           "markdown",
           {
             type: "json",
-            prompt:
-              "Extract event information from this Luma event page. Return a JSON object with: name (string, event title), description (string), startDate (ISO 8601 string), endDate (ISO 8601 string), location (object with venue, city, country, isVirtual boolean), imageUrl (string, banner/cover image URL), organizerName (string), registrationUrl (string).",
+            prompt: `Extract event information from this Luma event page. Return a JSON object with:
+- name (string, event title)
+- description (string, formatted in MARKDOWN with ## headers, bullet points with -, and **bold** for key info. Structure it with sections like: ## Sobre el evento, ## ¿Qué incluye?, ## Requisitos, ## Premios, etc. as appropriate)
+- startDate (ISO 8601 string)
+- endDate (ISO 8601 string)
+- location (object with venue, city, country, isVirtual boolean)
+- imageUrl (string, banner/cover image URL)
+- organizerName (string)
+- registrationUrl (string)`,
           },
         ],
       });
@@ -104,18 +111,18 @@ export const lumaImportTask = task({
 
       metadata.set("step", "uploading_image");
 
-      let bannerUrl: string | null = null;
+      let eventImageUrl: string | null = null;
       if (imageUrl) {
         try {
           const utapi = new UTApi();
           const uploadResult = await utapi.uploadFilesFromUrl(imageUrl);
 
           if (uploadResult.data?.url) {
-            bannerUrl = uploadResult.data.url;
-            metadata.set("bannerUrl", bannerUrl);
+            eventImageUrl = uploadResult.data.url;
+            metadata.set("eventImageUrl", eventImageUrl);
           }
         } catch (uploadError) {
-          console.error("Failed to upload banner:", uploadError);
+          console.error("Failed to upload image:", uploadError);
         }
       }
 
@@ -133,7 +140,7 @@ export const lumaImportTask = task({
           status: "completed",
           extractedData: JSON.stringify({
             ...extracted,
-            bannerUrl,
+            eventImageUrl,
             eventType,
             country,
           }),
@@ -180,7 +187,7 @@ export const lumaImportTask = task({
             city: extracted.location?.city || null,
             websiteUrl: lumaUrl,
             registrationUrl: extracted.registrationUrl || lumaUrl,
-            bannerUrl,
+            eventImageUrl,
             organizerName: extracted.organizerName || null,
             organizationId,
             isApproved: isVerified,
@@ -218,7 +225,7 @@ export const lumaImportTask = task({
           city: extracted.location?.city,
           venue: extracted.location?.venue,
           format: extracted.location?.isVirtual ? "virtual" : "in-person",
-          bannerUrl,
+          eventImageUrl,
           organizerName: extracted.organizerName,
           websiteUrl: lumaUrl,
           registrationUrl: extracted.registrationUrl || lumaUrl,

@@ -56,7 +56,7 @@ function mapToEvent(scraped: ScrapedEvent): NewEvent {
     websiteUrl: scraped.url,
     registrationUrl: scraped.url,
     devpostUrl: scraped.url.includes("devpost.com") ? scraped.url : null,
-    logoUrl: scraped.logoUrl || null,
+    eventImageUrl: scraped.logoUrl || null,
     organizerName: scraped.organizerName || null,
     organizerType,
     isJuniorFriendly,

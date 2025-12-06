@@ -35,8 +35,7 @@ export function OrgEventForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isJuniorFriendly, setIsJuniorFriendly] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [logoUrl, setLogoUrl] = useState("");
-  const [bannerUrl, setBannerUrl] = useState("");
+  const [eventImageUrl, setEventImageUrl] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -64,8 +63,7 @@ export function OrgEventForm({
         ? Number(formData.get("prizePool"))
         : undefined,
       organizationId,
-      logoUrl: logoUrl || undefined,
-      bannerUrl: bannerUrl || undefined,
+      eventImageUrl: eventImageUrl || undefined,
     });
 
     setIsSubmitting(false);
@@ -125,40 +123,24 @@ export function OrgEventForm({
         </div>
       </section>
 
-      {/* Section: Imágenes */}
+      {/* Section: Imagen */}
       <section className="space-y-4">
         <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-          Imágenes
+          Imagen
         </h2>
-        <div className="grid sm:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Logo del evento</label>
-            <ImageUpload
-              value={logoUrl}
-              onChange={setLogoUrl}
-              onRemove={() => setLogoUrl("")}
-              endpoint="imageUploader"
-              aspectRatio="square"
-              className="max-w-[150px]"
-            />
-            <p className="text-xs text-muted-foreground">
-              Cuadrado, max 4MB
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Banner del evento</label>
-            <ImageUpload
-              value={bannerUrl}
-              onChange={setBannerUrl}
-              onRemove={() => setBannerUrl("")}
-              endpoint="bannerUploader"
-              aspectRatio="video"
-            />
-            <p className="text-xs text-muted-foreground">
-              16:9, max 8MB
-            </p>
-          </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Imagen del evento</label>
+          <ImageUpload
+            value={eventImageUrl}
+            onChange={setEventImageUrl}
+            onRemove={() => setEventImageUrl("")}
+            endpoint="imageUploader"
+            aspectRatio="square"
+            className="max-w-[200px]"
+          />
+          <p className="text-xs text-muted-foreground">
+            Cuadrada, max 4MB
+          </p>
         </div>
       </section>
 

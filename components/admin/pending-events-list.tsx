@@ -112,7 +112,7 @@ export function PendingEventsList({ events: initialEvents }: PendingEventsListPr
                     )}
                     <span className="flex items-center gap-1">
                       <MapPin className="h-3.5 w-3.5" />
-                      {getFormatLabel(event.format)} {event.city && `· ${event.city}`}
+                      {getFormatLabel(event.format, event.department)} {event.city && `· ${event.city}`}
                     </span>
                   </div>
 

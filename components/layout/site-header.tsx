@@ -38,9 +38,10 @@ export function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 						)}
 						<Link href="/" className="flex items-center font-mono">
 							<span className="text-lg font-semibold tracking-tight">
-								hack0
+								<span className="sm:hidden">h0</span>
+								<span className="hidden sm:inline">hack0</span>
 							</span>
-							<span className="text-lg text-muted-foreground">.dev</span>
+							<span className="hidden sm:inline text-lg text-muted-foreground">.dev</span>
 						</Link>
 						<nav className="hidden md:flex items-center gap-4 text-sm text-muted-foreground">
 							<Link

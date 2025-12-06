@@ -55,10 +55,10 @@ export function EventRow({ event, categoryConfig }: EventRowProps) {
       } ${isFeatured ? "border-l-2 border-l-amber-500" : ""}`}
     >
       {/* Banner background */}
-      {event.bannerUrl && (
+      {event.eventImageUrl && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <Image
-            src={event.bannerUrl}
+            src={event.eventImageUrl}
             alt=""
             fill
             className="object-cover object-center opacity-20 group-hover:opacity-30 transition-opacity duration-300"
@@ -84,9 +84,9 @@ export function EventRow({ event, categoryConfig }: EventRowProps) {
       <div className="min-w-0 flex items-center gap-3 relative z-10">
         {/* Thumbnail */}
         <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md bg-muted border border-border">
-          {event.logoUrl ? (
+          {event.eventImageUrl ? (
             <Image
-              src={event.logoUrl}
+              src={event.eventImageUrl}
               alt={event.name}
               fill
               className="object-cover"
@@ -151,7 +151,7 @@ export function EventRow({ event, categoryConfig }: EventRowProps) {
       <div className="hidden lg:block relative z-10">
         <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
           <PinIcon className="h-3.5 w-3.5" />
-          {getFormatLabel(event.format)}
+          {getFormatLabel(event.format, event.department)}
         </span>
       </div>
 
@@ -217,7 +217,7 @@ export function EventRow({ event, categoryConfig }: EventRowProps) {
         )}
         <span className="inline-flex items-center gap-1">
           <PinIcon className="h-3 w-3" />
-          {getFormatLabel(event.format)}
+          {getFormatLabel(event.format, event.department)}
         </span>
         {showPrize && event.prizePool && event.prizePool > 0 && (
           <span className="inline-flex items-center gap-1 font-medium text-foreground">

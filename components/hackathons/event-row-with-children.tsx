@@ -89,13 +89,13 @@ export function EventRowWithChildren({ event, categoryConfig }: EventRowWithChil
           }`}
         >
           {/* Banner background */}
-          {event.bannerUrl && (
+          {event.eventImageUrl && (
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
               <Image
-                src={event.bannerUrl}
+                src={event.eventImageUrl}
                 alt=""
                 fill
-                className="object-cover object-center opacity-20 group-hover:opacity-30 transition-opacity duration-300"
+                className="object-cover object-center opacity-20 group-hover:opacity-30 transition-opacity duration-300 blur-sm"
                 sizes="100vw"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-background/50" />
@@ -136,9 +136,9 @@ export function EventRowWithChildren({ event, categoryConfig }: EventRowWithChil
 
             {/* Thumbnail */}
             <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md bg-muted border border-border">
-              {event.logoUrl ? (
+              {event.eventImageUrl ? (
                 <Image
-                  src={event.logoUrl}
+                  src={event.eventImageUrl}
                   alt={event.name}
                   fill
                   className="object-cover"
@@ -208,7 +208,7 @@ export function EventRowWithChildren({ event, categoryConfig }: EventRowWithChil
           <div className="hidden lg:block relative z-10">
             <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
               <PinIcon className="h-3.5 w-3.5" />
-              {getFormatLabel(event.format)}
+              {getFormatLabel(event.format, event.department)}
             </span>
           </div>
 
@@ -274,7 +274,7 @@ export function EventRowWithChildren({ event, categoryConfig }: EventRowWithChil
             )}
             <span className="inline-flex items-center gap-1">
               <PinIcon className="h-3 w-3" />
-              {getFormatLabel(event.format)}
+              {getFormatLabel(event.format, event.department)}
             </span>
             {showPrize && event.prizePool && event.prizePool > 0 && (
               <span className="inline-flex items-center gap-1 font-medium text-foreground">
@@ -310,7 +310,7 @@ function ChildEventRow({ event }: { event: Hackathon }) {
   return (
     <Link
       href={`/${event.slug}`}
-      className={`group flex items-center gap-4 px-5 py-3 transition-colors hover:bg-muted/50 ${
+      className={`group flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/50 ${
         isEnded ? "opacity-60" : ""
       }`}
     >
@@ -320,6 +320,23 @@ function ChildEventRow({ event }: { event: Hackathon }) {
           {event.dayNumber}
         </span>
       )}
+
+      {/* Thumbnail */}
+      <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-md bg-muted border border-border">
+        {event.eventImageUrl ? (
+          <Image
+            src={event.eventImageUrl}
+            alt={event.name}
+            fill
+            className="object-cover"
+            sizes="32px"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-[10px] font-medium text-muted-foreground">
+            {event.name.charAt(0).toUpperCase()}
+          </div>
+        )}
+      </div>
 
       {/* Name */}
       <div className="min-w-0 flex-1">
