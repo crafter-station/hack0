@@ -181,6 +181,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 		status: params.status,
 		domain: params.domain,
 		country: params.country,
+		department: params.department,
 		juniorFriendly: params.juniorFriendly,
 		page: params.page,
 	};

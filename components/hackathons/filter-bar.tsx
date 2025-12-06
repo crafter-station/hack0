@@ -7,6 +7,7 @@ import { searchParamsParsers } from "@/lib/search-params";
 import {
   FORMAT_OPTIONS,
   STATUS_OPTIONS,
+  DEPARTMENT_OPTIONS,
 } from "@/lib/event-utils";
 import {
   Popover,
@@ -24,12 +25,14 @@ export function FilterBar() {
     search,
     format,
     status,
+    department,
     juniorFriendly,
   } = filters;
 
   const activeFiltersCount =
     format.length +
     status.length +
+    department.length +
     (juniorFriendly ? 1 : 0);
 
   const clearAllFilters = () => {
@@ -42,6 +45,7 @@ export function FilterBar() {
       status: [],
       domain: [],
       country: [],
+      department: [],
       juniorFriendly: false,
       page: 1,
     });
@@ -166,6 +170,35 @@ export function FilterBar() {
                     }}
                     className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                       status.includes(option.value)
+                        ? "border-foreground/20 bg-foreground text-background"
+                        : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Department/Region */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Región
+              </label>
+              <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                {DEPARTMENT_OPTIONS.filter(opt =>
+                  ["Lima", "Arequipa", "Cusco", "Lambayeque", "Junín", "Puno", "Huánuco", "Ica", "Ayacucho"].includes(opt.value)
+                ).map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => {
+                      const newDepartment = department.includes(option.value)
+                        ? department.filter((v) => v !== option.value)
+                        : [...department, option.value];
+                      setFilters({ department: newDepartment, page: 1 });
+                    }}
+                    className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                      department.includes(option.value)
                         ? "border-foreground/20 bg-foreground text-background"
                         : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`}

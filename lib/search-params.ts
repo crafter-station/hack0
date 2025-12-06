@@ -21,6 +21,7 @@ export const searchParamsParsers = {
   status: parseAsArrayOf(parseAsString).withDefault([]),
   domain: parseAsArrayOf(parseAsString).withDefault([]),
   country: parseAsArrayOf(parseAsString).withDefault([]),
+  department: parseAsArrayOf(parseAsString).withDefault([]),
   juniorFriendly: parseAsBoolean.withDefault(false),
   page: parseAsInteger.withDefault(1),
 };

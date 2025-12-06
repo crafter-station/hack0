@@ -57,7 +57,7 @@ export async function GET() {
       link: eventUrl,
       description,
       date: event.createdAt ?? new Date(),
-      image: event.bannerUrl ?? undefined,
+      image: event.eventImageUrl ?? undefined,
       author: event.organizerName
         ? [{ name: event.organizerName }]
         : undefined,
