@@ -5,6 +5,7 @@ import { events, sponsors, type Event, type NewEvent, type Sponsor, type NewSpon
 import { eq, and, or, ilike, sql, desc, asc, inArray, isNull } from "drizzle-orm";
 import { notifySubscribersOfNewEvent } from "@/lib/email/notify-subscribers";
 import { getCategoryById, type EventCategory } from "@/lib/event-categories";
+import { createUniqueSlug } from "@/lib/slug-utils";
 
 // Alias for backwards compatibility
 export type Hackathon = Event;
@@ -342,15 +343,6 @@ export async function getUpcomingHackathons(
   return results;
 }
 
-function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 100);
-}
 
 export interface CreateEventInput {
   name: string;
@@ -380,23 +372,8 @@ export interface CreateEventResult {
 
 export async function createEvent(input: CreateEventInput): Promise<CreateEventResult> {
   try {
-    // Generate unique slug
-    let baseSlug = generateSlug(input.name);
-    let slug = baseSlug;
-    let counter = 1;
-
-    // Check for existing slug and make unique if necessary
-    while (true) {
-      const existing = await db
-        .select({ id: events.id })
-        .from(events)
-        .where(eq(events.slug, slug))
-        .limit(1);
-
-      if (existing.length === 0) break;
-      slug = `${baseSlug}-${counter}`;
-      counter++;
-    }
+    // Generate unique slug using centralized utility
+    const slug = await createUniqueSlug(input.name);
 
     const eventData: NewEvent = {
       slug,

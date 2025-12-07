@@ -3,6 +3,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  serverExternalPackages: ["@takumi-rs/image-response"],
   images: {
     remotePatterns: [
       { hostname: "utfs.io" },
@@ -10,6 +11,7 @@ const nextConfig = {
       { hostname: "d112y698adiu2z.cloudfront.net" },
       { hostname: "images.lumacdn.com" },
       { hostname: "cdn.lu.ma" },
+      { hostname: "og.luma.com" },
     ],
   },
 }
