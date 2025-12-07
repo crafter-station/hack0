@@ -68,6 +68,8 @@ export async function generateMetadata({
 		? stripMarkdown(hackathon.description).slice(0, 160)
 		: `${getEventTypeLabel(hackathon.eventType)} ${hackathon.format === "virtual" ? "virtual" : `en ${hackathon.city || "Perú"}`}. ${hackathon.prizePool ? `Premio: ${hackathon.prizeCurrency === "PEN" ? "S/" : "$"}${hackathon.prizePool.toLocaleString()}` : ""}`;
 
+	const ogImageUrl = `https://hack0.dev/api/og?slug=${hackathon.slug}`;
+
 	return {
 		title,
 		description,
@@ -85,15 +87,13 @@ export async function generateMetadata({
 			description,
 			type: "website",
 			url: `https://hack0.dev/${hackathon.slug}`,
-			images: hackathon.eventImageUrl
-				? [{ url: hackathon.eventImageUrl, width: 1200, height: 630 }]
-				: [{ url: "https://hack0.dev/og.png", width: 1200, height: 630 }],
+			images: [{ url: ogImageUrl, width: 1200, height: 630, alt: hackathon.name }],
 		},
 		twitter: {
 			card: "summary_large_image",
 			title,
 			description,
-			images: hackathon.eventImageUrl ? [hackathon.eventImageUrl] : ["https://hack0.dev/og.png"],
+			images: [ogImageUrl],
 		},
 		alternates: {
 			canonical: `https://hack0.dev/${hackathon.slug}`,
@@ -321,14 +321,12 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
 									{hackathon.venue && (
 										<p className="text-foreground">{hackathon.venue}</p>
 									)}
-									<p className={hackathon.venue ? "" : "text-foreground"}>
+									<p className={hackathon.venue ? "text-sm" : "text-foreground"}>
 										{hackathon.city}
 										{hackathon.city && hackathon.department && hackathon.city !== hackathon.department && `, ${hackathon.department}`}
 										{!hackathon.city && !hackathon.venue && getFormatLabel(hackathon.format, hackathon.department)}
+										{(hackathon.city || hackathon.venue) && `, ${getFormatLabel(hackathon.format)}`}
 									</p>
-									{(hackathon.city || hackathon.venue) && (
-										<p className="text-sm">{getFormatLabel(hackathon.format, hackathon.department)}</p>
-									)}
 								</div>
 							</div>
 

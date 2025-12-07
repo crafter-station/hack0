@@ -9,35 +9,7 @@ import {
   inferEventType,
   inferCountryFromCity,
 } from "@/lib/scraper/luma-schema";
-
-function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 100);
-}
-
-async function generateUniqueSlug(baseSlug: string): Promise<string> {
-  let slug = baseSlug;
-  let counter = 1;
-
-  while (true) {
-    const existing = await db.query.events.findFirst({
-      where: eq(events.slug, slug),
-    });
-
-    if (!existing) break;
-
-    slug = `${baseSlug}-${counter}`;
-    counter++;
-  }
-
-  return slug;
-}
+import { createUniqueSlug } from "@/lib/slug-utils";
 
 export const lumaImportTask = task({
   id: "luma-import",
@@ -151,7 +123,7 @@ export const lumaImportTask = task({
       if (autoPublish) {
         metadata.set("step", "publishing");
 
-        const slug = await generateUniqueSlug(generateSlug(extracted.name));
+        const slug = await createUniqueSlug(extracted.name);
 
         const [newEvent] = await db
           .insert(events)

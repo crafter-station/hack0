@@ -48,6 +48,8 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-email/components": "^1.0.1",
     "@tailwindcss/typography": "^0.5.19",
+    "@takumi-rs/image-response": "^0.57.3",
+    "@takumi-rs/template": "^0.57.3",
     "@trigger.dev/react-hooks": "^4.1.2",
     "@trigger.dev/sdk": "4.1.2",
     "@uploadthing/react": "^7.3.3",
