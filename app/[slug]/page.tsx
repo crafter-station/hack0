@@ -321,14 +321,12 @@ export default async function HackathonPage({ params }: HackathonPageProps) {
 									{hackathon.venue && (
 										<p className="text-foreground">{hackathon.venue}</p>
 									)}
-									<p className={hackathon.venue ? "" : "text-foreground"}>
+									<p className={hackathon.venue ? "text-sm" : "text-foreground"}>
 										{hackathon.city}
 										{hackathon.city && hackathon.department && hackathon.city !== hackathon.department && `, ${hackathon.department}`}
 										{!hackathon.city && !hackathon.venue && getFormatLabel(hackathon.format, hackathon.department)}
+										{(hackathon.city || hackathon.venue) && `, ${getFormatLabel(hackathon.format)}`}
 									</p>
-									{(hackathon.city || hackathon.venue) && (
-										<p className="text-sm">{getFormatLabel(hackathon.format, hackathon.department)}</p>
-									)}
 								</div>
 							</div>
 
