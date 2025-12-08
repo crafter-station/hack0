@@ -204,10 +204,10 @@ export async function createEventFromExtracted(
       format: data.format || "in-person",
       country,
       city: data.city || null,
+      venue: data.venue || null,
       websiteUrl: data.websiteUrl,
       registrationUrl: data.registrationUrl || data.websiteUrl,
       eventImageUrl: data.eventImageUrl || null,
-      organizerName: data.organizerName || null,
       organizationId: org.id,
       isApproved: org.isVerified ?? false,
       approvalStatus: org.isVerified ? "approved" : "pending",
@@ -253,23 +253,28 @@ export async function getImportJob(jobId: string) {
   return job;
 }
 
-export async function getOrgImportJobs(limit: number = 10) {
+export async function getOrgImportJobs(limit: number = 10, organizationId?: string) {
   const { userId } = await auth();
 
   if (!userId) {
     return [];
   }
 
-  const org = await db.query.organizations.findFirst({
-    where: eq(organizations.ownerUserId, userId),
-  });
+  let orgId = organizationId;
 
-  if (!org) {
-    return [];
+  if (!orgId) {
+    const org = await db.query.organizations.findFirst({
+      where: eq(organizations.ownerUserId, userId),
+    });
+
+    if (!org) {
+      return [];
+    }
+    orgId = org.id;
   }
 
   return db.query.importJobs.findMany({
-    where: eq(importJobs.organizationId, org.id),
+    where: eq(importJobs.organizationId, orgId),
     orderBy: desc(importJobs.createdAt),
     limit,
   });

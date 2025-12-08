@@ -37,6 +37,7 @@ interface OrganizerClaim {
   createdAt: Date | null;
   eventName: string | null;
   eventSlug: string | null;
+  organizationSlug: string | null;
 }
 
 interface WinnerClaim {
@@ -53,6 +54,7 @@ interface WinnerClaim {
   createdAt: Date | null;
   eventName: string | null;
   eventSlug: string | null;
+  organizationSlug: string | null;
 }
 
 interface AdminClaimsListProps {
@@ -165,7 +167,7 @@ function ClaimRow({
             {/* Event link */}
             <div className="flex items-center gap-2 mb-1">
               <Link
-                href={`/${claim.eventSlug}`}
+                href={claim.organizationSlug ? `/c/${claim.organizationSlug}/events/${claim.eventSlug}` : `/${claim.eventSlug}`}
                 className="font-medium hover:underline truncate"
               >
                 {claim.eventName}

@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { subscriptions, notificationLogs, events } from "@/lib/db/schema";
+import { subscriptions, notificationLogs, events, organizations } from "@/lib/db/schema";
 import { resend, EMAIL_FROM } from "./resend";
 import { NewEventEmail } from "./templates/new-event";
 import { eq, and } from "drizzle-orm";
@@ -11,12 +11,21 @@ interface NotifySubscribersOptions {
 
 export async function notifySubscribersOfNewEvent({ eventId }: NotifySubscribersOptions) {
   try {
-    // Get the event
-    const event = await db
-      .select()
+    // Get the event with organization
+    const results = await db
+      .select({
+        event: events,
+        organization: organizations,
+      })
       .from(events)
+      .leftJoin(organizations, eq(events.organizationId, organizations.id))
       .where(eq(events.id, eventId))
       .limit(1);
+
+    const event = results.map(r => ({
+      ...r.event,
+      organization: r.organization,
+    }));
 
     if (event.length === 0) {
       console.error("Event not found:", eventId);
@@ -80,7 +89,7 @@ export async function notifySubscribersOfNewEvent({ eventId }: NotifySubscribers
             eventDate,
             eventFormat: getFormatLabel(eventData.format || "virtual", eventData.department),
             eventUrl,
-            organizerName: eventData.organizerName || undefined,
+            organizerName: eventData.organization?.displayName || eventData.organization?.name || undefined,
             prizePool: eventData.prizePool || undefined,
             unsubscribeUrl,
           }),

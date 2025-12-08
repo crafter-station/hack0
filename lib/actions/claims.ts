@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { organizerClaims, winnerClaims, events } from "@/lib/db/schema";
+import { organizerClaims, winnerClaims, events, organizations } from "@/lib/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
@@ -214,9 +214,12 @@ export interface UpdateEventInput {
   endDate?: Date | null;
   registrationDeadline?: Date | null;
   format?: "virtual" | "in-person" | "hybrid";
+  department?: string;
   city?: string;
+  venue?: string;
   timezone?: string;
   prizePool?: number | null;
+  prizeCurrency?: "USD" | "PEN";
   prizeDescription?: string;
   websiteUrl?: string;
   registrationUrl?: string;
@@ -283,9 +286,11 @@ export async function getAllOrganizerClaims() {
       createdAt: organizerClaims.createdAt,
       eventName: events.name,
       eventSlug: events.slug,
+      organizationSlug: organizations.slug,
     })
     .from(organizerClaims)
     .leftJoin(events, eq(organizerClaims.eventId, events.id))
+    .leftJoin(organizations, eq(events.organizationId, organizations.id))
     .orderBy(desc(organizerClaims.createdAt));
 
   return claims;
@@ -310,9 +315,11 @@ export async function getAllWinnerClaims() {
       createdAt: winnerClaims.createdAt,
       eventName: events.name,
       eventSlug: events.slug,
+      organizationSlug: organizations.slug,
     })
     .from(winnerClaims)
     .leftJoin(events, eq(winnerClaims.eventId, events.id))
+    .leftJoin(organizations, eq(events.organizationId, organizations.id))
     .orderBy(desc(winnerClaims.createdAt));
 
   return claims;

@@ -91,7 +91,7 @@ export function OnboardingForm() {
         logoUrl: logoUrl || undefined,
       });
 
-      router.push("/dashboard");
+      router.push(`/c/${slug}`);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Error al crear la organización"

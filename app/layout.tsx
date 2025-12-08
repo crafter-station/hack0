@@ -10,8 +10,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { extractRouterConfig } from "uploadthing/server";
-import { ourFileRouter } from "@/app/api/uploadthing/core";
+import { ourFileRouter } from "@/app/(app)/api/uploadthing/core";
 import { GlobalSearch } from "@/components/global-search";
+import { QueryProvider } from "@/components/providers/query-provider";
+import { ThemeSelector } from "@/components/theme-selector";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -192,10 +194,13 @@ export default function RootLayout({
 						defaultTheme="dark"
 						enableSystem={false}
 					>
-						<PostHogProvider>
-							<NuqsAdapter>{children}</NuqsAdapter>
-						</PostHogProvider>
-						<GlobalSearch />
+						<QueryProvider>
+							<PostHogProvider>
+								<NuqsAdapter>{children}</NuqsAdapter>
+							</PostHogProvider>
+							<GlobalSearch />
+							<ThemeSelector />
+						</QueryProvider>
 					</ThemeProvider>
 					<Analytics />
 				</body>
