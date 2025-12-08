@@ -1,8 +1,5 @@
 import { task, metadata } from "@trigger.dev/sdk/v3";
 import FirecrawlApp from "@mendable/firecrawl-js";
-import { db } from "@/lib/db";
-import { eq } from "drizzle-orm";
-import { organizations } from "@/lib/db/schema";
 import { UTApi } from "uploadthing/server";
 import {
   type OrgExtractedData,
@@ -14,11 +11,11 @@ import {
   extractSocialLinks,
 } from "@/lib/scraper/org-schema";
 
-export const orgScraperTask = task({
-  id: "org-scraper",
+export const orgScraperPreviewTask = task({
+  id: "org-scraper-preview",
   maxDuration: 120,
-  run: async (payload: { organizationId: string; websiteUrl: string }) => {
-    const { organizationId, websiteUrl } = payload;
+  run: async (payload: { websiteUrl: string; userId: string }) => {
+    const { websiteUrl } = payload;
 
     await metadata.set("status", "extracting");
 
@@ -45,25 +42,41 @@ Focus on the main organization name, not event names. Look for "About", "Nosotro
         ],
       });
     } catch (error: any) {
-      await metadata.set("status", "error");
+      let errorMessage = "Error al extraer datos del sitio web. Verifica que la URL sea correcta y esté accesible.";
 
       if (error.message?.includes("not currently supported")) {
-        await metadata.set("error", "Este sitio no está soportado por Firecrawl. Intenta con el sitio web oficial de tu organización (evita redes sociales como Instagram, Facebook, Twitter).");
-        throw new Error("Sitio no soportado por Firecrawl");
+        errorMessage = "Este sitio no está soportado por Firecrawl. Intenta con el sitio web oficial de tu organización (evita redes sociales como Instagram, Facebook, Twitter).";
+      } else if (error.message?.includes("rate limit")) {
+        errorMessage = "Límite de scraping alcanzado. Intenta de nuevo en unos minutos.";
       }
 
-      if (error.message?.includes("rate limit")) {
-        await metadata.set("error", "Límite de scraping alcanzado. Intenta de nuevo en unos minutos.");
-        throw new Error("Rate limit alcanzado");
-      }
+      await metadata.set("lastError", errorMessage);
+      await metadata.set("status", "error");
+      await metadata.set("error", errorMessage);
 
-      await metadata.set("error", "Error al extraer datos del sitio web. Verifica que la URL sea correcta y esté accesible.");
       throw error;
     }
 
+    console.log("Firecrawl result:", {
+      success: result.success,
+      hasJson: !!result.json,
+      json: result.json,
+      metadata: result.metadata,
+    });
+
+    console.log("Starting data extraction...");
+
     if (!result.json) {
+      const errorMessage = "No se pudo extraer información del sitio web. Intenta con una URL diferente o completa los campos manualmente.";
+      await metadata.set("lastError", errorMessage);
       await metadata.set("status", "error");
-      await metadata.set("error", "No se pudo extraer información del sitio web. Intenta con una URL diferente o completa los campos manualmente.");
+      await metadata.set("error", errorMessage);
+      await metadata.set("firecrawlDebug", {
+        success: result.success,
+        hasJson: !!result.json,
+        resultKeys: Object.keys(result),
+      });
+
       throw new Error("Failed to extract organization data from website");
     }
 
@@ -100,46 +113,34 @@ Focus on the main organization name, not event names. Look for "About", "Nosotro
 
     let finalLogoUrl: string | undefined = logoUrl;
 
+    console.log("Logo URL:", logoUrl, "isValid:", isValidUrl(logoUrl || ""));
+
     if (logoUrl && isValidUrl(logoUrl)) {
+      console.log("Uploading logo to UploadThing...");
       await metadata.set("status", "uploading_logo");
 
       try {
         const utapi = new UTApi();
+        console.log("Starting upload from URL:", logoUrl);
         const uploadResult = await utapi.uploadFilesFromUrl(logoUrl);
+        console.log("Upload result:", uploadResult);
 
         if (uploadResult.data?.url) {
           finalLogoUrl = uploadResult.data.url;
           await metadata.set("logoUrl", finalLogoUrl);
+          console.log("Logo uploaded successfully:", finalLogoUrl);
         }
       } catch (err) {
         console.error("Failed to upload logo to UploadThing:", err);
       }
+    } else {
+      console.log("Skipping logo upload (invalid or missing URL)");
     }
-
-    await metadata.set("status", "updating_org");
-
-    await db
-      .update(organizations)
-      .set({
-        name: scrapedData.name,
-        description: scrapedData.description,
-        type: scrapedData.type,
-        email: scrapedData.email,
-        logoUrl: finalLogoUrl,
-        twitterUrl: scrapedData.socialLinks?.twitter,
-        linkedinUrl: scrapedData.socialLinks?.linkedin,
-        instagramUrl: scrapedData.socialLinks?.instagram,
-        facebookUrl: scrapedData.socialLinks?.facebook,
-        githubUrl: scrapedData.socialLinks?.github,
-        updatedAt: new Date(),
-      })
-      .where(eq(organizations.id, organizationId));
 
     await metadata.set("status", "completed");
 
     return {
       success: true,
-      organizationId,
       extractedData: scrapedData,
       logoUrl: finalLogoUrl,
     };

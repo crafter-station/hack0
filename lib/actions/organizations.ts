@@ -371,13 +371,67 @@ export async function isSlugAvailable(slug: string): Promise<boolean> {
   return !existing;
 }
 
+/**
+ * Delete an organization (for cleanup of failed scraper attempts)
+ */
+export async function deleteOrganization(organizationId: string) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Not authenticated");
+  }
+
+  const org = await db.query.organizations.findFirst({
+    where: eq(organizations.id, organizationId),
+  });
+
+  if (!org) {
+    return;
+  }
+
+  if (org.ownerUserId !== userId) {
+    throw new Error("Not authorized");
+  }
+
+  await db.delete(organizations).where(eq(organizations.id, organizationId));
+
+  revalidatePath("/c");
+  revalidatePath("/onboarding");
+}
+
 // ============================================
 // WEB SCRAPER
 // ============================================
 
 /**
- * Start scraping organization data from website
- * Returns the Trigger.dev run ID for real-time updates
+ * Start scraping organization data from website WITHOUT creating org first
+ * Returns the Trigger.dev run ID and public access token for real-time updates
+ */
+export async function startOrgScraperDirect(websiteUrl: string) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Not authenticated");
+  }
+
+  if (!websiteUrl.startsWith("http")) {
+    throw new Error("Invalid URL format");
+  }
+
+  const handle = await tasks.trigger("org-scraper-preview", {
+    websiteUrl,
+    userId,
+  });
+
+  return {
+    runId: handle.id,
+    publicAccessToken: handle.publicAccessToken,
+  };
+}
+
+/**
+ * Start scraping organization data from website (legacy - for existing orgs)
+ * Returns the Trigger.dev run ID and public access token for real-time updates
  */
 export async function startOrgScraper(organizationId: string, websiteUrl: string) {
   const { userId } = await auth();
@@ -409,5 +463,6 @@ export async function startOrgScraper(organizationId: string, websiteUrl: string
 
   return {
     runId: handle.id,
+    publicAccessToken: handle.publicAccessToken,
   };
 }

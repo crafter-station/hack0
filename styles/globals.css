@@ -121,3 +121,34 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.input-shimmer {
+  position: relative;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(0.09 0 0 / 0.15) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.dark .input-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(0.93 0 0 / 0.15) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+}

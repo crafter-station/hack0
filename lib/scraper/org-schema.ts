@@ -105,11 +105,26 @@ export function inferOrgType(
   return "community";
 }
 
-export function extractLogoFromMetadata(metadata: {
-  ogImage?: string;
-  favicon?: string;
-}): string | undefined {
-  return metadata.ogImage || metadata.favicon;
+export function extractLogoFromMetadata(
+  metadata: {
+    ogImage?: string;
+    favicon?: string;
+  },
+  baseUrl?: string
+): string | undefined {
+  let logoUrl = metadata.ogImage || metadata.favicon;
+
+  // Si tenemos una URL relativa y un baseUrl, convertirla a absoluta
+  if (logoUrl && baseUrl && !logoUrl.startsWith('http')) {
+    try {
+      const base = new URL(baseUrl);
+      logoUrl = new URL(logoUrl, base.origin).toString();
+    } catch (e) {
+      console.error('Error constructing absolute URL:', e);
+    }
+  }
+
+  return logoUrl;
 }
 
 export function cleanDescription(description: string): string {
