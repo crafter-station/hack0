@@ -51,9 +51,17 @@ async function InviteContent({ token }: { token: string }) {
       <div className="rounded-lg border bg-card p-8 space-y-6">
         <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="h-16 w-16 rounded-full bg-muted border-2 border-border flex items-center justify-center">
-              <Users className="h-8 w-8 text-muted-foreground" />
-            </div>
+            {invite.community.logoUrl ? (
+              <img
+                src={invite.community.logoUrl}
+                alt={invite.community.displayName || invite.community.name}
+                className="h-16 w-16 rounded-full object-cover border-2 border-border"
+              />
+            ) : (
+              <div className="h-16 w-16 rounded-full bg-muted border-2 border-border flex items-center justify-center">
+                <Users className="h-8 w-8 text-muted-foreground" />
+              </div>
+            )}
           </div>
           <div className="space-y-2">
             <h1 className="text-2xl font-bold">
