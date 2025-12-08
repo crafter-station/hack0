@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { organizations, events } from "@/lib/db/schema";
 import { eq, desc, asc } from "drizzle-orm";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
 import { EventList } from "@/components/events/event-list";
-import { CommunityHeader } from "@/components/community/community-header";
 
 interface CommunityPageProps {
 	params: Promise<{ slug: string }>;
@@ -94,29 +90,9 @@ export async function generateMetadata({
 export default async function CommunityPage({ params }: CommunityPageProps) {
 	const { slug } = await params;
 
-	const community = await db.query.organizations.findFirst({
-		where: eq(organizations.slug, slug),
-	});
-
-	if (!community) {
-		notFound();
-	}
-
 	return (
-		<div className="min-h-screen bg-background flex flex-col">
-			<SiteHeader />
-
-			<Suspense fallback={null}>
-				<CommunityHeader community={community} slug={slug} currentTab="events" />
-			</Suspense>
-
-			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-8 flex-1 w-full">
-				<Suspense fallback={<EventsSkeleton />}>
-					<CommunityEvents slug={slug} />
-				</Suspense>
-			</main>
-
-			<SiteFooter />
-		</div>
+		<Suspense fallback={<EventsSkeleton />}>
+			<CommunityEvents slug={slug} />
+		</Suspense>
 	);
 }

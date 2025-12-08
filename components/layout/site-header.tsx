@@ -1,15 +1,20 @@
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import { SearchTrigger } from "@/components/search-command";
 import { ThemeSwitcherButton } from "@/components/theme-switcher-button";
 import { AdminLink } from "./admin-link";
+import { OrgSwitcher } from "./org-switcher";
+import { getAllUserOrganizations } from "@/lib/actions/organizations";
+import { auth } from "@clerk/nextjs/server";
 
 interface SiteHeaderProps {
 	showBackButton?: boolean;
 }
 
-export function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
+export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
+	const { userId } = await auth();
+	const organizations = userId ? await getAllUserOrganizations() : [];
+
 	return (
 		<header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
 			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
@@ -65,13 +70,7 @@ export function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 						</SignedOut>
 						<SignedIn>
 							<AdminLink />
-							<Link
-								href="/dashboard"
-								className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-							>
-								<LayoutGrid className="h-3.5 w-3.5" />
-								<span className="hidden sm:inline">Dashboard</span>
-							</Link>
+							<OrgSwitcher organizations={organizations} />
 							<UserButton
 								appearance={{
 									elements: {

@@ -1,9 +1,21 @@
 "use client";
 
-import { Loader2, Send } from "lucide-react";
+import { ImageIcon, Loader2, Pencil, Tag, Calendar, MapPin, Link as LinkIcon, X } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { DateRangeInput } from "@/components/events/date-range-input";
+import { FormatSelector } from "@/components/events/format-selector";
+import { LinksInput } from "@/components/events/links-input";
+import { LocationInput } from "@/components/events/location-input";
+import { PrizeInput } from "@/components/events/prize-input";
 import { Button } from "@/components/ui/button";
+import {
+	Field,
+	FieldDescription,
+	FieldGroup,
+	FieldLabel,
+} from "@/components/ui/field";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,313 +28,283 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { createEvent } from "@/lib/actions/events";
 import {
-	COUNTRY_OPTIONS,
 	EVENT_TYPE_OPTIONS,
-	FORMAT_OPTIONS,
 	SKILL_LEVEL_OPTIONS,
 } from "@/lib/event-utils";
 
 interface OrgEventFormProps {
 	organizationId: string;
 	organizationName: string;
+	organizationLogo?: string | null;
+	organizationSlug: string;
 }
 
 export function OrgEventForm({
 	organizationId,
 	organizationName,
+	organizationLogo,
+	organizationSlug,
 }: OrgEventFormProps) {
 	const router = useRouter();
-	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+
+	const [name, setName] = useState("");
+	const [description, setDescription] = useState("");
+	const [startDate, setStartDate] = useState("");
+	const [endDate, setEndDate] = useState("");
+	const [registrationDeadline, setRegistrationDeadline] = useState("");
+	const [format, setFormat] = useState<"virtual" | "in-person" | "hybrid">("virtual");
+	const [department, setDepartment] = useState("");
+	const [city, setCity] = useState("");
+	const [venue, setVenue] = useState("");
+	const [prizePool, setPrizePool] = useState("");
+	const [prizeCurrency, setPrizeCurrency] = useState<"USD" | "PEN">("USD");
+	const [prizeDescription, setPrizeDescription] = useState("");
+	const [websiteUrl, setWebsiteUrl] = useState("");
+	const [registrationUrl, setRegistrationUrl] = useState("");
 	const [eventImageUrl, setEventImageUrl] = useState("");
+	const [eventType, setEventType] = useState("hackathon");
+	const [skillLevel, setSkillLevel] = useState("all");
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setIsSubmitting(true);
 		setError(null);
-
-		const formData = new FormData(e.currentTarget);
+		setLoading(true);
 
 		const result = await createEvent({
-			name: formData.get("name") as string,
-			description: (formData.get("description") as string) || undefined,
-			websiteUrl: formData.get("websiteUrl") as string,
-			eventType: formData.get("eventType") as string,
-			format: formData.get("format") as string,
-			skillLevel: formData.get("skillLevel") as string,
-			country: formData.get("country") as string,
-			city: (formData.get("city") as string) || undefined,
-			startDate: (formData.get("startDate") as string) || undefined,
-			endDate: (formData.get("endDate") as string) || undefined,
-			registrationDeadline:
-				(formData.get("registrationDeadline") as string) || undefined,
-			prizePool: formData.get("prizePool")
-				? Number(formData.get("prizePool"))
-				: undefined,
-			organizationId,
+			name,
+			description: description || undefined,
+			startDate: startDate || undefined,
+			endDate: endDate || undefined,
+			registrationDeadline: registrationDeadline || undefined,
+			format,
+			department: department || undefined,
+			city: city || undefined,
+			venue: venue || undefined,
+			prizePool: prizePool ? parseInt(prizePool, 10) : undefined,
+			prizeCurrency,
+			prizeDescription: prizeDescription || undefined,
+			websiteUrl: websiteUrl || undefined,
+			registrationUrl: registrationUrl || undefined,
 			eventImageUrl: eventImageUrl || undefined,
+			eventType,
+			skillLevel,
+			organizationId,
+			country: "PE",
 		});
 
-		setIsSubmitting(false);
+		setLoading(false);
 
-		if (!result.success) {
+		if (result.success) {
+			router.push(`/c/${organizationSlug}`);
+		} else {
 			setError(result.error || "Error al crear el evento");
-			return;
 		}
-
-		router.push("/dashboard");
 	};
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-8">
-			{/* Section: Información básica */}
-			<section className="space-y-4">
-				<h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-					Información básica
-				</h2>
-				<div className="grid gap-4">
-					<div className="space-y-2">
-						<label htmlFor="name" className="text-sm font-medium">
-							Nombre del evento *
-						</label>
-						<Input
-							id="name"
-							name="name"
-							placeholder="ej. Hackathon IA Peru 2025"
-							required
-						/>
-					</div>
-
-					<div className="space-y-2">
-						<label htmlFor="description" className="text-sm font-medium">
-							Descripción
-						</label>
-						<Textarea
-							id="description"
-							name="description"
-							placeholder="Breve descripción del evento..."
-							className="min-h-20 resize-none"
-						/>
-					</div>
-
-					<div className="space-y-2">
-						<label htmlFor="websiteUrl" className="text-sm font-medium">
-							URL del evento *
-						</label>
-						<Input
-							id="websiteUrl"
-							name="websiteUrl"
-							type="url"
-							placeholder="https://..."
-							required
-						/>
+			{/* Organization Header */}
+			<div className="rounded-lg border bg-muted/30 p-4">
+				<div className="flex items-center gap-3">
+					{organizationLogo ? (
+						<div className="relative h-12 w-12 shrink-0 rounded-lg overflow-hidden border">
+							<Image
+								src={organizationLogo}
+								alt={organizationName}
+								fill
+								className="object-cover"
+							/>
+						</div>
+					) : (
+						<div className="h-12 w-12 shrink-0 rounded-lg bg-muted border flex items-center justify-center text-lg font-semibold">
+							{organizationName.charAt(0).toUpperCase()}
+						</div>
+					)}
+					<div className="min-w-0">
+						<p className="text-xs text-muted-foreground">Creando evento para</p>
+						<p className="font-semibold truncate">{organizationName}</p>
 					</div>
 				</div>
-			</section>
+			</div>
 
-			{/* Section: Imagen */}
-			<section className="space-y-4">
-				<h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-					Imagen
-				</h2>
-				<div className="space-y-2">
-					<label htmlFor="imageUpload" className="text-sm font-medium">
-						Imagen del evento
-					</label>
-					<ImageUpload
-						value={eventImageUrl}
-						onChange={setEventImageUrl}
-						onRemove={() => setEventImageUrl("")}
-						endpoint="imageUploader"
-						aspectRatio="square"
-						className="max-w-[200px]"
-					/>
-					<p className="text-xs text-muted-foreground">Cuadrada, max 4MB</p>
-				</div>
-			</section>
-
-			{/* Section: Clasificación */}
-			<section className="space-y-4">
-				<h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-					Clasificación
-				</h2>
-				<div className="grid sm:grid-cols-2 gap-4">
-					<div className="space-y-2">
-						<label htmlFor="eventType" className="text-sm font-medium">
-							Tipo de evento
-						</label>
-						<Select name="eventType" defaultValue="hackathon">
-							<SelectTrigger className="w-full">
-								<SelectValue placeholder="Seleccionar tipo" />
-							</SelectTrigger>
-							<SelectContent>
-								{EVENT_TYPE_OPTIONS.map((option) => (
-									<SelectItem key={option.value} value={option.value}>
-										{option.label}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-
-					<div className="space-y-2">
-						<label htmlFor="format" className="text-sm font-medium">
-							Formato
-						</label>
-						<Select name="format" defaultValue="virtual">
-							<SelectTrigger className="w-full">
-								<SelectValue placeholder="Seleccionar formato" />
-							</SelectTrigger>
-							<SelectContent>
-								{FORMAT_OPTIONS.map((option) => (
-									<SelectItem key={option.value} value={option.value}>
-										{option.label}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-
-					<div className="space-y-2">
-						<label htmlFor="skillLevel" className="text-sm font-medium">
-							Nivel requerido
-						</label>
-						<Select name="skillLevel" defaultValue="all">
-							<SelectTrigger className="w-full">
-								<SelectValue placeholder="Seleccionar nivel" />
-							</SelectTrigger>
-							<SelectContent>
-								{SKILL_LEVEL_OPTIONS.map((option) => (
-									<SelectItem key={option.value} value={option.value}>
-										{option.label}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-
-					<div className="space-y-2">
-						<label htmlFor="country" className="text-sm font-medium">
-							País
-						</label>
-						<Select name="country" defaultValue="PE">
-							<SelectTrigger className="w-full">
-								<SelectValue placeholder="Seleccionar país" />
-							</SelectTrigger>
-							<SelectContent>
-								{COUNTRY_OPTIONS.map((option) => (
-									<SelectItem key={option.value} value={option.value}>
-										{option.label}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-				</div>
-
-			</section>
-
-			{/* Section: Fechas */}
-			<section className="space-y-4">
-				<h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-					Fechas
-				</h2>
-				<div className="grid sm:grid-cols-3 gap-4">
-					<div className="space-y-2">
-						<label htmlFor="startDate" className="text-sm font-medium">
-							Fecha de inicio
-						</label>
-						<Input id="startDate" name="startDate" type="date" />
-					</div>
-
-					<div className="space-y-2">
-						<label htmlFor="endDate" className="text-sm font-medium">
-							Fecha de fin
-						</label>
-						<Input id="endDate" name="endDate" type="date" />
-					</div>
-
-					<div className="space-y-2">
-						<label
-							htmlFor="registrationDeadline"
-							className="text-sm font-medium"
-						>
-							Cierre de inscripción
-						</label>
-						<Input
-							id="registrationDeadline"
-							name="registrationDeadline"
-							type="date"
-						/>
-					</div>
-				</div>
-			</section>
-
-			{/* Section: Ubicación y premios */}
-			<section className="space-y-4">
-				<h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-					Ubicación y premios
-				</h2>
-				<div className="grid sm:grid-cols-2 gap-4">
-					<div className="space-y-2">
-						<label htmlFor="city" className="text-sm font-medium">
-							Ciudad
-						</label>
-						<Input
-							id="city"
-							name="city"
-							placeholder="ej. Lima, Arequipa, Cusco"
-						/>
-					</div>
-
-					<div className="space-y-2">
-						<label htmlFor="prizePool" className="text-sm font-medium">
-							Premio (USD)
-						</label>
-						<Input
-							id="prizePool"
-							name="prizePool"
-							type="number"
-							placeholder="0"
-							min="0"
-						/>
-						<p className="text-xs text-muted-foreground">
-							Dejar en blanco si no hay premio
-						</p>
-					</div>
-				</div>
-			</section>
-
-			{/* Error */}
 			{error && (
-				<div className="rounded-lg border border-red-200 bg-red-50 p-4">
-					<p className="text-sm text-red-600">{error}</p>
+				<div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4 text-sm text-red-600">
+					{error}
 				</div>
 			)}
 
-			{/* Submit */}
-			<div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
-				<Button type="submit" disabled={isSubmitting} className="sm:order-2">
-					{isSubmitting ? (
-						<>
-							<Loader2 className="h-4 w-4 animate-spin" />
-							Creando...
-						</>
-					) : (
-						<>
-							<Send className="h-4 w-4" />
-							Crear evento
-						</>
+			<div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
+				<FieldGroup className="gap-8">
+					<Field>
+						<FieldLabel htmlFor="name">
+							<Pencil className="h-4 w-4" />
+							Nombre del evento
+						</FieldLabel>
+						<Input
+							id="name"
+							value={name}
+							onChange={(e) => setName(e.target.value)}
+							required
+							placeholder="Ej: HackLima 2024"
+							className="text-base"
+						/>
+					</Field>
+
+					<Field>
+						<FieldLabel htmlFor="description">
+							<Pencil className="h-4 w-4" />
+							Descripción
+						</FieldLabel>
+						<Textarea
+							id="description"
+							value={description}
+							onChange={(e) => setDescription(e.target.value)}
+							rows={4}
+							placeholder="Describe tu evento..."
+							className="resize-none"
+						/>
+						<FieldDescription>
+							Información general sobre el evento
+						</FieldDescription>
+					</Field>
+
+					<div className="space-y-3">
+						<div className="flex items-center gap-2 text-sm font-medium">
+							<Tag className="h-4 w-4" />
+							Clasificación
+						</div>
+
+						<div className="rounded-lg border bg-card p-6 space-y-4">
+							<div className="grid sm:grid-cols-2 gap-4">
+								<Field>
+									<FieldLabel htmlFor="eventType">Tipo de evento</FieldLabel>
+									<Select value={eventType} onValueChange={setEventType}>
+										<SelectTrigger id="eventType">
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
+											{EVENT_TYPE_OPTIONS.map((option) => (
+												<SelectItem key={option.value} value={option.value}>
+													{option.label}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</Field>
+
+								<Field>
+									<FieldLabel htmlFor="skillLevel">Nivel requerido</FieldLabel>
+									<Select value={skillLevel} onValueChange={setSkillLevel}>
+										<SelectTrigger id="skillLevel">
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
+											{SKILL_LEVEL_OPTIONS.map((option) => (
+												<SelectItem key={option.value} value={option.value}>
+													{option.label}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</Field>
+							</div>
+
+							{(eventType === "hackathon" || eventType === "competition" || eventType === "olympiad") && (
+								<PrizeInput
+									prizePool={prizePool}
+									prizeCurrency={prizeCurrency}
+									prizeDescription={prizeDescription}
+									onPrizePoolChange={setPrizePool}
+									onPrizeCurrencyChange={setPrizeCurrency}
+									onPrizeDescriptionChange={setPrizeDescription}
+								/>
+							)}
+						</div>
+					</div>
+
+					<DateRangeInput
+						startDate={startDate}
+						endDate={endDate}
+						registrationDeadline={registrationDeadline}
+						onStartDateChange={setStartDate}
+						onEndDateChange={setEndDate}
+						onRegistrationDeadlineChange={setRegistrationDeadline}
+					/>
+
+					<FormatSelector value={format} onChange={setFormat} />
+
+					{format !== "virtual" && (
+						<LocationInput
+							department={department}
+							city={city}
+							venue={venue}
+							onDepartmentChange={setDepartment}
+							onCityChange={setCity}
+							onVenueChange={setVenue}
+						/>
 					)}
-				</Button>
+
+					<LinksInput
+						websiteUrl={websiteUrl}
+						registrationUrl={registrationUrl}
+						onWebsiteUrlChange={setWebsiteUrl}
+						onRegistrationUrlChange={setRegistrationUrl}
+					/>
+				</FieldGroup>
+
+				<div className="lg:sticky lg:top-18 h-fit space-y-4">
+					<Field>
+						<FieldLabel>
+							<ImageIcon className="h-4 w-4" />
+							Imagen del evento
+						</FieldLabel>
+						{eventImageUrl ? (
+							<div className="relative w-full aspect-square rounded-xl overflow-hidden bg-muted border">
+								<Image
+									src={eventImageUrl}
+									alt="Event image"
+									fill
+									className="object-cover"
+								/>
+								<button
+									type="button"
+									onClick={() => setEventImageUrl("")}
+									className="absolute top-2 right-2 p-1.5 rounded-lg bg-background/90 backdrop-blur-sm border hover:bg-background transition-colors shadow-sm"
+								>
+									<X className="h-4 w-4" />
+								</button>
+							</div>
+						) : (
+							<div className="w-full aspect-square rounded-xl bg-muted border flex flex-col items-center justify-center gap-4">
+								<ImageIcon className="h-12 w-12 text-muted-foreground/40" />
+								<div className="flex flex-col items-center gap-2">
+									<ImageUpload
+										value={eventImageUrl}
+										onChange={setEventImageUrl}
+										label="Cargar imagen"
+									/>
+								</div>
+							</div>
+						)}
+						<FieldDescription>Recomendado: 1200x1200px (1:1)</FieldDescription>
+					</Field>
+				</div>
+			</div>
+
+			<div className="flex gap-3 justify-end sticky bottom-4 bg-background/80 backdrop-blur-sm p-4 rounded-lg border">
 				<Button
 					type="button"
 					variant="outline"
 					onClick={() => router.back()}
-					disabled={isSubmitting}
-					className="sm:order-1"
+					disabled={loading}
 				>
 					Cancelar
+				</Button>
+				<Button type="submit" disabled={loading} className="gap-2">
+					{loading && <Loader2 className="h-4 w-4 animate-spin" />}
+					Crear evento
 				</Button>
 			</div>
 		</form>

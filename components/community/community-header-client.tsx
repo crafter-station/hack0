@@ -1,52 +1,53 @@
-import { ArrowLeft, BarChart3, Calendar, Settings, Users } from "lucide-react";
+"use client";
+
+import { BarChart3, Calendar, Settings, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { isAdmin } from "@/lib/actions/claims";
-import { getUserCommunityRole } from "@/lib/actions/community-members";
+import { usePathname } from "next/navigation";
 import type { Organization } from "@/lib/db/schema";
 import { CommunityActions } from "./community-actions";
 
-interface CommunityHeaderProps {
-	community: Organization;
-	slug: string;
-	currentTab: "events" | "members" | "analytics" | "settings";
+interface Tab {
+	id: "events" | "members" | "analytics" | "settings";
+	label: string;
+	icon: string;
 }
 
-export async function CommunityHeader({
+interface CommunityHeaderClientProps {
+	community: Organization;
+	slug: string;
+	userRole: string | null;
+	tabs: Tab[];
+}
+
+const iconMap = {
+	Calendar,
+	Users,
+	Settings,
+	BarChart3,
+} as const;
+
+export function CommunityHeaderClient({
 	community,
 	slug,
-	currentTab,
-}: CommunityHeaderProps) {
-	const userRole = await getUserCommunityRole(community.id);
-	const isOwner = userRole === "owner";
-	const isAdminUser = await isAdmin();
-	const canManage = isOwner || userRole === "admin" || isAdminUser;
+	userRole,
+	tabs,
+}: CommunityHeaderClientProps) {
+	const pathname = usePathname();
 
-	const tabs = [
-		{ id: "events" as const, label: "Eventos", icon: Calendar },
-		{ id: "members" as const, label: "Miembros", icon: Users },
-		...(canManage
-			? [
-					{ id: "analytics" as const, label: "Analytics", icon: BarChart3 },
-					{ id: "settings" as const, label: "Configuración", icon: Settings },
-				]
-			: []),
-	];
+	const currentTab = pathname.includes("/members")
+		? "members"
+		: pathname.includes("/analytics")
+			? "analytics"
+			: pathname.includes("/settings")
+				? "settings"
+				: "events";
 
 	return (
 		<div className="border-b bg-muted/30">
 			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
 				<div className="flex items-center justify-between gap-4 py-4">
 					<div className="flex items-center gap-3 min-w-0">
-						<Link href="/">
-							<Button variant="ghost" size="sm" className="gap-2">
-								<ArrowLeft className="h-4 w-4" />
-								Volver
-							</Button>
-						</Link>
-						<div className="h-6 w-px bg-border" />
-
 						{community.logoUrl ? (
 							<div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden border border-border">
 								<Image
@@ -75,7 +76,7 @@ export async function CommunityHeader({
 
 				<nav className="flex items-center gap-1 border-t -mb-px">
 					{tabs.map((tab) => {
-						const Icon = tab.icon;
+						const Icon = iconMap[tab.icon as keyof typeof iconMap];
 						const isActive = currentTab === tab.id;
 						const href =
 							tab.id === "events" ? `/c/${slug}` : `/c/${slug}/${tab.id}`;

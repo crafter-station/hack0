@@ -8,8 +8,6 @@ import { getEventBySlug, getEventSponsors } from "@/lib/actions/events";
 import { getEventWinnerClaims } from "@/lib/actions/claims";
 import { getEventOrganizers } from "@/lib/actions/event-organizers";
 import { getEventImportJobs, getEventNotificationLogs } from "@/lib/actions/analytics";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
 import { ManageContent } from "@/components/manage/manage-content";
 import { Button } from "@/components/ui/button";
 
@@ -52,16 +50,30 @@ async function EventManageHero({
       <div className="mx-auto max-w-screen-xl px-4 lg:px-8">
         <div className="flex items-center justify-between gap-4 py-4">
           <div className="flex items-center gap-3 min-w-0">
-            <Link href={`/c/${slug}/events/${eventSlug}`}>
-              <Button variant="ghost" size="sm" className="gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Volver
-              </Button>
-            </Link>
-            <div className="h-6 w-px bg-border" />
-            <h1 className="text-lg font-semibold tracking-tight truncate">
-              {event.name}
-            </h1>
+            {/* Event logo */}
+            {event.eventImageUrl ? (
+              <div className="relative h-10 w-10 shrink-0 rounded-md overflow-hidden border border-border">
+                <Image
+                  src={event.eventImageUrl}
+                  alt={event.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <div className="h-10 w-10 shrink-0 rounded-md bg-muted border border-border flex items-center justify-center text-xs font-medium text-muted-foreground">
+                {event.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            <div className="min-w-0">
+              <h1 className="text-lg font-semibold tracking-tight truncate">
+                {event.name}
+              </h1>
+              <p className="text-xs text-muted-foreground truncate">
+                {community.displayName || community.name}
+              </p>
+            </div>
           </div>
 
           <Link href={`/c/${slug}/events/${eventSlug}`} target="_blank">
@@ -133,9 +145,7 @@ export default async function ManageEventPage({
   const notificationLogs = await getEventNotificationLogs(event.id);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <SiteHeader />
-
+    <>
       <EventManageHero slug={slug} eventSlug={eventSlug} currentTab={tab} />
 
       <main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-8 flex-1 w-full">
@@ -152,8 +162,6 @@ export default async function ManageEventPage({
           notificationLogs={notificationLogs}
         />
       </main>
-
-      <SiteFooter />
-    </div>
+    </>
   );
 }

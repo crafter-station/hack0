@@ -1,110 +1,22 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, Calendar, Users, Settings, BarChart3, TrendingUp, Eye, Award, ExternalLink, Edit3, Loader2, Plus, UserPlus } from "lucide-react";
+import { redirect } from "next/navigation";
+import { Calendar, BarChart3, TrendingUp, Eye, Award, ExternalLink, Edit3, Loader2, Plus, UserPlus } from "lucide-react";
 import { db } from "@/lib/db";
 import { organizations, events } from "@/lib/db/schema";
-import { eq, and, gte, count, sql, desc, asc } from "drizzle-orm";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
+import { eq, and, count, sql, desc, asc } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
 import { auth } from "@clerk/nextjs/server";
 import { formatEventDateRange } from "@/lib/event-utils";
 import { getOrgImportJobs } from "@/lib/actions/import";
+import { isAdmin } from "@/lib/actions/claims";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 
 interface AnalyticsPageProps {
 	params: Promise<{ slug: string }>;
 }
 
-async function CommunityHero({ slug }: { slug: string }) {
-	const community = await db.query.organizations.findFirst({
-		where: eq(organizations.slug, slug),
-	});
-
-	if (!community) return null;
-
-	return (
-		<div className="relative border-b">
-			<div
-				className="absolute inset-0 opacity-[0.02]"
-				style={{
-					backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`,
-					backgroundSize: "48px 48px",
-				}}
-			/>
-
-			<div className="relative mx-auto max-w-screen-xl px-4 lg:px-8 py-8">
-				<div className="flex items-start justify-between gap-6 mb-6">
-					<div className="flex items-start gap-6">
-						<div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted border-2 border-border shrink-0">
-							<Users className="h-10 w-10 text-muted-foreground" />
-						</div>
-
-						<div className="flex-1 space-y-3">
-							<div>
-								<div className="flex items-center gap-3 mb-2">
-									<Link href="/">
-										<Button variant="ghost" size="sm" className="gap-2">
-											<ArrowLeft className="h-4 w-4" />
-											Volver
-										</Button>
-									</Link>
-								</div>
-								<h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-									{community.displayName || community.name}
-								</h1>
-								{community.description && (
-									<p className="text-lg text-muted-foreground mt-2 max-w-2xl">
-										{community.description}
-									</p>
-								)}
-							</div>
-						</div>
-					</div>
-
-					<Link href={`/c/${slug}/events/new`}>
-						<Button className="gap-2">
-							<UserPlus className="h-4 w-4" />
-							Nuevo evento
-						</Button>
-					</Link>
-				</div>
-
-				<nav className="flex items-center gap-1 border-b border-border -mb-px">
-					<Link
-						href={`/c/${slug}`}
-						className="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border-b-2 border-transparent"
-					>
-						<Calendar className="h-4 w-4" />
-						Eventos
-					</Link>
-					<Link
-						href={`/c/${slug}/members`}
-						className="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border-b-2 border-transparent"
-					>
-						<Users className="h-4 w-4" />
-						Miembros
-					</Link>
-					<Link
-						href={`/c/${slug}/analytics`}
-						className="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-foreground text-foreground"
-					>
-						<BarChart3 className="h-4 w-4" />
-						Analytics
-					</Link>
-					<Link
-						href={`/c/${slug}/settings`}
-						className="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border-b-2 border-transparent"
-					>
-						<Settings className="h-4 w-4" />
-						Configuración
-					</Link>
-				</nav>
-			</div>
-		</div>
-	);
-}
 
 async function AnalyticsContent({ slug }: { slug: string }) {
 	const community = await db.query.organizations.findFirst({
@@ -251,21 +163,28 @@ async function AnalyticsContent({ slug }: { slug: string }) {
 
 			<div className="space-y-4">
 				<h2 className="text-lg font-semibold">Eventos de tu comunidad</h2>
-				<div className="rounded-lg border border-border overflow-hidden">
-					{communityEvents.length === 0 && pendingJobs.length === 0 ? (
-						<div className="px-5 py-12 text-center">
-							<Calendar className="h-10 w-10 text-muted-foreground/50 mx-auto mb-4" />
-							<p className="text-muted-foreground mb-4">
-								Aún no has creado ningún evento
-							</p>
+				{communityEvents.length === 0 && pendingJobs.length === 0 ? (
+					<Empty>
+						<EmptyHeader>
+							<EmptyMedia variant="icon">
+								<Calendar className="h-6 w-6" />
+							</EmptyMedia>
+							<EmptyTitle>Aún no has creado ningún evento</EmptyTitle>
+							<EmptyDescription>
+								Crea tu primer evento para comenzar a atraer participantes y construir tu comunidad.
+							</EmptyDescription>
+						</EmptyHeader>
+						<EmptyContent>
 							<Link href={`/c/${slug}/events/new`}>
 								<Button className="gap-2">
 									<Plus className="h-4 w-4" />
 									Nuevo evento
 								</Button>
 							</Link>
-						</div>
-					) : (
+						</EmptyContent>
+					</Empty>
+				) : (
+					<div className="rounded-lg border border-border overflow-hidden">
 						<div className="divide-y divide-border">
 							{pendingJobs.map((job) => (
 								<div
@@ -331,8 +250,8 @@ async function AnalyticsContent({ slug }: { slug: string }) {
 								</div>
 							))}
 						</div>
-					)}
-				</div>
+					</div>
+				)}
 			</div>
 
 			<div className="rounded-lg border border-border p-6 bg-muted/30">
@@ -403,28 +322,17 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
 	});
 
 	if (!community) {
-		notFound();
+		redirect(`/c/${slug}`);
 	}
 
-	if (community.ownerUserId !== userId) {
+	const isAdminUser = await isAdmin();
+	if (community.ownerUserId !== userId && !isAdminUser) {
 		redirect(`/c/${slug}`);
 	}
 
 	return (
-		<div className="min-h-screen bg-background flex flex-col">
-			<SiteHeader />
-
-			<Suspense fallback={null}>
-				<CommunityHero slug={slug} />
-			</Suspense>
-
-			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-8 flex-1 w-full">
-				<Suspense fallback={<AnalyticsSkeleton />}>
-					<AnalyticsContent slug={slug} />
-				</Suspense>
-			</main>
-
-			<SiteFooter />
-		</div>
+		<Suspense fallback={<AnalyticsSkeleton />}>
+			<AnalyticsContent slug={slug} />
+		</Suspense>
 	);
 }

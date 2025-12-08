@@ -1,6 +1,7 @@
 "use client";
 
 import { Share2, Users, Edit3, Sparkles, ArrowRight, Calendar } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { InviteDialog } from "./invite-dialog";
 import { ShareEventDialog } from "./share-event-dialog";
@@ -80,24 +81,34 @@ export function ManageDashboard({ event }: ManageDashboardProps) {
 
       {event.organization && (
         <div className="rounded-lg border bg-card p-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <p className="text-sm font-medium">Comunidad</p>
+          <div className="flex items-center gap-4">
+            {/* Organization logo */}
+            {event.organization.logoUrl ? (
+              <div className="relative h-20 w-20 shrink-0 rounded-lg overflow-hidden border border-border">
+                <Image
+                  src={event.organization.logoUrl}
+                  alt={event.organization.displayName || event.organization.name}
+                  fill
+                  className="object-cover"
+                />
               </div>
-              <p className="text-lg font-semibold">{event.organization.displayName || event.organization.name}</p>
-              <p className="text-sm text-muted-foreground">
-                Ver todos los eventos de esta comunidad
-              </p>
+            ) : (
+              <div className="h-20 w-20 shrink-0 rounded-lg bg-muted border border-border flex items-center justify-center text-2xl font-semibold text-muted-foreground">
+                {(event.organization.displayName || event.organization.name).charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-muted-foreground mb-1">Comunidad</p>
+              <p className="text-lg font-semibold truncate">{event.organization.displayName || event.organization.name}</p>
+              <Link
+                href={`/c/${event.organization.slug}`}
+                className="inline-flex items-center gap-1.5 mt-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Ver todos los eventos
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
             </div>
-            <Link
-              href={`/c/${event.organization.slug}`}
-              className="flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
-            >
-              Ver feed
-              <ArrowRight className="h-4 w-4" />
-            </Link>
           </div>
         </div>
       )}
