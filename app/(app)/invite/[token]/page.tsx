@@ -16,9 +16,8 @@ interface InvitePageProps {
 async function InviteContent({ token }: { token: string }) {
   const { userId } = await auth();
 
-  if (!userId) {
-    redirect(`/sign-in?redirect_url=${encodeURIComponent(`/invite/${token}`)}`);
-  }
+  // Auth is now handled by proxy.ts middleware
+  // If we reach here, user is authenticated
 
   const validation = await validateInviteToken(token);
 
