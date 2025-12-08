@@ -5,7 +5,6 @@ const isProtectedRoute = createRouteMatcher([
   "/admin(.*)",
   "/submit(.*)",
   "/c/new(.*)",
-  "/c$",
   "/invite(.*)",
 ]);
 
