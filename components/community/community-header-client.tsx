@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
+import { BarChart3, Calendar, Settings, Users } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, Users, Settings, BarChart3 } from "lucide-react";
-import { CommunityActions } from "./community-actions";
 import type { Organization } from "@/lib/db/schema";
+import { CommunityActions } from "./community-actions";
 
 interface Tab {
 	id: "events" | "members" | "analytics" | "settings";
@@ -38,10 +38,10 @@ export function CommunityHeaderClient({
 	const currentTab = pathname.includes("/members")
 		? "members"
 		: pathname.includes("/analytics")
-		? "analytics"
-		: pathname.includes("/settings")
-		? "settings"
-		: "events";
+			? "analytics"
+			: pathname.includes("/settings")
+				? "settings"
+				: "events";
 
 	return (
 		<div className="border-b bg-muted/30">
@@ -64,7 +64,7 @@ export function CommunityHeaderClient({
 								{community.displayName || community.name}
 							</h1>
 							{community.description && (
-								<p className="text-sm text-muted-foreground truncate max-w-md">
+								<p className="text-sm text-muted-foreground truncate max-w-xl">
 									{community.description}
 								</p>
 							)}

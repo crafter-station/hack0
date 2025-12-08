@@ -660,3 +660,15 @@ export async function removeEventSponsor(
 		return { success: false, error: "Error al eliminar el sponsor" };
 	}
 }
+
+export async function deleteEvent(
+	eventId: string,
+): Promise<{ success: boolean; error?: string }> {
+	try {
+		await db.delete(events).where(eq(events.id, eventId));
+		return { success: true };
+	} catch (error) {
+		console.error("Error deleting event:", error);
+		return { success: false, error: "Error al eliminar el evento" };
+	}
+}

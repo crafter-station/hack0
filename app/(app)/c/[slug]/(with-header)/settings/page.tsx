@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { OrgSettingsForm } from "@/components/orgs/org-settings-form";
-import { getOrganizationBySlug } from "@/lib/actions/organizations";
+import { getOrganizationBySlug, canManageOrganization } from "@/lib/actions/organizations";
 import { isAdmin } from "@/lib/actions/claims";
 import { CheckCircle2 } from "lucide-react";
 
@@ -24,7 +24,9 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
   }
 
   const isAdminUser = await isAdmin();
-  if (org.ownerUserId !== userId && !isAdminUser) {
+  const canManage = await canManageOrganization(org.id);
+
+  if (!canManage && !isAdminUser) {
     redirect(`/c/${slug}`);
   }
 

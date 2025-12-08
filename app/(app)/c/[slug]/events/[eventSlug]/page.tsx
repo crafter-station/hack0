@@ -673,9 +673,21 @@ export default async function EventPage({ params }: EventPageProps) {
 									</div>
 									<div className="p-5">
 										<div className="flex items-center gap-3 mb-3">
-											<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted border">
-												<Building2 className="h-5 w-5 text-muted-foreground" />
-											</div>
+											{community.logoUrl ? (
+												<div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-white border">
+													<Image
+														src={community.logoUrl}
+														alt={community.displayName || community.name}
+														fill
+														className="object-contain p-1"
+														sizes="40px"
+													/>
+												</div>
+											) : (
+												<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted border">
+													<Building2 className="h-5 w-5 text-muted-foreground" />
+												</div>
+											)}
 											<div className="flex-1 min-w-0">
 												<div className="flex items-center gap-2 flex-wrap">
 													<Link

@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { organizations, events, type NewOrganization } from "@/lib/db/schema";
+import { organizations, events, communityMembers, type NewOrganization } from "@/lib/db/schema";
 import { eq, desc, and, or, ilike } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
@@ -34,6 +34,45 @@ export async function getUserOrganizations() {
 export async function getUserOrganization() {
   const orgs = await getUserOrganizations();
   return orgs[0] || null;
+}
+
+/**
+ * Get all organizations where the user is a member (owner, admin, member, or follower)
+ */
+export async function getAllUserOrganizations() {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return [];
+  }
+
+  const ownedOrgs = await db.query.organizations.findMany({
+    where: eq(organizations.ownerUserId, userId),
+  });
+
+  const memberOrgs = await db
+    .select({
+      organization: organizations,
+      role: communityMembers.role,
+    })
+    .from(communityMembers)
+    .innerJoin(organizations, eq(communityMembers.communityId, organizations.id))
+    .where(eq(communityMembers.userId, userId));
+
+  const allOrgs = [
+    ...ownedOrgs.map((org) => ({ organization: org, role: "owner" as const })),
+    ...memberOrgs.filter((m) => !ownedOrgs.some((o) => o.id === m.organization.id)),
+  ];
+
+  allOrgs.sort((a, b) => {
+    const roleOrder = { owner: 0, admin: 1, member: 2, follower: 3 };
+    const aOrder = roleOrder[a.role];
+    const bOrder = roleOrder[b.role];
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return new Date(b.organization.createdAt).getTime() - new Date(a.organization.createdAt).getTime();
+  });
+
+  return allOrgs;
 }
 
 /**
@@ -92,12 +131,6 @@ export async function createOrganization(
     throw new Error("Not authenticated");
   }
 
-  // Check if user already has an organization
-  const existingOrg = await getUserOrganization();
-  if (existingOrg) {
-    throw new Error("User already has an organization");
-  }
-
   // Check if slug is taken
   const slugTaken = await db.query.organizations.findFirst({
     where: eq(organizations.slug, data.slug),
@@ -117,12 +150,71 @@ export async function createOrganization(
 
   revalidatePath(`/c/${org.slug}`);
   revalidatePath("/onboarding");
+  revalidatePath("/dashboard");
 
   return org;
 }
 
 /**
- * Update the current user's organization
+ * Update a specific organization by ID
+ */
+export async function updateOrganizationById(
+  organizationId: string,
+  data: Partial<
+    Omit<NewOrganization, "id" | "ownerUserId" | "createdAt" | "updatedAt">
+  >
+) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Not authenticated");
+  }
+
+  const org = await db.query.organizations.findFirst({
+    where: eq(organizations.id, organizationId),
+  });
+
+  if (!org) {
+    throw new Error("Organization not found");
+  }
+
+  const canManage = await canManageOrganization(organizationId);
+  if (!canManage) {
+    throw new Error("Not authorized to update this organization");
+  }
+
+  if (data.slug && data.slug !== org.slug) {
+    const slugTaken = await db.query.organizations.findFirst({
+      where: eq(organizations.slug, data.slug),
+    });
+
+    if (slugTaken) {
+      throw new Error("Slug already taken");
+    }
+  }
+
+  const [updated] = await db
+    .update(organizations)
+    .set({
+      ...data,
+      updatedAt: new Date(),
+    })
+    .where(eq(organizations.id, organizationId))
+    .returning();
+
+  revalidatePath(`/c/${org.slug}`);
+  revalidatePath(`/c/${org.slug}/settings`);
+  revalidatePath(`/dashboard`);
+  if (data.slug && data.slug !== org.slug) {
+    revalidatePath(`/c/${data.slug}`);
+    revalidatePath(`/c/${data.slug}/settings`);
+  }
+
+  return updated;
+}
+
+/**
+ * Update the current user's organization (backwards compatibility)
  */
 export async function updateOrganization(
   data: Partial<
@@ -140,34 +232,7 @@ export async function updateOrganization(
     throw new Error("Organization not found");
   }
 
-  // If updating slug, check if it's taken
-  if (data.slug && data.slug !== org.slug) {
-    const slugTaken = await db.query.organizations.findFirst({
-      where: eq(organizations.slug, data.slug),
-    });
-
-    if (slugTaken) {
-      throw new Error("Slug already taken");
-    }
-  }
-
-  const [updated] = await db
-    .update(organizations)
-    .set({
-      ...data,
-      updatedAt: new Date(),
-    })
-    .where(eq(organizations.id, org.id))
-    .returning();
-
-  revalidatePath(`/c/${org.slug}`);
-  revalidatePath(`/c/${org.slug}/settings`);
-  if (data.slug && data.slug !== org.slug) {
-    revalidatePath(`/c/${data.slug}`);
-    revalidatePath(`/c/${data.slug}/settings`);
-  }
-
-  return updated;
+  return updateOrganizationById(org.id, data);
 }
 
 // ============================================
@@ -237,6 +302,43 @@ export async function getOrganizationStats(organizationId?: string) {
     activeEvents,
     endedEvents: orgEvents.length - activeEvents,
   };
+}
+
+// ============================================
+// PERMISSIONS
+// ============================================
+
+/**
+ * Check if current user can manage a specific organization
+ * (either owner or admin member)
+ */
+export async function canManageOrganization(organizationId: string): Promise<boolean> {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return false;
+  }
+
+  const org = await db.query.organizations.findFirst({
+    where: eq(organizations.id, organizationId),
+  });
+
+  if (!org) {
+    return false;
+  }
+
+  if (org.ownerUserId === userId) {
+    return true;
+  }
+
+  const membership = await db.query.communityMembers.findFirst({
+    where: and(
+      eq(communityMembers.communityId, organizationId),
+      eq(communityMembers.userId, userId)
+    ),
+  });
+
+  return membership?.role === "admin";
 }
 
 // ============================================

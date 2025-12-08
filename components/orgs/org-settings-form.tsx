@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ORGANIZER_TYPE_LABELS, type Organization } from "@/lib/db/schema";
-import { updateOrganization } from "@/lib/actions/organizations";
+import { updateOrganizationById } from "@/lib/actions/organizations";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Loader2, Save } from "lucide-react";
 
@@ -44,7 +44,7 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
     const formData = new FormData(e.currentTarget);
 
     try {
-      await updateOrganization({
+      await updateOrganizationById(organization.id, {
         name: formData.get("name") as string,
         description: (formData.get("description") as string) || undefined,
         type: (formData.get("type") as string) || undefined,
