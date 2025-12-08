@@ -61,7 +61,15 @@ export function OrgSwitcher({ organizations }: OrgSwitcherProps) {
   }, [organizations, searchQuery]);
 
   if (organizations.length === 0) {
-    return null;
+    return (
+      <Link
+        href="/dashboard"
+        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      >
+        <LayoutGrid className="h-3.5 w-3.5" />
+        <span className="hidden sm:inline">Comunidades</span>
+      </Link>
+    );
   }
 
   if (organizations.length === 1 && !currentSlug) {
