@@ -367,18 +367,24 @@ export default async function EventPage({ params }: EventPageProps) {
 									{getEventTypeLabel(hackathon.eventType)}
 								</span>
 
-								{hackathon.skillLevel && hackathon.skillLevel !== "all" && (
-									<span className="inline-flex items-center gap-1 h-6 rounded-md border border-border px-2 text-xs text-muted-foreground">
-										<GraduationCap className="h-3 w-3" />
+								{hackathon.skillLevel && (
+									<span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-500">
+										<Sparkles className="h-3 w-3" />
 										{getSkillLevelLabel(hackathon.skillLevel)}
 									</span>
 								)}
 
-								{hackathon.isJuniorFriendly && (
-									<span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-500">
-										<Sparkles className="h-3 w-3" />
-										Junior friendly
-									</span>
+								{hackathon.domains && hackathon.domains.length > 0 && (
+									<>
+										{hackathon.domains.slice(0, 3).map((domain) => (
+											<span
+												key={domain}
+												className="inline-flex h-6 items-center rounded-md border border-border px-2 text-xs text-muted-foreground"
+											>
+												{getDomainLabel(domain)}
+											</span>
+										))}
+									</>
 								)}
 							</div>
 						</div>
@@ -532,7 +538,7 @@ export default async function EventPage({ params }: EventPageProps) {
 														{tierSponsors.map((sponsor) => (
 															<a
 																key={sponsor.id}
-																href={sponsor.websiteUrl || "#"}
+																href={sponsor.organization.websiteUrl || "#"}
 																target="_blank"
 																rel="noopener noreferrer"
 																className={`group flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-muted/50 ${
@@ -541,11 +547,11 @@ export default async function EventPage({ params }: EventPageProps) {
 																		: ""
 																}`}
 															>
-																{sponsor.logoUrl ? (
+																{sponsor.organization.logoUrl ? (
 																	<div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-white">
 																		<Image
-																			src={sponsor.logoUrl}
-																			alt={sponsor.name}
+																			src={sponsor.organization.logoUrl}
+																			alt={sponsor.organization.name}
 																			fill
 																			className="object-contain p-1"
 																			sizes="40px"
@@ -553,11 +559,11 @@ export default async function EventPage({ params }: EventPageProps) {
 																	</div>
 																) : (
 																	<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-medium text-muted-foreground">
-																		{sponsor.name.charAt(0)}
+																		{sponsor.organization.name.charAt(0)}
 																	</div>
 																)}
 																<span className="text-sm font-medium group-hover:underline underline-offset-2">
-																	{sponsor.name}
+																	{sponsor.organization.name}
 																</span>
 															</a>
 														))}
@@ -578,43 +584,39 @@ export default async function EventPage({ params }: EventPageProps) {
 
 						<aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
 							{community && (
-								<div className="rounded-xl border bg-card p-4 space-y-4">
-									<div className="flex items-start gap-3">
-										<div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-muted border border-border flex items-center justify-center">
-											<Building2 className="h-5 w-5 text-muted-foreground" />
-										</div>
-										<div className="flex-1 min-w-0">
-											<div className="flex items-center gap-2 flex-wrap">
-												{community.websiteUrl ? (
-													<a
-														href={community.websiteUrl}
-														target="_blank"
-														rel="noopener noreferrer"
-														className="font-medium hover:underline underline-offset-2"
-													>
-														{community.displayName || community.name}
-													</a>
-												) : (
-													<span className="font-medium">{community.displayName || community.name}</span>
-												)}
-												{community.isVerified ? (
-													<BadgeCheck className="h-4 w-4 fill-foreground text-background shrink-0" />
-												) : (
-													<span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-dashed border-muted-foreground/40 shrink-0">
-														<span className="text-[8px] text-muted-foreground/60">?</span>
-													</span>
-												)}
+								<div className="rounded-lg border bg-card">
+									<div className="px-5 py-4 border-b">
+										<h3 className="text-sm font-semibold">Organizado por</h3>
+									</div>
+									<div className="p-5">
+										<div className="flex items-center gap-3 mb-3">
+											<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted border">
+												<Building2 className="h-5 w-5 text-muted-foreground" />
 											</div>
-											<div className="flex items-center gap-2 mt-0.5">
+											<div className="flex-1 min-w-0">
+												<div className="flex items-center gap-2 flex-wrap">
+													{community.websiteUrl ? (
+														<a
+															href={community.websiteUrl}
+															target="_blank"
+															rel="noopener noreferrer"
+															className="text-sm font-medium hover:underline underline-offset-2 truncate"
+														>
+															{community.displayName || community.name}
+														</a>
+													) : (
+														<span className="text-sm font-medium truncate">
+															{community.displayName || community.name}
+														</span>
+													)}
+													{community.isVerified && (
+														<BadgeCheck className="h-4 w-4 fill-foreground text-background shrink-0" />
+													)}
+												</div>
 												{community.type && (
-													<span className="text-sm text-muted-foreground">
+													<p className="text-xs text-muted-foreground mt-0.5">
 														{getOrganizerTypeLabel(community.type)}
-													</span>
-												)}
-												{community.isVerified ? (
-													<span className="text-xs text-emerald-500">Verificado</span>
-												) : (
-													<span className="text-xs text-muted-foreground/60">Sin verificar</span>
+													</p>
 												)}
 											</div>
 										</div>
@@ -622,109 +624,108 @@ export default async function EventPage({ params }: EventPageProps) {
 								</div>
 							)}
 
-							<div className="rounded-xl border bg-card p-4 space-y-3">
-								{hackathon.registrationUrl && (
-									<a
-										href={hackathon.registrationUrl}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="flex w-full h-10 items-center justify-center gap-2 rounded-lg bg-foreground text-sm font-medium text-background transition-colors hover:bg-foreground/90"
-									>
-										<ExternalLink className="h-4 w-4" />
-										Inscribirme
-									</a>
-								)}
-								<div className="flex gap-2">
-									{hackathon.websiteUrl && (
+							<div className="rounded-lg border bg-card">
+								<div className="px-5 py-4 border-b">
+									<h3 className="text-sm font-semibold">Acciones</h3>
+								</div>
+								<div className="p-5 space-y-3">
+									{hackathon.registrationUrl && (
 										<a
-											href={hackathon.websiteUrl}
+											href={hackathon.registrationUrl}
 											target="_blank"
 											rel="noopener noreferrer"
-											className="flex flex-1 h-9 items-center justify-center gap-2 rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+											className="flex w-full h-10 items-center justify-center gap-2 rounded-lg bg-foreground text-sm font-medium text-background transition-colors hover:bg-foreground/90"
 										>
-											<Globe className="h-4 w-4" />
-											Web
+											<ExternalLink className="h-4 w-4" />
+											Inscribirme
 										</a>
 									)}
-									{hackathon.devpostUrl && (
-										<a
-											href={hackathon.devpostUrl}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="flex flex-1 h-9 items-center justify-center gap-2 rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-										>
-											<ArrowUpRight className="h-4 w-4" />
-											Devpost
-										</a>
-									)}
+									<div className="flex gap-2">
+										{hackathon.websiteUrl && (
+											<a
+												href={hackathon.websiteUrl}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="flex flex-1 h-9 items-center justify-center gap-2 rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+											>
+												<Globe className="h-4 w-4" />
+												Web
+											</a>
+										)}
+										{hackathon.devpostUrl && (
+											<a
+												href={hackathon.devpostUrl}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="flex flex-1 h-9 items-center justify-center gap-2 rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+											>
+												<ArrowUpRight className="h-4 w-4" />
+												Devpost
+											</a>
+										)}
+									</div>
 								</div>
 							</div>
 
 							{hackathon.prizePool !== null && hackathon.prizePool > 0 && (
-								<div className="rounded-xl border bg-card p-4">
-									<div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-										<TrophyIcon className="h-3.5 w-3.5" />
-										Premio
+								<div className="rounded-lg border bg-card">
+									<div className="px-5 py-4 border-b">
+										<div className="flex items-center gap-2">
+											<TrophyIcon className="h-4 w-4 text-muted-foreground" />
+											<h3 className="text-sm font-semibold">Premio</h3>
+										</div>
 									</div>
-									<p className="font-bold text-2xl text-emerald-500">
-										{hackathon.prizeCurrency === "PEN" ? "S/" : "$"}
-										{hackathon.prizePool.toLocaleString()}
-									</p>
-									{hackathon.prizeDescription && (
-										<p className="text-sm text-muted-foreground mt-1">
-											{hackathon.prizeDescription}
+									<div className="p-5">
+										<p className="font-bold text-2xl text-emerald-500">
+											{hackathon.prizeCurrency === "PEN" ? "S/" : "$"}
+											{hackathon.prizePool.toLocaleString()}
 										</p>
-									)}
+										{hackathon.prizeDescription && (
+											<p className="text-xs text-muted-foreground mt-2">
+												{hackathon.prizeDescription}
+											</p>
+										)}
+									</div>
 								</div>
 							)}
 
 							{deadline && isDateInFuture(deadline) && (
-								<div className="rounded-xl border bg-card p-4">
-									<div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-										<Clock className="h-3.5 w-3.5" />
-										Cierre de inscripciones
+								<div className="rounded-lg border bg-card">
+									<div className="px-5 py-4 border-b">
+										<div className="flex items-center gap-2">
+											<Clock className="h-4 w-4 text-muted-foreground" />
+											<h3 className="text-sm font-semibold">Cierre de inscripciones</h3>
+										</div>
 									</div>
-									<p className="font-medium">
-										{format(deadline, "d 'de' MMMM, yyyy", { locale: es })}
-									</p>
-									<p className="text-sm text-muted-foreground mt-0.5">
-										{format(deadline, "h:mm a", { locale: es })}
-									</p>
+									<div className="p-5">
+										<p className="text-sm font-medium">
+											{format(deadline, "d 'de' MMMM, yyyy", { locale: es })}
+										</p>
+										<p className="text-xs text-muted-foreground mt-1">
+											{format(deadline, "h:mm a", { locale: es })}
+										</p>
+									</div>
 								</div>
 							)}
 
 							{startDate && (
-								<div className="rounded-xl border bg-card p-4">
-									<div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-										<CalendarIcon className="h-3.5 w-3.5" />
-										Fechas del evento
+								<div className="rounded-lg border bg-card">
+									<div className="px-5 py-4 border-b">
+										<div className="flex items-center gap-2">
+											<CalendarIcon className="h-4 w-4 text-muted-foreground" />
+											<h3 className="text-sm font-semibold">Fechas del evento</h3>
+										</div>
 									</div>
-									<p className="font-medium">
-										{format(startDate, "d MMM", { locale: es })}
-										{endDate && startDate.toDateString() !== endDate.toDateString() && (
-											<> – {format(endDate, "d MMM yyyy", { locale: es })}</>
-										)}
-										{(!endDate || startDate.toDateString() === endDate.toDateString()) && (
-											<>, {format(startDate, "yyyy")}</>
-										)}
-									</p>
-								</div>
-							)}
-
-							{hackathon.domains && hackathon.domains.length > 0 && (
-								<div className="rounded-xl border bg-card p-4">
-									<div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
-										Categorías
-									</div>
-									<div className="flex flex-wrap gap-2">
-										{hackathon.domains.map((domain) => (
-											<span
-												key={domain}
-												className="inline-flex h-7 items-center rounded-lg border border-border bg-muted/50 px-2.5 text-xs text-muted-foreground"
-											>
-												{getDomainLabel(domain)}
-											</span>
-										))}
+									<div className="p-5">
+										<p className="text-sm font-medium">
+											{format(startDate, "d MMM", { locale: es })}
+											{endDate && startDate.toDateString() !== endDate.toDateString() && (
+												<> – {format(endDate, "d MMM yyyy", { locale: es })}</>
+											)}
+											{(!endDate || startDate.toDateString() === endDate.toDateString()) && (
+												<>, {format(startDate, "yyyy")}</>
+											)}
+										</p>
 									</div>
 								</div>
 							)}

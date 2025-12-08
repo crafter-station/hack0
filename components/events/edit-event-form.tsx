@@ -1,11 +1,10 @@
 "use client";
 
-import { ImageIcon, Loader2, Pencil, X } from "lucide-react";
+import { ImageIcon, Loader2, Pencil, Tag, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { DateRangeInput } from "@/components/events/date-range-input";
 import { FormatSelector } from "@/components/events/format-selector";
-import { JuniorFriendlyToggle } from "@/components/events/junior-friendly-toggle";
 import { LinksInput } from "@/components/events/links-input";
 import { LocationInput } from "@/components/events/location-input";
 import { PrizeInput } from "@/components/events/prize-input";
@@ -18,16 +17,30 @@ import {
 } from "@/components/ui/field";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { updateEvent } from "@/lib/actions/claims";
 import type { Event } from "@/lib/db/schema";
+import {
+	EVENT_TYPE_OPTIONS,
+	SKILL_LEVEL_OPTIONS,
+} from "@/lib/event-utils";
+import type { EventSponsorWithOrg } from "@/lib/actions/events";
+import { SponsorManager } from "@/components/events/sponsor-manager";
 
 interface EditEventFormProps {
 	event: Event;
+	sponsors: EventSponsorWithOrg[];
 	onSuccess?: () => void;
 }
 
-export function EditEventForm({ event, onSuccess }: EditEventFormProps) {
+export function EditEventForm({ event, sponsors, onSuccess }: EditEventFormProps) {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState(false);
@@ -63,9 +76,8 @@ export function EditEventForm({ event, onSuccess }: EditEventFormProps) {
 		event.registrationUrl || "",
 	);
 	const [eventImageUrl, setEventImageUrl] = useState(event.eventImageUrl || "");
-	const [isJuniorFriendly, setIsJuniorFriendly] = useState(
-		event.isJuniorFriendly || false,
-	);
+	const [eventType, setEventType] = useState(event.eventType || "hackathon");
+	const [skillLevel, setSkillLevel] = useState(event.skillLevel || "all");
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -92,7 +104,8 @@ export function EditEventForm({ event, onSuccess }: EditEventFormProps) {
 			websiteUrl: websiteUrl || undefined,
 			registrationUrl: registrationUrl || undefined,
 			eventImageUrl: eventImageUrl || undefined,
-			isJuniorFriendly,
+			eventType,
+			skillLevel,
 		});
 
 		setLoading(false);
@@ -154,6 +167,60 @@ export function EditEventForm({ event, onSuccess }: EditEventFormProps) {
 						</FieldDescription>
 					</Field>
 
+					<div className="space-y-3">
+						<div className="flex items-center gap-2 text-sm font-medium">
+							<Tag className="h-4 w-4" />
+							Clasificación
+						</div>
+
+						<div className="rounded-lg border bg-card p-6 space-y-4">
+						<div className="grid sm:grid-cols-2 gap-4">
+							<Field>
+								<FieldLabel htmlFor="eventType">Tipo de evento</FieldLabel>
+								<Select value={eventType} onValueChange={setEventType}>
+									<SelectTrigger id="eventType">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										{EVENT_TYPE_OPTIONS.map((option) => (
+											<SelectItem key={option.value} value={option.value}>
+												{option.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</Field>
+
+							<Field>
+								<FieldLabel htmlFor="skillLevel">Nivel requerido</FieldLabel>
+								<Select value={skillLevel} onValueChange={setSkillLevel}>
+									<SelectTrigger id="skillLevel">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										{SKILL_LEVEL_OPTIONS.map((option) => (
+											<SelectItem key={option.value} value={option.value}>
+												{option.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</Field>
+						</div>
+
+						{eventType === "hackathon" && (
+							<PrizeInput
+								prizePool={prizePool}
+								prizeCurrency={prizeCurrency}
+								prizeDescription={prizeDescription}
+								onPrizePoolChange={setPrizePool}
+								onPrizeCurrencyChange={setPrizeCurrency}
+								onPrizeDescriptionChange={setPrizeDescription}
+							/>
+						)}
+						</div>
+					</div>
+
 					<DateRangeInput
 						startDate={startDate}
 						endDate={endDate}
@@ -176,15 +243,6 @@ export function EditEventForm({ event, onSuccess }: EditEventFormProps) {
 						/>
 					)}
 
-					<PrizeInput
-						prizePool={prizePool}
-						prizeCurrency={prizeCurrency}
-						prizeDescription={prizeDescription}
-						onPrizePoolChange={setPrizePool}
-						onPrizeCurrencyChange={setPrizeCurrency}
-						onPrizeDescriptionChange={setPrizeDescription}
-					/>
-
 					<LinksInput
 						websiteUrl={websiteUrl}
 						registrationUrl={registrationUrl}
@@ -192,9 +250,10 @@ export function EditEventForm({ event, onSuccess }: EditEventFormProps) {
 						onRegistrationUrlChange={setRegistrationUrl}
 					/>
 
-					<JuniorFriendlyToggle
-						value={isJuniorFriendly}
-						onChange={setIsJuniorFriendly}
+					<SponsorManager
+						eventId={event.id}
+						sponsors={sponsors}
+						onUpdate={onSuccess}
 					/>
 				</FieldGroup>
 

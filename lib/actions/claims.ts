@@ -225,6 +225,9 @@ export interface UpdateEventInput {
   registrationUrl?: string;
   eventImageUrl?: string;
   isJuniorFriendly?: boolean;
+  eventType?: string;
+  skillLevel?: string;
+  status?: string;
 }
 
 export async function updateEvent(input: UpdateEventInput) {

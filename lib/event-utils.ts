@@ -4,6 +4,9 @@ import {
   EVENT_TYPE_LABELS,
   ORGANIZER_TYPE_LABELS,
   DOMAIN_LABELS,
+  FORMATS,
+  SKILL_LEVELS,
+  STATUSES,
 } from "@/lib/db/schema";
 
 // =============================================================================
@@ -62,17 +65,24 @@ export function getEventStatus(event: {
 // LABELS
 // =============================================================================
 
-const FORMAT_LABELS: Record<string, string> = {
+const FORMAT_LABELS: Record<typeof FORMATS[number], string> = {
   virtual: "Virtual",
   "in-person": "Presencial",
   hybrid: "Híbrido",
 };
 
-const SKILL_LEVEL_LABELS: Record<string, string> = {
+const SKILL_LEVEL_LABELS: Record<typeof SKILL_LEVELS[number], string> = {
   beginner: "Principiante",
   intermediate: "Intermedio",
   advanced: "Avanzado",
   all: "Todos los niveles",
+};
+
+const STATUS_LABELS: Record<typeof STATUSES[number], string> = {
+  upcoming: "Próximamente",
+  open: "Abierto",
+  ongoing: "En curso",
+  ended: "Terminado",
 };
 
 export function getFormatLabel(format: string | null, department?: string | null): string {
@@ -240,12 +250,9 @@ export const SKILL_LEVEL_OPTIONS = Object.entries(SKILL_LEVEL_LABELS).map(
   ([value, label]) => ({ value, label })
 );
 
-export const STATUS_OPTIONS = [
-  { value: "open", label: "Abierto" },
-  { value: "upcoming", label: "Próximamente" },
-  { value: "ongoing", label: "En curso" },
-  { value: "ended", label: "Terminado" },
-] as const;
+export const STATUS_OPTIONS = Object.entries(STATUS_LABELS).map(
+  ([value, label]) => ({ value, label })
+);
 
 // For now, only Peru and Global are shown in filters
 // The schema still supports all LATAM countries for future expansion

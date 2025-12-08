@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { organizations, events, type NewOrganization } from "@/lib/db/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, or, ilike } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
@@ -47,6 +47,24 @@ export async function getOrganizationById(id: string) {
   });
 
   return org;
+}
+
+/**
+ * Search organizations by name or slug
+ */
+export async function searchOrganizations(query: string, limit = 10) {
+  const results = await db
+    .select()
+    .from(organizations)
+    .where(
+      or(
+        ilike(organizations.name, `%${query}%`),
+        ilike(organizations.slug, `%${query}%`)
+      )
+    )
+    .limit(limit);
+
+  return results;
 }
 
 // ============================================
