@@ -24,7 +24,6 @@ import { Loader2, Send, Sparkles } from "lucide-react";
 export function SubmitEventForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isJuniorFriendly, setIsJuniorFriendly] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -43,7 +42,6 @@ export function SubmitEventForm() {
       skillLevel: formData.get("skillLevel") as string,
       country: formData.get("country") as string,
       city: formData.get("city") as string || undefined,
-      isJuniorFriendly,
       startDate: formData.get("startDate") as string || undefined,
       endDate: formData.get("endDate") as string || undefined,
       registrationDeadline: formData.get("registrationDeadline") as string || undefined,
@@ -188,34 +186,6 @@ export function SubmitEventForm() {
           </div>
         </div>
 
-        {/* Junior friendly toggle */}
-        <div className="flex items-center justify-between rounded-lg border p-4">
-          <div className="flex items-center gap-3">
-            <Sparkles className="h-4 w-4 text-muted-foreground" />
-            <div>
-              <p className="text-sm font-medium">Junior friendly</p>
-              <p className="text-xs text-muted-foreground">
-                Apto para principiantes sin experiencia
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={isJuniorFriendly}
-            onClick={() => setIsJuniorFriendly(!isJuniorFriendly)}
-            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-              isJuniorFriendly ? "bg-foreground" : "bg-muted"
-            }`}
-          >
-            <span
-              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow ring-0 transition duration-200 ease-in-out ${
-                isJuniorFriendly ? "translate-x-5" : "translate-x-0"
-              }`}
-            />
-          </button>
-          <input type="hidden" name="isJuniorFriendly" value={isJuniorFriendly ? "true" : "false"} />
-        </div>
       </section>
 
       {/* Section: Fechas */}

@@ -15,12 +15,15 @@ import {
 	Calendar,
 	MapPin,
 	Building2,
+	Bell,
+	CheckCircle2,
+	Languages,
 } from "lucide-react";
 import { TrophyIcon } from "@/components/icons/trophy";
 import { CalendarIcon } from "@/components/icons/calendar";
 import { WinnerSection } from "@/components/events/winner-section";
-import { OrganizerClaimSection } from "@/components/events/organizer-claim-section";
 import { ManageEventButton } from "@/components/events/manage-event-button";
+import { EventCountdown } from "@/components/events/event-countdown";
 import { notFound } from "next/navigation";
 import { getEventBySlug, getChildEvents, getEventSponsors } from "@/lib/actions/events";
 import { getOrganizationBySlug } from "@/lib/actions/organizations";
@@ -34,6 +37,7 @@ import {
 	getOrganizerTypeLabel,
 	getSkillLevelLabel,
 	isDateInFuture,
+	isEventJuniorFriendly,
 } from "@/lib/event-utils";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -130,12 +134,19 @@ export default async function EventPage({ params }: EventPageProps) {
 	const isEnded = status.status === "ended";
 	const isOngoing = status.status === "ongoing";
 	const isOpen = status.status === "open";
+	const isJuniorFriendly = isEventJuniorFriendly(hackathon.skillLevel);
 
 	const startDate = hackathon.startDate ? new Date(hackathon.startDate) : null;
 	const endDate = hackathon.endDate ? new Date(hackathon.endDate) : null;
 	const deadline = hackathon.registrationDeadline
 		? new Date(hackathon.registrationDeadline)
 		: null;
+
+	const hasValidTime = startDate && (
+		startDate.getHours() !== 0 ||
+		startDate.getMinutes() !== 0 ||
+		(endDate && (endDate.getHours() !== 0 || endDate.getMinutes() !== 0))
+	);
 
 	const stripePattern = `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23888' fill-opacity='0.15'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E")`;
 
@@ -309,32 +320,50 @@ export default async function EventPage({ params }: EventPageProps) {
 												</span>
 											)}
 										</p>
-										<p className="text-sm text-muted-foreground">
-											{format(startDate, "h:mm a", { locale: es })}
-											{endDate && (
-												<> – {format(endDate, "h:mm a", { locale: es })}</>
-											)}
-											{hackathon.timezone && (
-												<span className="text-muted-foreground/60"> · {hackathon.timezone}</span>
-											)}
-										</p>
+										{hasValidTime ? (
+											<p className="text-sm text-muted-foreground">
+												{format(startDate, "h:mm a", { locale: es })}
+												{endDate && (
+													<> – {format(endDate, "h:mm a", { locale: es })}</>
+												)}
+												{hackathon.timezone && (
+													<span className="text-muted-foreground/60"> · {hackathon.timezone}</span>
+												)}
+											</p>
+										) : (
+											<p className="text-sm text-muted-foreground">
+												Evento de día completo
+											</p>
+										)}
 									</div>
 								</div>
 							)}
 
-							<div className="flex items-start gap-2 text-muted-foreground">
-								<MapPin className="h-4 w-4 mt-0.5 shrink-0" />
-								<div>
-									{hackathon.venue && (
-										<p className="text-foreground">{hackathon.venue}</p>
-									)}
-									<p className={hackathon.venue ? "text-sm" : "text-foreground"}>
-										{hackathon.city}
-										{hackathon.city && hackathon.department && hackathon.city !== hackathon.department && `, ${hackathon.department}`}
-										{!hackathon.city && !hackathon.venue && getFormatLabel(hackathon.format, hackathon.department)}
-										{(hackathon.city || hackathon.venue) && `, ${getFormatLabel(hackathon.format)}`}
-									</p>
+							<div className="space-y-3">
+								<div className="flex items-start gap-2 text-muted-foreground">
+									<MapPin className="h-4 w-4 mt-0.5 shrink-0" />
+									<div>
+										{hackathon.venue && (
+											<p className="text-foreground">{hackathon.venue}</p>
+										)}
+										<p className={hackathon.venue ? "text-sm" : "text-foreground"}>
+											{hackathon.city}
+											{hackathon.city && hackathon.department && hackathon.city !== hackathon.department && `, ${hackathon.department}`}
+											{!hackathon.city && !hackathon.venue && getFormatLabel(hackathon.format, hackathon.department)}
+											{(hackathon.city || hackathon.venue) && `, ${getFormatLabel(hackathon.format)}`}
+										</p>
+									</div>
 								</div>
+
+								<EventCountdown
+									event={{
+										startDate,
+										endDate,
+										registrationDeadline: deadline,
+										status: status.status,
+									}}
+									variant="hero"
+								/>
 							</div>
 
 							<div className="flex flex-wrap items-center gap-2">
@@ -367,9 +396,16 @@ export default async function EventPage({ params }: EventPageProps) {
 									{getEventTypeLabel(hackathon.eventType)}
 								</span>
 
-								{hackathon.skillLevel && (
+								{isJuniorFriendly && (
 									<span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-500">
 										<Sparkles className="h-3 w-3" />
+										Ideal para estudiantes
+									</span>
+								)}
+
+								{hackathon.skillLevel && !isJuniorFriendly && (
+									<span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+										<GraduationCap className="h-3 w-3" />
 										{getSkillLevelLabel(hackathon.skillLevel)}
 									</span>
 								)}
@@ -579,7 +615,6 @@ export default async function EventPage({ params }: EventPageProps) {
 								<WinnerSection eventId={hackathon.id} eventName={hackathon.name} />
 							)}
 
-							<OrganizerClaimSection eventId={hackathon.id} eventName={hackathon.name} />
 						</div>
 
 						<aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
@@ -595,22 +630,14 @@ export default async function EventPage({ params }: EventPageProps) {
 											</div>
 											<div className="flex-1 min-w-0">
 												<div className="flex items-center gap-2 flex-wrap">
-													{community.websiteUrl ? (
-														<a
-															href={community.websiteUrl}
-															target="_blank"
-															rel="noopener noreferrer"
-															className="text-sm font-medium hover:underline underline-offset-2 truncate"
-														>
-															{community.displayName || community.name}
-														</a>
-													) : (
-														<span className="text-sm font-medium truncate">
-															{community.displayName || community.name}
-														</span>
-													)}
+													<Link
+														href={`/c/${slug}`}
+														className="text-sm font-medium hover:underline underline-offset-2 truncate"
+													>
+														{community.displayName || community.name}
+													</Link>
 													{community.isVerified && (
-														<BadgeCheck className="h-4 w-4 fill-foreground text-background shrink-0" />
+														<BadgeCheck className="h-4 w-4 fill-emerald-500 text-background shrink-0" />
 													)}
 												</div>
 												{community.type && (
@@ -620,6 +647,13 @@ export default async function EventPage({ params }: EventPageProps) {
 												)}
 											</div>
 										</div>
+										<Link
+											href={`/c/${slug}`}
+											className="flex w-full h-9 items-center justify-center gap-2 rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+										>
+											<Building2 className="h-4 w-4" />
+											Ver comunidad
+										</Link>
 									</div>
 								</div>
 							)}
@@ -630,16 +664,36 @@ export default async function EventPage({ params }: EventPageProps) {
 								</div>
 								<div className="p-5 space-y-3">
 									{hackathon.registrationUrl && (
-										<a
-											href={hackathon.registrationUrl}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="flex w-full h-10 items-center justify-center gap-2 rounded-lg bg-foreground text-sm font-medium text-background transition-colors hover:bg-foreground/90"
-										>
-											<ExternalLink className="h-4 w-4" />
-											Inscribirme
-										</a>
+										<>
+											<a
+												href={hackathon.registrationUrl}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="flex w-full h-10 items-center justify-center gap-2 rounded-lg bg-foreground text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+											>
+												<ExternalLink className="h-4 w-4" />
+												Inscribirme
+											</a>
+											{(isOpen || status.status === "upcoming") && deadline && (
+												<div className="text-center space-y-1">
+													<p className="text-xs text-muted-foreground">
+														{isOpen ? "Registro abierto hasta" : "Registro abre"}
+													</p>
+													<p className="text-xs font-medium">
+														{format(deadline, "d 'de' MMMM, yyyy", { locale: es })}
+													</p>
+												</div>
+											)}
+										</>
 									)}
+
+									<button
+										className="flex w-full h-9 items-center justify-center gap-2 rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+									>
+										<Bell className="h-4 w-4" />
+										Seguir evento
+									</button>
+
 									<div className="flex gap-2">
 										{hackathon.websiteUrl && (
 											<a
@@ -668,22 +722,35 @@ export default async function EventPage({ params }: EventPageProps) {
 							</div>
 
 							{hackathon.prizePool !== null && hackathon.prizePool > 0 && (
-								<div className="rounded-lg border bg-card">
-									<div className="px-5 py-4 border-b">
+								<div className="rounded-lg border bg-card overflow-hidden">
+									<div className="px-5 py-4 border-b bg-emerald-500/5">
 										<div className="flex items-center gap-2">
-											<TrophyIcon className="h-4 w-4 text-muted-foreground" />
-											<h3 className="text-sm font-semibold">Premio</h3>
+											<TrophyIcon className="h-4 w-4 text-emerald-500" />
+											<h3 className="text-sm font-semibold">Premio Total</h3>
 										</div>
 									</div>
 									<div className="p-5">
-										<p className="font-bold text-2xl text-emerald-500">
+										<p className="font-bold text-3xl text-emerald-500 mb-3">
 											{hackathon.prizeCurrency === "PEN" ? "S/" : "$"}
 											{hackathon.prizePool.toLocaleString()}
 										</p>
 										{hackathon.prizeDescription && (
-											<p className="text-xs text-muted-foreground mt-2">
-												{hackathon.prizeDescription}
-											</p>
+											<div className="space-y-2 pt-3 border-t">
+												<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Distribución</p>
+												<div className="space-y-1.5">
+													{hackathon.prizeDescription.split('\n').filter(line => line.trim()).map((line, i) => {
+														const hasEmoji = /[🥇🥈🥉]/.test(line);
+														return (
+															<div key={i} className={`text-sm flex items-start gap-2 ${hasEmoji ? 'font-medium' : ''}`}>
+																{hasEmoji && <span className="shrink-0">{line.match(/[🥇🥈🥉]/)?.[0]}</span>}
+																<span className={hasEmoji ? '' : 'text-muted-foreground'}>
+																	{line.replace(/[🥇🥈🥉]/g, '').trim()}
+																</span>
+															</div>
+														);
+													})}
+												</div>
+											</div>
 										)}
 									</div>
 								</div>

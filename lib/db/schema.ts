@@ -129,9 +129,6 @@ export const events = pgTable("events", {
 	// Media
 	eventImageUrl: varchar("event_image_url", { length: 500 }),
 
-	// Flags
-	isJuniorFriendly: boolean("is_junior_friendly").default(false), // Key differentiator
-
 	// Status
 	status: statusEnum("status").default("upcoming"),
 	isFeatured: boolean("is_featured").default(false),
@@ -205,38 +202,6 @@ export const notificationLogs = pgTable("notification_logs", {
 
 export type NotificationLog = typeof notificationLogs.$inferSelect;
 export type NewNotificationLog = typeof notificationLogs.$inferInsert;
-
-// ============================================
-// ORGANIZER CLAIMS - Verification requests
-// ============================================
-
-export const organizerClaims = pgTable("organizer_claims", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	eventId: uuid("event_id")
-		.references(() => events.id)
-		.notNull(),
-	userId: varchar("user_id", { length: 255 }).notNull(), // Clerk user ID
-
-	// Contact info
-	email: varchar("email", { length: 255 }).notNull(),
-	name: varchar("name", { length: 255 }),
-	role: varchar("role", { length: 100 }), // "Organizador", "Co-organizador", etc.
-
-	// Proof
-	proofUrl: varchar("proof_url", { length: 500 }), // Link to proof (LinkedIn, website)
-	proofDescription: text("proof_description"),
-
-	// Status: pending, approved, rejected
-	status: varchar("status", { length: 20 }).default("pending"),
-	reviewedAt: timestamp("reviewed_at"),
-	reviewedBy: varchar("reviewed_by", { length: 255 }),
-	rejectionReason: text("rejection_reason"),
-
-	createdAt: timestamp("created_at").defaultNow(),
-});
-
-export type OrganizerClaim = typeof organizerClaims.$inferSelect;
-export type NewOrganizerClaim = typeof organizerClaims.$inferInsert;
 
 // ============================================
 // WINNER CLAIMS - Podium verification requests
@@ -594,6 +559,41 @@ export const SPONSOR_TIER_LABELS: Record<string, string> = {
 };
 
 // ============================================
+// EVENT ORGANIZERS - Assign community members to specific events
+// ============================================
+
+export const eventOrganizerRoleEnum = pgEnum("event_organizer_role", [
+	"lead", // Organizador principal (puede gestionar todo)
+	"organizer", // Co-organizador (puede editar)
+	"volunteer", // Voluntario (solo puede ver analytics)
+]);
+
+export const eventOrganizers = pgTable("event_organizers", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	eventId: uuid("event_id")
+		.references(() => events.id)
+		.notNull(),
+	userId: varchar("user_id", { length: 255 }).notNull(), // Clerk user ID (must be community member)
+
+	// Role specific to this event
+	role: eventOrganizerRoleEnum("role").default("organizer"),
+
+	// Timestamps
+	createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type EventOrganizer = typeof eventOrganizers.$inferSelect;
+export type NewEventOrganizer = typeof eventOrganizers.$inferInsert;
+
+export const EVENT_ORGANIZER_ROLES = ["lead", "organizer", "volunteer"] as const;
+
+export const EVENT_ORGANIZER_ROLE_LABELS: Record<string, string> = {
+	lead: "Organizador Principal",
+	organizer: "Co-organizador",
+	volunteer: "Voluntario",
+};
+
+// ============================================
 // IMPORT JOBS - For Luma/external event imports
 // ============================================
 
@@ -640,6 +640,7 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
 		references: [organizations.id],
 	}),
 	sponsors: many(eventSponsors),
+	organizers: many(eventOrganizers),
 }));
 
 export const organizationsRelations = relations(organizations, ({ many }) => ({
@@ -677,5 +678,12 @@ export const eventSponsorsRelations = relations(eventSponsors, ({ one }) => ({
 	organization: one(organizations, {
 		fields: [eventSponsors.organizationId],
 		references: [organizations.id],
+	}),
+}));
+
+export const eventOrganizersRelations = relations(eventOrganizers, ({ one }) => ({
+	event: one(events, {
+		fields: [eventOrganizers.eventId],
+		references: [events.id],
 	}),
 }));

@@ -1,10 +1,13 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Calendar, Edit3, LayoutDashboard } from "lucide-react";
+import { ArrowLeft, Award, BarChart3, Calendar, Edit3, LayoutDashboard, Users } from "lucide-react";
 import { canManageEventBySlug } from "@/lib/actions/permissions";
 import { getOrganizationBySlug } from "@/lib/actions/organizations";
 import { getEventBySlug, getEventSponsors } from "@/lib/actions/events";
+import { getEventWinnerClaims } from "@/lib/actions/claims";
+import { getEventOrganizers } from "@/lib/actions/event-organizers";
+import { getEventImportJobs, getEventNotificationLogs } from "@/lib/actions/analytics";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { ManageContent } from "@/components/manage/manage-content";
@@ -34,9 +37,14 @@ async function EventManageHero({
 
   if (!event || !community) return null;
 
+  const isHackathon = event.eventType === "hackathon" || event.eventType === "competition" || event.eventType === "olympiad";
+
   const tabs = [
     { id: "overview", label: "Vista general", icon: LayoutDashboard },
     { id: "edit", label: "Editar", icon: Edit3 },
+    { id: "team", label: "Equipo", icon: Users },
+    ...(isHackathon ? [{ id: "winners", label: "Ganadores", icon: Award }] : []),
+    { id: "analytics", label: "Analytics", icon: BarChart3 },
   ];
 
   return (
@@ -116,6 +124,13 @@ export default async function ManageEventPage({
   }
 
   const sponsors = await getEventSponsors(event.id);
+  const eventOrganizers = await getEventOrganizers(event.id);
+
+  const isHackathon = event.eventType === "hackathon" || event.eventType === "competition" || event.eventType === "olympiad";
+  const winnerClaims = isHackathon ? await getEventWinnerClaims(event.id) : [];
+
+  const importJobs = await getEventImportJobs(event.id);
+  const notificationLogs = await getEventNotificationLogs(event.id);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -131,6 +146,10 @@ export default async function ManageEventPage({
           eventSlug={eventSlug}
           tab={tab}
           sponsors={sponsors}
+          eventOrganizers={eventOrganizers}
+          winnerClaims={winnerClaims}
+          importJobs={importJobs}
+          notificationLogs={notificationLogs}
         />
       </main>
 

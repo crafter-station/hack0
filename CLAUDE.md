@@ -70,7 +70,7 @@ bun run scrape       # Scrape events from Devpost using Firecrawl
 - `parentEventId` - For multi-day events or conference tracks (child events)
 - `dayNumber` - Day/track number for child events
 - `prizeCurrency` - USD or PEN (soles)
-- `isJuniorFriendly` - Beginner-friendly events
+- `skillLevel` - beginner/intermediate/advanced/all (beginner and all are considered "junior-friendly")
 - `isOrganizerVerified` - Verified organizer badge
 - `bannerUrl` - Event banner image (shown as subtle background in rows)
 

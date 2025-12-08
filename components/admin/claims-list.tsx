@@ -7,7 +7,6 @@ import {
   X,
   ExternalLink,
   Clock,
-  UserCheck,
   ChevronDown,
 } from "lucide-react";
 import { TrophyIcon } from "@/components/icons/trophy";
@@ -18,27 +17,9 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
-  approveOrganizerClaim,
-  rejectOrganizerClaim,
   approveWinnerClaim,
   rejectWinnerClaim,
 } from "@/lib/actions/claims";
-
-interface OrganizerClaim {
-  id: string;
-  eventId: string;
-  userId: string;
-  email: string;
-  name: string | null;
-  role: string | null;
-  proofUrl: string | null;
-  proofDescription: string | null;
-  status: string | null;
-  createdAt: Date | null;
-  eventName: string | null;
-  eventSlug: string | null;
-  organizationSlug: string | null;
-}
 
 interface WinnerClaim {
   id: string;
@@ -59,11 +40,11 @@ interface WinnerClaim {
 
 interface AdminClaimsListProps {
   title: string;
-  type: "organizer" | "winner";
-  claims: OrganizerClaim[] | WinnerClaim[];
+  type: "winner";
+  claims: WinnerClaim[];
 }
 
-export function AdminClaimsList({ title, type, claims }: AdminClaimsListProps) {
+export function AdminClaimsList({ title, claims }: AdminClaimsListProps) {
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("pending");
 
   const filteredClaims = claims.filter((claim) => {
@@ -78,11 +59,7 @@ export function AdminClaimsList({ title, type, claims }: AdminClaimsListProps) {
       {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-2">
-          {type === "organizer" ? (
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <TrophyIcon className="h-4 w-4 text-muted-foreground" />
-          )}
+          <TrophyIcon className="h-4 w-4 text-muted-foreground" />
           <h2 className="font-medium">{title}</h2>
           {pendingCount > 0 && (
             <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500/10 px-1.5 text-xs font-medium text-amber-500">
@@ -117,7 +94,7 @@ export function AdminClaimsList({ title, type, claims }: AdminClaimsListProps) {
           </div>
         ) : (
           filteredClaims.map((claim) => (
-            <ClaimRow key={claim.id} claim={claim} type={type} />
+            <ClaimRow key={claim.id} claim={claim} />
           ))
         )}
       </div>
@@ -125,33 +102,19 @@ export function AdminClaimsList({ title, type, claims }: AdminClaimsListProps) {
   );
 }
 
-function ClaimRow({
-  claim,
-  type,
-}: {
-  claim: OrganizerClaim | WinnerClaim;
-  type: "organizer" | "winner";
-}) {
+function ClaimRow({ claim }: { claim: WinnerClaim }) {
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
   const handleApprove = async () => {
     setLoading(true);
-    if (type === "organizer") {
-      await approveOrganizerClaim(claim.id);
-    } else {
-      await approveWinnerClaim(claim.id);
-    }
+    await approveWinnerClaim(claim.id);
     setLoading(false);
   };
 
   const handleReject = async () => {
     setLoading(true);
-    if (type === "organizer") {
-      await rejectOrganizerClaim(claim.id);
-    } else {
-      await rejectWinnerClaim(claim.id);
-    }
+    await rejectWinnerClaim(claim.id);
     setLoading(false);
   };
 
@@ -172,38 +135,22 @@ function ClaimRow({
               >
                 {claim.eventName}
               </Link>
-              {type === "winner" && (
-                <span className="text-lg">
-                  {(claim as WinnerClaim).position === 1
-                    ? "🥇"
-                    : (claim as WinnerClaim).position === 2
-                    ? "🥈"
-                    : "🥉"}
-                </span>
-              )}
+              <span className="text-lg">
+                {claim.position === 1
+                  ? "🥇"
+                  : claim.position === 2
+                  ? "🥈"
+                  : "🥉"}
+              </span>
             </div>
 
             {/* Info */}
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-              {type === "organizer" ? (
-                <>
-                  <span>{(claim as OrganizerClaim).email}</span>
-                  {(claim as OrganizerClaim).name && (
-                    <span>· {(claim as OrganizerClaim).name}</span>
-                  )}
-                  {(claim as OrganizerClaim).role && (
-                    <span>· {(claim as OrganizerClaim).role}</span>
-                  )}
-                </>
-              ) : (
-                <>
-                  {(claim as WinnerClaim).teamName && (
-                    <span>Equipo: {(claim as WinnerClaim).teamName}</span>
-                  )}
-                  {(claim as WinnerClaim).projectName && (
-                    <span>· {(claim as WinnerClaim).projectName}</span>
-                  )}
-                </>
+              {claim.teamName && (
+                <span>Equipo: {claim.teamName}</span>
+              )}
+              {claim.projectName && (
+                <span>· {claim.projectName}</span>
               )}
             </div>
 
@@ -291,17 +238,17 @@ function ClaimRow({
               </div>
             )}
 
-            {/* Project URL (winners only) */}
-            {type === "winner" && (claim as WinnerClaim).projectUrl && (
+            {/* Project URL */}
+            {claim.projectUrl && (
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">Proyecto:</span>
                 <a
-                  href={(claim as WinnerClaim).projectUrl!}
+                  href={claim.projectUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-blue-500 hover:underline"
                 >
-                  {(claim as WinnerClaim).projectUrl!.slice(0, 50)}...
+                  {claim.projectUrl.slice(0, 50)}...
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </div>

@@ -15,6 +15,7 @@ import {
 	getEventTypeLabel,
 	getFormatLabel,
 	getSkillLevelLabel,
+	isEventJuniorFriendly,
 } from "@/lib/event-utils";
 
 interface EventRowProps {
@@ -164,14 +165,14 @@ export function EventRow({ event, categoryConfig }: EventRowProps) {
 				</div>
 
 				{/* Badges row - bottom */}
-				{(isFeatured || event.isJuniorFriendly) && (
+				{(isFeatured || isEventJuniorFriendly(event.skillLevel)) && (
 					<div className="flex items-center gap-1.5 flex-wrap">
 						{isFeatured && (
 							<span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-500">
 								Sponsored
 							</span>
 						)}
-						{event.isJuniorFriendly && (
+						{isEventJuniorFriendly(event.skillLevel) && (
 							<span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-500">
 								<Sparkles className="h-2.5 w-2.5" />
 								Junior
@@ -210,7 +211,7 @@ export function EventRow({ event, categoryConfig }: EventRowProps) {
 									Sponsored
 								</span>
 							)}
-							{event.isJuniorFriendly && (
+							{isEventJuniorFriendly(event.skillLevel) && (
 								<span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-500 shrink-0">
 									<Sparkles className="h-2.5 w-2.5" />
 									Junior
