@@ -13,19 +13,8 @@ export const metadata = {
 export default async function CommunitiesPage() {
 	const { userId } = await auth();
 
-	if (!userId) {
-		redirect("/sign-in");
-	}
-
-	const organizations = await getAllUserOrganizations();
-
-	if (organizations.length === 1) {
-		redirect(`/c/${organizations[0].organization.slug}`);
-	}
-
-	if (organizations.length === 0) {
-		redirect("/c/new");
-	}
+	// Get user's organizations if logged in, otherwise show empty state
+	const organizations = userId ? await getAllUserOrganizations() : [];
 
 	return (
 		<>
