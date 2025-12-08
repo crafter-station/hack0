@@ -88,7 +88,7 @@ export async function createOrganization(
     })
     .returning();
 
-  revalidatePath("/dashboard");
+  revalidatePath(`/c/${org.slug}`);
   revalidatePath("/onboarding");
 
   return org;
@@ -133,8 +133,12 @@ export async function updateOrganization(
     .where(eq(organizations.id, org.id))
     .returning();
 
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/settings");
+  revalidatePath(`/c/${org.slug}`);
+  revalidatePath(`/c/${org.slug}/settings`);
+  if (data.slug && data.slug !== org.slug) {
+    revalidatePath(`/c/${data.slug}`);
+    revalidatePath(`/c/${data.slug}/settings`);
+  }
 
   return updated;
 }
@@ -144,22 +148,27 @@ export async function updateOrganization(
 // ============================================
 
 /**
- * Get events for the current user's organization
+ * Get events for an organization
  */
-export async function getOrganizationEvents() {
+export async function getOrganizationEvents(organizationId?: string) {
   const { userId } = await auth();
 
   if (!userId) {
     return [];
   }
 
-  const org = await getUserOrganization();
-  if (!org) {
-    return [];
+  let orgId = organizationId;
+
+  if (!orgId) {
+    const org = await getUserOrganization();
+    if (!org) {
+      return [];
+    }
+    orgId = org.id;
   }
 
   const orgEvents = await db.query.events.findMany({
-    where: eq(events.organizationId, org.id),
+    where: eq(events.organizationId, orgId),
     orderBy: [desc(events.createdAt)],
   });
 
@@ -167,22 +176,27 @@ export async function getOrganizationEvents() {
 }
 
 /**
- * Get stats for the current user's organization
+ * Get stats for an organization
  */
-export async function getOrganizationStats() {
+export async function getOrganizationStats(organizationId?: string) {
   const { userId } = await auth();
 
   if (!userId) {
     return { totalEvents: 0, activeEvents: 0, endedEvents: 0 };
   }
 
-  const org = await getUserOrganization();
-  if (!org) {
-    return { totalEvents: 0, activeEvents: 0, endedEvents: 0 };
+  let orgId = organizationId;
+
+  if (!orgId) {
+    const org = await getUserOrganization();
+    if (!org) {
+      return { totalEvents: 0, activeEvents: 0, endedEvents: 0 };
+    }
+    orgId = org.id;
   }
 
   const orgEvents = await db.query.events.findMany({
-    where: eq(events.organizationId, org.id),
+    where: eq(events.organizationId, orgId),
   });
 
   const now = new Date();

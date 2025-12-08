@@ -1,0 +1,248 @@
+"use client";
+
+import { ImageIcon, Loader2, Pencil, X } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
+import { DateRangeInput } from "@/components/events/date-range-input";
+import { FormatSelector } from "@/components/events/format-selector";
+import { JuniorFriendlyToggle } from "@/components/events/junior-friendly-toggle";
+import { LinksInput } from "@/components/events/links-input";
+import { LocationInput } from "@/components/events/location-input";
+import { PrizeInput } from "@/components/events/prize-input";
+import { Button } from "@/components/ui/button";
+import {
+	Field,
+	FieldDescription,
+	FieldGroup,
+	FieldLabel,
+} from "@/components/ui/field";
+import { ImageUpload } from "@/components/ui/image-upload";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { updateEvent } from "@/lib/actions/claims";
+import type { Event } from "@/lib/db/schema";
+
+interface EditEventFormProps {
+	event: Event;
+	onSuccess?: () => void;
+}
+
+export function EditEventForm({ event, onSuccess }: EditEventFormProps) {
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [success, setSuccess] = useState(false);
+
+	const [name, setName] = useState(event.name);
+	const [description, setDescription] = useState(event.description || "");
+	const [startDate, setStartDate] = useState(
+		event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : "",
+	);
+	const [endDate, setEndDate] = useState(
+		event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : "",
+	);
+	const [registrationDeadline, setRegistrationDeadline] = useState(
+		event.registrationDeadline
+			? new Date(event.registrationDeadline).toISOString().slice(0, 16)
+			: "",
+	);
+	const [format, setFormat] = useState<"virtual" | "in-person" | "hybrid">(
+		event.format || "virtual",
+	);
+	const [department, setDepartment] = useState(event.department || "");
+	const [city, setCity] = useState(event.city || "");
+	const [venue, setVenue] = useState(event.venue || "");
+	const [prizePool, setPrizePool] = useState(event.prizePool?.toString() || "");
+	const [prizeCurrency, setPrizeCurrency] = useState<"USD" | "PEN">(
+		event.prizeCurrency || "USD",
+	);
+	const [prizeDescription, setPrizeDescription] = useState(
+		event.prizeDescription || "",
+	);
+	const [websiteUrl, setWebsiteUrl] = useState(event.websiteUrl || "");
+	const [registrationUrl, setRegistrationUrl] = useState(
+		event.registrationUrl || "",
+	);
+	const [eventImageUrl, setEventImageUrl] = useState(event.eventImageUrl || "");
+	const [isJuniorFriendly, setIsJuniorFriendly] = useState(
+		event.isJuniorFriendly || false,
+	);
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setError(null);
+		setSuccess(false);
+		setLoading(true);
+
+		const result = await updateEvent({
+			eventId: event.id,
+			name,
+			description: description || undefined,
+			startDate: startDate ? new Date(startDate) : null,
+			endDate: endDate ? new Date(endDate) : null,
+			registrationDeadline: registrationDeadline
+				? new Date(registrationDeadline)
+				: null,
+			format,
+			department: department || undefined,
+			city: city || undefined,
+			venue: venue || undefined,
+			prizePool: prizePool ? parseInt(prizePool, 10) : null,
+			prizeCurrency,
+			prizeDescription: prizeDescription || undefined,
+			websiteUrl: websiteUrl || undefined,
+			registrationUrl: registrationUrl || undefined,
+			eventImageUrl: eventImageUrl || undefined,
+			isJuniorFriendly,
+		});
+
+		setLoading(false);
+
+		if (result.success) {
+			setSuccess(true);
+			onSuccess?.();
+		} else {
+			setError(result.error || "Error al guardar los cambios");
+		}
+	};
+
+	return (
+		<form onSubmit={handleSubmit} className="space-y-8">
+			{error && (
+				<div className="rounded-lg bg-red-500/10 border border-red-500/20 p-4 text-sm text-red-600">
+					{error}
+				</div>
+			)}
+
+			{success && (
+				<div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-4 text-sm text-emerald-600">
+					✓ Cambios guardados exitosamente
+				</div>
+			)}
+
+			<div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
+				<FieldGroup className="gap-8">
+					<Field>
+						<FieldLabel htmlFor="name">
+							<Pencil className="h-4 w-4" />
+							Nombre del evento
+						</FieldLabel>
+						<Input
+							id="name"
+							value={name}
+							onChange={(e) => setName(e.target.value)}
+							required
+							placeholder="Ej: HackLima 2024"
+							className="text-base"
+						/>
+					</Field>
+
+					<Field>
+						<FieldLabel htmlFor="description">
+							<Pencil className="h-4 w-4" />
+							Descripción
+						</FieldLabel>
+						<Textarea
+							id="description"
+							value={description}
+							onChange={(e) => setDescription(e.target.value)}
+							rows={4}
+							placeholder="Describe tu evento..."
+							className="resize-none"
+						/>
+						<FieldDescription>
+							Información general sobre el evento
+						</FieldDescription>
+					</Field>
+
+					<DateRangeInput
+						startDate={startDate}
+						endDate={endDate}
+						registrationDeadline={registrationDeadline}
+						onStartDateChange={setStartDate}
+						onEndDateChange={setEndDate}
+						onRegistrationDeadlineChange={setRegistrationDeadline}
+					/>
+
+					<FormatSelector value={format} onChange={setFormat} />
+
+					{format !== "virtual" && (
+						<LocationInput
+							department={department}
+							city={city}
+							venue={venue}
+							onDepartmentChange={setDepartment}
+							onCityChange={setCity}
+							onVenueChange={setVenue}
+						/>
+					)}
+
+					<PrizeInput
+						prizePool={prizePool}
+						prizeCurrency={prizeCurrency}
+						prizeDescription={prizeDescription}
+						onPrizePoolChange={setPrizePool}
+						onPrizeCurrencyChange={setPrizeCurrency}
+						onPrizeDescriptionChange={setPrizeDescription}
+					/>
+
+					<LinksInput
+						websiteUrl={websiteUrl}
+						registrationUrl={registrationUrl}
+						onWebsiteUrlChange={setWebsiteUrl}
+						onRegistrationUrlChange={setRegistrationUrl}
+					/>
+
+					<JuniorFriendlyToggle
+						value={isJuniorFriendly}
+						onChange={setIsJuniorFriendly}
+					/>
+				</FieldGroup>
+
+				<div className="lg:sticky lg:top-18 h-fit space-y-4">
+					<Field>
+						<FieldLabel>
+							<ImageIcon className="h-4 w-4" />
+							Imagen del evento
+						</FieldLabel>
+						{eventImageUrl ? (
+							<div className="relative w-full aspect-square rounded-xl overflow-hidden bg-muted border">
+								<Image
+									src={eventImageUrl}
+									alt="Event image"
+									fill
+									className="object-cover"
+								/>
+								<button
+									type="button"
+									onClick={() => setEventImageUrl("")}
+									className="absolute top-2 right-2 p-1.5 rounded-lg bg-background/90 backdrop-blur-sm border hover:bg-background transition-colors shadow-sm"
+								>
+									<X className="h-4 w-4" />
+								</button>
+							</div>
+						) : (
+							<div className="w-full aspect-square rounded-xl bg-muted border flex flex-col items-center justify-center gap-4">
+								<ImageIcon className="h-12 w-12 text-muted-foreground/40" />
+								<div className="flex flex-col items-center gap-2">
+									<ImageUpload
+										value={eventImageUrl}
+										onChange={setEventImageUrl}
+										label="Cargar imagen"
+									/>
+								</div>
+							</div>
+						)}
+						<FieldDescription>Recomendado: 1200x1200px (1:1)</FieldDescription>
+					</Field>
+				</div>
+			</div>
+
+			<div className="flex gap-3 justify-end sticky bottom-4 bg-background/80 backdrop-blur-sm p-4 rounded-lg border">
+				<Button type="submit" disabled={loading} className="gap-2">
+					{loading && <Loader2 className="h-4 w-4 animate-spin" />}
+					Guardar cambios
+				</Button>
+			</div>
+		</form>
+	);
+}

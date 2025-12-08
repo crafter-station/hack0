@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Check, X, ExternalLink, Calendar, MapPin } from "lucide-react";
-import { approveEvent, rejectEvent } from "@/lib/actions/hackathons";
+import { approveEvent, rejectEvent } from "@/lib/actions/events";
 import type { Event } from "@/lib/db/schema";
 import { formatEventDate, getEventTypeLabel, getFormatLabel } from "@/lib/event-utils";
 
