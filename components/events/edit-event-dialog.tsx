@@ -73,9 +73,6 @@ export function EditEventDialog({ event, children }: EditEventDialogProps) {
 		event.registrationUrl || "",
 	);
 	const [eventImageUrl, setEventImageUrl] = useState(event.eventImageUrl || "");
-	const [isJuniorFriendly, setIsJuniorFriendly] = useState(
-		event.isJuniorFriendly || false,
-	);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -98,7 +95,6 @@ export function EditEventDialog({ event, children }: EditEventDialogProps) {
 			websiteUrl: websiteUrl || undefined,
 			registrationUrl: registrationUrl || undefined,
 			eventImageUrl: eventImageUrl || undefined,
-			isJuniorFriendly,
 		});
 
 		setLoading(false);
@@ -378,34 +374,6 @@ export function EditEventDialog({ event, children }: EditEventDialogProps) {
 								</div>
 							</div>
 						</div>
-					</div>
-
-					{/* Junior Friendly Toggle */}
-					<div className="flex items-center justify-between rounded-xl border bg-card p-4">
-						<div className="flex items-center gap-3">
-							<Sparkles className="h-4 w-4 text-muted-foreground" />
-							<div>
-								<p className="text-sm font-medium">Junior Friendly</p>
-								<p className="text-xs text-muted-foreground">
-									Apto para principiantes
-								</p>
-							</div>
-						</div>
-						<button
-							type="button"
-							role="switch"
-							aria-checked={isJuniorFriendly}
-							onClick={() => setIsJuniorFriendly(!isJuniorFriendly)}
-							className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
-								isJuniorFriendly ? "bg-foreground" : "bg-muted"
-							}`}
-						>
-							<span
-								className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow transition ${
-									isJuniorFriendly ? "translate-x-5" : "translate-x-0"
-								}`}
-							/>
-						</button>
 					</div>
 
 					{error && (

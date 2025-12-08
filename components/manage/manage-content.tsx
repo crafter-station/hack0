@@ -1,34 +1,40 @@
 "use client";
 
-import Link from "next/link";
 import { format, formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import {
 	AlertCircle,
+	BadgeCheck,
 	Building2,
 	Calendar,
 	Check,
+	Clock,
 	Copy,
+	Database,
 	ExternalLink,
 	Eye,
+	Facebook,
 	Globe,
+	Linkedin,
 	MapPin,
+	Share2,
 	Tag,
 	Trophy,
 	Users,
 } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 import { EditEventForm } from "@/components/events/edit-event-form";
 import { Button } from "@/components/ui/button";
+import type { EventSponsorWithOrg } from "@/lib/actions/events";
+import type { Event, Organization, EventOrganizer, WinnerClaim, ImportJob, NotificationLog } from "@/lib/db/schema";
+import { SPONSOR_TIER_LABELS, EVENT_ORGANIZER_ROLE_LABELS } from "@/lib/db/schema";
 import {
 	getEventStatus,
 	getEventTypeLabel,
 	getFormatLabel,
 	getSkillLevelLabel,
 } from "@/lib/event-utils";
-import type { Event, Organization } from "@/lib/db/schema";
-import type { EventSponsorWithOrg } from "@/lib/actions/events";
-import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
-import { useState } from "react";
 
 interface ManageContentProps {
 	event: Event;
@@ -37,6 +43,10 @@ interface ManageContentProps {
 	eventSlug: string;
 	tab: string;
 	sponsors: EventSponsorWithOrg[];
+	eventOrganizers: EventOrganizer[];
+	winnerClaims: WinnerClaim[];
+	importJobs: ImportJob[];
+	notificationLogs: NotificationLog[];
 }
 
 export function ManageContent({
@@ -46,6 +56,10 @@ export function ManageContent({
 	eventSlug,
 	tab,
 	sponsors,
+	eventOrganizers,
+	winnerClaims,
+	importJobs,
+	notificationLogs,
 }: ManageContentProps) {
 	const status = getEventStatus(event);
 	const startDate = event.startDate ? new Date(event.startDate) : null;
@@ -64,104 +78,79 @@ export function ManageContent({
 			setTimeout(() => setCopied(false), 2000);
 		};
 
+		const now = new Date();
+		const hasInconsistentStatus =
+			(status.status === "upcoming" && endDate && endDate < now) ||
+			(status.status === "ongoing" && endDate && endDate < now) ||
+			(status.status === "open" && deadline && deadline < now && (!startDate || startDate > now));
+
+		const needsRegistrationDeadline = status.status === "open" && !deadline;
+
 		return (
 			<div className="space-y-6">
-				{!event.isApproved && (
-					<div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/20 px-4 py-3">
-						<AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500 mt-0.5 shrink-0" />
+				{/* Sanity Checks */}
+				{hasInconsistentStatus && (
+					<div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20 px-4 py-3.5">
+						<AlertCircle className="h-5 w-5 text-red-600 dark:text-red-500 mt-0.5 shrink-0" />
 						<div className="flex-1 min-w-0">
-							<p className="text-sm font-medium text-amber-900 dark:text-amber-100">
-								Pendiente de aprobación
+							<p className="text-sm font-medium text-red-900 dark:text-red-100">
+								Inconsistencia detectada
 							</p>
-							<p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-								Este evento será visible una vez aprobado. Revisión típica: &lt;24h
+							<p className="text-xs text-red-700 dark:text-red-400 mt-0.5">
+								El estado del evento ({status.label}) no coincide con las fechas. Por favor actualiza las fechas o el estado.
 							</p>
 						</div>
 					</div>
 				)}
 
-				<div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-					<div className="flex items-start gap-3 p-3.5 rounded-lg border border-border hover:bg-muted/30 transition-colors">
-						<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10">
-							<Eye className="h-4 w-4 text-blue-600 dark:text-blue-500" />
-						</div>
+				{needsRegistrationDeadline && (
+					<div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/20 px-4 py-3.5">
+						<AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-500 mt-0.5 shrink-0" />
 						<div className="flex-1 min-w-0">
-							<p className="text-xs font-medium text-muted-foreground mb-1">
-								Vista pública
+							<p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+								Falta fecha de cierre
 							</p>
-							<Link
-								href={`/c/${slug}/events/${eventSlug}`}
-								target="_blank"
-								className="text-sm font-medium hover:underline inline-flex items-center gap-1"
-							>
-								Ver página
-								<ExternalLink className="h-3 w-3" />
-							</Link>
-						</div>
-					</div>
-
-					<div className="flex items-start gap-3 p-3.5 rounded-lg border border-border hover:bg-muted/30 transition-colors">
-						<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
-							<Copy className="h-4 w-4 text-emerald-600 dark:text-emerald-500" />
-						</div>
-						<div className="flex-1 min-w-0">
-							<p className="text-xs font-medium text-muted-foreground mb-1">
-								Compartir
-							</p>
-							<button
-								type="button"
-								onClick={copyToClipboard}
-								className="text-sm font-medium hover:underline text-left"
-							>
-								{copied ? (
-									<span className="inline-flex items-center gap-1 text-emerald-600">
-										<Check className="h-3 w-3" />
-										Copiado
-									</span>
-								) : (
-									"Copiar enlace"
-								)}
-							</button>
-						</div>
-					</div>
-
-					<div className="flex items-start gap-3 p-3.5 rounded-lg border border-border bg-muted/20 opacity-60">
-						<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-							<Users className="h-4 w-4 text-muted-foreground" />
-						</div>
-						<div className="flex-1 min-w-0">
-							<p className="text-xs font-medium text-muted-foreground mb-1">
-								Equipo
-							</p>
-							<p className="text-sm font-medium text-muted-foreground">
-								Próximamente
+							<p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+								El evento está marcado como "Abierto" pero no tiene fecha de cierre de registro.
 							</p>
 						</div>
 					</div>
-				</div>
+				)}
 
-				<div className="grid lg:grid-cols-[1fr_320px] gap-6">
+				{!event.isApproved && (
+					<div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/20 px-4 py-3.5">
+						<AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-500 mt-0.5 shrink-0" />
+						<div className="flex-1 min-w-0">
+							<p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+								Pendiente de aprobación
+							</p>
+							<p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+								Este evento será visible una vez aprobado. Revisión típica:
+								&lt;24h
+							</p>
+						</div>
+					</div>
+				)}
+
+				<div className="grid lg:grid-cols-[1fr_340px] gap-6">
 					<div className="space-y-6">
 						<div className="rounded-lg border bg-card">
 							<div className="px-5 py-4 border-b">
-								<h3 className="text-sm font-semibold">Detalles del evento</h3>
-							</div>
-							<div className="p-5 space-y-4">
-								<div className="grid sm:grid-cols-2 gap-4">
-									<div>
-										<div className="flex items-center gap-2 text-xs text-muted-foreground mb-1.5">
-											<Calendar className="h-3.5 w-3.5" />
-											Estado
-										</div>
+								<div className="flex items-center justify-between gap-4">
+									<div className="flex items-center gap-2">
+										<Calendar className="h-4 w-4 text-muted-foreground" />
+										<h3 className="text-sm font-semibold">Detalles del evento</h3>
+									</div>
+									<div className="flex items-center gap-2 flex-wrap">
 										<div
-											className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium ${
+											className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium ${
 												status.status === "ended"
 													? "bg-muted text-muted-foreground"
 													: status.status === "ongoing"
 														? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
 														: status.status === "open"
 															? "bg-blue-500/10 text-blue-700 dark:text-blue-400"
-															: "bg-muted text-muted-foreground"
+															: "bg-amber-500/10 text-amber-700 dark:text-amber-400"
 											}`}
 										>
 											<span
@@ -173,11 +162,48 @@ export function ManageContent({
 											/>
 											{status.label}
 										</div>
-									</div>
 
+										<div
+											className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium ${
+												event.approvalStatus === "approved"
+													? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+													: event.approvalStatus === "pending"
+														? "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+														: "bg-red-500/10 text-red-700 dark:text-red-400"
+											}`}
+										>
+											{event.approvalStatus === "approved" && <BadgeCheck className="h-3 w-3" />}
+											{event.approvalStatus === "approved" ? "Aprobado" : event.approvalStatus === "pending" ? "Pendiente" : "Rechazado"}
+										</div>
+
+										{event.isFeatured && (
+											<div className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400">
+												Destacado
+											</div>
+										)}
+
+										{event.isOrganizerVerified && (
+											<div className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium bg-blue-500/10 text-blue-700 dark:text-blue-400">
+												<BadgeCheck className="h-3 w-3" />
+												Organizador verificado
+											</div>
+										)}
+
+										{event.sourceScrapedAt && (
+											<div className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium bg-muted text-muted-foreground">
+												<Database className="h-3 w-3" />
+												Importado
+											</div>
+										)}
+									</div>
+								</div>
+							</div>
+							<div className="p-6 space-y-5">
+
+								<div className="grid sm:grid-cols-2 gap-5">
 									<div>
-										<div className="flex items-center gap-2 text-xs text-muted-foreground mb-1.5">
-											<Tag className="h-3.5 w-3.5" />
+										<div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+											<Tag className="h-4 w-4" />
 											Tipo
 										</div>
 										<p className="text-sm font-medium capitalize">
@@ -186,8 +212,8 @@ export function ManageContent({
 									</div>
 
 									<div>
-										<div className="flex items-center gap-2 text-xs text-muted-foreground mb-1.5">
-											<Calendar className="h-3.5 w-3.5" />
+										<div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+											<Calendar className="h-4 w-4" />
 											Fechas
 										</div>
 										{startDate && endDate ? (
@@ -200,7 +226,9 @@ export function ManageContent({
 												{format(startDate, "d MMMM yyyy", { locale: es })}
 											</p>
 										) : (
-											<p className="text-sm text-muted-foreground">Por definir</p>
+											<p className="text-sm text-muted-foreground">
+												Por definir
+											</p>
 										)}
 										{deadline && (
 											<p className="text-xs text-muted-foreground mt-0.5">
@@ -210,8 +238,8 @@ export function ManageContent({
 									</div>
 
 									<div>
-										<div className="flex items-center gap-2 text-xs text-muted-foreground mb-1.5">
-											<MapPin className="h-3.5 w-3.5" />
+										<div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+											<MapPin className="h-4 w-4" />
 											Formato
 										</div>
 										<p className="text-sm font-medium capitalize">
@@ -226,30 +254,61 @@ export function ManageContent({
 								</div>
 
 								{event.prizePool && (
-									<div className="pt-4 border-t">
-										<div className="flex items-center gap-2 text-xs text-muted-foreground mb-1.5">
-											<Trophy className="h-3.5 w-3.5" />
+									<div className="pt-5 border-t">
+										<div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+											<Trophy className="h-4 w-4" />
 											Premios
 										</div>
-										<p className="text-sm font-semibold">
+										<p className="text-base font-semibold text-emerald-600 dark:text-emerald-500">
 											{event.prizeCurrency === "PEN" ? "S/" : "$"}
 											{event.prizePool.toLocaleString()}
 										</p>
 										{event.prizeDescription && (
-											<p className="text-xs text-muted-foreground mt-1">
+											<p className="text-xs text-muted-foreground mt-1.5">
 												{event.prizeDescription}
 											</p>
 										)}
 									</div>
 								)}
 
-								<div className="pt-4 border-t">
-									<div className="flex items-center gap-2 text-xs text-muted-foreground mb-1.5">
-										Nivel requerido
+								<div className="pt-5 border-t grid grid-cols-3 gap-5">
+									<div>
+										<div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+											<Users className="h-4 w-4" />
+											Nivel requerido
+										</div>
+										<p className="text-sm font-medium">
+											{getSkillLevelLabel(event.skillLevel)}
+										</p>
 									</div>
-									<p className="text-sm font-medium">
-										{getSkillLevelLabel(event.skillLevel)}
-									</p>
+
+									<div>
+										<div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+											<Clock className="h-4 w-4" />
+											Creado
+										</div>
+										<p className="text-sm font-medium">
+											{formatDistanceToNow(new Date(event.createdAt), {
+												addSuffix: true,
+												locale: es,
+											})}
+										</p>
+									</div>
+
+									{event.updatedAt && (
+										<div>
+											<div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+												<Clock className="h-4 w-4" />
+												Actualizado
+											</div>
+											<p className="text-sm font-medium">
+												{formatDistanceToNow(new Date(event.updatedAt), {
+													addSuffix: true,
+													locale: es,
+												})}
+											</p>
+										</div>
+									)}
 								</div>
 							</div>
 						</div>
@@ -257,11 +316,14 @@ export function ManageContent({
 						{sponsors.length > 0 && (
 							<div className="rounded-lg border bg-card">
 								<div className="px-5 py-4 border-b">
-									<h3 className="text-sm font-semibold">
-										Sponsors ({sponsors.length})
-									</h3>
+									<div className="flex items-center gap-2">
+										<Trophy className="h-4 w-4 text-muted-foreground" />
+										<h3 className="text-sm font-semibold">
+											Sponsors ({sponsors.length})
+										</h3>
+									</div>
 								</div>
-								<div className="p-5">
+								<div className="p-6">
 									<div className="space-y-3">
 										{sponsors.map((sponsor) => (
 											<div
@@ -286,7 +348,11 @@ export function ManageContent({
 														rel="noopener noreferrer"
 														className="shrink-0"
 													>
-														<Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+														<Button
+															variant="ghost"
+															size="sm"
+															className="h-7 w-7 p-0"
+														>
 															<ExternalLink className="h-3.5 w-3.5" />
 														</Button>
 													</a>
@@ -302,12 +368,15 @@ export function ManageContent({
 					<div className="space-y-4">
 						<div className="rounded-lg border bg-card">
 							<div className="px-5 py-4 border-b">
-								<h3 className="text-sm font-semibold">Comunidad</h3>
+								<div className="flex items-center gap-2">
+									<Building2 className="h-4 w-4 text-muted-foreground" />
+									<h3 className="text-sm font-semibold">Comunidad</h3>
+								</div>
 							</div>
 							<div className="p-5">
 								<div className="flex items-center gap-3 mb-3">
-									<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted border">
-										<Building2 className="h-5 w-5 text-muted-foreground" />
+									<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted border">
+										<Building2 className="h-6 w-6 text-muted-foreground" />
 									</div>
 									<div className="flex-1 min-w-0">
 										<p className="text-sm font-medium truncate">
@@ -316,17 +385,78 @@ export function ManageContent({
 									</div>
 								</div>
 								<Link href={`/c/${community.slug}`}>
-									<Button variant="outline" size="sm" className="w-full h-8 text-xs">
+									<Button variant="outline" size="sm" className="w-full h-9">
 										Ver todos los eventos
 									</Button>
 								</Link>
 							</div>
 						</div>
 
+						<div className="rounded-lg border bg-card">
+							<div className="px-5 py-4 border-b">
+								<div className="flex items-center gap-2">
+									<Share2 className="h-4 w-4 text-muted-foreground" />
+									<h3 className="text-sm font-semibold">Compartir evento</h3>
+								</div>
+							</div>
+							<div className="p-5">
+								<div className="grid grid-cols-4 gap-2">
+									<button
+										type="button"
+										onClick={copyToClipboard}
+										className="flex h-10 flex-col items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors"
+										title="Copiar enlace"
+									>
+										{copied ? (
+											<Check className="h-5 w-5 text-emerald-600" />
+										) : (
+											<Copy className="h-5 w-5 text-muted-foreground" />
+										)}
+									</button>
+									<a
+										href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(eventUrl)}`}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="flex h-10 flex-col items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors"
+										title="Compartir en Facebook"
+									>
+										<Facebook className="h-5 w-5 text-muted-foreground" />
+									</a>
+									<a
+										href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(eventUrl)}&text=${encodeURIComponent(event.name)}`}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="flex h-10 flex-col items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors"
+										title="Compartir en X"
+									>
+										<svg
+											viewBox="0 0 24 24"
+											className="h-5 w-5 fill-muted-foreground"
+											aria-hidden="true"
+										>
+											<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+										</svg>
+									</a>
+									<a
+										href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(eventUrl)}`}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="flex h-10 flex-col items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors"
+										title="Compartir en LinkedIn"
+									>
+										<Linkedin className="h-5 w-5 text-muted-foreground" />
+									</a>
+								</div>
+							</div>
+						</div>
+
 						{(event.websiteUrl || event.registrationUrl) && (
 							<div className="rounded-lg border bg-card">
 								<div className="px-5 py-4 border-b">
-									<h3 className="text-sm font-semibold">Enlaces</h3>
+									<div className="flex items-center gap-2">
+										<Globe className="h-4 w-4 text-muted-foreground" />
+										<h3 className="text-sm font-semibold">Enlaces</h3>
+									</div>
 								</div>
 								<div className="p-5 space-y-2">
 									{event.websiteUrl && (
@@ -356,36 +486,6 @@ export function ManageContent({
 								</div>
 							</div>
 						)}
-
-						<div className="rounded-lg border bg-card">
-							<div className="px-5 py-4 border-b">
-								<h3 className="text-sm font-semibold">Metadata</h3>
-							</div>
-							<div className="p-5 space-y-3 text-xs">
-								<div>
-									<p className="text-muted-foreground mb-0.5">Creado</p>
-									<p className="font-medium">
-										{formatDistanceToNow(new Date(event.createdAt), {
-											addSuffix: true,
-											locale: es,
-										})}
-									</p>
-								</div>
-								{event.updatedAt && (
-									<div>
-										<p className="text-muted-foreground mb-0.5">
-											Última actualización
-										</p>
-										<p className="font-medium">
-											{formatDistanceToNow(new Date(event.updatedAt), {
-												addSuffix: true,
-												locale: es,
-											})}
-										</p>
-									</div>
-								)}
-							</div>
-						</div>
 					</div>
 				</div>
 			</div>
@@ -394,6 +494,287 @@ export function ManageContent({
 
 	if (tab === "edit") {
 		return <EditEventForm event={event} sponsors={sponsors} />;
+	}
+
+	if (tab === "team") {
+		return (
+			<div className="space-y-6">
+				{/* Event Organizers */}
+				<div className="rounded-lg border bg-card">
+					<div className="px-5 py-4 border-b">
+						<div className="flex items-center justify-between">
+							<div className="flex items-center gap-2">
+								<Users className="h-4 w-4 text-muted-foreground" />
+								<h3 className="text-sm font-semibold">
+									Equipo del Evento ({eventOrganizers.length})
+								</h3>
+							</div>
+						</div>
+					</div>
+					<div className="p-6">
+						{eventOrganizers.length === 0 ? (
+							<div className="text-center py-8 space-y-3">
+								<p className="text-sm text-muted-foreground">
+									No hay organizadores asignados todavía
+								</p>
+								<p className="text-xs text-muted-foreground">
+									Los owner/admin de la comunidad pueden asignar miembros como organizadores del evento
+								</p>
+							</div>
+						) : (
+							<div className="space-y-3">
+								{eventOrganizers.map((organizer) => (
+									<div
+										key={organizer.id}
+										className="rounded-lg border p-4 space-y-2"
+									>
+										<div className="flex items-start justify-between">
+											<div className="space-y-1">
+												<p className="text-sm font-medium">User ID: {organizer.userId}</p>
+												<p className="text-xs text-muted-foreground">
+													Agregado {formatDistanceToNow(new Date(organizer.createdAt), { addSuffix: true, locale: es })}
+												</p>
+											</div>
+											<div className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium bg-blue-500/10 text-blue-700 dark:text-blue-400">
+												{EVENT_ORGANIZER_ROLE_LABELS[organizer.role]}
+											</div>
+										</div>
+									</div>
+								))}
+							</div>
+						)}
+					</div>
+				</div>
+
+				<div className="rounded-lg border bg-muted/30 p-4">
+					<div className="flex items-start gap-3">
+						<AlertCircle className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
+						<div className="space-y-1">
+							<p className="text-sm font-medium">Gestión de equipo</p>
+							<p className="text-xs text-muted-foreground">
+								Solo los owner y admin de la comunidad pueden agregar o remover organizadores del evento.
+								Los organizadores deben ser miembros de la comunidad primero.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	if (tab === "winners") {
+		const pendingWinnerClaims = winnerClaims.filter((c) => c.status === "pending");
+		const approvedWinnerClaims = winnerClaims.filter((c) => c.status === "approved");
+		const rejectedWinnerClaims = winnerClaims.filter((c) => c.status === "rejected");
+
+		return (
+			<div className="space-y-6">
+				{/* Winner Claims */}
+				<div className="rounded-lg border bg-card">
+					<div className="px-5 py-4 border-b">
+						<div className="flex items-center justify-between">
+							<div className="flex items-center gap-2">
+								<Trophy className="h-4 w-4 text-muted-foreground" />
+								<h3 className="text-sm font-semibold">
+									Winner Claims ({winnerClaims.length})
+								</h3>
+							</div>
+							<div className="flex items-center gap-2 text-xs">
+								<span className="text-amber-600">{pendingWinnerClaims.length} pendiente(s)</span>
+								<span className="text-muted-foreground">·</span>
+								<span className="text-emerald-600">{approvedWinnerClaims.length} aprobado(s)</span>
+							</div>
+						</div>
+					</div>
+					<div className="p-6">
+						{winnerClaims.length === 0 ? (
+							<p className="text-sm text-muted-foreground text-center py-8">
+								No hay claims de ganadores todavía
+							</p>
+						) : (
+							<div className="space-y-3">
+								{winnerClaims.map((claim) => (
+									<div
+										key={claim.id}
+										className="rounded-lg border p-4 space-y-2"
+									>
+										<div className="flex items-start justify-between">
+											<div className="space-y-1">
+												<div className="flex items-center gap-2">
+													<span className="text-lg">
+														{claim.position === 1 ? "🥇" : claim.position === 2 ? "🥈" : "🥉"}
+													</span>
+													<p className="text-sm font-medium">
+														{claim.teamName || claim.projectName || `Posición ${claim.position}`}
+													</p>
+												</div>
+												{claim.projectName && claim.teamName && (
+													<p className="text-xs text-muted-foreground">Proyecto: {claim.projectName}</p>
+												)}
+												{claim.projectUrl && (
+													<a
+														href={claim.projectUrl}
+														target="_blank"
+														rel="noopener noreferrer"
+														className="text-xs text-blue-600 hover:underline inline-flex items-center gap-1"
+													>
+														<ExternalLink className="h-3 w-3" />
+														Ver proyecto
+													</a>
+												)}
+											</div>
+											<div
+												className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium ${
+													claim.status === "approved"
+														? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+														: claim.status === "pending"
+															? "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+															: "bg-red-500/10 text-red-700 dark:text-red-400"
+												}`}
+											>
+												{claim.status === "approved" ? "Aprobado" : claim.status === "pending" ? "Pendiente" : "Rechazado"}
+											</div>
+										</div>
+										<a
+											href={claim.proofUrl}
+											target="_blank"
+											rel="noopener noreferrer"
+											className="text-xs text-blue-600 hover:underline inline-flex items-center gap-1"
+										>
+											<ExternalLink className="h-3 w-3" />
+											Ver prueba
+										</a>
+										{claim.proofDescription && (
+											<p className="text-xs text-muted-foreground">{claim.proofDescription}</p>
+										)}
+									</div>
+								))}
+							</div>
+						)}
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	if (tab === "analytics") {
+		return (
+			<div className="space-y-6">
+				{/* Import Jobs */}
+				<div className="rounded-lg border bg-card">
+					<div className="px-5 py-4 border-b">
+						<div className="flex items-center gap-2">
+							<Database className="h-4 w-4 text-muted-foreground" />
+							<h3 className="text-sm font-semibold">
+								Import Jobs ({importJobs.length})
+							</h3>
+						</div>
+					</div>
+					<div className="p-6">
+						{importJobs.length === 0 ? (
+							<p className="text-sm text-muted-foreground text-center py-8">
+								Este evento fue creado manualmente (no importado)
+							</p>
+						) : (
+							<div className="space-y-3">
+								{importJobs.map((job) => (
+									<div
+										key={job.id}
+										className="rounded-lg border p-4 space-y-2"
+									>
+										<div className="flex items-start justify-between">
+											<div className="space-y-1">
+												<p className="text-sm font-medium">{job.sourceType}</p>
+												<a
+													href={job.sourceUrl}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="text-xs text-blue-600 hover:underline inline-flex items-center gap-1"
+												>
+													<ExternalLink className="h-3 w-3" />
+													{job.sourceUrl}
+												</a>
+												{job.createdAt && (
+													<p className="text-xs text-muted-foreground">
+														{format(new Date(job.createdAt), "d MMM yyyy, HH:mm", { locale: es })}
+													</p>
+												)}
+											</div>
+											<div
+												className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium ${
+													job.status === "completed"
+														? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+														: job.status === "processing"
+															? "bg-blue-500/10 text-blue-700 dark:text-blue-400"
+															: job.status === "failed"
+																? "bg-red-500/10 text-red-700 dark:text-red-400"
+																: "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+												}`}
+											>
+												{job.status}
+											</div>
+										</div>
+										{job.errorMessage && (
+											<p className="text-xs text-red-600">{job.errorMessage}</p>
+										)}
+									</div>
+								))}
+							</div>
+						)}
+					</div>
+				</div>
+
+				{/* Notification Logs */}
+				<div className="rounded-lg border bg-card">
+					<div className="px-5 py-4 border-b">
+						<div className="flex items-center gap-2">
+							<Globe className="h-4 w-4 text-muted-foreground" />
+							<h3 className="text-sm font-semibold">
+								Notificaciones Enviadas ({notificationLogs.length})
+							</h3>
+						</div>
+					</div>
+					<div className="p-6">
+						{notificationLogs.length === 0 ? (
+							<p className="text-sm text-muted-foreground text-center py-8">
+								No se han enviado notificaciones para este evento todavía
+							</p>
+						) : (
+							<div className="space-y-3">
+								{notificationLogs.map((log) => (
+									<div
+										key={log.id}
+										className="rounded-lg border p-4 space-y-2"
+									>
+										<div className="flex items-start justify-between">
+											<div className="space-y-1">
+												<p className="text-sm font-medium">{log.subject}</p>
+												{log.sentAt && (
+													<p className="text-xs text-muted-foreground">
+														{format(new Date(log.sentAt), "d MMM yyyy, HH:mm", { locale: es })}
+													</p>
+												)}
+											</div>
+											<div
+												className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium ${
+													log.status === "sent"
+														? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+														: log.status === "failed"
+															? "bg-red-500/10 text-red-700 dark:text-red-400"
+															: "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+												}`}
+											>
+												{log.status}
+											</div>
+										</div>
+									</div>
+								))}
+							</div>
+						)}
+					</div>
+				</div>
+			</div>
+		);
 	}
 
 	return null;

@@ -110,6 +110,10 @@ export function getDomainLabel(domain: string): string {
   return DOMAIN_LABELS[domain] || domain;
 }
 
+export function isEventJuniorFriendly(skillLevel: string | null): boolean {
+  return skillLevel === "beginner" || skillLevel === "all";
+}
+
 // =============================================================================
 // COUNTRY
 // =============================================================================

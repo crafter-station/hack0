@@ -10,7 +10,7 @@ interface EventOGTemplateProps {
   location: string;
   prizePool?: string;
   eventType: string;
-  isJuniorFriendly?: boolean;
+  skillLevel?: string;
   status?: "open" | "upcoming" | "ongoing" | "ended";
 }
 
@@ -23,7 +23,7 @@ export function EventOGTemplate({
   location,
   prizePool,
   eventType,
-  isJuniorFriendly,
+  skillLevel,
   status = "upcoming",
 }: EventOGTemplateProps) {
   const statusColors: Record<string, { bg: string; text: string; dot: string }> = {
@@ -193,7 +193,7 @@ export function EventOGTemplate({
             >
               {eventType}
             </div>
-            {isJuniorFriendly && (
+            {(skillLevel === "beginner" || skillLevel === "all") && (
               <div
                 style={{
                   backgroundColor: "rgba(245, 158, 11, 0.15)",

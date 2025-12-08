@@ -8,6 +8,7 @@ import {
 	getEventStatus,
 	getEventTypeLabel,
 	getFormatLabel,
+	isEventJuniorFriendly,
 } from "@/lib/event-utils";
 
 interface HackathonCardProps {
@@ -102,7 +103,7 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
 						<span className="inline-flex h-5 items-center rounded border border-border px-1.5 text-xs text-muted-foreground">
 							{getEventTypeLabel(hackathon.eventType)}
 						</span>
-						{hackathon.isJuniorFriendly && (
+						{isEventJuniorFriendly(hackathon.skillLevel) && (
 							<span className="inline-flex h-5 items-center gap-1 rounded border border-border px-1.5 text-xs text-muted-foreground">
 								<Sparkles className="h-2.5 w-2.5" />
 								Junior

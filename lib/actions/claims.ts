@@ -1,10 +1,11 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { organizerClaims, winnerClaims, events, organizations } from "@/lib/db/schema";
+import { winnerClaims, events, organizations } from "@/lib/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { canManageEventById } from "./permissions";
 
 // ============================================
 // ADMIN CONFIGURATION
@@ -101,109 +102,12 @@ export async function getUserWinnerClaim(eventId: string) {
 }
 
 // ============================================
-// ORGANIZER CLAIMS
+// PERMISSIONS - Check & Update Event
 // ============================================
 
-export interface CreateOrganizerClaimInput {
-  eventId: string;
-  email: string;
-  name?: string;
-  role?: string;
-  proofUrl?: string;
-  proofDescription?: string;
-}
-
-export async function createOrganizerClaim(input: CreateOrganizerClaimInput) {
-  const { userId } = await auth();
-
-  if (!userId) {
-    return { success: false, error: "Debes iniciar sesión" };
-  }
-
-  // Check if user already has a pending claim for this event
-  const existingClaim = await db
-    .select()
-    .from(organizerClaims)
-    .where(
-      and(
-        eq(organizerClaims.eventId, input.eventId),
-        eq(organizerClaims.userId, userId)
-      )
-    )
-    .limit(1);
-
-  if (existingClaim.length > 0) {
-    return { success: false, error: "Ya tienes una solicitud para este evento" };
-  }
-
-  await db.insert(organizerClaims).values({
-    eventId: input.eventId,
-    userId,
-    email: input.email,
-    name: input.name,
-    role: input.role,
-    proofUrl: input.proofUrl,
-    proofDescription: input.proofDescription,
-  });
-
-  revalidatePath(`/`);
-  return { success: true };
-}
-
-export async function getUserOrganizerClaim(eventId: string) {
-  const { userId } = await auth();
-
-  if (!userId) {
-    return null;
-  }
-
-  const claim = await db
-    .select()
-    .from(organizerClaims)
-    .where(
-      and(
-        eq(organizerClaims.eventId, eventId),
-        eq(organizerClaims.userId, userId)
-      )
-    )
-    .limit(1);
-
-  return claim[0] || null;
-}
-
-// ============================================
-// VERIFIED ORGANIZER - Check & Update Event
-// ============================================
-
-export async function isVerifiedOrganizer(eventId: string): Promise<boolean> {
-  const { userId } = await auth();
-
-  if (!userId) {
-    return false;
-  }
-
-  const event = await db
-    .select({
-      isOrganizerVerified: events.isOrganizerVerified,
-      verifiedOrganizerId: events.verifiedOrganizerId,
-    })
-    .from(events)
-    .where(eq(events.id, eventId))
-    .limit(1);
-
-  if (event.length === 0) {
-    return false;
-  }
-
-  return event[0].isOrganizerVerified === true && event[0].verifiedOrganizerId === userId;
-}
-
-// Check if user can edit event (admin OR verified organizer)
+// Check if user can edit event (uses new permission system)
 export async function canEditEvent(eventId: string): Promise<boolean> {
-  const admin = await isAdmin();
-  if (admin) return true;
-
-  return isVerifiedOrganizer(eventId);
+  return canManageEventById(eventId);
 }
 
 export interface UpdateEventInput {
@@ -224,7 +128,6 @@ export interface UpdateEventInput {
   websiteUrl?: string;
   registrationUrl?: string;
   eventImageUrl?: string;
-  isJuniorFriendly?: boolean;
   eventType?: string;
   skillLevel?: string;
   status?: string;
@@ -271,34 +174,6 @@ export async function updateEvent(input: UpdateEventInput) {
 // ADMIN - Get all claims
 // ============================================
 
-export async function getAllOrganizerClaims() {
-  const admin = await isAdmin();
-  if (!admin) return [];
-
-  const claims = await db
-    .select({
-      id: organizerClaims.id,
-      eventId: organizerClaims.eventId,
-      userId: organizerClaims.userId,
-      email: organizerClaims.email,
-      name: organizerClaims.name,
-      role: organizerClaims.role,
-      proofUrl: organizerClaims.proofUrl,
-      proofDescription: organizerClaims.proofDescription,
-      status: organizerClaims.status,
-      createdAt: organizerClaims.createdAt,
-      eventName: events.name,
-      eventSlug: events.slug,
-      organizationSlug: organizations.slug,
-    })
-    .from(organizerClaims)
-    .leftJoin(events, eq(organizerClaims.eventId, events.id))
-    .leftJoin(organizations, eq(events.organizationId, organizations.id))
-    .orderBy(desc(organizerClaims.createdAt));
-
-  return claims;
-}
-
 export async function getAllWinnerClaims() {
   const admin = await isAdmin();
   if (!admin) return [];
@@ -331,74 +206,6 @@ export async function getAllWinnerClaims() {
 // ============================================
 // ADMIN - Approve/Reject claims
 // ============================================
-
-export async function approveOrganizerClaim(claimId: string) {
-  const { userId } = await auth();
-  const admin = await isAdmin();
-
-  if (!admin || !userId) {
-    return { success: false, error: "No autorizado" };
-  }
-
-  // Get the claim
-  const claim = await db
-    .select()
-    .from(organizerClaims)
-    .where(eq(organizerClaims.id, claimId))
-    .limit(1);
-
-  if (claim.length === 0) {
-    return { success: false, error: "Solicitud no encontrada" };
-  }
-
-  const { eventId, userId: claimUserId } = claim[0];
-
-  // Update the claim status
-  await db
-    .update(organizerClaims)
-    .set({
-      status: "approved",
-      reviewedAt: new Date(),
-      reviewedBy: userId,
-    })
-    .where(eq(organizerClaims.id, claimId));
-
-  // Update the event to mark organizer as verified
-  await db
-    .update(events)
-    .set({
-      isOrganizerVerified: true,
-      verifiedOrganizerId: claimUserId,
-      updatedAt: new Date(),
-    })
-    .where(eq(events.id, eventId));
-
-  revalidatePath("/admin");
-  revalidatePath("/");
-  return { success: true };
-}
-
-export async function rejectOrganizerClaim(claimId: string, reason?: string) {
-  const { userId } = await auth();
-  const admin = await isAdmin();
-
-  if (!admin || !userId) {
-    return { success: false, error: "No autorizado" };
-  }
-
-  await db
-    .update(organizerClaims)
-    .set({
-      status: "rejected",
-      reviewedAt: new Date(),
-      reviewedBy: userId,
-      rejectionReason: reason,
-    })
-    .where(eq(organizerClaims.id, claimId));
-
-  revalidatePath("/admin");
-  return { success: true };
-}
 
 export async function approveWinnerClaim(claimId: string) {
   const { userId } = await auth();
@@ -441,4 +248,18 @@ export async function rejectWinnerClaim(claimId: string, reason?: string) {
 
   revalidatePath("/admin");
   return { success: true };
+}
+
+// ============================================
+// Get claims for a specific event (for manage panel)
+// ============================================
+
+export async function getEventWinnerClaims(eventId: string) {
+  const claims = await db
+    .select()
+    .from(winnerClaims)
+    .where(eq(winnerClaims.eventId, eventId))
+    .orderBy(winnerClaims.position);
+
+  return claims;
 }

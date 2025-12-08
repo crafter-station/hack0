@@ -99,9 +99,11 @@ export async function getEvents(
 		);
 	}
 
-	// Junior friendly filter
+	// Junior friendly filter (derived from skillLevel: beginner or all)
 	if (juniorFriendly) {
-		conditions.push(eq(events.isJuniorFriendly, true));
+		conditions.push(
+			or(eq(events.skillLevel, "beginner"), eq(events.skillLevel, "all"))!,
+		);
 	}
 
 	// Search filter
@@ -370,7 +372,6 @@ export interface CreateEventInput {
 	skillLevel?: string;
 	country?: string;
 	city?: string;
-	isJuniorFriendly?: boolean;
 	startDate?: string;
 	endDate?: string;
 	registrationDeadline?: string;
@@ -404,7 +405,6 @@ export async function createEvent(
 			skillLevel: (input.skillLevel as any) || "all",
 			country: input.country || "PE",
 			city: input.city,
-			isJuniorFriendly: input.isJuniorFriendly || false,
 			startDate: input.startDate ? new Date(input.startDate) : undefined,
 			endDate: input.endDate ? new Date(input.endDate) : undefined,
 			registrationDeadline: input.registrationDeadline
