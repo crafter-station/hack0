@@ -2,17 +2,25 @@
 
 import {
 	ArrowRight,
+	Building2,
 	Calendar,
 	Code,
+	Home,
 	LayoutDashboard,
 	Loader2,
+	LogIn,
 	MapPin,
 	Plus,
+	Search,
+	Settings,
+	Shield,
 	Sparkles,
+	UserPlus,
 	Users,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import { useUser } from "@clerk/nextjs";
 import {
 	CommandDialog,
 	CommandEmpty,
@@ -20,29 +28,51 @@ import {
 	CommandInput,
 	CommandItem,
 	CommandList,
+	CommandSeparator,
 } from "@/components/ui/command";
 import type { Event, Organization } from "@/lib/db/schema";
 import { formatEventDateShort, getCountryFlag } from "@/lib/event-utils";
 
 type EventWithOrganization = Event & { organization: Organization | null };
 
+interface OrganizationWithRole {
+	organization: Organization;
+	role: "owner" | "admin" | "member" | "follower";
+}
+
 export function GlobalSearch() {
 	const [open, setOpen] = React.useState(false);
 	const [hackathons, setHackathons] = React.useState<EventWithOrganization[]>(
 		[],
 	);
+	const [communities, setCommunities] = React.useState<OrganizationWithRole[]>(
+		[],
+	);
+	const [allCommunities, setAllCommunities] = React.useState<Organization[]>(
+		[],
+	);
 	const [loading, setLoading] = React.useState(false);
 	const [hasFetched, setHasFetched] = React.useState(false);
 	const router = useRouter();
+	const { isSignedIn, user } = useUser();
 
-	// Fetch hackathons when dialog opens
+	// Fetch data when dialog opens
 	React.useEffect(() => {
 		if (open && !hasFetched) {
 			setLoading(true);
-			fetch("/api/events")
-				.then((res) => res.json())
-				.then((data) => {
-					setHackathons(data.events || []);
+			Promise.all([
+				fetch("/api/events").then((res) => res.json()),
+				fetch("/api/organizations/my-communities")
+					.then((res) => res.json())
+					.catch(() => ({ organizations: [] })),
+				fetch("/api/organizations")
+					.then((res) => res.json())
+					.catch(() => ({ organizations: [] })),
+			])
+				.then(([eventsData, myCommunitiesData, allCommunitiesData]) => {
+					setHackathons(eventsData.events || []);
+					setCommunities(myCommunitiesData.organizations || []);
+					setAllCommunities(allCommunitiesData.organizations || []);
 					setHasFetched(true);
 				})
 				.catch(console.error)
@@ -91,10 +121,10 @@ export function GlobalSearch() {
 		<CommandDialog
 			open={open}
 			onOpenChange={setOpen}
-			title="Buscar eventos"
-			description="Busca hackathons, conferencias y eventos tech en Perú"
+			title="Buscar"
+			description="Busca eventos, comunidades y acciones rápidas"
 		>
-			<CommandInput placeholder="Buscar eventos..." />
+			<CommandInput placeholder="Buscar eventos, comunidades..." />
 			<CommandList>
 				{loading ? (
 					<div className="flex items-center justify-center py-6">
@@ -102,23 +132,100 @@ export function GlobalSearch() {
 					</div>
 				) : (
 					<>
-						<CommandEmpty>No se encontraron eventos.</CommandEmpty>
+						<CommandEmpty>No se encontraron resultados.</CommandEmpty>
 
-						{/* Quick actions */}
-						<CommandGroup heading="Acciones">
-							<CommandItem
-								onSelect={() => runCommand(() => router.push("/c"))}
-							>
-								<LayoutDashboard className="mr-2 h-4 w-4" />
-								Mi dashboard
+						{/* Quick actions - context aware */}
+						<CommandGroup heading="Acciones rápidas">
+							{!isSignedIn ? (
+								<>
+									<CommandItem
+										onSelect={() => runCommand(() => router.push("/sign-in"))}
+									>
+										<LogIn className="mr-2 h-4 w-4" />
+										Iniciar sesión
+									</CommandItem>
+									<CommandItem
+										onSelect={() => runCommand(() => router.push("/sign-up"))}
+									>
+										<UserPlus className="mr-2 h-4 w-4" />
+										Crear cuenta
+									</CommandItem>
+								</>
+							) : (
+								<>
+									<CommandItem
+										onSelect={() => runCommand(() => router.push("/c/new"))}
+									>
+										<Plus className="mr-2 h-4 w-4" />
+										Crear comunidad
+									</CommandItem>
+									<CommandItem
+										onSelect={() => runCommand(() => router.push("/submit"))}
+									>
+										<Calendar className="mr-2 h-4 w-4" />
+										Publicar evento
+									</CommandItem>
+								</>
+							)}
+							<CommandItem onSelect={() => runCommand(() => router.push("/"))}>
+								<Home className="mr-2 h-4 w-4" />
+								Ir al inicio
 							</CommandItem>
-							<CommandItem
-								onSelect={() =>
-									runCommand(() => router.push("/for-organizers"))
-								}
-							>
-								<Plus className="mr-2 h-4 w-4" />
-								Soy organizador
+						</CommandGroup>
+
+						{/* My Communities */}
+						{isSignedIn && communities.length > 0 && (
+							<CommandGroup heading="Mis comunidades">
+								{communities.slice(0, 5).map(({ organization, role }) => (
+									<CommandItem
+										key={organization.id}
+										value={organization.displayName || organization.name}
+										onSelect={() =>
+											runCommand(() => router.push(`/c/${organization.slug}`))
+										}
+									>
+										<div className="flex items-center gap-3 w-full">
+											{organization.logoUrl ? (
+												<img
+													src={organization.logoUrl}
+													alt=""
+													className="h-6 w-6 rounded object-cover"
+												/>
+											) : (
+												<Building2 className="h-6 w-6 text-muted-foreground" />
+											)}
+											<div className="flex-1 min-w-0">
+												<p className="truncate font-medium">
+													{organization.displayName || organization.name}
+												</p>
+												<p className="text-xs text-muted-foreground capitalize">
+													{role}
+												</p>
+											</div>
+											<ArrowRight className="h-3 w-3 text-muted-foreground" />
+										</div>
+									</CommandItem>
+								))}
+								{communities.length > 5 && (
+									<CommandItem
+										onSelect={() => runCommand(() => router.push("/c"))}
+									>
+										<LayoutDashboard className="mr-2 h-4 w-4" />
+										Ver todas mis comunidades
+									</CommandItem>
+								)}
+							</CommandGroup>
+						)}
+
+						{/* Browse */}
+						<CommandGroup heading="Explorar">
+							<CommandItem onSelect={() => runCommand(() => router.push("/c"))}>
+								<Search className="mr-2 h-4 w-4" />
+								Todas las comunidades
+							</CommandItem>
+							<CommandItem onSelect={() => runCommand(() => router.push("/"))}>
+								<Calendar className="mr-2 h-4 w-4" />
+								Todos los eventos
 							</CommandItem>
 						</CommandGroup>
 
@@ -145,8 +252,16 @@ export function GlobalSearch() {
 									runCommand(() => router.push("/?format=in-person"))
 								}
 							>
-								<Users className="mr-2 h-4 w-4" />
+								<MapPin className="mr-2 h-4 w-4" />
 								Presenciales
+							</CommandItem>
+							<CommandItem
+								onSelect={() =>
+									runCommand(() => router.push("/?format=virtual"))
+								}
+							>
+								<Users className="mr-2 h-4 w-4" />
+								Virtuales
 							</CommandItem>
 						</CommandGroup>
 
