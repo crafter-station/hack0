@@ -543,7 +543,7 @@ export type CommunityInvite = typeof communityInvites.$inferSelect;
 export type NewCommunityInvite = typeof communityInvites.$inferInsert;
 
 // ============================================
-// SPONSORS - Event sponsors/partners
+// EVENT SPONSORS - Junction table for sponsors (using organizations)
 // ============================================
 
 export const sponsorTierEnum = pgEnum("sponsor_tier", [
@@ -555,16 +555,14 @@ export const sponsorTierEnum = pgEnum("sponsor_tier", [
 	"community",
 ]);
 
-export const sponsors = pgTable("sponsors", {
+export const eventSponsors = pgTable("event_sponsors", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	eventId: uuid("event_id")
 		.references(() => events.id)
 		.notNull(),
-
-	// Sponsor info
-	name: varchar("name", { length: 255 }).notNull(),
-	logoUrl: varchar("logo_url", { length: 500 }),
-	websiteUrl: varchar("website_url", { length: 500 }),
+	organizationId: uuid("organization_id")
+		.references(() => organizations.id)
+		.notNull(),
 
 	// Tier/level
 	tier: sponsorTierEnum("tier").default("partner"),
@@ -574,8 +572,8 @@ export const sponsors = pgTable("sponsors", {
 	createdAt: timestamp("created_at").defaultNow(),
 });
 
-export type Sponsor = typeof sponsors.$inferSelect;
-export type NewSponsor = typeof sponsors.$inferInsert;
+export type EventSponsor = typeof eventSponsors.$inferSelect;
+export type NewEventSponsor = typeof eventSponsors.$inferInsert;
 
 export const SPONSOR_TIERS = [
 	"platinum",
@@ -636,17 +634,19 @@ export const IMPORT_STATUSES = [
 // RELATIONS
 // ============================================
 
-export const eventsRelations = relations(events, ({ one }) => ({
+export const eventsRelations = relations(events, ({ one, many }) => ({
 	organization: one(organizations, {
 		fields: [events.organizationId],
 		references: [organizations.id],
 	}),
+	sponsors: many(eventSponsors),
 }));
 
 export const organizationsRelations = relations(organizations, ({ many }) => ({
 	events: many(events),
 	members: many(communityMembers),
 	invites: many(communityInvites),
+	sponsorships: many(eventSponsors),
 }));
 
 export const communityMembersRelations = relations(
@@ -668,3 +668,14 @@ export const communityInvitesRelations = relations(
 		}),
 	}),
 );
+
+export const eventSponsorsRelations = relations(eventSponsors, ({ one }) => ({
+	event: one(events, {
+		fields: [eventSponsors.eventId],
+		references: [events.id],
+	}),
+	organization: one(organizations, {
+		fields: [eventSponsors.organizationId],
+		references: [organizations.id],
+	}),
+}));

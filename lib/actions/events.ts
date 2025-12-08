@@ -16,10 +16,11 @@ import {
 	type Event,
 	events,
 	type NewEvent,
-	type NewSponsor,
+	type NewEventSponsor,
 	organizations,
-	type Sponsor,
-	sponsors,
+	type EventSponsor,
+	eventSponsors,
+	type Organization,
 } from "@/lib/db/schema";
 import { notifySubscribersOfNewEvent } from "@/lib/email/notify-subscribers";
 import { type EventCategory, getCategoryById } from "@/lib/event-categories";
@@ -551,17 +552,35 @@ export async function getParentEvents(): Promise<Event[]> {
 }
 
 // ============================================
-// SPONSORS - Event sponsors/partners
+// SPONSORS - Event sponsors/partners (using organizations)
 // ============================================
 
-export async function getEventSponsors(eventId: string): Promise<Sponsor[]> {
+export interface EventSponsorWithOrg extends EventSponsor {
+	organization: Organization;
+}
+
+export async function getEventSponsors(
+	eventId: string,
+): Promise<EventSponsorWithOrg[]> {
 	const results = await db
-		.select()
-		.from(sponsors)
-		.where(eq(sponsors.eventId, eventId))
+		.select({
+			id: eventSponsors.id,
+			eventId: eventSponsors.eventId,
+			organizationId: eventSponsors.organizationId,
+			tier: eventSponsors.tier,
+			orderIndex: eventSponsors.orderIndex,
+			createdAt: eventSponsors.createdAt,
+			organization: organizations,
+		})
+		.from(eventSponsors)
+		.innerJoin(
+			organizations,
+			eq(eventSponsors.organizationId, organizations.id),
+		)
+		.where(eq(eventSponsors.eventId, eventId))
 		.orderBy(
 			asc(sql`
-        CASE ${sponsors.tier}
+        CASE ${eventSponsors.tier}
           WHEN 'platinum' THEN 1
           WHEN 'gold' THEN 2
           WHEN 'silver' THEN 3
@@ -570,78 +589,74 @@ export async function getEventSponsors(eventId: string): Promise<Sponsor[]> {
           WHEN 'community' THEN 6
         END
       `),
-			asc(sponsors.orderIndex),
+			asc(eventSponsors.orderIndex),
 		);
 
 	return results;
 }
 
-export interface CreateSponsorInput {
+export interface AddEventSponsorInput {
 	eventId: string;
-	name: string;
-	logoUrl?: string;
-	websiteUrl?: string;
+	organizationId: string;
 	tier?: "platinum" | "gold" | "silver" | "bronze" | "partner" | "community";
 	orderIndex?: number;
 }
 
-export async function createSponsor(
-	input: CreateSponsorInput,
-): Promise<{ success: boolean; sponsor?: Sponsor; error?: string }> {
+export async function addEventSponsor(
+	input: AddEventSponsorInput,
+): Promise<{ success: boolean; eventSponsor?: EventSponsor; error?: string }> {
 	try {
-		const sponsorData: NewSponsor = {
+		const sponsorData: NewEventSponsor = {
 			eventId: input.eventId,
-			name: input.name,
-			logoUrl: input.logoUrl,
-			websiteUrl: input.websiteUrl,
+			organizationId: input.organizationId,
 			tier: input.tier || "partner",
 			orderIndex: input.orderIndex || 0,
 		};
 
-		const result = await db.insert(sponsors).values(sponsorData).returning();
+		const result = await db
+			.insert(eventSponsors)
+			.values(sponsorData)
+			.returning();
 
 		if (result.length === 0) {
-			return { success: false, error: "Error al crear el sponsor" };
+			return { success: false, error: "Error al agregar el sponsor" };
 		}
 
-		return { success: true, sponsor: result[0] };
+		return { success: true, eventSponsor: result[0] };
 	} catch (error) {
-		console.error("Error creating sponsor:", error);
-		return { success: false, error: "Error al crear el sponsor" };
+		console.error("Error adding event sponsor:", error);
+		return { success: false, error: "Error al agregar el sponsor" };
 	}
 }
 
-export async function updateSponsor(
-	sponsorId: string,
-	input: Partial<CreateSponsorInput>,
+export async function updateEventSponsor(
+	eventSponsorId: string,
+	input: Partial<Omit<AddEventSponsorInput, "eventId" | "organizationId">>,
 ): Promise<{ success: boolean; error?: string }> {
 	try {
 		await db
-			.update(sponsors)
+			.update(eventSponsors)
 			.set({
-				name: input.name,
-				logoUrl: input.logoUrl,
-				websiteUrl: input.websiteUrl,
 				tier: input.tier,
 				orderIndex: input.orderIndex,
 			})
-			.where(eq(sponsors.id, sponsorId));
+			.where(eq(eventSponsors.id, eventSponsorId));
 
 		return { success: true };
 	} catch (error) {
-		console.error("Error updating sponsor:", error);
+		console.error("Error updating event sponsor:", error);
 		return { success: false, error: "Error al actualizar el sponsor" };
 	}
 }
 
-export async function deleteSponsor(
-	sponsorId: string,
+export async function removeEventSponsor(
+	eventSponsorId: string,
 ): Promise<{ success: boolean; error?: string }> {
 	try {
-		await db.delete(sponsors).where(eq(sponsors.id, sponsorId));
+		await db.delete(eventSponsors).where(eq(eventSponsors.id, eventSponsorId));
 		return { success: true };
 	} catch (error) {
-		console.error("Error deleting sponsor:", error);
+		console.error("Error removing event sponsor:", error);
 		return { success: false, error: "Error al eliminar el sponsor" };
 	}
 }
