@@ -1,12 +1,16 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
-import { Users, Check, XCircle } from "lucide-react";
+import { Users, XCircle } from "lucide-react";
 import { validateInviteToken, acceptInvite } from "@/lib/actions/community-members";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { Button } from "@/components/ui/button";
 import { COMMUNITY_ROLE_LABELS } from "@/lib/db/schema";
+import { db } from "@/lib/db";
+import { communityMembers } from "@/lib/db/schema";
+import { eq, and } from "drizzle-orm";
+import { AcceptInviteButton } from "@/components/communities/accept-invite-button";
 
 interface InvitePageProps {
   params: Promise<{ token: string }>;
@@ -45,6 +49,54 @@ async function InviteContent({ token }: { token: string }) {
   }
 
   const { invite } = validation;
+
+  // Check if user is the owner
+  const isOwner = invite.community.ownerUserId === userId;
+
+  // Check if user is already a member
+  const existingMembership = await db.query.communityMembers.findFirst({
+    where: and(
+      eq(communityMembers.communityId, invite.communityId),
+      eq(communityMembers.userId, userId!)
+    ),
+  });
+
+  // If already a member or owner, show success state
+  if (isOwner || existingMembership) {
+    return (
+      <div className="max-w-md mx-auto mt-20">
+        <div className="rounded-lg border bg-card p-8 space-y-6">
+          <div className="text-center space-y-4">
+            <div className="flex justify-center">
+              {invite.community.logoUrl ? (
+                <img
+                  src={invite.community.logoUrl}
+                  alt={invite.community.displayName || invite.community.name}
+                  className="h-16 w-16 rounded-full object-cover border-2 border-border"
+                />
+              ) : (
+                <div className="h-16 w-16 rounded-full bg-muted border-2 border-border flex items-center justify-center">
+                  <Users className="h-8 w-8 text-muted-foreground" />
+                </div>
+              )}
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold">Ya eres miembro</h1>
+              <p className="text-sm text-muted-foreground">
+                Ya formas parte de {invite.community.displayName || invite.community.name} como {isOwner ? "Owner" : COMMUNITY_ROLE_LABELS[existingMembership!.role]}.
+              </p>
+            </div>
+          </div>
+
+          <Button asChild className="w-full">
+            <a href={`/c/${invite.community.slug}`}>
+              Ir a la comunidad
+            </a>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto mt-20">
@@ -93,10 +145,7 @@ async function InviteContent({ token }: { token: string }) {
               redirect(`/invite/${token}?error=${encodeURIComponent(result.error || "Error desconocido")}`);
             }
           }}>
-            <Button type="submit" className="w-full gap-2">
-              <Check className="h-4 w-4" />
-              Unirme a la comunidad
-            </Button>
+            <AcceptInviteButton />
           </form>
         </div>
 
