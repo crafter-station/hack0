@@ -22,6 +22,7 @@ import {
 	Trophy,
 	Users,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { EditEventForm } from "@/components/events/edit-event-form";
@@ -375,9 +376,20 @@ export function ManageContent({
 							</div>
 							<div className="p-5">
 								<div className="flex items-center gap-3 mb-3">
-									<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted border">
-										<Building2 className="h-6 w-6 text-muted-foreground" />
-									</div>
+									{community.logoUrl ? (
+										<div className="relative h-12 w-12 shrink-0 rounded-lg overflow-hidden border border-border">
+											<Image
+												src={community.logoUrl}
+												alt={community.displayName || community.name}
+												fill
+												className="object-cover"
+											/>
+										</div>
+									) : (
+										<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-muted border text-lg font-semibold text-muted-foreground">
+											{(community.displayName || community.name).charAt(0).toUpperCase()}
+										</div>
+									)}
 									<div className="flex-1 min-w-0">
 										<p className="text-sm font-medium truncate">
 											{community.displayName || community.name}

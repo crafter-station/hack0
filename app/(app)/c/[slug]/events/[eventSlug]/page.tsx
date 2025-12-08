@@ -1,31 +1,35 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import Image from "next/image";
-import Markdown from "react-markdown";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
 	ArrowUpRight,
 	BadgeCheck,
+	Bell,
+	Building2,
+	Calendar,
+	CheckCircle2,
 	Clock,
 	ExternalLink,
 	Globe,
 	GraduationCap,
-	Sparkles,
-	Calendar,
-	MapPin,
-	Building2,
-	Bell,
-	CheckCircle2,
 	Languages,
+	MapPin,
+	Sparkles,
 } from "lucide-react";
-import { TrophyIcon } from "@/components/icons/trophy";
-import { CalendarIcon } from "@/components/icons/calendar";
-import { WinnerSection } from "@/components/events/winner-section";
-import { ManageEventButton } from "@/components/events/manage-event-button";
-import { EventCountdown } from "@/components/events/event-countdown";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getEventBySlug, getChildEvents, getEventSponsors } from "@/lib/actions/events";
+import Markdown from "react-markdown";
+import { EventCountdown } from "@/components/events/event-countdown";
+import { ManageEventButton } from "@/components/events/manage-event-button";
+import { WinnerSection } from "@/components/events/winner-section";
+import { CalendarIcon } from "@/components/icons/calendar";
+import { TrophyIcon } from "@/components/icons/trophy";
+import {
+	getChildEvents,
+	getEventBySlug,
+	getEventSponsors,
+} from "@/lib/actions/events";
 import { getOrganizationBySlug } from "@/lib/actions/organizations";
 import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
 import {
@@ -39,8 +43,6 @@ import {
 	isDateInFuture,
 	isEventJuniorFriendly,
 } from "@/lib/event-utils";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
 
 interface EventPageProps {
 	params: Promise<{ slug: string; eventSlug: string }>;
@@ -94,7 +96,9 @@ export async function generateMetadata({
 			description,
 			type: "website",
 			url: `https://hack0.dev/c/${slug}/events/${hackathon.slug}`,
-			images: [{ url: ogImageUrl, width: 1200, height: 630, alt: hackathon.name }],
+			images: [
+				{ url: ogImageUrl, width: 1200, height: 630, alt: hackathon.name },
+			],
 		},
 		twitter: {
 			card: "summary_large_image",
@@ -142,11 +146,11 @@ export default async function EventPage({ params }: EventPageProps) {
 		? new Date(hackathon.registrationDeadline)
 		: null;
 
-	const hasValidTime = startDate && (
-		startDate.getHours() !== 0 ||
-		startDate.getMinutes() !== 0 ||
-		(endDate && (endDate.getHours() !== 0 || endDate.getMinutes() !== 0))
-	);
+	const hasValidTime =
+		startDate &&
+		(startDate.getHours() !== 0 ||
+			startDate.getMinutes() !== 0 ||
+			(endDate && (endDate.getHours() !== 0 || endDate.getMinutes() !== 0)));
 
 	const stripePattern = `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23888' fill-opacity='0.15'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E")`;
 
@@ -231,7 +235,7 @@ export default async function EventPage({ params }: EventPageProps) {
 	};
 
 	return (
-		<div className="min-h-screen bg-background flex flex-col">
+		<>
 			<script
 				type="application/ld+json"
 				dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
@@ -240,7 +244,6 @@ export default async function EventPage({ params }: EventPageProps) {
 				type="application/ld+json"
 				dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd) }}
 			/>
-			<SiteHeader showBackButton />
 
 			<main className="flex-1 w-full">
 				<div className="md:hidden relative w-full aspect-square overflow-hidden bg-muted">
@@ -270,7 +273,7 @@ export default async function EventPage({ params }: EventPageProps) {
 				<section className="mx-auto max-w-screen-xl px-4 py-6 md:py-12">
 					<div className="grid md:grid-cols-[240px_1fr] gap-6 md:gap-8">
 						<div className="hidden md:block">
-							<div className="aspect-square w-full rounded-2xl overflow-hidden bg-muted border border-border">
+							<div className="aspect-square w-full overflow-hidden bg-muted border border-border">
 								{hackathon.eventImageUrl ? (
 									<Image
 										src={hackathon.eventImageUrl}
@@ -314,11 +317,13 @@ export default async function EventPage({ params }: EventPageProps) {
 									<div>
 										<p className="font-medium">
 											{format(startDate, "EEEE, d 'de' MMMM", { locale: es })}
-											{endDate && startDate.toDateString() !== endDate.toDateString() && (
-												<span className="text-muted-foreground">
-													{" "}– {format(endDate, "d 'de' MMMM", { locale: es })}
-												</span>
-											)}
+											{endDate &&
+												startDate.toDateString() !== endDate.toDateString() && (
+													<span className="text-muted-foreground">
+														{" "}
+														– {format(endDate, "d 'de' MMMM", { locale: es })}
+													</span>
+												)}
 										</p>
 										{hasValidTime ? (
 											<p className="text-sm text-muted-foreground">
@@ -327,7 +332,10 @@ export default async function EventPage({ params }: EventPageProps) {
 													<> – {format(endDate, "h:mm a", { locale: es })}</>
 												)}
 												{hackathon.timezone && (
-													<span className="text-muted-foreground/60"> · {hackathon.timezone}</span>
+													<span className="text-muted-foreground/60">
+														{" "}
+														· {hackathon.timezone}
+													</span>
 												)}
 											</p>
 										) : (
@@ -346,11 +354,21 @@ export default async function EventPage({ params }: EventPageProps) {
 										{hackathon.venue && (
 											<p className="text-foreground">{hackathon.venue}</p>
 										)}
-										<p className={hackathon.venue ? "text-sm" : "text-foreground"}>
+										<p
+											className={
+												hackathon.venue ? "text-sm" : "text-foreground"
+											}
+										>
 											{hackathon.city}
-											{hackathon.city && hackathon.department && hackathon.city !== hackathon.department && `, ${hackathon.department}`}
-											{!hackathon.city && !hackathon.venue && getFormatLabel(hackathon.format, hackathon.department)}
-											{(hackathon.city || hackathon.venue) && `, ${getFormatLabel(hackathon.format)}`}
+											{hackathon.city &&
+												hackathon.department &&
+												hackathon.city !== hackathon.department &&
+												`, ${hackathon.department}`}
+											{!hackathon.city &&
+												!hackathon.venue &&
+												getFormatLabel(hackathon.format, hackathon.department)}
+											{(hackathon.city || hackathon.venue) &&
+												`, ${getFormatLabel(hackathon.format)}`}
 										</p>
 									</div>
 								</div>
@@ -372,10 +390,10 @@ export default async function EventPage({ params }: EventPageProps) {
 										isEnded
 											? "bg-muted text-muted-foreground"
 											: isOngoing
-											? "bg-emerald-500/10 text-emerald-500"
-											: isOpen
-											? "bg-blue-500/10 text-blue-500"
-											: "bg-amber-500/10 text-amber-500"
+												? "bg-emerald-500/10 text-emerald-500"
+												: isOpen
+													? "bg-blue-500/10 text-blue-500"
+													: "bg-amber-500/10 text-amber-500"
 									}`}
 								>
 									<span
@@ -383,10 +401,10 @@ export default async function EventPage({ params }: EventPageProps) {
 											isEnded
 												? "bg-muted-foreground/50"
 												: isOngoing
-												? "bg-emerald-500 animate-pulse"
-												: isOpen
-												? "bg-blue-500"
-												: "bg-amber-500"
+													? "bg-emerald-500 animate-pulse"
+													: isOpen
+														? "bg-blue-500"
+														: "bg-amber-500"
 										}`}
 									/>
 									{status.label}
@@ -439,25 +457,40 @@ export default async function EventPage({ params }: EventPageProps) {
 										<Markdown
 											components={{
 												h2: ({ children }) => (
-													<h3 className="text-lg font-semibold text-foreground mt-6 mb-2">{children}</h3>
+													<h3 className="text-lg font-semibold text-foreground mt-6 mb-2">
+														{children}
+													</h3>
 												),
 												h3: ({ children }) => (
-													<h4 className="text-base font-medium text-foreground mt-4 mb-1">{children}</h4>
+													<h4 className="text-base font-medium text-foreground mt-4 mb-1">
+														{children}
+													</h4>
 												),
 												p: ({ children }) => (
-													<p className="text-foreground leading-relaxed">{children}</p>
+													<p className="text-foreground leading-relaxed">
+														{children}
+													</p>
 												),
 												ul: ({ children }) => (
-													<ul className="list-disc list-inside space-y-1 text-foreground ml-1">{children}</ul>
+													<ul className="list-disc list-inside space-y-1 text-foreground ml-1">
+														{children}
+													</ul>
 												),
 												li: ({ children }) => (
 													<li className="text-foreground">{children}</li>
 												),
 												strong: ({ children }) => (
-													<strong className="font-semibold text-foreground">{children}</strong>
+													<strong className="font-semibold text-foreground">
+														{children}
+													</strong>
 												),
 												a: ({ href, children }) => (
-													<a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+													<a
+														href={href}
+														target="_blank"
+														rel="noopener noreferrer"
+														className="text-blue-400 hover:underline"
+													>
 														{children}
 													</a>
 												),
@@ -476,7 +509,9 @@ export default async function EventPage({ params }: EventPageProps) {
 									</h2>
 									<div className="space-y-3">
 										{childEvents.map((child) => {
-											const childStart = child.startDate ? new Date(child.startDate) : null;
+											const childStart = child.startDate
+												? new Date(child.startDate)
+												: null;
 											const childStatus = getEventStatus(child);
 											return (
 												<Link
@@ -529,10 +564,10 @@ export default async function EventPage({ params }: EventPageProps) {
 																childStatus.status === "ended"
 																	? "bg-muted text-muted-foreground"
 																	: childStatus.status === "ongoing"
-																	? "bg-emerald-500/10 text-emerald-500"
-																	: childStatus.status === "open"
-																	? "bg-blue-500/10 text-blue-500"
-																	: "bg-amber-500/10 text-amber-500"
+																		? "bg-emerald-500/10 text-emerald-500"
+																		: childStatus.status === "open"
+																			? "bg-blue-500/10 text-blue-500"
+																			: "bg-amber-500/10 text-amber-500"
 															}`}
 														>
 															<span
@@ -540,10 +575,10 @@ export default async function EventPage({ params }: EventPageProps) {
 																	childStatus.status === "ended"
 																		? "bg-muted-foreground/50"
 																		: childStatus.status === "ongoing"
-																		? "bg-emerald-500 animate-pulse"
-																		: childStatus.status === "open"
-																		? "bg-blue-500"
-																		: "bg-amber-500"
+																			? "bg-emerald-500 animate-pulse"
+																			: childStatus.status === "open"
+																				? "bg-blue-500"
+																				: "bg-amber-500"
 																}`}
 															/>
 															{childStatus.label}
@@ -562,8 +597,19 @@ export default async function EventPage({ params }: EventPageProps) {
 										Sponsors y Partners
 									</h2>
 									<div className="space-y-6">
-										{(["platinum", "gold", "silver", "bronze", "partner", "community"] as const).map((tier) => {
-											const tierSponsors = eventSponsors.filter((s) => s.tier === tier);
+										{(
+											[
+												"platinum",
+												"gold",
+												"silver",
+												"bronze",
+												"partner",
+												"community",
+											] as const
+										).map((tier) => {
+											const tierSponsors = eventSponsors.filter(
+												(s) => s.tier === tier,
+											);
 											if (tierSponsors.length === 0) return null;
 											return (
 												<div key={tier} className="space-y-3">
@@ -612,9 +658,11 @@ export default async function EventPage({ params }: EventPageProps) {
 							)}
 
 							{isEnded && (
-								<WinnerSection eventId={hackathon.id} eventName={hackathon.name} />
+								<WinnerSection
+									eventId={hackathon.id}
+									eventName={hackathon.name}
+								/>
 							)}
-
 						</div>
 
 						<aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
@@ -677,19 +725,21 @@ export default async function EventPage({ params }: EventPageProps) {
 											{(isOpen || status.status === "upcoming") && deadline && (
 												<div className="text-center space-y-1">
 													<p className="text-xs text-muted-foreground">
-														{isOpen ? "Registro abierto hasta" : "Registro abre"}
+														{isOpen
+															? "Registro abierto hasta"
+															: "Registro abre"}
 													</p>
 													<p className="text-xs font-medium">
-														{format(deadline, "d 'de' MMMM, yyyy", { locale: es })}
+														{format(deadline, "d 'de' MMMM, yyyy", {
+															locale: es,
+														})}
 													</p>
 												</div>
 											)}
 										</>
 									)}
 
-									<button
-										className="flex w-full h-9 items-center justify-center gap-2 rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-									>
+									<button className="flex w-full h-9 items-center justify-center gap-2 rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
 										<Bell className="h-4 w-4" />
 										Seguir evento
 									</button>
@@ -736,19 +786,35 @@ export default async function EventPage({ params }: EventPageProps) {
 										</p>
 										{hackathon.prizeDescription && (
 											<div className="space-y-2 pt-3 border-t">
-												<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Distribución</p>
+												<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+													Distribución
+												</p>
 												<div className="space-y-1.5">
-													{hackathon.prizeDescription.split('\n').filter(line => line.trim()).map((line, i) => {
-														const hasEmoji = /[🥇🥈🥉]/.test(line);
-														return (
-															<div key={i} className={`text-sm flex items-start gap-2 ${hasEmoji ? 'font-medium' : ''}`}>
-																{hasEmoji && <span className="shrink-0">{line.match(/[🥇🥈🥉]/)?.[0]}</span>}
-																<span className={hasEmoji ? '' : 'text-muted-foreground'}>
-																	{line.replace(/[🥇🥈🥉]/g, '').trim()}
-																</span>
-															</div>
-														);
-													})}
+													{hackathon.prizeDescription
+														.split("\n")
+														.filter((line) => line.trim())
+														.map((line, i) => {
+															const hasEmoji = /[🥇🥈🥉]/u.test(line);
+															return (
+																<div
+																	key={i}
+																	className={`text-sm flex items-start gap-2 ${hasEmoji ? "font-medium" : ""}`}
+																>
+																	{hasEmoji && (
+																		<span className="shrink-0">
+																			{line.match(/[🥇🥈🥉]/u)?.[0]}
+																		</span>
+																	)}
+																	<span
+																		className={
+																			hasEmoji ? "" : "text-muted-foreground"
+																		}
+																	>
+																		{line.replace(/[🥇🥈🥉]/gu, "").trim()}
+																	</span>
+																</div>
+															);
+														})}
 												</div>
 											</div>
 										)}
@@ -761,7 +827,9 @@ export default async function EventPage({ params }: EventPageProps) {
 									<div className="px-5 py-4 border-b">
 										<div className="flex items-center gap-2">
 											<Clock className="h-4 w-4 text-muted-foreground" />
-											<h3 className="text-sm font-semibold">Cierre de inscripciones</h3>
+											<h3 className="text-sm font-semibold">
+												Cierre de inscripciones
+											</h3>
 										</div>
 									</div>
 									<div className="p-5">
@@ -780,16 +848,24 @@ export default async function EventPage({ params }: EventPageProps) {
 									<div className="px-5 py-4 border-b">
 										<div className="flex items-center gap-2">
 											<CalendarIcon className="h-4 w-4 text-muted-foreground" />
-											<h3 className="text-sm font-semibold">Fechas del evento</h3>
+											<h3 className="text-sm font-semibold">
+												Fechas del evento
+											</h3>
 										</div>
 									</div>
 									<div className="p-5">
 										<p className="text-sm font-medium">
 											{format(startDate, "d MMM", { locale: es })}
-											{endDate && startDate.toDateString() !== endDate.toDateString() && (
-												<> – {format(endDate, "d MMM yyyy", { locale: es })}</>
-											)}
-											{(!endDate || startDate.toDateString() === endDate.toDateString()) && (
+											{endDate &&
+												startDate.toDateString() !== endDate.toDateString() && (
+													<>
+														{" "}
+														– {format(endDate, "d MMM yyyy", { locale: es })}
+													</>
+												)}
+											{(!endDate ||
+												startDate.toDateString() ===
+													endDate.toDateString()) && (
 												<>, {format(startDate, "yyyy")}</>
 											)}
 										</p>
@@ -800,8 +876,6 @@ export default async function EventPage({ params }: EventPageProps) {
 					</div>
 				</section>
 			</main>
-
-			<SiteFooter />
-		</div>
+		</>
 	);
 }

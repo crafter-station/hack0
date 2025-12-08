@@ -5,6 +5,8 @@ import type { Event } from "@/lib/db/schema";
 import type { EventFilters } from "@/lib/actions/events";
 import { getCategoryById, type EventCategoryConfig } from "@/lib/event-categories";
 import Link from "next/link";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { Button } from "@/components/ui/button";
 
 interface EventListProps {
   events: Event[];
@@ -18,44 +20,37 @@ export function EventList({ events, total, hasMore = false, filters = {} }: Even
   const categoryConfig = getCategoryById(filters.category || "all");
   if (events.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-          <Search className="h-5 w-5 text-muted-foreground" />
-        </div>
-        <h3 className="mt-4 font-medium">No se encontraron eventos</h3>
-        <p className="mt-1 text-sm text-muted-foreground max-w-sm">
-          No hay eventos que coincidan con tus filtros. Intenta ajustar los criterios o explora todas las categorías.
-        </p>
-        <div className="mt-6 flex gap-3">
-          <Link
-            href="/"
-            className="inline-flex h-8 items-center rounded-md border border-border px-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            Ver todos
-          </Link>
-          <Link
-            href="/?juniorFriendly=true"
-            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <Sparkles className="h-3.5 w-3.5" />
-            Para principiantes
-          </Link>
-        </div>
-      </div>
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <Search className="h-6 w-6" />
+          </EmptyMedia>
+          <EmptyTitle>No se encontraron eventos</EmptyTitle>
+          <EmptyDescription>
+            No hay eventos que coincidan con tus filtros. Intenta ajustar los criterios o explora todas las categorías.
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <div className="flex gap-3">
+            <Link href="/">
+              <Button variant="outline" size="sm">
+                Ver todos
+              </Button>
+            </Link>
+            <Link href="/?juniorFriendly=true">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Sparkles className="h-3.5 w-3.5" />
+                Para principiantes
+              </Button>
+            </Link>
+          </div>
+        </EmptyContent>
+      </Empty>
     );
   }
 
   return (
     <div className="space-y-4">
-      {/* Results count */}
-      {total !== undefined && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {total} evento{total !== 1 ? "s" : ""}
-          </p>
-        </div>
-      )}
-
       {/* Table */}
       <div className="rounded-lg border border-border overflow-hidden">
         {/* Header - hidden on mobile, dynamic based on category */}

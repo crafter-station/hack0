@@ -11,20 +11,29 @@ import { revalidatePath } from "next/cache";
 // ============================================
 
 /**
- * Get the organization for the current user
+ * Get all organizations where the user is owner
  */
-export async function getUserOrganization() {
+export async function getUserOrganizations() {
   const { userId } = await auth();
 
   if (!userId) {
-    return null;
+    return [];
   }
 
-  const org = await db.query.organizations.findFirst({
+  const orgs = await db.query.organizations.findMany({
     where: eq(organizations.ownerUserId, userId),
+    orderBy: [desc(organizations.createdAt)],
   });
 
-  return org;
+  return orgs;
+}
+
+/**
+ * Get the first organization for the current user (backwards compatibility)
+ */
+export async function getUserOrganization() {
+  const orgs = await getUserOrganizations();
+  return orgs[0] || null;
 }
 
 /**

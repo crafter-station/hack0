@@ -27,7 +27,14 @@ import {
 } from "@/lib/event-utils";
 
 interface EventRowWithChildrenProps {
-	event: Event & { organization: { slug: string; name: string; displayName: string | null; isVerified: boolean } | null };
+	event: Event & {
+		organization: {
+			slug: string;
+			name: string;
+			displayName: string | null;
+			isVerified: boolean;
+		} | null;
+	};
 	categoryConfig?: EventCategoryConfig;
 }
 
@@ -151,7 +158,6 @@ export function EventRowWithChildren({
 									)}
 								</button>
 							)}
-
 							{/* Thumbnail */}
 							<div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted border border-border">
 								{event.eventImageUrl ? (
@@ -168,16 +174,16 @@ export function EventRowWithChildren({
 									</div>
 								)}
 							</div>
-
 							<div className="flex-1 min-w-0">
-								<h3 className="font-medium text-sm leading-tight mb-1.5 line-clamp-2 group-hover:underline underline-offset-2">
+								<h3 className="font-semibold text-[15px] leading-tight mb-1 line-clamp-2 group-hover:underline underline-offset-2">
 									{event.name}
 								</h3>
-								<div className="text-xs text-muted-foreground truncate">
-									{event.organization?.displayName || event.organization?.name || getEventTypeLabel(event.eventType)}
+								<div className="text-[11px] text-muted-foreground/70 truncate">
+									{event.organization?.displayName ||
+										event.organization?.name ||
+										getEventTypeLabel(event.eventType)}
 								</div>
 							</div>
-
 							{/* Status badge on mobile - top right */}
 							<span
 								className={`shrink-0 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-medium ${
@@ -227,7 +233,9 @@ export function EventRowWithChildren({
 						</div>
 
 						{/* Badges row - bottom */}
-						{(hasChildren || isFeatured || isEventJuniorFriendly(event.skillLevel)) && (
+						{(hasChildren ||
+							isFeatured ||
+							isEventJuniorFriendly(event.skillLevel)) && (
 							<div className="flex items-center gap-1.5 flex-wrap">
 								{hasChildren && (
 									<span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-medium text-blue-500">
@@ -285,7 +293,7 @@ export function EventRowWithChildren({
 						</div>
 						<div className="min-w-0 flex-1">
 							<div className="flex items-center gap-2.5">
-								<h3 className="font-medium truncate group-hover:underline underline-offset-2">
+								<h3 className="text-base font-semibold truncate group-hover:underline underline-offset-2">
 									{event.name}
 								</h3>
 								{hasChildren && (
@@ -305,22 +313,25 @@ export function EventRowWithChildren({
 									</span>
 								)}
 							</div>
-							<div className="flex items-center gap-2 mt-1">
-								{event.organization?.displayName || event.organization?.name && (
-									<span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-										{event.organization?.displayName || event.organization?.name}
+							<div className="flex items-center gap-1.5 mt-0.5">
+								{(event.organization?.displayName || event.organization?.name) && (
+									<>
+										<span className="text-[13px] text-muted-foreground/90">
+											{event.organization?.displayName || event.organization?.name}
+										</span>
 										{event.organization?.isVerified ? (
-											<BadgeCheck className="h-3.5 w-3.5 fill-foreground text-background" />
+											<BadgeCheck className="h-3 w-3 fill-foreground text-background shrink-0" />
 										) : (
-											<span className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-dashed border-muted-foreground/40">
-												<span className="text-[8px] text-muted-foreground/40">
+											<span className="inline-flex h-3 w-3 items-center justify-center rounded-full border border-dashed border-muted-foreground/40 shrink-0">
+												<span className="text-[7px] text-muted-foreground/40">
 													?
 												</span>
 											</span>
 										)}
-									</span>
+										<span className="text-muted-foreground/40">·</span>
+									</>
 								)}
-								<span className="text-xs text-muted-foreground/50">
+								<span className="text-[11px] text-muted-foreground/50">
 									{getEventTypeLabel(event.eventType)}
 								</span>
 							</div>
@@ -414,7 +425,11 @@ export function EventRowWithChildren({
 }
 
 // Simplified row for child events
-function ChildEventRow({ event }: { event: Event & { organization: { slug: string } | null } }) {
+function ChildEventRow({
+	event,
+}: {
+	event: Event & { organization: { slug: string } | null };
+}) {
 	const startDate = event.startDate ? new Date(event.startDate) : null;
 	const status = getEventStatus(event);
 	const isEnded = status.status === "ended";

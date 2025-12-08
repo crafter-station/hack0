@@ -2,7 +2,7 @@ import type { SearchParams } from "nuqs/server";
 import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { FilterBar } from "@/components/events/filter-bar";
+import { AdvancedFilters } from "@/components/events/advanced-filters";
 import { CategoryTabs } from "@/components/events/category-tabs";
 import { EventList } from "@/components/events/event-list";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -42,22 +42,31 @@ async function HeroContent() {
 	};
 
 	return (
-		<div className="relative mx-auto max-w-screen-xl px-4 lg:px-8 pt-8 pb-6 md:pt-12 md:pb-8">
-			<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-				{/* Left - Title & Subscribe */}
-				<div className="space-y-4">
-					<div>
-						<h1 className="text-2xl font-semibold tracking-tight md:text-3xl lg:text-4xl">
-							Hackathons y eventos tech
-							<span className="text-muted-foreground"> en Perú 🇵🇪</span>
-						</h1>
-						<p className="text-muted-foreground text-sm md:text-base mt-1.5">
-							Encuentra tu próximo hackathon, conferencia o taller.
-						</p>
+		<div className="relative mx-auto max-w-screen-xl px-4 lg:px-8 pt-10 pb-8 md:pt-14 md:pb-10">
+			<div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
+				{/* Left - Content */}
+				<div className="flex-1 max-w-2xl">
+					<div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-5">
+						<span className="relative flex h-2 w-2">
+							<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+							<span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+						</span>
+						{stats.activeEvents} eventos activos ahora
 					</div>
 
+					<h1 className="text-4xl font-semibold tracking-tight md:text-5xl mb-3">
+						El calendario vivo del
+						<br />
+						<span className="text-muted-foreground">ecosistema tech peruano</span>
+					</h1>
+
+					<p className="text-base text-muted-foreground mb-6">
+						Descubre hackathones, conferencias, bootcamps y olimpiadas.
+						Todo en un solo lugar, verificado y actualizado.
+					</p>
+
 					{/* Actions */}
-					<div className="flex items-center gap-3">
+					<div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
 						<SubscribeForm />
 						<Link
 							href="/for-organizers"
@@ -67,47 +76,15 @@ async function HeroContent() {
 							<ArrowRight className="h-3.5 w-3.5" />
 						</Link>
 					</div>
-				</div>
 
-				{/* Right - Stats & Quick links */}
-				<div className="flex flex-col items-start lg:items-end gap-4">
-					{/* Stats */}
-					<div className="flex items-center gap-6">
-						<div className="text-right">
-							<p className="text-xl md:text-2xl font-semibold tabular-nums">
-								{stats.totalEvents}
-							</p>
-							<p className="text-xs text-muted-foreground uppercase tracking-wide">
-								Eventos
-							</p>
-						</div>
-						<div className="h-8 w-px bg-border" />
-						<div className="text-right">
-							<p className="text-xl md:text-2xl font-semibold tabular-nums">
-								{formatPrize(stats.totalPrizePool)}
-							</p>
-							<p className="text-xs text-muted-foreground uppercase tracking-wide">
-								En premios
-							</p>
-						</div>
-						<div className="h-8 w-px bg-border" />
-						<div className="text-right">
-							<p className="text-xl md:text-2xl font-semibold tabular-nums">
-								{stats.activeEvents}
-							</p>
-							<p className="text-xs text-muted-foreground uppercase tracking-wide">
-								Activos
-							</p>
-						</div>
-					</div>
-
-					{/* Quick category links */}
+					{/* Quick filters */}
 					<div className="flex flex-wrap items-center gap-2">
+						<span className="text-xs text-muted-foreground">Explorar:</span>
 						<a
-							href="/?eventType=hackathon"
+							href="/?category=competitions"
 							className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
 						>
-							Hackathons
+							Competencias
 						</a>
 						<a
 							href="/?domain=ai"
@@ -122,11 +99,41 @@ async function HeroContent() {
 							Principiantes
 						</a>
 						<a
-							href="/?format=in-person"
+							href="/?department=Lima"
 							className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
 						>
-							Presencial
+							Lima
 						</a>
+					</div>
+				</div>
+
+				{/* Right - Stats */}
+				<div className="lg:pt-12">
+					<div className="grid grid-cols-3 lg:grid-cols-1 gap-6 lg:gap-4 lg:min-w-[140px]">
+						<div>
+							<p className="text-2xl lg:text-3xl font-semibold tabular-nums">
+								{stats.totalEvents}
+							</p>
+							<p className="text-xs text-muted-foreground uppercase tracking-wide mt-1">
+								Eventos
+							</p>
+						</div>
+						<div>
+							<p className="text-2xl lg:text-3xl font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+								{formatPrize(stats.totalPrizePool)}
+							</p>
+							<p className="text-xs text-muted-foreground uppercase tracking-wide mt-1">
+								En premios
+							</p>
+						</div>
+						<div>
+							<p className="text-2xl lg:text-3xl font-semibold tabular-nums">
+								25+
+							</p>
+							<p className="text-xs text-muted-foreground uppercase tracking-wide mt-1">
+								Comunidades
+							</p>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -205,14 +212,14 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 			</section>
 
 			{/* Category tabs + Search + Filters */}
-			<section className="sticky top-14 z-40 border-b bg-background/80 backdrop-blur-sm">
+			<section className="sticky top-14 z-40 border-b bg-background/95 backdrop-blur-md shadow-sm">
 				<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
-					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 py-2">
+					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 py-3">
 						<Suspense fallback={<div className="h-10 animate-pulse w-64" />}>
 							<CategoryTabs />
 						</Suspense>
 						<Suspense fallback={<div className="h-9 animate-pulse w-48" />}>
-							<FilterBar />
+							<AdvancedFilters />
 						</Suspense>
 					</div>
 				</div>

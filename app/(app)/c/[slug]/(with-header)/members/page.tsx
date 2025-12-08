@@ -1,15 +1,11 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { getOrganizationInvites } from "@/lib/actions/community-members";
 import { MembersManagement } from "@/components/community/members-management";
-import { CommunityHeader } from "@/components/community/community-header";
 
 interface MembersPageProps {
 	params: Promise<{ slug: string }>;
@@ -25,8 +21,19 @@ async function MembersList({ slug, currentUserId }: { slug: string; currentUserI
 
 	if (!community) return null;
 
+	const GHOST_ADMIN_ID = "user_36EEeOvb4zfhKhIVSfK46or5pkC";
+	const isCrafterStation = slug === "crafter-station";
+
 	const clerk = await clerkClient();
-	const memberUserIds = [community.ownerUserId, ...community.members.map(m => m.userId)];
+	const uniqueMemberIds = community.members
+		.map(m => m.userId)
+		.filter(id => id !== community.ownerUserId);
+
+	let memberUserIds = [community.ownerUserId, ...uniqueMemberIds];
+
+	if (!isCrafterStation) {
+		memberUserIds = memberUserIds.filter(id => id !== GHOST_ADMIN_ID);
+	}
 
 	const users = await Promise.all(
 		memberUserIds.map(async (userId) => {
@@ -48,12 +55,18 @@ async function MembersList({ slug, currentUserId }: { slug: string; currentUserI
 	const currentMember = community.members.find(m => m.userId === currentUserId);
 	const isAdmin = currentMember?.role === "admin";
 
+	const filteredMembers = community.members.filter(m => {
+		if (m.userId === community.ownerUserId) return false;
+		if (!isCrafterStation && m.userId === GHOST_ADMIN_ID) return false;
+		return true;
+	});
+
 	return (
 		<MembersManagement
 			communitySlug={slug}
 			communityId={community.id}
 			ownerUserId={community.ownerUserId}
-			members={community.members}
+			members={filteredMembers}
 			invites={invites}
 			users={validUsers.map((u) => ({
 				id: u.id,
@@ -114,29 +127,9 @@ export default async function MembersPage({ params }: MembersPageProps) {
 	const { slug } = await params;
 	const { userId } = await auth();
 
-	const community = await db.query.organizations.findFirst({
-		where: eq(organizations.slug, slug),
-	});
-
-	if (!community) {
-		notFound();
-	}
-
 	return (
-		<div className="min-h-screen bg-background flex flex-col">
-			<SiteHeader />
-
-			<Suspense fallback={null}>
-				<CommunityHeader community={community} slug={slug} currentTab="members" />
-			</Suspense>
-
-			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-8 flex-1 w-full">
-				<Suspense fallback={<MembersSkeleton />}>
-					<MembersList slug={slug} currentUserId={userId} />
-				</Suspense>
-			</main>
-
-			<SiteFooter />
-		</div>
+		<Suspense fallback={<MembersSkeleton />}>
+			<MembersList slug={slug} currentUserId={userId} />
+		</Suspense>
 	);
 }
