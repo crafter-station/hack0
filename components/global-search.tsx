@@ -107,7 +107,7 @@ export function GlobalSearch() {
 						{/* Quick actions */}
 						<CommandGroup heading="Acciones">
 							<CommandItem
-								onSelect={() => runCommand(() => router.push("/dashboard"))}
+								onSelect={() => runCommand(() => router.push("/c"))}
 							>
 								<LayoutDashboard className="mr-2 h-4 w-4" />
 								Mi dashboard

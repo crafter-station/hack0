@@ -22,7 +22,7 @@ export default async function NewEventPage({ params }: NewEventPageProps) {
   const org = await getOrganizationBySlug(slug);
 
   if (!org) {
-    redirect("/onboarding");
+    redirect("/c/new");
   }
 
   if (org.ownerUserId !== userId) {

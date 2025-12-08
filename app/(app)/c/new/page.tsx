@@ -3,19 +3,12 @@ import { auth } from "@clerk/nextjs/server";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { OnboardingForm } from "@/components/orgs/onboarding-form";
-import { getUserOrganization } from "@/lib/actions/organizations";
 
 export default async function OnboardingPage() {
   const { userId } = await auth();
 
   if (!userId) {
     redirect("/sign-in");
-  }
-
-  // If user already has an org, redirect to community page
-  const existingOrg = await getUserOrganization();
-  if (existingOrg) {
-    redirect(`/c/${existingOrg.slug}`);
   }
 
   return (

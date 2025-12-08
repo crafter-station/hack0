@@ -221,7 +221,7 @@ export function OrgSwitcher({ organizations }: OrgSwitcherProps) {
 								Ver todas las comunidades
 							</Link>
 							<Link
-								href="/dashboard/new"
+								href="/c/new"
 								onClick={() => {
 									setIsOpen(false);
 									setSearchQuery("");

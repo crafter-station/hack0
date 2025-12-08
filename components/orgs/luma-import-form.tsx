@@ -335,7 +335,7 @@ export function LumaImportForm() {
     if (isVerified) {
       router.push(`/${slug}`);
     } else {
-      router.push("/dashboard");
+      router.push("/c");
     }
     router.refresh();
   };

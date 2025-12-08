@@ -150,8 +150,8 @@ export async function createOrganization(
     .returning();
 
   revalidatePath(`/c/${org.slug}`);
-  revalidatePath("/onboarding");
-  revalidatePath("/dashboard");
+  revalidatePath("/c/new");
+  revalidatePath("/c");
 
   return org;
 }
@@ -205,7 +205,7 @@ export async function updateOrganizationById(
 
   revalidatePath(`/c/${org.slug}`);
   revalidatePath(`/c/${org.slug}/settings`);
-  revalidatePath(`/dashboard`);
+  revalidatePath(`/c`);
   if (data.slug && data.slug !== org.slug) {
     revalidatePath(`/c/${data.slug}`);
     revalidatePath(`/c/${data.slug}/settings`);

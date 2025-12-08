@@ -105,7 +105,7 @@ export function OrganizationSelector({
 					</EmptyHeader>
 					<EmptyContent>
 						<Button asChild>
-							<Link href="/onboarding">Crear comunidad</Link>
+							<Link href="/c/new">Crear comunidad</Link>
 						</Button>
 					</EmptyContent>
 				</Empty>
@@ -135,7 +135,7 @@ export function OrganizationSelector({
 						</p>
 					</div>
 					<Button asChild size="sm">
-						<Link href="/onboarding">
+						<Link href="/c/new">
 							<Plus className="h-4 w-4" />
 							Nueva comunidad
 						</Link>

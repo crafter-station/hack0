@@ -24,7 +24,7 @@ export default async function CommunitiesPage() {
 	}
 
 	if (organizations.length === 0) {
-		redirect("/onboarding");
+		redirect("/c/new");
 	}
 
 	return (
