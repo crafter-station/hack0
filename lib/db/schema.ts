@@ -411,9 +411,19 @@ export const organizations = pgTable("organizations", {
 	description: text("description"),
 	type: organizerTypeEnum("type").default("community"),
 
+	// Contact
+	email: varchar("email", { length: 255 }),
+
 	// Links
 	websiteUrl: varchar("website_url", { length: 500 }),
 	logoUrl: varchar("logo_url", { length: 500 }),
+
+	// Social Links (stored as JSON)
+	twitterUrl: varchar("twitter_url", { length: 500 }),
+	linkedinUrl: varchar("linkedin_url", { length: 500 }),
+	instagramUrl: varchar("instagram_url", { length: 500 }),
+	facebookUrl: varchar("facebook_url", { length: 500 }),
+	githubUrl: varchar("github_url", { length: 500 }),
 
 	// Owner (Clerk user ID)
 	ownerUserId: varchar("owner_user_id", { length: 255 }).notNull(),

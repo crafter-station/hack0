@@ -5,6 +5,7 @@ import { organizations, events, communityMembers, type NewOrganization } from "@
 import { eq, desc, and, or, ilike } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { tasks } from "@trigger.dev/sdk/v3";
 
 // ============================================
 // ORGANIZATION QUERIES
@@ -368,4 +369,45 @@ export async function isSlugAvailable(slug: string): Promise<boolean> {
   });
 
   return !existing;
+}
+
+// ============================================
+// WEB SCRAPER
+// ============================================
+
+/**
+ * Start scraping organization data from website
+ * Returns the Trigger.dev run ID for real-time updates
+ */
+export async function startOrgScraper(organizationId: string, websiteUrl: string) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Not authenticated");
+  }
+
+  const org = await db.query.organizations.findFirst({
+    where: eq(organizations.id, organizationId),
+  });
+
+  if (!org) {
+    throw new Error("Organization not found");
+  }
+
+  if (org.ownerUserId !== userId) {
+    throw new Error("Not authorized");
+  }
+
+  if (!websiteUrl.startsWith("http")) {
+    throw new Error("Invalid URL format");
+  }
+
+  const handle = await tasks.trigger("org-scraper", {
+    organizationId,
+    websiteUrl,
+  });
+
+  return {
+    runId: handle.id,
+  };
 }

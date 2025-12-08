@@ -22,14 +22,16 @@ import {
   FieldLabel,
   FieldDescription,
 } from "@/components/ui/field";
-import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
+import { ORGANIZER_TYPE_LABELS, type OrganizerType } from "@/lib/db/schema";
 import {
   createOrganization,
   generateSlug,
   isSlugAvailable,
+  startOrgScraper,
 } from "@/lib/actions/organizations";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { Loader2, ArrowRight, Check, X, Globe } from "lucide-react";
+import { Loader2, ArrowRight, Check, X, Globe, Sparkles } from "lucide-react";
+import { useRealtimeRun } from "@trigger.dev/react-hooks";
 
 const ORGANIZER_TYPE_OPTIONS = Object.entries(ORGANIZER_TYPE_LABELS).map(
   ([value, label]) => ({
@@ -50,6 +52,78 @@ export function OnboardingForm() {
     "idle" | "checking" | "available" | "taken"
   >("idle");
   const [logoUrl, setLogoUrl] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [type, setType] = useState<string>("");
+  const [description, setDescription] = useState("");
+
+  const [runId, setRunId] = useState<string | null>(null);
+  const [isScraping, setIsScraping] = useState(false);
+  const [scraperError, setScraperError] = useState<string | null>(null);
+
+  const { run, error: runError } = useRealtimeRun(runId || "", {
+    enabled: !!runId,
+  });
+
+  const scraperStatus = run?.metadata?.status as string | undefined;
+  const extractedData = run?.metadata?.extractedData as {
+    name?: string;
+    description?: string;
+    type?: string;
+    email?: string;
+  } | undefined;
+  const extractedLogoUrl = run?.metadata?.logoUrl as string | undefined;
+
+  useEffect(() => {
+    if (run?.isCompleted && extractedData) {
+      if (extractedData.name && !name) {
+        setName(extractedData.name);
+      }
+      if (extractedData.description && !description) {
+        setDescription(extractedData.description);
+      }
+      if (extractedData.type && !type) {
+        setType(extractedData.type);
+      }
+      if (extractedLogoUrl && !logoUrl) {
+        setLogoUrl(extractedLogoUrl);
+      }
+      setIsScraping(false);
+    }
+  }, [run?.isCompleted, extractedData, extractedLogoUrl, name, description, type, logoUrl]);
+
+  useEffect(() => {
+    if (runError) {
+      setScraperError("Error scraping website");
+      setIsScraping(false);
+    }
+  }, [runError]);
+
+  const handleScrapeWebsite = async () => {
+    if (!websiteUrl) {
+      setScraperError("Por favor ingresa la URL de tu sitio web");
+      return;
+    }
+
+    setIsScraping(true);
+    setScraperError(null);
+
+    try {
+      const tempSlug = slug || await generateSlug(websiteUrl);
+
+      const tempOrg = await createOrganization({
+        name: name || "Temp Org",
+        slug: tempSlug,
+        websiteUrl,
+      });
+
+      const result = await startOrgScraper(tempOrg.id, websiteUrl);
+      setRunId(result.runId);
+      setSlug(tempSlug);
+    } catch (err) {
+      setScraperError(err instanceof Error ? err.message : "Error al scrapear el sitio web");
+      setIsScraping(false);
+    }
+  };
 
   // Auto-generate slug from name
   useEffect(() => {
@@ -79,19 +153,21 @@ export function OnboardingForm() {
     setIsSubmitting(true);
     setError(null);
 
-    const formData = new FormData(e.currentTarget);
-
     try {
-      await createOrganization({
-        name: formData.get("name") as string,
-        slug,
-        description: (formData.get("description") as string) || undefined,
-        type: (formData.get("type") as string) || undefined,
-        websiteUrl: (formData.get("websiteUrl") as string) || undefined,
-        logoUrl: logoUrl || undefined,
-      });
+      if (run?.isCompleted) {
+        router.push(`/c/${slug}`);
+      } else {
+        await createOrganization({
+          name,
+          slug,
+          description: description || undefined,
+          type: (type as OrganizerType) || undefined,
+          websiteUrl: websiteUrl || undefined,
+          logoUrl: logoUrl || undefined,
+        });
 
-      router.push(`/c/${slug}`);
+        router.push(`/c/${slug}`);
+      }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Error al crear la organización"
@@ -100,8 +176,73 @@ export function OnboardingForm() {
     }
   };
 
+  const canScrape = websiteUrl && !isScraping && !run?.isExecuting;
+
   return (
     <form onSubmit={handleSubmit}>
+      {/* Website scraper section */}
+      <div className="mb-8 p-6 border rounded-lg bg-muted/30">
+        <div className="flex items-start gap-4">
+          <div className="flex-1 space-y-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-amber-500" />
+              <h3 className="font-medium">Auto-rellenar desde sitio web</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Ingresa la URL de tu organización y rellenaremos automáticamente los datos.
+            </p>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <InputGroup>
+                  <InputGroupAddon align="inline-start">
+                    <Globe className="h-4 w-4" />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    type="url"
+                    placeholder="https://tu-organizacion.com"
+                    value={websiteUrl}
+                    onChange={(e) => setWebsiteUrl(e.target.value)}
+                    disabled={isScraping || run?.isExecuting}
+                  />
+                </InputGroup>
+              </div>
+              <Button
+                type="button"
+                onClick={handleScrapeWebsite}
+                disabled={!canScrape}
+                size="sm"
+                variant={run?.isCompleted ? "outline" : "default"}
+              >
+                {isScraping || run?.isExecuting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    {scraperStatus === "extracting" && "Extrayendo..."}
+                    {scraperStatus === "uploading_logo" && "Subiendo logo..."}
+                    {scraperStatus === "updating_org" && "Actualizando..."}
+                    {!scraperStatus && "Procesando..."}
+                  </>
+                ) : run?.isCompleted ? (
+                  <>
+                    <Check className="h-4 w-4 mr-2 text-emerald-500" />
+                    Completado
+                  </>
+                ) : (
+                  "Auto-rellenar"
+                )}
+              </Button>
+            </div>
+            {scraperError && (
+              <p className="text-sm text-red-500">{scraperError}</p>
+            )}
+            {run?.isCompleted && (
+              <p className="text-sm text-emerald-600">
+                ✓ Datos extraídos exitosamente. Revisa y completa los campos abajo.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Two column layout */}
       <div className="grid md:grid-cols-[1fr_180px] gap-6">
         {/* Left column - Main info */}
@@ -155,39 +296,27 @@ export function OnboardingForm() {
             )}
           </Field>
 
-          {/* Type + Website in same row */}
-          <div className="grid sm:grid-cols-2 gap-4">
-            <Field>
-              <FieldLabel htmlFor="type">Tipo *</FieldLabel>
-              <Select name="type" required>
-                <SelectTrigger id="type">
-                  <SelectValue placeholder="Selecciona un tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ORGANIZER_TYPE_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="websiteUrl">Sitio web</FieldLabel>
-              <InputGroup>
-                <InputGroupAddon align="inline-start">
-                  <Globe className="h-4 w-4" />
-                </InputGroupAddon>
-                <InputGroupInput
-                  id="websiteUrl"
-                  name="websiteUrl"
-                  type="url"
-                  placeholder="https://..."
-                />
-              </InputGroup>
-            </Field>
-          </div>
+          {/* Type */}
+          <Field>
+            <FieldLabel htmlFor="type">Tipo *</FieldLabel>
+            <Select
+              name="type"
+              value={type}
+              onValueChange={setType}
+              required
+            >
+              <SelectTrigger id="type">
+                <SelectValue placeholder="Selecciona un tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                {ORGANIZER_TYPE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
 
           {/* Description */}
           <Field>
@@ -198,6 +327,8 @@ export function OnboardingForm() {
                 name="description"
                 placeholder="Breve descripción de tu organización..."
                 className="min-h-[80px]"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
               />
             </InputGroup>
             <FieldDescription>

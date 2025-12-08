@@ -1,11 +1,11 @@
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
+import { OrgSwitcher } from "./org-switcher";
 import { SearchTrigger } from "@/components/search-command";
 import { ThemeSwitcherButton } from "@/components/theme-switcher-button";
-import { AdminLink } from "./admin-link";
-import { OrgSwitcher } from "./org-switcher";
 import { getAllUserOrganizations } from "@/lib/actions/organizations";
-import { auth } from "@clerk/nextjs/server";
+import { AdminLink } from "./admin-link";
 
 interface SiteHeaderProps {
 	showBackButton?: boolean;
@@ -46,7 +46,9 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 								<span className="sm:hidden">h0</span>
 								<span className="hidden sm:inline">hack0</span>
 							</span>
-							<span className="hidden sm:inline text-lg text-muted-foreground">.dev</span>
+							<span className="hidden sm:inline text-lg text-muted-foreground">
+								.dev
+							</span>
 						</Link>
 						<nav className="hidden md:flex items-center gap-4 text-sm text-muted-foreground">
 							<Link
