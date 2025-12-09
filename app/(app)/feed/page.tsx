@@ -8,6 +8,7 @@ import { FollowedCommunitiesSidebar } from "@/components/feed/followed-communiti
 import { FeedSkeleton } from "@/components/feed/feed-skeleton";
 import { getPersonalizedFeed } from "@/lib/actions/feed";
 import { getUserPreferences } from "@/lib/actions/user-preferences";
+import { isGodMode } from "@/lib/god-mode";
 
 export const metadata = {
 	title: "Tu Feed | hack0.dev",
@@ -33,6 +34,15 @@ export default async function FeedPage() {
 
 	if (!userId) {
 		redirect("/sign-in");
+	}
+
+	// Check onboarding (skip for god mode)
+	const godMode = await isGodMode();
+	if (!godMode) {
+		const prefs = await getUserPreferences();
+		if (!prefs || !prefs.hasCompletedOnboarding) {
+			redirect("/onboarding");
+		}
 	}
 
 	const prefs = await getUserPreferences();
