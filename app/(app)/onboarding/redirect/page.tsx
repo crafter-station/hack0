@@ -35,7 +35,7 @@ export default async function OnboardingRedirectPage() {
 	});
 
 	if (followedCommunities.length > 0) {
-		redirect("/");
+		redirect("/feed");
 	}
 
 	redirect("/c");
