@@ -316,8 +316,28 @@ export async function acceptInvite(token: string) {
     ),
   });
 
+  const roleHierarchy = { follower: 0, member: 1, admin: 2, owner: 3 };
+
   if (existing) {
-    return { success: false, error: "Ya eres miembro de esta comunidad" };
+    const existingRoleLevel = roleHierarchy[existing.role] || 0;
+    const inviteRoleLevel = roleHierarchy[invite.roleGranted] || 0;
+
+    if (inviteRoleLevel > existingRoleLevel) {
+      await db
+        .update(communityMembers)
+        .set({ role: invite.roleGranted })
+        .where(eq(communityMembers.id, existing.id));
+
+      await db
+        .update(communityInvites)
+        .set({ usedCount: invite.usedCount + 1 })
+        .where(eq(communityInvites.id, invite.id));
+
+      revalidatePath("/");
+      return { success: true, community: invite.community };
+    }
+
+    return { success: false, error: "Ya eres miembro de esta comunidad con un rol igual o superior" };
   }
 
   // Add member

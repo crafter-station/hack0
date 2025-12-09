@@ -4,7 +4,15 @@ import { Check, Loader2 } from "lucide-react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 
-export function AcceptInviteButton() {
+interface AcceptInviteButtonProps {
+  label?: string;
+  loadingLabel?: string;
+}
+
+export function AcceptInviteButton({
+  label = "Unirme a la comunidad",
+  loadingLabel = "Uniéndote..."
+}: AcceptInviteButtonProps) {
   const { pending } = useFormStatus();
 
   return (
@@ -12,12 +20,12 @@ export function AcceptInviteButton() {
       {pending ? (
         <>
           <Loader2 className="h-4 w-4 animate-spin" />
-          Uniéndote...
+          {loadingLabel}
         </>
       ) : (
         <>
           <Check className="h-4 w-4" />
-          Unirme a la comunidad
+          {label}
         </>
       )}
     </Button>

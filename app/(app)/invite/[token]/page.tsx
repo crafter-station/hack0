@@ -116,8 +116,10 @@ async function InviteContent({ token }: { token: string }) {
     ),
   });
 
-  // If already a member or owner, show success state
-  if (isOwner || existingMembership) {
+  const roleHierarchy = { follower: 0, member: 1, admin: 2, owner: 3 };
+
+  // If user is owner
+  if (isOwner) {
     return (
       <div className="max-w-md mx-auto mt-20">
         <div className="rounded-lg border bg-card p-8 space-y-6">
@@ -136,9 +138,9 @@ async function InviteContent({ token }: { token: string }) {
               )}
             </div>
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold">Ya eres miembro</h1>
+              <h1 className="text-2xl font-bold">Ya eres el propietario</h1>
               <p className="text-sm text-muted-foreground">
-                Ya formas parte de {invite.community.displayName || invite.community.name} como {isOwner ? "Owner" : COMMUNITY_ROLE_LABELS[existingMembership!.role]}.
+                Eres el propietario de {invite.community.displayName || invite.community.name}. Esta invitación no es necesaria.
               </p>
             </div>
           </div>
@@ -148,6 +150,120 @@ async function InviteContent({ token }: { token: string }) {
               Ir a la comunidad
             </a>
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // If user is already a member, check if this is an upgrade
+  if (existingMembership) {
+    const existingRoleLevel = roleHierarchy[existingMembership.role] || 0;
+    const inviteRoleLevel = roleHierarchy[invite.roleGranted] || 0;
+
+    // Same or lower role - no upgrade needed
+    if (inviteRoleLevel <= existingRoleLevel) {
+      return (
+        <div className="max-w-md mx-auto mt-20">
+          <div className="rounded-lg border bg-card p-8 space-y-6">
+            <div className="text-center space-y-4">
+              <div className="flex justify-center">
+                {invite.community.logoUrl ? (
+                  <img
+                    src={invite.community.logoUrl}
+                    alt={invite.community.displayName || invite.community.name}
+                    className="h-16 w-16 rounded-full object-cover border-2 border-border"
+                  />
+                ) : (
+                  <div className="h-16 w-16 rounded-full bg-muted border-2 border-border flex items-center justify-center">
+                    <Users className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+              <div className="space-y-2">
+                <h1 className="text-2xl font-bold">Ya tienes este rol</h1>
+                <p className="text-sm text-muted-foreground">
+                  Ya eres {COMMUNITY_ROLE_LABELS[existingMembership.role]} de {invite.community.displayName || invite.community.name}. Esta invitación no es necesaria.
+                </p>
+              </div>
+            </div>
+
+            <Button asChild className="w-full">
+              <a href={`/c/${invite.community.slug}`}>
+                Ir a la comunidad
+              </a>
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    // This is an upgrade! Show the upgrade info
+    return (
+      <div className="max-w-md mx-auto mt-20">
+        <div className="rounded-lg border bg-card p-8 space-y-6">
+          <div className="text-center space-y-4">
+            <div className="flex justify-center">
+              {invite.community.logoUrl ? (
+                <img
+                  src={invite.community.logoUrl}
+                  alt={invite.community.displayName || invite.community.name}
+                  className="h-16 w-16 rounded-full object-cover border-2 border-border"
+                />
+              ) : (
+                <div className="h-16 w-16 rounded-full bg-muted border-2 border-border flex items-center justify-center">
+                  <Users className="h-8 w-8 text-muted-foreground" />
+                </div>
+              )}
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold">
+                Actualización de rol
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Te invitaron a un rol superior en {invite.community.displayName || invite.community.name}
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-4 space-y-3">
+            <p className="text-sm font-medium text-center">Upgrade de permisos</p>
+            <div className="flex items-center justify-center gap-3">
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Actual</p>
+                <div className="px-3 py-1.5 rounded-md bg-background border">
+                  <p className="text-sm font-medium">
+                    {COMMUNITY_ROLE_LABELS[existingMembership.role]}
+                  </p>
+                </div>
+              </div>
+              <div className="text-muted-foreground">→</div>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-1">Nuevo</p>
+                <div className="px-3 py-1.5 rounded-md bg-emerald-500/20 border border-emerald-500/30">
+                  <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+                    {COMMUNITY_ROLE_LABELS[invite.roleGranted]}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <form action={async () => {
+            "use server";
+            const result = await acceptInvite(token);
+
+            if (result.success && result.community) {
+              redirect(`/c/${result.community.slug}/members?accepted=true`);
+            } else {
+              redirect(`/invite/${token}?error=${encodeURIComponent(result.error || "Error desconocido")}`);
+            }
+          }}>
+            <AcceptInviteButton label="Aceptar actualización" loadingLabel="Actualizando..." />
+          </form>
+
+          <p className="text-xs text-center text-muted-foreground">
+            Al aceptar, tus permisos en la comunidad serán actualizados.
+          </p>
         </div>
       </div>
     );
