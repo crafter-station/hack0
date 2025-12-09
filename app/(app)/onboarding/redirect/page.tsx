@@ -7,8 +7,13 @@ import { db } from "@/lib/db";
 import { communityMembers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
-export default async function OnboardingRedirectPage() {
+interface OnboardingRedirectPageProps {
+	searchParams: Promise<{ redirect_url?: string }>;
+}
+
+export default async function OnboardingRedirectPage({ searchParams }: OnboardingRedirectPageProps) {
 	const { userId } = await auth();
+	const { redirect_url } = await searchParams;
 
 	if (!userId) {
 		redirect("/sign-in");
@@ -23,7 +28,14 @@ export default async function OnboardingRedirectPage() {
 	const prefs = await getUserPreferences();
 
 	if (!prefs || !prefs.hasCompletedOnboarding) {
-		redirect("/onboarding");
+		const onboardingUrl = redirect_url
+			? `/onboarding?redirect_url=${encodeURIComponent(redirect_url)}`
+			: "/onboarding";
+		redirect(onboardingUrl);
+	}
+
+	if (redirect_url) {
+		redirect(redirect_url);
 	}
 
 	if (prefs.role === "organizer") {

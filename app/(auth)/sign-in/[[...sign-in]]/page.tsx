@@ -1,7 +1,13 @@
 import { SignIn } from "@clerk/nextjs";
 import Link from "next/link";
 
-export default function SignInPage() {
+interface SignInPageProps {
+  searchParams: Promise<{ redirect_url?: string }>;
+}
+
+export default async function SignInPage({ searchParams }: SignInPageProps) {
+  const { redirect_url } = await searchParams;
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
@@ -21,6 +27,7 @@ export default function SignInPage() {
       {/* Content */}
       <main className="flex-1 flex items-center justify-center p-4">
         <SignIn
+          fallbackRedirectUrl={redirect_url || "/onboarding/redirect"}
           appearance={{
             elements: {
               rootBox: "mx-auto",

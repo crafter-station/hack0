@@ -5,8 +5,13 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { InitialOnboardingForm } from "@/components/onboarding/initial-onboarding-form";
 import { hasCompletedOnboarding } from "@/lib/actions/user-preferences";
 
-export default async function OnboardingPage() {
+interface OnboardingPageProps {
+	searchParams: Promise<{ redirect_url?: string }>;
+}
+
+export default async function OnboardingPage({ searchParams }: OnboardingPageProps) {
 	const { userId } = await auth();
+	const { redirect_url } = await searchParams;
 
 	if (!userId) {
 		redirect("/sign-in");
@@ -14,7 +19,10 @@ export default async function OnboardingPage() {
 
 	const completed = await hasCompletedOnboarding();
 	if (completed) {
-		redirect("/onboarding/redirect");
+		const redirectUrl = redirect_url
+			? `/onboarding/redirect?redirect_url=${encodeURIComponent(redirect_url)}`
+			: "/onboarding/redirect";
+		redirect(redirectUrl);
 	}
 
 	return (
@@ -33,7 +41,7 @@ export default async function OnboardingPage() {
 					</div>
 
 					<div className="rounded-lg border bg-card p-8 md:p-10">
-						<InitialOnboardingForm />
+						<InitialOnboardingForm redirectUrl={redirect_url} />
 					</div>
 				</div>
 			</main>

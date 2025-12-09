@@ -26,6 +26,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { EditEventForm } from "@/components/events/edit-event-form";
+import { DeleteEventButton } from "@/components/events/delete-event-button";
 import { Button } from "@/components/ui/button";
 import type { EventSponsorWithOrg } from "@/lib/actions/events";
 import type { Event, Organization, EventOrganizer, WinnerClaim, ImportJob, NotificationLog } from "@/lib/db/schema";
@@ -505,7 +506,36 @@ export function ManageContent({
 	}
 
 	if (tab === "edit") {
-		return <EditEventForm event={event} sponsors={sponsors} />;
+		return (
+			<div className="space-y-6">
+				<EditEventForm event={event} sponsors={sponsors} />
+
+				<div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20">
+					<div className="px-5 py-4 border-b border-red-200 dark:border-red-900/50">
+						<h3 className="text-sm font-semibold text-red-900 dark:text-red-100">
+							Zona de peligro
+						</h3>
+					</div>
+					<div className="p-5 space-y-3">
+						<div className="flex items-start justify-between gap-4">
+							<div>
+								<p className="text-sm font-medium text-red-900 dark:text-red-100">
+									Borrar este evento
+								</p>
+								<p className="text-xs text-red-700 dark:text-red-400 mt-1">
+									Una vez borrado, no hay vuelta atrás. Por favor, ten cuidado.
+								</p>
+							</div>
+							<DeleteEventButton
+								eventId={event.id}
+								eventName={event.name}
+								communitySlug={slug}
+							/>
+						</div>
+					</div>
+				</div>
+			</div>
+		);
 	}
 
 	if (tab === "team") {

@@ -20,9 +20,6 @@ interface InvitePageProps {
 async function InviteContent({ token }: { token: string }) {
   const { userId } = await auth();
 
-  // Auth is now handled by proxy.ts middleware
-  // If we reach here, user is authenticated
-
   const validation = await validateInviteToken(token);
 
   if (!validation.valid || !validation.invite) {
@@ -49,6 +46,64 @@ async function InviteContent({ token }: { token: string }) {
   }
 
   const { invite } = validation;
+
+  if (!userId) {
+    return (
+      <div className="max-w-md mx-auto mt-20">
+        <div className="rounded-lg border bg-card p-8 space-y-6">
+          <div className="text-center space-y-4">
+            <div className="flex justify-center">
+              {invite.community.logoUrl ? (
+                <img
+                  src={invite.community.logoUrl}
+                  alt={invite.community.displayName || invite.community.name}
+                  className="h-16 w-16 rounded-full object-cover border-2 border-border"
+                />
+              ) : (
+                <div className="h-16 w-16 rounded-full bg-muted border-2 border-border flex items-center justify-center">
+                  <Users className="h-8 w-8 text-muted-foreground" />
+                </div>
+              )}
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold">
+                Invitación a {invite.community.displayName || invite.community.name}
+              </h1>
+              {invite.community.description && (
+                <p className="text-sm text-muted-foreground">
+                  {invite.community.description}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-lg bg-muted p-4 space-y-2">
+            <p className="text-sm font-medium">Rol que recibirás:</p>
+            <p className="text-lg font-semibold">
+              {COMMUNITY_ROLE_LABELS[invite.roleGranted]}
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <Button asChild className="w-full">
+              <a href={`/sign-in?redirect_url=${encodeURIComponent(`/invite/${token}`)}`}>
+                Iniciar sesión
+              </a>
+            </Button>
+            <Button asChild variant="outline" className="w-full">
+              <a href={`/sign-up?redirect_url=${encodeURIComponent(`/invite/${token}`)}`}>
+                Crear cuenta
+              </a>
+            </Button>
+          </div>
+
+          <p className="text-xs text-center text-muted-foreground">
+            Necesitas una cuenta para aceptar esta invitación.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Check if user is the owner
   const isOwner = invite.community.ownerUserId === userId;

@@ -11,6 +11,7 @@ import {
 	or,
 	sql,
 } from "drizzle-orm";
+import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import {
 	type Event,
@@ -25,6 +26,7 @@ import {
 import { notifySubscribersOfNewEvent } from "@/lib/email/notify-subscribers";
 import { type EventCategory, getCategoryById } from "@/lib/event-categories";
 import { createUniqueSlug } from "@/lib/slug-utils";
+import { isGodMode } from "@/lib/god-mode";
 
 export interface EventFilters {
 	category?: EventCategory;
@@ -250,11 +252,18 @@ export async function getEvents(
 	};
 }
 
-export async function getEventBySlug(slug: string): Promise<Event | null> {
+export async function getEventBySlug(
+	slug: string,
+	includePending: boolean = false,
+): Promise<Event | null> {
+	const whereConditions = includePending
+		? eq(events.slug, slug)
+		: and(eq(events.slug, slug), eq(events.isApproved, true));
+
 	const results = await db
 		.select()
 		.from(events)
-		.where(and(eq(events.slug, slug), eq(events.isApproved, true)))
+		.where(whereConditions)
 		.limit(1);
 
 	const event = results[0] || null;
@@ -394,6 +403,22 @@ export async function createEvent(
 		// Generate unique slug using centralized utility
 		const slug = await createUniqueSlug(input.name);
 
+		let isApproved = false;
+		let approvalStatus: "pending" | "approved" = "pending";
+
+		if (input.organizationId) {
+			const [org] = await db
+				.select({ isVerified: organizations.isVerified })
+				.from(organizations)
+				.where(eq(organizations.id, input.organizationId))
+				.limit(1);
+
+			if (org?.isVerified) {
+				isApproved = true;
+				approvalStatus = "approved";
+			}
+		}
+
 		const eventData: NewEvent = {
 			slug,
 			name: input.name,
@@ -413,8 +438,8 @@ export async function createEvent(
 			prizePool: input.prizePool,
 			eventImageUrl: input.eventImageUrl,
 			status: "upcoming",
-			isApproved: false,
-			approvalStatus: "pending",
+			isApproved,
+			approvalStatus,
 			isFeatured: false,
 			organizationId: input.organizationId,
 		};
@@ -423,6 +448,10 @@ export async function createEvent(
 
 		if (result.length === 0) {
 			return { success: false, error: "Error al crear el evento" };
+		}
+
+		if (isApproved) {
+			await notifySubscribersOfNewEvent({ eventId: result[0].id });
 		}
 
 		return { success: true, event: result[0] };
@@ -464,6 +493,49 @@ export async function rejectEvent(
 	} catch (error) {
 		console.error("Error rejecting event:", error);
 		return { success: false, error: "Error al rechazar el evento" };
+	}
+}
+
+export async function deleteEvent(
+	eventId: string,
+): Promise<{ success: boolean; error?: string }> {
+	try {
+		const { userId } = await auth();
+
+		if (!userId) {
+			return { success: false, error: "No autenticado" };
+		}
+
+		const godMode = await isGodMode();
+
+		const event = await db.query.events.findFirst({
+			where: eq(events.id, eventId),
+			with: {
+				organization: true,
+			},
+		});
+
+		if (!event) {
+			return { success: false, error: "Evento no encontrado" };
+		}
+
+		const isOwner = event.organization?.ownerUserId === userId;
+
+		if (!godMode && !isOwner) {
+			return {
+				success: false,
+				error: "No tienes permiso para borrar este evento",
+			};
+		}
+
+		await db.delete(eventSponsors).where(eq(eventSponsors.eventId, eventId));
+
+		await db.delete(events).where(eq(events.id, eventId));
+
+		return { success: true };
+	} catch (error) {
+		console.error("Error deleting event:", error);
+		return { success: false, error: "Error al borrar el evento" };
 	}
 }
 
@@ -661,14 +733,3 @@ export async function removeEventSponsor(
 	}
 }
 
-export async function deleteEvent(
-	eventId: string,
-): Promise<{ success: boolean; error?: string }> {
-	try {
-		await db.delete(events).where(eq(events.id, eventId));
-		return { success: true };
-	} catch (error) {
-		console.error("Error deleting event:", error);
-		return { success: false, error: "Error al eliminar el evento" };
-	}
-}

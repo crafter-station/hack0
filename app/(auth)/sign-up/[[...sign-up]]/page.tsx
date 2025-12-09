@@ -1,7 +1,17 @@
 import { SignUp } from "@clerk/nextjs";
 import Link from "next/link";
 
-export default function SignUpPage() {
+interface SignUpPageProps {
+  searchParams: Promise<{ redirect_url?: string }>;
+}
+
+export default async function SignUpPage({ searchParams }: SignUpPageProps) {
+  const { redirect_url } = await searchParams;
+
+  const onboardingUrl = redirect_url
+    ? `/onboarding/redirect?redirect_url=${encodeURIComponent(redirect_url)}`
+    : "/onboarding/redirect";
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
@@ -21,6 +31,8 @@ export default function SignUpPage() {
       {/* Content */}
       <main className="flex-1 flex items-center justify-center p-4">
         <SignUp
+          forceRedirectUrl={onboardingUrl}
+          fallbackRedirectUrl={redirect_url || "/onboarding/redirect"}
           appearance={{
             elements: {
               rootBox: "mx-auto",

@@ -109,7 +109,11 @@ const SKILL_LEVEL_OPTIONS = [
 
 const STEPS = [1, 2, 3];
 
-export function InitialOnboardingForm() {
+interface InitialOnboardingFormProps {
+	redirectUrl?: string;
+}
+
+export function InitialOnboardingForm({ redirectUrl }: InitialOnboardingFormProps) {
 	const router = useRouter();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -160,7 +164,10 @@ export function InitialOnboardingForm() {
 				hasCompletedOnboarding: true,
 			});
 
-			router.push("/onboarding/redirect");
+			const nextUrl = redirectUrl
+				? `/onboarding/redirect?redirect_url=${encodeURIComponent(redirectUrl)}`
+				: "/onboarding/redirect";
+			router.push(nextUrl);
 			router.refresh();
 		} catch (err) {
 			setError(

@@ -1,6 +1,8 @@
+import { auth } from "@clerk/nextjs/server";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
+	AlertCircle,
 	ArrowUpRight,
 	Bell,
 	Building2,
@@ -42,6 +44,7 @@ import {
 	isDateInFuture,
 	isEventJuniorFriendly,
 } from "@/lib/event-utils";
+import { isGodMode } from "@/lib/god-mode";
 
 interface EventPageProps {
 	params: Promise<{ slug: string; eventSlug: string }>;
@@ -61,7 +64,7 @@ export async function generateMetadata({
 	params,
 }: EventPageProps): Promise<Metadata> {
 	const { slug, eventSlug } = await params;
-	const hackathon = await getEventBySlug(eventSlug);
+	const hackathon = await getEventBySlug(eventSlug, true);
 
 	if (!hackathon) {
 		return {
@@ -113,7 +116,8 @@ export async function generateMetadata({
 
 export default async function EventPage({ params }: EventPageProps) {
 	const { slug, eventSlug } = await params;
-	const hackathon = await getEventBySlug(eventSlug);
+	const { userId } = await auth();
+	const hackathon = await getEventBySlug(eventSlug, true);
 
 	if (!hackathon) {
 		notFound();
@@ -122,6 +126,14 @@ export default async function EventPage({ params }: EventPageProps) {
 	const community = await getOrganizationBySlug(slug);
 
 	if (!community || hackathon.organizationId !== community.id) {
+		notFound();
+	}
+
+	const godMode = await isGodMode();
+	const isOwner = userId && community.ownerUserId === userId;
+	const canViewPending = godMode || isOwner;
+
+	if (!hackathon.isApproved && !canViewPending) {
 		notFound();
 	}
 
@@ -302,6 +314,23 @@ export default async function EventPage({ params }: EventPageProps) {
 									<ManageEventButton event={hackathon} communitySlug={slug} />
 								</div>
 							</div>
+
+							{!hackathon.isApproved && (
+								<div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
+									<div className="flex items-start gap-3">
+										<AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+										<div className="flex-1 space-y-1">
+											<h3 className="font-medium text-amber-900 dark:text-amber-100">
+												Evento pendiente de aprobación
+											</h3>
+											<p className="text-sm text-amber-800/80 dark:text-amber-200/80">
+												Este evento está en revisión y será visible públicamente
+												una vez aprobado. Solo tú puedes verlo mientras tanto.
+											</p>
+										</div>
+									</div>
+								</div>
+							)}
 
 							{startDate && (
 								<div className="flex items-center gap-4">
@@ -634,7 +663,7 @@ export default async function EventPage({ params }: EventPageProps) {
 																			src={sponsor.organization.logoUrl}
 																			alt={sponsor.organization.name}
 																			fill
-																			className="object-contain p-1"
+																			className="object-contain"
 																			sizes="40px"
 																		/>
 																	</div>
@@ -678,7 +707,7 @@ export default async function EventPage({ params }: EventPageProps) {
 														src={community.logoUrl}
 														alt={community.displayName || community.name}
 														fill
-														className="object-contain p-1"
+														className="object-contain"
 														sizes="40px"
 													/>
 												</div>
