@@ -343,6 +343,9 @@ export function OnboardingForm() {
 						{slugStatus === "taken" && (
 							<p className="text-xs text-red-500">Esta URL ya está en uso</p>
 						)}
+						<FieldDescription>
+							⚠️ No podrás cambiar esta URL después de crear la comunidad
+						</FieldDescription>
 					</Field>
 
 					{/* Type */}
