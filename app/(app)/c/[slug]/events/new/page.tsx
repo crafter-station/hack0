@@ -4,6 +4,7 @@ import Link from "next/link";
 import { OrgEventForm } from "@/components/communities/org-event-form";
 import { LumaImportForm } from "@/components/communities/luma-import-form";
 import { getOrganizationBySlug } from "@/lib/actions/organizations";
+import { getUserCommunityRole } from "@/lib/actions/community-members";
 import { isGodMode } from "@/lib/god-mode";
 import { ArrowLeft, Sparkles, PenLine, Crown } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,8 +30,12 @@ export default async function NewEventPage({ params }: NewEventPageProps) {
   // Check god mode before checking ownership
   const godMode = await isGodMode();
 
-  if (!godMode && org.ownerUserId !== userId) {
-    redirect(`/c/${slug}`);
+  if (!godMode) {
+    const userRole = await getUserCommunityRole(org.id);
+
+    if (userRole !== "owner" && userRole !== "admin") {
+      redirect(`/c/${slug}`);
+    }
   }
 
   return (
