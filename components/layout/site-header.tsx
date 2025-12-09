@@ -18,14 +18,22 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 	const { userId } = await auth();
 	const organizations = userId ? await getAllUserOrganizations() : [];
 
-	// Get user's personal org
+	// Get or create user's personal org (ensures all logged-in users have one)
 	const personalOrg = userId
-		? await db.query.organizations.findFirst({
-				where: and(
-					eq(orgsTable.ownerUserId, userId),
-					eq(orgsTable.isPersonalOrg, true)
-				),
-		  })
+		? await (async () => {
+				const existing = await db.query.organizations.findFirst({
+					where: and(
+						eq(orgsTable.ownerUserId, userId),
+						eq(orgsTable.isPersonalOrg, true)
+					),
+				});
+
+				if (existing) return existing;
+
+				// Auto-create personal org if it doesn't exist (e.g., for god mode users)
+				const { getOrCreatePersonalOrg } = await import("@/lib/actions/organizations");
+				return await getOrCreatePersonalOrg();
+		  })()
 		: null;
 
 	return (

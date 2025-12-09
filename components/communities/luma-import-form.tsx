@@ -295,7 +295,13 @@ function ImportProgress({
   );
 }
 
-export function LumaImportForm({ communitySlug }: { communitySlug: string }) {
+export function LumaImportForm({
+  communitySlug,
+  communityId
+}: {
+  communitySlug: string;
+  communityId: string;
+}) {
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -315,7 +321,7 @@ export function LumaImportForm({ communitySlug }: { communitySlug: string }) {
     }
 
     startTransition(async () => {
-      const result = await startLumaImport(url, true);
+      const result = await startLumaImport(url, true, communityId);
 
       if (!result.success) {
         setError(result.error || "Error al iniciar la importación");

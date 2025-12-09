@@ -19,9 +19,10 @@ export default async function OnboardingRedirectPage({ searchParams }: Onboardin
 		redirect("/sign-in");
 	}
 
-	// God mode users can go directly to feed
+	// God mode users can go directly to feed (but create personal org first)
 	const godMode = await isGodMode();
 	if (godMode) {
+		await getOrCreatePersonalOrg();
 		redirect("/feed");
 	}
 

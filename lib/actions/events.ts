@@ -27,6 +27,7 @@ import { notifySubscribersOfNewEvent } from "@/lib/email/notify-subscribers";
 import { type EventCategory, getCategoryById } from "@/lib/event-categories";
 import { createUniqueSlug } from "@/lib/slug-utils";
 import { isGodMode } from "@/lib/god-mode";
+import { getUserCommunityRole } from "./community-members";
 
 export interface EventFilters {
 	category?: EventCategory;
@@ -400,6 +401,24 @@ export async function createEvent(
 	input: CreateEventInput,
 ): Promise<CreateEventResult> {
 	try {
+		const { userId } = await auth();
+
+		if (!userId) {
+			return { success: false, error: "No autenticado" };
+		}
+
+		if (input.organizationId) {
+			const godMode = await isGodMode();
+
+			if (!godMode) {
+				const userRole = await getUserCommunityRole(input.organizationId);
+
+				if (userRole !== "owner" && userRole !== "admin") {
+					return { success: false, error: "No tienes permisos para crear eventos en esta comunidad" };
+				}
+			}
+		}
+
 		// Generate unique slug using centralized utility
 		const slug = await createUniqueSlug(input.name);
 

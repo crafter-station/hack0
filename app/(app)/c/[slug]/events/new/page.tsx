@@ -84,7 +84,7 @@ export default async function NewEventPage({ params }: NewEventPageProps) {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="import" className="mt-5">
-              <LumaImportForm communitySlug={slug} />
+              <LumaImportForm communitySlug={slug} communityId={org.id} />
             </TabsContent>
             <TabsContent value="manual" className="mt-5">
               <OrgEventForm

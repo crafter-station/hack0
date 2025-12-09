@@ -12,6 +12,7 @@ import {
   inferCountryFromCity,
 } from "@/lib/scraper/luma-schema";
 import type { lumaImportTask } from "@/trigger/luma-import";
+import { getUserCommunityRole } from "./community-members";
 
 interface StartImportResult {
   success: boolean;
@@ -23,7 +24,8 @@ interface StartImportResult {
 
 export async function startLumaImport(
   url: string,
-  autoPublish: boolean = false
+  autoPublish: boolean = false,
+  organizationId?: string
 ): Promise<StartImportResult> {
   const { userId } = await auth();
 
@@ -31,12 +33,30 @@ export async function startLumaImport(
     return { success: false, error: "No autenticado" };
   }
 
+  if (!organizationId) {
+    const org = await db.query.organizations.findFirst({
+      where: eq(organizations.ownerUserId, userId),
+    });
+
+    if (!org) {
+      return { success: false, error: "No tienes una comunidad" };
+    }
+
+    organizationId = org.id;
+  }
+
+  const userRole = await getUserCommunityRole(organizationId);
+
+  if (userRole !== "owner" && userRole !== "admin") {
+    return { success: false, error: "No tienes permisos para crear eventos en esta comunidad" };
+  }
+
   const org = await db.query.organizations.findFirst({
-    where: eq(organizations.ownerUserId, userId),
+    where: eq(organizations.id, organizationId),
   });
 
   if (!org) {
-    return { success: false, error: "No tienes una comunidad" };
+    return { success: false, error: "Comunidad no encontrada" };
   }
 
   if (!isLumaUrl(url)) {
@@ -145,14 +165,6 @@ export async function createEventFromExtracted(
     return { success: false, error: "No autenticado" };
   }
 
-  const org = await db.query.organizations.findFirst({
-    where: eq(organizations.ownerUserId, userId),
-  });
-
-  if (!org) {
-    return { success: false, error: "No tienes una comunidad" };
-  }
-
   const job = await db.query.importJobs.findFirst({
     where: eq(importJobs.id, jobId),
   });
@@ -161,8 +173,18 @@ export async function createEventFromExtracted(
     return { success: false, error: "Job no encontrado" };
   }
 
-  if (job.organizationId !== org.id) {
-    return { success: false, error: "No tienes permiso para este job" };
+  const userRole = await getUserCommunityRole(job.organizationId);
+
+  if (userRole !== "owner" && userRole !== "admin") {
+    return { success: false, error: "No tienes permisos para este job" };
+  }
+
+  const org = await db.query.organizations.findFirst({
+    where: eq(organizations.id, job.organizationId),
+  });
+
+  if (!org) {
+    return { success: false, error: "Organización no encontrada" };
   }
 
   if (job.eventId) {
@@ -234,19 +256,17 @@ export async function getImportJob(jobId: string) {
     return null;
   }
 
-  const org = await db.query.organizations.findFirst({
-    where: eq(organizations.ownerUserId, userId),
-  });
-
-  if (!org) {
-    return null;
-  }
-
   const job = await db.query.importJobs.findFirst({
     where: eq(importJobs.id, jobId),
   });
 
-  if (!job || job.organizationId !== org.id) {
+  if (!job) {
+    return null;
+  }
+
+  const userRole = await getUserCommunityRole(job.organizationId);
+
+  if (userRole !== "owner" && userRole !== "admin") {
     return null;
   }
 
@@ -271,6 +291,12 @@ export async function getOrgImportJobs(limit: number = 10, organizationId?: stri
       return [];
     }
     orgId = org.id;
+  }
+
+  const userRole = await getUserCommunityRole(orgId);
+
+  if (userRole !== "owner" && userRole !== "admin") {
+    return [];
   }
 
   return db.query.importJobs.findMany({

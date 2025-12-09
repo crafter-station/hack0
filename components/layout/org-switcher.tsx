@@ -141,6 +141,36 @@ export function OrgSwitcher({ organizations, personalOrg }: OrgSwitcherProps) {
 					/>
 					<div className="absolute right-0 top-full mt-2 w-80 rounded-lg border border-border bg-popover shadow-lg z-[70] overflow-hidden">
 						<div className="p-2">
+							{personalOrg && (
+								<>
+									<Link
+										href={`/c/${personalOrg.slug}`}
+										onClick={() => {
+											setIsOpen(false);
+											setSearchQuery("");
+										}}
+										className="flex items-center gap-2 rounded-md px-2 py-3 mb-2 text-sm transition-colors bg-accent/50 hover:bg-accent border border-border/50"
+									>
+										{personalOrg.logoUrl ? (
+											<img
+												src={personalOrg.logoUrl}
+												alt=""
+												className="h-5 w-5 rounded object-cover shrink-0"
+											/>
+										) : (
+											<User className="h-5 w-5 shrink-0" />
+										)}
+										<div className="flex-1 min-w-0">
+											<div className="truncate font-medium">Mi Perfil</div>
+											<div className="text-xs text-muted-foreground truncate">
+												{personalOrg.slug}
+											</div>
+										</div>
+									</Link>
+									<div className="h-px bg-border my-2" />
+								</>
+							)}
+
 							<div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
 								Tus comunidades
 							</div>
@@ -211,19 +241,6 @@ export function OrgSwitcher({ organizations, personalOrg }: OrgSwitcherProps) {
 							</div>
 						</div>
 						<div className="border-t border-border p-2 space-y-1">
-							{personalOrg && (
-								<Link
-									href={`/c/${personalOrg.slug}`}
-									onClick={() => {
-										setIsOpen(false);
-										setSearchQuery("");
-									}}
-									className="flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors hover:bg-accent"
-								>
-									<User className="h-4 w-4" />
-									Mi Perfil
-								</Link>
-							)}
 							<Link
 								href="/c"
 								onClick={() => {
