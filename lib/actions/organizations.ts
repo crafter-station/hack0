@@ -400,6 +400,65 @@ export async function deleteOrganization(organizationId: string) {
 }
 
 // ============================================
+// GOD MODE
+// ============================================
+
+/**
+ * Toggle organization verification (god mode only)
+ */
+export async function toggleOrganizationVerification(organizationId: string) {
+  const { isGodMode } = await import("@/lib/god-mode");
+  const godMode = await isGodMode();
+
+  if (!godMode) {
+    throw new Error("Not authorized");
+  }
+
+  const org = await db.query.organizations.findFirst({
+    where: eq(organizations.id, organizationId),
+  });
+
+  if (!org) {
+    throw new Error("Organization not found");
+  }
+
+  const [updated] = await db
+    .update(organizations)
+    .set({
+      isVerified: !org.isVerified,
+      updatedAt: new Date(),
+    })
+    .where(eq(organizations.id, organizationId))
+    .returning();
+
+  revalidatePath(`/c/${org.slug}`);
+  revalidatePath("/god");
+
+  return updated;
+}
+
+/**
+ * Get all organizations (god mode only)
+ */
+export async function getAllOrganizations() {
+  const { isGodMode } = await import("@/lib/god-mode");
+  const godMode = await isGodMode();
+
+  if (!godMode) {
+    throw new Error("Not authorized");
+  }
+
+  const allOrgs = await db.query.organizations.findMany({
+    orderBy: [desc(organizations.createdAt)],
+    with: {
+      events: true,
+    },
+  });
+
+  return allOrgs;
+}
+
+// ============================================
 // WEB SCRAPER
 // ============================================
 

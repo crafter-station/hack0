@@ -4,10 +4,10 @@ import { format, formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import {
 	AlertCircle,
-	BadgeCheck,
 	Building2,
 	Calendar,
 	Check,
+	CheckCircle2,
 	Clock,
 	Copy,
 	Database,
@@ -173,7 +173,7 @@ export function ManageContent({
 														: "bg-red-500/10 text-red-700 dark:text-red-400"
 											}`}
 										>
-											{event.approvalStatus === "approved" && <BadgeCheck className="h-3 w-3" />}
+											{event.approvalStatus === "approved" && <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />}
 											{event.approvalStatus === "approved" ? "Aprobado" : event.approvalStatus === "pending" ? "Pendiente" : "Rechazado"}
 										</div>
 
@@ -185,7 +185,7 @@ export function ManageContent({
 
 										{event.isOrganizerVerified && (
 											<div className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium bg-blue-500/10 text-blue-700 dark:text-blue-400">
-												<BadgeCheck className="h-3 w-3" />
+												<CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
 												Organizador verificado
 											</div>
 										)}

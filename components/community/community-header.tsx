@@ -1,4 +1,16 @@
-import { ArrowLeft, BarChart3, Calendar, Settings, Users, Twitter, Linkedin, Instagram, Facebook, Github } from "lucide-react";
+import {
+	ArrowLeft,
+	BarChart3,
+	Calendar,
+	CheckCircle2,
+	Facebook,
+	Github,
+	Instagram,
+	Linkedin,
+	Settings,
+	Twitter,
+	Users,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -59,46 +71,75 @@ export async function CommunityHeader({
 						) : null}
 
 						<div className="min-w-0">
-							<h1 className="text-lg font-semibold tracking-tight truncate">
-								{community.displayName || community.name}
-							</h1>
+							<div className="flex items-center gap-2">
+								<h1 className="text-lg font-semibold tracking-tight">
+									{community.displayName || community.name}
+								</h1>
+								{community.isVerified && (
+									<CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+								)}
+							</div>
 							{community.description && (
-								<p className="text-sm text-muted-foreground max-w-xl">
+								<p className="text-sm text-muted-foreground">
 									{community.description}
 								</p>
 							)}
-							{(community.twitterUrl || community.linkedinUrl || community.instagramUrl || community.facebookUrl || community.githubUrl) && (
+							{(community.twitterUrl ||
+								community.linkedinUrl ||
+								community.instagramUrl ||
+								community.facebookUrl ||
+								community.githubUrl) && (
 								<div className="flex items-center gap-3 mt-2">
 									{community.twitterUrl && (
-										<Link href={community.twitterUrl} target="_blank" rel="noopener noreferrer">
+										<Link
+											href={community.twitterUrl}
+											target="_blank"
+											rel="noopener noreferrer"
+										>
 											<Button variant="ghost" size="sm" className="h-7 w-7 p-0">
 												<Twitter className="h-3.5 w-3.5" />
 											</Button>
 										</Link>
 									)}
 									{community.linkedinUrl && (
-										<Link href={community.linkedinUrl} target="_blank" rel="noopener noreferrer">
+										<Link
+											href={community.linkedinUrl}
+											target="_blank"
+											rel="noopener noreferrer"
+										>
 											<Button variant="ghost" size="sm" className="h-7 w-7 p-0">
 												<Linkedin className="h-3.5 w-3.5" />
 											</Button>
 										</Link>
 									)}
 									{community.instagramUrl && (
-										<Link href={community.instagramUrl} target="_blank" rel="noopener noreferrer">
+										<Link
+											href={community.instagramUrl}
+											target="_blank"
+											rel="noopener noreferrer"
+										>
 											<Button variant="ghost" size="sm" className="h-7 w-7 p-0">
 												<Instagram className="h-3.5 w-3.5" />
 											</Button>
 										</Link>
 									)}
 									{community.facebookUrl && (
-										<Link href={community.facebookUrl} target="_blank" rel="noopener noreferrer">
+										<Link
+											href={community.facebookUrl}
+											target="_blank"
+											rel="noopener noreferrer"
+										>
 											<Button variant="ghost" size="sm" className="h-7 w-7 p-0">
 												<Facebook className="h-3.5 w-3.5" />
 											</Button>
 										</Link>
 									)}
 									{community.githubUrl && (
-										<Link href={community.githubUrl} target="_blank" rel="noopener noreferrer">
+										<Link
+											href={community.githubUrl}
+											target="_blank"
+											rel="noopener noreferrer"
+										>
 											<Button variant="ghost" size="sm" className="h-7 w-7 p-0">
 												<Github className="h-3.5 w-3.5" />
 											</Button>

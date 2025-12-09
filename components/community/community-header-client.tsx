@@ -1,6 +1,12 @@
 "use client";
 
-import { BarChart3, Calendar, Settings, Users } from "lucide-react";
+import {
+	BarChart3,
+	Calendar,
+	CheckCircle2,
+	Settings,
+	Users,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -17,6 +23,7 @@ interface CommunityHeaderClientProps {
 	community: Organization;
 	slug: string;
 	userRole: string | null;
+	isAuthenticated: boolean;
 	tabs: Tab[];
 }
 
@@ -31,6 +38,7 @@ export function CommunityHeaderClient({
 	community,
 	slug,
 	userRole,
+	isAuthenticated,
 	tabs,
 }: CommunityHeaderClientProps) {
 	const pathname = usePathname();
@@ -60,18 +68,29 @@ export function CommunityHeaderClient({
 						) : null}
 
 						<div className="min-w-0">
-							<h1 className="text-lg font-semibold tracking-tight truncate">
-								{community.displayName || community.name}
-							</h1>
+							<div className="flex items-center gap-2">
+								<h1 className="text-lg font-semibold tracking-tight">
+									{community.displayName || community.name}
+								</h1>
+								{community.isVerified && (
+									<CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+								)}
+							</div>
 							{community.description && (
-								<p className="text-sm text-muted-foreground truncate max-w-xl">
+								<p className="text-sm text-muted-foreground">
 									{community.description}
 								</p>
 							)}
 						</div>
 					</div>
 
-					<CommunityActions communitySlug={slug} userRole={userRole} />
+					<CommunityActions
+						communityId={community.id}
+						communitySlug={slug}
+						communityName={community.displayName || community.name}
+						userRole={userRole}
+						isAuthenticated={isAuthenticated}
+					/>
 				</div>
 
 				<nav className="flex items-center gap-1 border-t -mb-px">

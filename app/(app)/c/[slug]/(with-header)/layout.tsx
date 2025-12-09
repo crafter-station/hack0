@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { auth } from "@clerk/nextjs/server";
 import { CommunityHeaderClient } from "@/components/community/community-header-client";
 import { getUserCommunityRole } from "@/lib/actions/community-members";
 import { isGodMode } from "@/lib/god-mode";
@@ -18,6 +19,7 @@ async function CommunityHeaderWrapper({ slug }: { slug: string }) {
 
 	if (!community) return null;
 
+	const { userId } = await auth();
 	const userRole = await getUserCommunityRole(community.id);
 	const isOwner = userRole === "owner";
 	const godMode = await isGodMode();
@@ -39,6 +41,7 @@ async function CommunityHeaderWrapper({ slug }: { slug: string }) {
 			community={community}
 			slug={slug}
 			userRole={userRole}
+			isAuthenticated={!!userId}
 			tabs={tabs}
 		/>
 	);

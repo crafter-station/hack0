@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { Calendar, BarChart3, TrendingUp, Eye, Award, ExternalLink, Edit3, Loader2, Plus, UserPlus } from "lucide-react";
 import { db } from "@/lib/db";
 import { organizations, events } from "@/lib/db/schema";
@@ -12,6 +12,7 @@ import { formatEventDateRange } from "@/lib/event-utils";
 import { getOrgImportJobs } from "@/lib/actions/import";
 import { isGodMode } from "@/lib/god-mode";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { getOrganizationBySlug, canManageOrganization } from "@/lib/actions/organizations";
 
 interface AnalyticsPageProps {
 	params: Promise<{ slug: string }>;
@@ -317,16 +318,16 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
 		redirect("/sign-in");
 	}
 
-	const community = await db.query.organizations.findFirst({
-		where: eq(organizations.slug, slug),
-	});
+	const org = await getOrganizationBySlug(slug);
 
-	if (!community) {
-		redirect(`/c/${slug}`);
+	if (!org) {
+		notFound();
 	}
 
 	const godMode = await isGodMode();
-	if (community.ownerUserId !== userId && !godMode) {
+	const canManage = await canManageOrganization(org.id);
+
+	if (!canManage && !godMode) {
 		redirect(`/c/${slug}`);
 	}
 

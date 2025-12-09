@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Users, Plus } from "lucide-react";
+import { Users, Plus, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getFollowedCommunitiesStats } from "@/lib/actions/feed";
 
@@ -67,9 +67,14 @@ export async function FollowedCommunitiesSidebar() {
 									{community.name.charAt(0)}
 								</div>
 							)}
-							<span className="text-sm font-medium truncate">
-								{community.displayName || community.name}
-							</span>
+							<div className="flex items-center gap-1.5 min-w-0 flex-1">
+								<span className="text-sm font-medium truncate">
+									{community.displayName || community.name}
+								</span>
+								{community.isVerified && (
+									<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+								)}
+							</div>
 						</Link>
 					))}
 				</div>

@@ -2,7 +2,6 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
 	ArrowUpRight,
-	BadgeCheck,
 	Bell,
 	Building2,
 	Calendar,
@@ -697,7 +696,7 @@ export default async function EventPage({ params }: EventPageProps) {
 														{community.displayName || community.name}
 													</Link>
 													{community.isVerified && (
-														<BadgeCheck className="h-4 w-4 fill-emerald-500 text-background shrink-0" />
+														<CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
 													)}
 												</div>
 												{community.type && (

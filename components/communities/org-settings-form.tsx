@@ -5,18 +5,17 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { ORGANIZER_TYPE_LABELS, type Organization } from "@/lib/db/schema";
 import { updateOrganizationById } from "@/lib/actions/organizations";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, Globe, Building2, Image as ImageIcon } from "lucide-react";
+import {
+  Field,
+  FieldGroup,
+  FieldLabel,
+  FieldDescription,
+} from "@/components/ui/field";
 
 const ORGANIZER_TYPE_OPTIONS = Object.entries(ORGANIZER_TYPE_LABELS).map(
   ([value, label]) => ({
@@ -48,7 +47,7 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
       await updateOrganizationById(organization.id, {
         name: formData.get("name") as string,
         description: (formData.get("description") as string) || undefined,
-        type: (formData.get("type") as string) || undefined,
+        type: (formData.get("type") as any) || undefined,
         websiteUrl: (formData.get("websiteUrl") as string) || undefined,
         logoUrl: logoUrl || undefined,
       });
@@ -66,28 +65,40 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Basic Info */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-          Información básica
-        </h2>
-        <div className="grid gap-4">
-          <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium">
-              Nombre de la comunidad *
-            </label>
+      {error && (
+        <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3">
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        </div>
+      )}
+
+      {success && (
+        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-3">
+          <p className="text-sm text-emerald-600 dark:text-emerald-400">
+            ✓ Comunidad actualizada correctamente
+          </p>
+        </div>
+      )}
+
+      <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
+        {/* Left column - Main fields */}
+        <FieldGroup className="gap-8">
+          <Field>
+            <FieldLabel htmlFor="name">
+              <Building2 className="h-4 w-4" />
+              Nombre de la comunidad
+            </FieldLabel>
             <Input
               id="name"
               name="name"
               defaultValue={organization.name}
               required
+              placeholder="Ej: START Lima"
+              className="text-base"
             />
-          </div>
+          </Field>
 
-          <div className="space-y-2">
-            <label htmlFor="slug" className="text-sm font-medium">
-              URL personalizada
-            </label>
+          <Field>
+            <FieldLabel htmlFor="slug">URL personalizada</FieldLabel>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">
                 hack0.dev/c/
@@ -99,102 +110,87 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
                 className="flex-1 bg-muted"
               />
             </div>
-            <p className="text-xs text-muted-foreground">
-              El slug no se puede cambiar
-            </p>
-          </div>
+            <FieldDescription>El slug no se puede cambiar</FieldDescription>
+          </Field>
 
-          <div className="space-y-2">
-            <label htmlFor="description" className="text-sm font-medium">
-              Descripción
-            </label>
+          <Field>
+            <FieldLabel htmlFor="description">Descripción</FieldLabel>
             <Textarea
               id="description"
               name="description"
               defaultValue={organization.description || ""}
               placeholder="Breve descripción de tu comunidad..."
-              className="min-h-20 resize-none"
+              rows={4}
+              className="resize-none"
             />
-          </div>
-        </div>
-      </section>
+            <FieldDescription>
+              Describe brevemente tu comunidad y su misión
+            </FieldDescription>
+          </Field>
 
-      {/* Type */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-          Tipo de comunidad
-        </h2>
-        <div className="grid gap-4">
-          <div className="space-y-2">
-            <label htmlFor="type" className="text-sm font-medium">
-              Tipo
-            </label>
+          <Field>
+            <FieldLabel htmlFor="type">
+              <Building2 className="h-4 w-4" />
+              Tipo de comunidad
+            </FieldLabel>
             <SearchableSelect
               options={ORGANIZER_TYPE_OPTIONS}
               value={organization.type || "community"}
               onValueChange={(value) => {
-                const typeInput = document.querySelector('input[name="type"]') as HTMLInputElement;
+                const typeInput = document.querySelector(
+                  'input[name="type"]'
+                ) as HTMLInputElement;
                 if (typeInput) typeInput.value = value;
               }}
               placeholder="Selecciona un tipo"
               searchPlaceholder="Buscar tipo..."
               emptyMessage="No se encontró el tipo"
             />
-            <input type="hidden" name="type" defaultValue={organization.type || "community"} />
-          </div>
-        </div>
-      </section>
+            <input
+              type="hidden"
+              name="type"
+              defaultValue={organization.type || "community"}
+            />
+          </Field>
 
-      {/* Links */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-          Enlaces
-        </h2>
-        <div className="grid gap-4">
-          <div className="space-y-2">
-            <label htmlFor="websiteUrl" className="text-sm font-medium">
+          <Field>
+            <FieldLabel htmlFor="websiteUrl">
+              <Globe className="h-4 w-4" />
               Sitio web
-            </label>
+            </FieldLabel>
             <Input
               id="websiteUrl"
               name="websiteUrl"
               type="url"
               defaultValue={organization.websiteUrl || ""}
-              placeholder="https://..."
+              placeholder="https://ejemplo.com"
             />
-          </div>
+          </Field>
+        </FieldGroup>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Logo</label>
+        {/* Right column - Logo (sticky sidebar) */}
+        <div className="lg:sticky lg:top-24 h-fit">
+          <Field>
+            <FieldLabel>
+              <ImageIcon className="h-4 w-4" />
+              Logo
+            </FieldLabel>
             <ImageUpload
               value={logoUrl}
               onChange={setLogoUrl}
               onRemove={() => setLogoUrl("")}
               endpoint="imageUploader"
               aspectRatio="square"
-              className="max-w-[150px]"
             />
-          </div>
+            <FieldDescription className="text-center">
+              Cuadrado, max 4MB
+            </FieldDescription>
+          </Field>
         </div>
-      </section>
+      </div>
 
-      {/* Messages */}
-      {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="text-sm text-red-600">{error}</p>
-        </div>
-      )}
-
-      {success && (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-          <p className="text-sm text-emerald-600">
-            Comunidad actualizada correctamente
-          </p>
-        </div>
-      )}
-
-      {/* Submit */}
-      <div className="flex justify-end pt-4 border-t">
+      {/* Sticky submit bar */}
+      <div className="flex gap-3 justify-end sticky bottom-4 bg-background/80 backdrop-blur-sm p-4 rounded-lg border">
         <Button type="submit" disabled={isSubmitting} className="min-w-32">
           {isSubmitting ? (
             <>

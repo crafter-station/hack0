@@ -1,7 +1,7 @@
 "use client";
 
 import {
-	BadgeCheck,
+	CheckCircle2,
 	ChevronDown,
 	ChevronRight,
 	MapPin,
@@ -320,7 +320,7 @@ export function EventRowWithChildren({
 											{event.organization?.displayName || event.organization?.name}
 										</span>
 										{event.organization?.isVerified ? (
-											<BadgeCheck className="h-3 w-3 fill-foreground text-background shrink-0" />
+											<CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
 										) : (
 											<span className="inline-flex h-3 w-3 items-center justify-center rounded-full border border-dashed border-muted-foreground/40 shrink-0">
 												<span className="text-[7px] text-muted-foreground/40">

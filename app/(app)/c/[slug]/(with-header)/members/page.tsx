@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { getOrganizationInvites } from "@/lib/actions/community-members";
 import { MembersManagement } from "@/components/community/members-management";
+import { isGodMode } from "@/lib/god-mode";
 
 interface MembersPageProps {
 	params: Promise<{ slug: string }>;
@@ -50,10 +51,11 @@ async function MembersList({ slug, currentUserId }: { slug: string; currentUserI
 	// Get invites
 	const invites = await getOrganizationInvites(community.id);
 
-	// Check if current user is owner or admin
+	// Check if current user is owner, admin, or god mode
 	const isOwner = currentUserId === community.ownerUserId;
 	const currentMember = community.members.find(m => m.userId === currentUserId);
 	const isAdmin = currentMember?.role === "admin";
+	const godMode = await isGodMode();
 
 	const filteredMembers = community.members.filter(m => {
 		if (m.userId === community.ownerUserId) return false;
@@ -78,6 +80,7 @@ async function MembersList({ slug, currentUserId }: { slug: string; currentUserI
 			currentUserId={currentUserId}
 			isOwner={isOwner}
 			isAdmin={isAdmin}
+			isGodMode={godMode}
 		/>
 	);
 }

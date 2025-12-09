@@ -2,6 +2,7 @@
 
 import {
 	Building2,
+	CheckCircle2,
 	ChevronRight,
 	Crown,
 	Plus,
@@ -113,13 +114,25 @@ export function OrganizationSelector({
 		);
 	}
 
-	const ownerOrgs = filteredOrganizations.filter(({ role }) => role === "owner");
-	const adminOrgs = filteredOrganizations.filter(({ role }) => role === "admin");
-	const memberOrgs = filteredOrganizations.filter(
-		({ role }) => role === "member",
+	const sortByVerified = (orgs: OrganizationWithRole[]) => {
+		return orgs.sort((a, b) => {
+			if (a.organization.isVerified && !b.organization.isVerified) return -1;
+			if (!a.organization.isVerified && b.organization.isVerified) return 1;
+			return 0;
+		});
+	};
+
+	const ownerOrgs = sortByVerified(
+		filteredOrganizations.filter(({ role }) => role === "owner"),
 	);
-	const followerOrgs = filteredOrganizations.filter(
-		({ role }) => role === "follower",
+	const adminOrgs = sortByVerified(
+		filteredOrganizations.filter(({ role }) => role === "admin"),
+	);
+	const memberOrgs = sortByVerified(
+		filteredOrganizations.filter(({ role }) => role === "member"),
+	);
+	const followerOrgs = sortByVerified(
+		filteredOrganizations.filter(({ role }) => role === "follower"),
 	);
 
 	return (
@@ -284,9 +297,14 @@ function OrganizationCard({
 					)}
 
 					<div className="min-w-0 flex-1">
-						<h3 className="font-semibold truncate mb-1 group-hover:text-foreground transition-colors">
-							{organization.displayName || organization.name}
-						</h3>
+						<div className="flex items-center gap-1.5 mb-1">
+							<h3 className="font-semibold truncate group-hover:text-foreground transition-colors">
+								{organization.displayName || organization.name}
+							</h3>
+							{organization.isVerified && (
+								<CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+							)}
+						</div>
 						<p className="text-xs text-muted-foreground truncate font-mono">
 							@{organization.slug}
 						</p>

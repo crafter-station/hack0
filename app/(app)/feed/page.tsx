@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { PersonalizedFeed } from "@/components/feed/personalized-feed";
+import { FilterPills } from "@/components/feed/filter-pills";
 import { FollowedCommunitiesSidebar } from "@/components/feed/followed-communities-sidebar";
 import { FeedSkeleton } from "@/components/feed/feed-skeleton";
 import { getPersonalizedFeed } from "@/lib/actions/feed";
@@ -50,6 +51,7 @@ export default async function FeedPage() {
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
 			<SiteHeader />
+			<FilterPills />
 
 			<main className="flex-1">
 				<div className="mx-auto max-w-screen-xl px-4 lg:px-8 py-8">

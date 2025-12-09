@@ -92,7 +92,7 @@ export function OrgSwitcher({ organizations }: OrgSwitcherProps) {
 				className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
 			>
 				<LayoutGrid className="h-3.5 w-3.5" />
-				<span className="hidden sm:inline">Comunidades</span>
+				<span className="hidden sm:inline">Ver Comunidades</span>
 			</Link>
 		);
 	}
@@ -123,7 +123,7 @@ export function OrgSwitcher({ organizations }: OrgSwitcherProps) {
 				) : (
 					<>
 						<LayoutGrid className="h-3.5 w-3.5" />
-						<span className="hidden sm:inline">Comunidades</span>
+						<span className="hidden sm:inline">Ir a comunidad</span>
 					</>
 				)}
 			</button>
@@ -131,13 +131,13 @@ export function OrgSwitcher({ organizations }: OrgSwitcherProps) {
 			{isOpen && (
 				<>
 					<div
-						className="fixed inset-0 z-40"
+						className="fixed inset-0 z-[60]"
 						onClick={() => {
 							setIsOpen(false);
 							setSearchQuery("");
 						}}
 					/>
-					<div className="absolute right-0 top-full mt-2 w-80 rounded-lg border border-border bg-popover shadow-lg z-50 overflow-hidden">
+					<div className="absolute right-0 top-full mt-2 w-80 rounded-lg border border-border bg-popover shadow-lg z-[70] overflow-hidden">
 						<div className="p-2">
 							<div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
 								Tus comunidades

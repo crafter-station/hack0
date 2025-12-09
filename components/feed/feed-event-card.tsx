@@ -1,10 +1,12 @@
 "use client";
 
-import { Calendar, MapPin, TrendingUp, Users, BadgeCheck } from "lucide-react";
+import { Calendar, MapPin, TrendingUp, Users, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { formatEventDateSmart } from "@/lib/event-utils";
+import { formatEventDateRange } from "@/lib/event-utils";
 import type { FeedEvent } from "@/lib/actions/feed";
+import { SaveEventButton } from "./save-event-button";
+import { ShareEventButton } from "./share-event-button";
 
 interface FeedEventCardProps {
 	event: FeedEvent;
@@ -22,38 +24,48 @@ export function FeedEventCard({ event }: FeedEventCardProps) {
 			}
 			className="group block"
 		>
-			<article className="rounded-lg border bg-card transition-all hover:border-foreground/20 hover:shadow-sm">
-				{/* Image Banner */}
-				{event.eventImageUrl && (
-					<div className="relative aspect-[2.5/1] w-full overflow-hidden rounded-t-lg bg-muted">
-						<Image
-							src={event.eventImageUrl}
-							alt={event.name}
-							fill
-							className="object-cover transition-transform group-hover:scale-[1.02]"
-						/>
-						{/* Status Badge */}
-						{event.status === "ongoing" && (
-							<div className="absolute top-3 right-3 rounded-md bg-emerald-500 px-2 py-1 text-xs font-medium text-white">
-								En curso
-							</div>
-						)}
-						{event.status === "open" && (
-							<div className="absolute top-3 right-3 rounded-md bg-blue-500 px-2 py-1 text-xs font-medium text-white">
-								Inscripciones abiertas
-							</div>
-						)}
-					</div>
-				)}
+			<article className="rounded-lg border bg-card transition-all hover:border-foreground/20 hover:shadow-md overflow-hidden relative">
+				{/* Quick Actions */}
+				<div className="absolute top-3 right-3 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+					<SaveEventButton eventId={event.id} eventName={event.name} />
+					<ShareEventButton
+						eventSlug={event.slug}
+						organizationSlug={event.organization?.slug}
+						eventName={event.name}
+						eventDescription={event.description}
+					/>
+				</div>
 
-				<div className="p-5 space-y-4">
-					{/* Header */}
-					<div className="space-y-2">
+				<div className="flex gap-4 p-4">
+					{/* Image - compact side thumbnail */}
+					{event.eventImageUrl && (
+						<div className="relative w-32 h-32 shrink-0 overflow-hidden rounded-md bg-muted">
+							<Image
+								src={event.eventImageUrl}
+								alt={event.name}
+								fill
+								className="object-cover transition-transform group-hover:scale-105"
+							/>
+							{/* Status Badge */}
+							{event.status === "ongoing" && (
+								<div className="absolute top-2 right-2 rounded-md bg-emerald-500 px-1.5 py-0.5 text-[10px] font-medium text-white">
+									Live
+								</div>
+							)}
+							{event.status === "open" && (
+								<div className="absolute top-2 right-2 rounded-md bg-blue-500 px-1.5 py-0.5 text-[10px] font-medium text-white">
+									Open
+								</div>
+							)}
+						</div>
+					)}
+
+					<div className="flex-1 min-w-0 space-y-2">
 						{/* Organization */}
 						{event.organization && (
-							<div className="flex items-center gap-2">
+							<div className="flex items-center gap-1.5">
 								{event.organization.logoUrl ? (
-									<div className="relative h-5 w-5 rounded overflow-hidden">
+									<div className="relative h-4 w-4 rounded overflow-hidden">
 										<Image
 											src={event.organization.logoUrl}
 											alt={event.organization.name}
@@ -62,100 +74,85 @@ export function FeedEventCard({ event }: FeedEventCardProps) {
 										/>
 									</div>
 								) : (
-									<div className="h-5 w-5 rounded bg-muted flex items-center justify-center text-xs font-semibold">
+									<div className="h-4 w-4 rounded bg-muted flex items-center justify-center text-[10px] font-semibold">
 										{event.organization.name.charAt(0)}
 									</div>
 								)}
-								<span className="text-sm text-muted-foreground">
+								<span className="text-xs text-muted-foreground">
 									{event.organization.displayName || event.organization.name}
 								</span>
 								{event.organization.isVerified && (
-									<BadgeCheck className="h-4 w-4 text-emerald-500" />
+									<CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
 								)}
 							</div>
 						)}
 
 						{/* Event Name */}
-						<h3 className="text-lg font-semibold leading-tight group-hover:text-foreground/80 transition-colors">
+						<h3 className="text-base font-semibold leading-snug group-hover:text-foreground/80 transition-colors line-clamp-2">
 							{event.name}
 						</h3>
 
-						{/* Description */}
-						{event.description && (
-							<p className="text-sm text-muted-foreground line-clamp-2">
-								{event.description}
-							</p>
-						)}
-					</div>
+						{/* Metadata */}
+						<div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+							{/* Date */}
+							{event.startDate && (
+								<div className="flex items-center gap-1">
+									<Calendar className="h-3 w-3" />
+									<span>
+										{formatEventDateRange(
+											new Date(event.startDate),
+											event.endDate ? new Date(event.endDate) : null,
+										)}
+									</span>
+								</div>
+							)}
 
-					{/* Metadata */}
-					<div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
-						{/* Date */}
-						{event.startDate && (
-							<div className="flex items-center gap-1.5">
-								<Calendar className="h-4 w-4" />
-								<span>
-									{formatEventDateSmart(
-										new Date(event.startDate),
-										event.endDate ? new Date(event.endDate) : undefined,
-									)}
-								</span>
-							</div>
-						)}
+							{/* Location */}
+							{event.format === "in-person" && event.city && (
+								<div className="flex items-center gap-1">
+									<MapPin className="h-3 w-3" />
+									<span>{event.city}</span>
+								</div>
+							)}
+							{event.format === "virtual" && (
+								<div className="flex items-center gap-1">
+									<MapPin className="h-3 w-3" />
+									<span>Virtual</span>
+								</div>
+							)}
+							{event.format === "hybrid" && (
+								<div className="flex items-center gap-1">
+									<MapPin className="h-3 w-3" />
+									<span>Híbrido</span>
+								</div>
+							)}
 
-						{/* Location */}
-						{event.format === "in-person" && event.city && (
-							<div className="flex items-center gap-1.5">
-								<MapPin className="h-4 w-4" />
-								<span>{event.city}</span>
-							</div>
-						)}
-						{event.format === "virtual" && (
-							<div className="flex items-center gap-1.5">
-								<MapPin className="h-4 w-4" />
-								<span>Virtual</span>
-							</div>
-						)}
-						{event.format === "hybrid" && (
-							<div className="flex items-center gap-1.5">
-								<MapPin className="h-4 w-4" />
-								<span>Híbrido</span>
-							</div>
-						)}
-
-						{/* Skill Level */}
-						{event.skillLevel && event.skillLevel !== "all" && (
-							<div className="flex items-center gap-1.5">
-								<TrendingUp className="h-4 w-4" />
-								<span className="capitalize">{event.skillLevel}</span>
-							</div>
-						)}
-
-						{/* Prize */}
-						{event.prizePool && event.prizePool > 0 && (
-							<div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
-								<TrendingUp className="h-4 w-4" />
-								<span>
-									{event.prizeCurrency === "USD" ? "$" : "S/"}
-									{event.prizePool.toLocaleString()}
-								</span>
-							</div>
-						)}
-					</div>
-
-					{/* Relevance Reasons */}
-					{hasRelevanceReasons && (
-						<div className="flex flex-wrap gap-1.5">
-							{event.relevanceReasons.slice(0, 3).map((reason, i) => (
-								<span
-									key={i}
-									className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground"
-								>
-									{reason}
-								</span>
-							))}
+							{/* Prize */}
+							{event.prizePool && event.prizePool > 0 && (
+								<div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+									<TrendingUp className="h-3 w-3" />
+									<span>
+										{event.prizeCurrency === "USD" ? "$" : "S/"}
+										{event.prizePool.toLocaleString()}
+									</span>
+								</div>
+							)}
 						</div>
-					)}
+
+						{/* Relevance Reasons */}
+						{hasRelevanceReasons && (
+							<div className="flex flex-wrap gap-1">
+								{event.relevanceReasons.slice(0, 2).map((reason, i) => (
+									<span
+										key={i}
+										className="inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
+									>
+										{reason}
+									</span>
+								))}
+							</div>
+						)}
+					</div>
 				</div>
 			</article>
 		</Link>

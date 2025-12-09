@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, Sparkles } from "lucide-react";
+import { CheckCircle2, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarIcon } from "@/components/icons/calendar";
@@ -223,7 +223,7 @@ export function EventRow({ event, categoryConfig }: EventRowProps) {
 								<span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
 									{event.organization?.displayName || event.organization?.name}
 									{event.organization?.isVerified ? (
-										<BadgeCheck className="h-3.5 w-3.5 fill-foreground text-background" />
+										<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
 									) : (
 										<span className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-dashed border-muted-foreground/40">
 											<span className="text-[8px] text-muted-foreground/40">

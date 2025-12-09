@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { UserPlus, Shield, Users } from "lucide-react";
+import { useState, useEffect } from "react";
+import { UserPlus, Shield, Users, UserMinus, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,15 +10,85 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import { JoinCommunityDialog } from "./join-community-dialog";
+import { followCommunity, unfollowCommunity } from "@/lib/actions/communities";
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+import { FollowButtonAnimated } from "./follow-button-animated";
 
 interface CommunityActionsProps {
+  communityId: string;
   communitySlug: string;
+  communityName: string;
   userRole: "owner" | "admin" | "member" | "follower" | null;
+  isAuthenticated: boolean;
 }
 
-export function CommunityActions({ communitySlug, userRole }: CommunityActionsProps) {
+export function CommunityActions({
+  communityId,
+  communitySlug,
+  communityName,
+  userRole,
+  isAuthenticated,
+}: CommunityActionsProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogAction, setDialogAction] = useState<"request-member" | "request-admin">("request-member");
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isUnfollowing, setIsUnfollowing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // Reset follow states when userRole changes (e.g., after unfollowing)
+  useEffect(() => {
+    if (userRole === null && (isFollowing || showSuccess)) {
+      setIsFollowing(false);
+      setShowSuccess(false);
+    }
+  }, [userRole, isFollowing, showSuccess]);
+
+  const handleFollow = async () => {
+    setIsFollowing(true);
+    try {
+      const result = await followCommunity(communityId);
+      if (result.success) {
+        setIsFollowing(false);
+        setShowSuccess(true);
+        toast.success("Ahora sigues esta comunidad");
+        // Refresh after animation completes
+        setTimeout(() => {
+          router.refresh();
+        }, 300);
+      } else {
+        toast.error(result.error || "Ocurrió un error");
+        setIsFollowing(false);
+      }
+    } catch (error) {
+      toast.error("Ocurrió un error inesperado");
+      setIsFollowing(false);
+    }
+  };
+
+  const handleOpenDialog = (action: "request-member" | "request-admin") => {
+    setDialogAction(action);
+    setDialogOpen(true);
+  };
+
+  const handleUnfollow = async () => {
+    setIsUnfollowing(true);
+    try {
+      const result = await unfollowCommunity(communityId);
+      if (result.success) {
+        toast.success("Has dejado de seguir la comunidad");
+        router.refresh();
+      } else {
+        toast.error(result.error || "Ocurrió un error");
+      }
+    } catch (error) {
+      toast.error("Ocurrió un error inesperado");
+    } finally {
+      setIsUnfollowing(false);
+    }
+  };
 
   if (userRole === "owner" || userRole === "admin") {
     return (
@@ -29,38 +99,99 @@ export function CommunityActions({ communitySlug, userRole }: CommunityActionsPr
     );
   }
 
-  if (userRole === "member" || userRole === "follower") {
+  if (userRole === "member") {
     return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="gap-2">
-            <Users className="h-4 w-4" />
-            {userRole === "member" ? "Miembro" : "Seguidor"}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => router.push(`/c/${communitySlug}/members`)}>
-            Ver miembros
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => {
-            // TODO: Implementar solicitud de upgrade de rol
-            alert("Próximamente: solicitar upgrade de rol");
-          }}>
-            <Shield className="h-4 w-4 mr-2" />
-            Solicitar admin
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="gap-2">
+              <Users className="h-4 w-4" />
+              Miembro
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => router.push(`/c/${communitySlug}/members`)}>
+              Ver miembros
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleOpenDialog("request-admin")}>
+              <Shield className="h-4 w-4 mr-2" />
+              Solicitar admin
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleUnfollow} disabled={isUnfollowing}>
+              <UserMinus className="h-4 w-4 mr-2" />
+              Dejar de seguir
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <JoinCommunityDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          communityId={communityId}
+          communityName={communityName}
+          action={dialogAction}
+        />
+      </>
     );
   }
 
+  if (userRole === "follower") {
+    return (
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="gap-2">
+              <Users className="h-4 w-4" />
+              Seguidor
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => router.push(`/c/${communitySlug}/members`)}>
+              Ver miembros
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleOpenDialog("request-member")}>
+              <Shield className="h-4 w-4 mr-2" />
+              Solicitar ser miembro
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleUnfollow} disabled={isUnfollowing}>
+              <UserMinus className="h-4 w-4 mr-2" />
+              Dejar de seguir
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <JoinCommunityDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          communityId={communityId}
+          communityName={communityName}
+          action={dialogAction}
+        />
+      </>
+    );
+  }
+
+  // Not authenticated - redirect to sign in
+  if (!isAuthenticated) {
+    return (
+      <Button
+        className="gap-2"
+        onClick={() => router.push(`/sign-in?redirect_url=${encodeURIComponent(`/c/${communitySlug}`)}`)}
+      >
+        <UserPlus className="h-4 w-4" />
+        Seguir
+      </Button>
+    );
+  }
+
+  // Authenticated but no role - follow directly (no dialog)
   return (
-    <Button className="gap-2" onClick={() => {
-      // TODO: Implementar unirse sin invitación (si es pública)
-      alert("Próximamente: unirse a la comunidad");
-    }}>
-      <UserPlus className="h-4 w-4" />
-      Unirse
+    <Button
+      className="gap-2"
+      onClick={handleFollow}
+      disabled={isFollowing || showSuccess}
+    >
+      <FollowButtonAnimated isFollowing={isFollowing} showSuccess={showSuccess} />
     </Button>
   );
 }

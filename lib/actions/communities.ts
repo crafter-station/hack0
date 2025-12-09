@@ -223,3 +223,152 @@ export async function getUserRoleInCommunity(communityId: string) {
 
   return membership?.role || null;
 }
+
+// ============================================
+// FOLLOW / UNFOLLOW COMMUNITY
+// ============================================
+
+export async function followCommunity(organizationId: string) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return { success: false, error: "Debes iniciar sesión" };
+  }
+
+  const org = await db.query.organizations.findFirst({
+    where: eq(organizations.id, organizationId),
+  });
+
+  if (!org) {
+    return { success: false, error: "Comunidad no encontrada" };
+  }
+
+  const existing = await db.query.communityMembers.findFirst({
+    where: and(
+      eq(communityMembers.communityId, organizationId),
+      eq(communityMembers.userId, userId)
+    ),
+  });
+
+  if (existing) {
+    return { success: false, error: "Ya sigues esta comunidad" };
+  }
+
+  await db.insert(communityMembers).values({
+    communityId: organizationId,
+    userId,
+    role: "follower",
+  });
+
+  revalidatePath(`/c/${org.slug}`);
+  revalidatePath("/feed");
+  return { success: true };
+}
+
+export async function unfollowCommunity(organizationId: string) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return { success: false, error: "Debes iniciar sesión" };
+  }
+
+  const membership = await db.query.communityMembers.findFirst({
+    where: and(
+      eq(communityMembers.communityId, organizationId),
+      eq(communityMembers.userId, userId)
+    ),
+  });
+
+  if (!membership) {
+    return { success: false, error: "No sigues esta comunidad" };
+  }
+
+  if (membership.role === "owner") {
+    return { success: false, error: "No puedes dejar de seguir tu propia comunidad" };
+  }
+
+  await db.delete(communityMembers).where(eq(communityMembers.id, membership.id));
+
+  const org = await db.query.organizations.findFirst({
+    where: eq(organizations.id, organizationId),
+  });
+
+  revalidatePath(`/c/${org?.slug}`);
+  revalidatePath("/feed");
+  return { success: true };
+}
+
+// ============================================
+// REQUEST ROLE UPGRADES
+// ============================================
+
+export async function requestMemberUpgrade(organizationId: string, message?: string) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return { success: false, error: "Debes iniciar sesión" };
+  }
+
+  const membership = await db.query.communityMembers.findFirst({
+    where: and(
+      eq(communityMembers.communityId, organizationId),
+      eq(communityMembers.userId, userId)
+    ),
+  });
+
+  if (!membership) {
+    return { success: false, error: "Debes seguir la comunidad primero" };
+  }
+
+  if (membership.role !== "follower") {
+    return { success: false, error: "Ya eres miembro de esta comunidad" };
+  }
+
+  // TODO: Implement approval workflow with notifications
+  // For now, auto-approve
+  await db
+    .update(communityMembers)
+    .set({ role: "member" })
+    .where(eq(communityMembers.id, membership.id));
+
+  const org = await db.query.organizations.findFirst({
+    where: eq(organizations.id, organizationId),
+  });
+
+  revalidatePath(`/c/${org?.slug}`);
+  return { success: true, message: "Ahora eres miembro de la comunidad" };
+}
+
+export async function requestAdminUpgrade(organizationId: string, message?: string) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return { success: false, error: "Debes iniciar sesión" };
+  }
+
+  const membership = await db.query.communityMembers.findFirst({
+    where: and(
+      eq(communityMembers.communityId, organizationId),
+      eq(communityMembers.userId, userId)
+    ),
+  });
+
+  if (!membership) {
+    return { success: false, error: "Debes ser miembro de la comunidad primero" };
+  }
+
+  if (membership.role !== "member") {
+    return {
+      success: false,
+      error: membership.role === "admin" || membership.role === "owner"
+        ? "Ya eres admin de esta comunidad"
+        : "Solo los miembros pueden solicitar ser admin"
+    };
+  }
+
+  // TODO: Implement approval workflow with notifications to owner
+  return {
+    success: true,
+    message: "Tu solicitud ha sido enviada al owner de la comunidad"
+  };
+}

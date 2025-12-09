@@ -17,10 +17,13 @@ export interface FeedEvent extends Event {
 	relevanceReasons: string[];
 }
 
+export type FeedFilterType = "all" | "following" | "competitions" | "learning" | "community";
+
 interface FeedOptions {
 	limit?: number;
 	cursor?: string;
 	includeEnded?: boolean;
+	filter?: FeedFilterType;
 }
 
 export async function getPersonalizedFeed(
@@ -35,7 +38,7 @@ export async function getPersonalizedFeed(
 		return { events: [], nextCursor: null, hasMore: false };
 	}
 
-	const { limit = 20, cursor, includeEnded = false } = options;
+	const { limit = 20, cursor, includeEnded = false, filter = "all" } = options;
 	const prefs = await getUserPreferences();
 
 	// Get communities the user follows
@@ -45,6 +48,11 @@ export async function getPersonalizedFeed(
 	});
 
 	const followedCommunityIds = followedCommunities.map((m) => m.communityId);
+
+	// Event type mapping for filters
+	const competitionTypes = ["hackathon", "olympiad", "competition", "robotics"];
+	const learningTypes = ["workshop", "bootcamp", "course", "certification", "summer_school"];
+	const communityTypes = ["meetup", "networking", "conference", "seminar"];
 
 	// Build base query
 	const now = new Date();
@@ -113,8 +121,9 @@ export async function getPersonalizedFeed(
 
 		// 6. Boost for upcoming events (starting soon)
 		if (event.startDate) {
+			const startDate = event.startDate instanceof Date ? event.startDate : new Date(event.startDate);
 			const daysUntilStart = Math.ceil(
-				(new Date(event.startDate).getTime() - now.getTime()) /
+				(startDate.getTime() - now.getTime()) /
 					(1000 * 60 * 60 * 24),
 			);
 			if (daysUntilStart <= 7 && daysUntilStart >= 0) {
@@ -152,15 +161,37 @@ export async function getPersonalizedFeed(
 		};
 	});
 
+	// Apply filter
+	let filteredEvents = scoredEvents;
+	if (filter === "following") {
+		// Only events from followed communities
+		filteredEvents = scoredEvents.filter((e) =>
+			e.organizationId && followedCommunityIds.includes(e.organizationId)
+		);
+	} else if (filter === "competitions") {
+		filteredEvents = scoredEvents.filter((e) =>
+			e.eventType && competitionTypes.includes(e.eventType)
+		);
+	} else if (filter === "learning") {
+		filteredEvents = scoredEvents.filter((e) =>
+			e.eventType && learningTypes.includes(e.eventType)
+		);
+	} else if (filter === "community") {
+		filteredEvents = scoredEvents.filter((e) =>
+			e.eventType && communityTypes.includes(e.eventType)
+		);
+	}
+
 	// Sort by score and take top results
-	const rankedEvents = scoredEvents
+	const rankedEvents = filteredEvents
 		.sort((a, b) => b.relevanceScore - a.relevanceScore)
 		.slice(0, limit);
 
 	const hasMore = allEvents.length >= limit * 3;
+	const lastEvent = rankedEvents[rankedEvents.length - 1];
 	const nextCursor =
-		hasMore && rankedEvents.length > 0
-			? rankedEvents[rankedEvents.length - 1].createdAt.toISOString()
+		hasMore && lastEvent && lastEvent.createdAt
+			? lastEvent.createdAt.toISOString()
 			: null;
 
 	return {
@@ -184,6 +215,7 @@ export async function getFollowedCommunitiesStats() {
 					displayName: true,
 					slug: true,
 					logoUrl: true,
+					isVerified: true,
 				},
 			},
 		},
@@ -194,4 +226,108 @@ export async function getFollowedCommunitiesStats() {
 		count: followed.length,
 		communities: followed.map((f) => f.community),
 	};
+}
+
+export async function getSuggestedCommunities(limit = 3) {
+	const { userId } = await auth();
+	if (!userId) return [];
+
+	const followedCommunities = await db.query.communityMembers.findMany({
+		where: eq(communityMembers.userId, userId),
+		columns: { communityId: true },
+	});
+
+	const followedIds = followedCommunities.map((m) => m.communityId);
+
+	const suggestedCommunities = await db.query.organizations.findMany({
+		where: followedIds.length > 0
+			? and(
+				eq(organizations.type, "community"),
+				sql`${organizations.id} NOT IN ${followedIds}`
+			)
+			: eq(organizations.type, "community"),
+		orderBy: [desc(organizations.isVerified), desc(organizations.createdAt)],
+		limit,
+	});
+
+	const communitiesWithStats = await Promise.all(
+		suggestedCommunities.map(async (community) => {
+			const [memberCountResult, upcomingEventsResult] = await Promise.all([
+				db
+					.select({ count: sql<number>`count(*)` })
+					.from(communityMembers)
+					.where(eq(communityMembers.communityId, community.id)),
+				db
+					.select({ count: sql<number>`count(*)` })
+					.from(events)
+					.where(
+						and(
+							eq(events.organizationId, community.id),
+							gte(events.endDate, new Date())
+						)
+					),
+			]);
+
+			const memberCount = Number(memberCountResult[0]?.count ?? 0);
+			const upcomingEventCount = Number(upcomingEventsResult[0]?.count ?? 0);
+
+			let recentActivity: string | undefined;
+			if (upcomingEventCount > 0) {
+				recentActivity = `${upcomingEventCount} eventos próximos este mes`;
+			} else if (memberCount > 50) {
+				recentActivity = `${memberCount} miembros activos`;
+			}
+
+			return {
+				...community,
+				memberCount,
+				upcomingEventCount,
+				recentActivity,
+			};
+		})
+	);
+
+	return communitiesWithStats.filter(c => c.upcomingEventCount > 0 || c.memberCount > 20);
+}
+
+export async function getRecentEventRecaps(limit = 2) {
+	const { userId } = await auth();
+	if (!userId) return [];
+
+	const prefs = await getUserPreferences();
+	const followedCommunities = await db.query.communityMembers.findMany({
+		where: eq(communityMembers.userId, userId),
+		columns: { communityId: true },
+	});
+
+	const followedCommunityIds = followedCommunities.map((m) => m.communityId);
+
+	const twoWeeksAgo = new Date();
+	twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
+	const now = new Date();
+
+	const recentlyEndedEvents = await db.query.events.findMany({
+		where: and(
+			sql`${events.endDate} < ${now}`,
+			sql`${events.endDate} >= ${twoWeeksAgo}`,
+			followedCommunityIds.length > 0
+				? or(
+					inArray(events.organizationId, followedCommunityIds),
+					prefs?.department ? eq(events.department, prefs.department) : undefined
+				)
+				: prefs?.department ? eq(events.department, prefs.department) : undefined
+		),
+		with: {
+			organization: true,
+		},
+		orderBy: [desc(events.endDate)],
+		limit,
+	});
+
+	return recentlyEndedEvents.map(event => ({
+		...event,
+		relevanceScore: 0,
+		relevanceReasons: [],
+	}));
 }
