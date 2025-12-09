@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { getUserPreferences } from "@/lib/actions/user-preferences";
-import { getUserOrganization } from "@/lib/actions/organizations";
+import { getOrCreatePersonalOrg } from "@/lib/actions/organizations";
 import { isGodMode } from "@/lib/god-mode";
 import { db } from "@/lib/db";
 import { communityMembers } from "@/lib/db/schema";
@@ -39,13 +39,8 @@ export default async function OnboardingRedirectPage({ searchParams }: Onboardin
 	}
 
 	if (prefs.role === "organizer") {
-		const userOrg = await getUserOrganization();
-
-		if (userOrg) {
-			redirect(`/c/${userOrg.slug}`);
-		}
-
-		redirect("/c/new");
+		const personalOrg = await getOrCreatePersonalOrg();
+		redirect(`/c/${personalOrg.slug}`);
 	}
 
 	const followedCommunities = await db.query.communityMembers.findMany({

@@ -442,6 +442,7 @@ export const organizations = pgTable("organizations", {
 
 	// Privacy
 	isPublic: boolean("is_public").default(true), // Public communities anyone can follow
+	isPersonalOrg: boolean("is_personal_org").default(false), // Personal org for individual organizers
 
 	// Status
 	isVerified: boolean("is_verified").default(false), // Admin can verify

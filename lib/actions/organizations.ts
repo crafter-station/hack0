@@ -39,6 +39,7 @@ export async function getUserOrganization() {
 
 /**
  * Get all organizations where the user is a member (owner, admin, member, or follower)
+ * Excludes personal orgs from the listing
  */
 export async function getAllUserOrganizations() {
   const { userId } = await auth();
@@ -48,7 +49,10 @@ export async function getAllUserOrganizations() {
   }
 
   const ownedOrgs = await db.query.organizations.findMany({
-    where: eq(organizations.ownerUserId, userId),
+    where: and(
+      eq(organizations.ownerUserId, userId),
+      eq(organizations.isPersonalOrg, false)
+    ),
   });
 
   const memberOrgs = await db
@@ -58,7 +62,10 @@ export async function getAllUserOrganizations() {
     })
     .from(communityMembers)
     .innerJoin(organizations, eq(communityMembers.communityId, organizations.id))
-    .where(eq(communityMembers.userId, userId));
+    .where(and(
+      eq(communityMembers.userId, userId),
+      eq(organizations.isPersonalOrg, false)
+    ));
 
   const allOrgs = [
     ...ownedOrgs.map((org) => ({ organization: org, role: "owner" as const })),
@@ -151,6 +158,52 @@ export async function createOrganization(
 
   revalidatePath(`/c/${org.slug}`);
   revalidatePath("/c/new");
+  revalidatePath("/c");
+
+  return org;
+}
+
+/**
+ * Create or get personal organization for an individual organizer
+ * Auto-creates a personal org with @username slug
+ */
+export async function getOrCreatePersonalOrg() {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Not authenticated");
+  }
+
+  const existingOrg = await db.query.organizations.findFirst({
+    where: and(
+      eq(organizations.ownerUserId, userId),
+      eq(organizations.isPersonalOrg, true)
+    ),
+  });
+
+  if (existingOrg) {
+    return existingOrg;
+  }
+
+  const { getUserInfo, getPersonalOrgSlug } = await import("@/lib/clerk-utils");
+  const userInfo = await getUserInfo(userId);
+  const slug = await getPersonalOrgSlug(userId);
+
+  const [org] = await db
+    .insert(organizations)
+    .values({
+      slug,
+      name: userInfo.fullName,
+      displayName: null,
+      type: "community",
+      ownerUserId: userId,
+      isPersonalOrg: true,
+      isPublic: false,
+      logoUrl: userInfo.imageUrl,
+    })
+    .returning();
+
+  revalidatePath(`/c/${org.slug}`);
   revalidatePath("/c");
 
   return org;

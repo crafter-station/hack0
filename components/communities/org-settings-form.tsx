@@ -43,14 +43,20 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
 
     const formData = new FormData(e.currentTarget);
 
+    const updateData: any = {
+      name: formData.get("name") as string,
+      description: (formData.get("description") as string) || undefined,
+      type: (formData.get("type") as any) || undefined,
+      websiteUrl: (formData.get("websiteUrl") as string) || undefined,
+      logoUrl: logoUrl || undefined,
+    };
+
+    if (organization.isPersonalOrg) {
+      updateData.slug = formData.get("slug") as string;
+    }
+
     try {
-      await updateOrganizationById(organization.id, {
-        name: formData.get("name") as string,
-        description: (formData.get("description") as string) || undefined,
-        type: (formData.get("type") as any) || undefined,
-        websiteUrl: (formData.get("websiteUrl") as string) || undefined,
-        logoUrl: logoUrl || undefined,
-      });
+      await updateOrganizationById(organization.id, updateData);
 
       setSuccess(true);
       router.refresh();
@@ -105,12 +111,18 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
               </span>
               <Input
                 id="slug"
-                value={organization.slug}
-                disabled
-                className="flex-1 bg-muted"
+                name="slug"
+                defaultValue={organization.slug}
+                disabled={!organization.isPersonalOrg}
+                className={organization.isPersonalOrg ? "flex-1" : "flex-1 bg-muted"}
               />
             </div>
-            <FieldDescription>El slug no se puede cambiar</FieldDescription>
+            <FieldDescription>
+              {organization.isPersonalOrg
+                ? "Puedes personalizar tu URL de perfil"
+                : "El slug no se puede cambiar"
+              }
+            </FieldDescription>
           </Field>
 
           <Field>
