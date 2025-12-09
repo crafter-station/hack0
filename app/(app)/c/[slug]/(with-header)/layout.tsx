@@ -27,10 +27,16 @@ async function CommunityHeaderWrapper({ slug }: { slug: string }) {
 
 	const tabs = [
 		{ id: "events" as const, label: "Eventos", icon: "Calendar" },
-		{ id: "members" as const, label: "Miembros", icon: "Users" },
+		// Personal orgs don't have members - it's just the individual user
+		...(!community.isPersonalOrg
+			? [{ id: "members" as const, label: "Miembros", icon: "Users" }]
+			: []),
 		...(canManage
 			? [
-					{ id: "analytics" as const, label: "Analytics", icon: "BarChart3" },
+					// Analytics don't make sense for personal orgs either
+					...(!community.isPersonalOrg
+						? [{ id: "analytics" as const, label: "Analytics", icon: "BarChart3" }]
+						: []),
 					{ id: "settings" as const, label: "Configuración", icon: "Settings" },
 				]
 			: []),
