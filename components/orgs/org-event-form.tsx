@@ -278,7 +278,6 @@ export function OrgEventForm({
 							</div>
 						) : (
 							<div className="w-full aspect-square rounded-xl bg-muted border flex flex-col items-center justify-center gap-4">
-								<ImageIcon className="h-12 w-12 text-muted-foreground/40" />
 								<div className="flex flex-col items-center gap-2">
 									<ImageUpload
 										value={eventImageUrl}
