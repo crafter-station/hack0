@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { CommunityHeaderClient } from "@/components/community/community-header-client";
 import { getUserCommunityRole } from "@/lib/actions/community-members";
 import { isAdmin } from "@/lib/actions/claims";
+import { isGodMode } from "@/lib/god-mode";
 import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -21,7 +22,8 @@ async function CommunityHeaderWrapper({ slug }: { slug: string }) {
 	const userRole = await getUserCommunityRole(community.id);
 	const isOwner = userRole === "owner";
 	const isAdminUser = await isAdmin();
-	const canManage = isOwner || userRole === "admin" || isAdminUser;
+	const godMode = await isGodMode();
+	const canManage = isOwner || userRole === "admin" || isAdminUser || godMode;
 
 	const tabs = [
 		{ id: "events" as const, label: "Eventos", icon: "Calendar" },

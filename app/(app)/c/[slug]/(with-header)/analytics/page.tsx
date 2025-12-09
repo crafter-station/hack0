@@ -11,6 +11,7 @@ import { auth } from "@clerk/nextjs/server";
 import { formatEventDateRange } from "@/lib/event-utils";
 import { getOrgImportJobs } from "@/lib/actions/import";
 import { isAdmin } from "@/lib/actions/claims";
+import { isGodMode } from "@/lib/god-mode";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 
 interface AnalyticsPageProps {
@@ -325,8 +326,9 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
 		redirect(`/c/${slug}`);
 	}
 
+	const godMode = await isGodMode();
 	const isAdminUser = await isAdmin();
-	if (community.ownerUserId !== userId && !isAdminUser) {
+	if (community.ownerUserId !== userId && !isAdminUser && !godMode) {
 		redirect(`/c/${slug}`);
 	}
 

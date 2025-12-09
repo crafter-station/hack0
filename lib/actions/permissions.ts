@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { communityMembers, events, eventOrganizers } from "@/lib/db/schema";
 import { eq, and, or } from "drizzle-orm";
 import { isAdmin } from "./claims";
+import { isGodMode } from "@/lib/god-mode";
 
 // ============================================
 // PERMISSION SYSTEM
@@ -16,9 +17,12 @@ import { isAdmin } from "./claims";
 // 4. Event volunteers - can only view analytics for their events
 
 export async function canManageEventById(eventId: string): Promise<boolean> {
-  // 1. Check if global admin
+  // 1. Check if global admin or god mode
   const admin = await isAdmin();
   if (admin) return true;
+
+  const godMode = await isGodMode();
+  if (godMode) return true;
 
   const { userId } = await auth();
   if (!userId) return false;
@@ -57,9 +61,12 @@ export async function canManageEventById(eventId: string): Promise<boolean> {
 }
 
 export async function canManageEventBySlug(slug: string): Promise<boolean> {
-  // 1. Check if global admin
+  // 1. Check if global admin or god mode
   const admin = await isAdmin();
   if (admin) return true;
+
+  const godMode = await isGodMode();
+  if (godMode) return true;
 
   const { userId } = await auth();
   if (!userId) return false;
@@ -102,9 +109,12 @@ export async function canManageEventBySlug(slug: string): Promise<boolean> {
 // ============================================
 
 export async function canViewEventAnalytics(eventId: string): Promise<boolean> {
-  // 1. Check if global admin
+  // 1. Check if global admin or god mode
   const admin = await isAdmin();
   if (admin) return true;
+
+  const godMode = await isGodMode();
+  if (godMode) return true;
 
   const { userId } = await auth();
   if (!userId) return false;
