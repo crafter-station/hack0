@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { OrgSettingsForm } from "@/components/communities/org-settings-form";
 import { getOrganizationBySlug, canManageOrganization } from "@/lib/actions/organizations";
 import { isAdmin } from "@/lib/actions/claims";
+import { isGodMode } from "@/lib/god-mode";
 import { CheckCircle2 } from "lucide-react";
 
 interface SettingsPageProps {
@@ -23,10 +24,11 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
     notFound();
   }
 
+  const godMode = await isGodMode();
   const isAdminUser = await isAdmin();
   const canManage = await canManageOrganization(org.id);
 
-  if (!canManage && !isAdminUser) {
+  if (!canManage && !isAdminUser && !godMode) {
     redirect(`/c/${slug}`);
   }
 

@@ -31,12 +31,18 @@ export default clerkMiddleware(async (auth, request) => {
 
   // Check onboarding for authenticated users on non-public routes
   if (userId && !isPublicRoute(request)) {
-    // Import here to avoid circular dependencies
-    const { hasCompletedOnboarding } = await import("@/lib/actions/user-preferences");
-    const completed = await hasCompletedOnboarding();
+    // Check for god mode first
+    const { isGodMode } = await import("@/lib/god-mode");
+    const godMode = await isGodMode();
 
-    if (!completed) {
-      return NextResponse.redirect(new URL("/onboarding", request.url));
+    // Skip onboarding check for god mode users
+    if (!godMode) {
+      const { hasCompletedOnboarding } = await import("@/lib/actions/user-preferences");
+      const completed = await hasCompletedOnboarding();
+
+      if (!completed) {
+        return NextResponse.redirect(new URL("/onboarding", request.url));
+      }
     }
   }
 });

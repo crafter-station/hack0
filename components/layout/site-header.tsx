@@ -6,6 +6,7 @@ import { SearchTrigger } from "@/components/search-command";
 import { ThemeSwitcherButton } from "@/components/theme-switcher-button";
 import { getAllUserOrganizations } from "@/lib/actions/organizations";
 import { AdminLink } from "./admin-link";
+import { GodModeBanner } from "@/components/god-mode/god-mode-banner";
 
 interface SiteHeaderProps {
 	showBackButton?: boolean;
@@ -16,7 +17,9 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 	const organizations = userId ? await getAllUserOrganizations() : [];
 
 	return (
-		<header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
+		<>
+			<GodModeBanner />
+			<header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
 			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
 				<div className="flex h-14 items-center justify-between">
 					<div className="flex items-center gap-6">
@@ -85,5 +88,6 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 				</div>
 			</div>
 		</header>
+		</>
 	);
 }

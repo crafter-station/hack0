@@ -4,7 +4,8 @@ import Link from "next/link";
 import { OrgEventForm } from "@/components/communities/org-event-form";
 import { LumaImportForm } from "@/components/communities/luma-import-form";
 import { getOrganizationBySlug } from "@/lib/actions/organizations";
-import { ArrowLeft, Sparkles, PenLine } from "lucide-react";
+import { isGodMode } from "@/lib/god-mode";
+import { ArrowLeft, Sparkles, PenLine, Crown } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface NewEventPageProps {
@@ -25,7 +26,10 @@ export default async function NewEventPage({ params }: NewEventPageProps) {
     redirect("/c/new");
   }
 
-  if (org.ownerUserId !== userId) {
+  // Check god mode before checking ownership
+  const godMode = await isGodMode();
+
+  if (!godMode && org.ownerUserId !== userId) {
     redirect(`/c/${slug}`);
   }
 
@@ -43,9 +47,14 @@ export default async function NewEventPage({ params }: NewEventPageProps) {
             </Link>
 
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-semibold tracking-tight">
-                Crear Evento
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-semibold tracking-tight">
+                  Crear Evento
+                </h1>
+                {godMode && (
+                  <Crown className="h-5 w-5 text-amber-600" />
+                )}
+              </div>
 
               {/* Verification Badge - inline on desktop */}
               {org.isVerified && (

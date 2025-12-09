@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { getUserPreferences } from "@/lib/actions/user-preferences";
 import { getUserOrganization } from "@/lib/actions/organizations";
+import { isGodMode } from "@/lib/god-mode";
 import { db } from "@/lib/db";
 import { communityMembers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -11,6 +12,12 @@ export default async function OnboardingRedirectPage() {
 
 	if (!userId) {
 		redirect("/sign-in");
+	}
+
+	// God mode users can go directly to feed
+	const godMode = await isGodMode();
+	if (godMode) {
+		redirect("/feed");
 	}
 
 	const prefs = await getUserPreferences();
