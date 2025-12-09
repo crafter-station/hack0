@@ -33,17 +33,17 @@ import {
 } from "@/lib/event-utils";
 
 interface OrgEventFormProps {
-	organizationId: string;
-	organizationName: string;
-	organizationLogo?: string | null;
-	organizationSlug: string;
+	communityId: string;
+	communityName: string;
+	communityLogo?: string | null;
+	communitySlug: string;
 }
 
 export function OrgEventForm({
-	organizationId,
-	organizationName,
-	organizationLogo,
-	organizationSlug,
+	communityId,
+	communityName,
+	communityLogo,
+	communitySlug,
 }: OrgEventFormProps) {
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
@@ -90,14 +90,14 @@ export function OrgEventForm({
 			eventImageUrl: eventImageUrl || undefined,
 			eventType,
 			skillLevel,
-			organizationId,
+			organizationId: communityId,
 			country: "PE",
 		});
 
 		setLoading(false);
 
 		if (result.success) {
-			router.push(`/c/${organizationSlug}`);
+			router.push(`/c/${communitySlug}`);
 		} else {
 			setError(result.error || "Error al crear el evento");
 		}
@@ -105,26 +105,26 @@ export function OrgEventForm({
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-8">
-			{/* Organization Header */}
+			{/* Community Header */}
 			<div className="rounded-lg border bg-muted/30 p-4">
 				<div className="flex items-center gap-3">
-					{organizationLogo ? (
+					{communityLogo ? (
 						<div className="relative h-12 w-12 shrink-0 rounded-lg overflow-hidden border">
 							<Image
-								src={organizationLogo}
-								alt={organizationName}
+								src={communityLogo}
+								alt={communityName}
 								fill
 								className="object-cover"
 							/>
 						</div>
 					) : (
 						<div className="h-12 w-12 shrink-0 rounded-lg bg-muted border flex items-center justify-center text-lg font-semibold">
-							{organizationName.charAt(0).toUpperCase()}
+							{communityName.charAt(0).toUpperCase()}
 						</div>
 					)}
 					<div className="min-w-0">
 						<p className="text-xs text-muted-foreground">Creando evento para</p>
-						<p className="font-semibold truncate">{organizationName}</p>
+						<p className="font-semibold truncate">{communityName}</p>
 					</div>
 				</div>
 			</div>

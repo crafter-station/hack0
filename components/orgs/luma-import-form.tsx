@@ -295,7 +295,7 @@ function ImportProgress({
   );
 }
 
-export function LumaImportForm({ organizationSlug }: { organizationSlug: string }) {
+export function LumaImportForm({ communitySlug }: { communitySlug: string }) {
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -333,9 +333,9 @@ export function LumaImportForm({ organizationSlug }: { organizationSlug: string 
 
   const handleSuccess = (eventSlug: string, isVerified: boolean) => {
     if (isVerified) {
-      router.push(`/c/${organizationSlug}/events/${eventSlug}`);
+      router.push(`/c/${communitySlug}/events/${eventSlug}`);
     } else {
-      router.push(`/c/${organizationSlug}`);
+      router.push(`/c/${communitySlug}`);
     }
     router.refresh();
   };
