@@ -25,6 +25,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
 	createOrganization,
 	generateSlug,
@@ -390,21 +391,15 @@ export function OnboardingForm() {
 					{/* Type */}
 					<Field>
 						<FieldLabel htmlFor="type">Tipo *</FieldLabel>
-						<Select name="type" value={type} onValueChange={setType} required>
-							<SelectTrigger
-								id="type"
-								className={isScrapingActive ? "input-shimmer" : ""}
-							>
-								<SelectValue placeholder="Selecciona un tipo" />
-							</SelectTrigger>
-							<SelectContent>
-								{ORGANIZER_TYPE_OPTIONS.map((option) => (
-									<SelectItem key={option.value} value={option.value}>
-										{option.label}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+						<SearchableSelect
+							options={ORGANIZER_TYPE_OPTIONS}
+							value={type}
+							onValueChange={setType}
+							placeholder="Selecciona un tipo"
+							searchPlaceholder="Buscar tipo..."
+							emptyMessage="No se encontró el tipo"
+							className={isScrapingActive ? "input-shimmer" : ""}
+						/>
 					</Field>
 
 					{/* Description */}

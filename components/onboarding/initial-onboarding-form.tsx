@@ -9,13 +9,7 @@ import {
 	FieldGroup,
 	FieldLabel,
 } from "@/components/ui/field";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { createOrUpdateUserPreferences } from "@/lib/actions/user-preferences";
 import { Loader2, UserCircle2, MapPin, Monitor, TrendingUp } from "lucide-react";
 
@@ -187,18 +181,14 @@ export function InitialOnboardingForm() {
 						<MapPin className="h-4 w-4" />
 						¿En qué departamento estás? (opcional)
 					</FieldLabel>
-					<Select value={department} onValueChange={setDepartment}>
-						<SelectTrigger>
-							<SelectValue placeholder="Selecciona tu departamento" />
-						</SelectTrigger>
-						<SelectContent>
-							{PERU_DEPARTMENTS.map((dept) => (
-								<SelectItem key={dept.value} value={dept.value}>
-									{dept.label}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+					<SearchableSelect
+						options={PERU_DEPARTMENTS}
+						value={department}
+						onValueChange={setDepartment}
+						placeholder="Selecciona tu departamento"
+						searchPlaceholder="Buscar departamento..."
+						emptyMessage="No se encontró el departamento"
+					/>
 					<FieldDescription>
 						Te mostraremos eventos cercanos a tu ubicación
 					</FieldDescription>

@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { ORGANIZER_TYPE_LABELS, type Organization } from "@/lib/db/schema";
 import { updateOrganizationById } from "@/lib/actions/organizations";
 import { ImageUpload } from "@/components/ui/image-upload";
@@ -128,18 +129,18 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
             <label htmlFor="type" className="text-sm font-medium">
               Tipo
             </label>
-            <Select name="type" defaultValue={organization.type || "community"}>
-              <SelectTrigger id="type">
-                <SelectValue placeholder="Selecciona un tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                {ORGANIZER_TYPE_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              options={ORGANIZER_TYPE_OPTIONS}
+              value={organization.type || "community"}
+              onValueChange={(value) => {
+                const typeInput = document.querySelector('input[name="type"]') as HTMLInputElement;
+                if (typeInput) typeInput.value = value;
+              }}
+              placeholder="Selecciona un tipo"
+              searchPlaceholder="Buscar tipo..."
+              emptyMessage="No se encontró el tipo"
+            />
+            <input type="hidden" name="type" defaultValue={organization.type || "community"} />
           </div>
         </div>
       </section>
