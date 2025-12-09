@@ -180,6 +180,7 @@ export async function getOrCreatePersonalOrg() {
       eq(organizations.ownerUserId, userId),
       eq(organizations.isPersonalOrg, true)
     ),
+    orderBy: [desc(organizations.createdAt)],
   });
 
   if (existingOrg) {

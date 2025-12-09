@@ -21,16 +21,6 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 	// Get or create user's personal org (ensures all logged-in users have one)
 	const personalOrg = userId
 		? await (async () => {
-				const existing = await db.query.organizations.findFirst({
-					where: and(
-						eq(orgsTable.ownerUserId, userId),
-						eq(orgsTable.isPersonalOrg, true)
-					),
-				});
-
-				if (existing) return existing;
-
-				// Auto-create personal org if it doesn't exist (e.g., for god mode users)
 				const { getOrCreatePersonalOrg } = await import("@/lib/actions/organizations");
 				return await getOrCreatePersonalOrg();
 		  })()
