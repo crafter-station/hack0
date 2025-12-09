@@ -13,7 +13,7 @@ export default function SubmitEventPage() {
 					{/* Sidebar */}
 					<div className="lg:sticky lg:top-28 lg:self-start space-y-4">
 						<h1 className="text-2xl font-semibold tracking-tight">
-							Agregar evento
+							Crear Evento
 						</h1>
 						<p className="text-muted-foreground">
 							Comparte un hackathon, conferencia o evento tech con la comunidad peruana.

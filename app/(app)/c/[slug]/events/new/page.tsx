@@ -44,7 +44,7 @@ export default async function NewEventPage({ params }: NewEventPageProps) {
 
             <div className="flex items-center justify-between">
               <h1 className="text-xl font-semibold tracking-tight">
-                Agregar evento
+                Crear Evento
               </h1>
 
               {/* Verification Badge - inline on desktop */}

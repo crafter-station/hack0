@@ -9,7 +9,7 @@ export function SiteFooter() {
           <p>Centralizando eventos tech para Perú.</p>
           <div className="flex items-center gap-4">
             <Link href="/submit" className="hover:text-foreground transition-colors">
-              Agregar evento
+              Crear Evento
             </Link>
             <a href="mailto:hey@hack0.dev" className="hover:text-foreground transition-colors">
               Contacto
