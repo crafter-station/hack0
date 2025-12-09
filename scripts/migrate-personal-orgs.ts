@@ -51,7 +51,8 @@ async function createPersonalOrgForUser(userId: string) {
 
     const githubUsername = githubAccount?.username || null;
     const baseSlug = githubUsername || user.username || userId.slice(0, 8);
-    const slug = `@${baseSlug}`;
+    // Don't include @ in slug - Next.js interprets @ as route groups
+    const slug = baseSlug;
 
     const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || user.username || "Usuario";
 

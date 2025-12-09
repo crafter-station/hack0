@@ -31,5 +31,7 @@ export async function getPersonalOrgSlug(userId: string): Promise<string> {
 
   const baseSlug = info.githubUsername || info.username || userId.slice(0, 8);
 
-  return `@${baseSlug}`;
+  // Don't include @ in the slug - Next.js interprets @ as route groups
+  // We'll show @ in the UI, but store the slug without it
+  return baseSlug;
 }

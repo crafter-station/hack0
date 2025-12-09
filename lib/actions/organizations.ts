@@ -236,7 +236,8 @@ export async function getOrCreatePersonalOrg() {
     console.error("Error creating personal org, using fallback:", error);
 
     // Fallback: create org with userId-based slug if Clerk API fails
-    const fallbackSlug = `@user-${userId.slice(-8)}`;
+    // Don't include @ - Next.js interprets @ as route groups
+    const fallbackSlug = `user-${userId.slice(-8)}`;
 
     const [org] = await db
       .insert(organizations)
