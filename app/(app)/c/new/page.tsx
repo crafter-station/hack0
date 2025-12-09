@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { OnboardingForm } from "@/components/orgs/onboarding-form";
+import { OnboardingForm } from "@/components/communities/onboarding-form";
 
 export default async function OnboardingPage() {
   const { userId } = await auth();

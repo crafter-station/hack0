@@ -1,6 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
-import { OrgSettingsForm } from "@/components/orgs/org-settings-form";
+import { OrgSettingsForm } from "@/components/communities/org-settings-form";
 import { getOrganizationBySlug, canManageOrganization } from "@/lib/actions/organizations";
 import { isAdmin } from "@/lib/actions/claims";
 import { CheckCircle2 } from "lucide-react";

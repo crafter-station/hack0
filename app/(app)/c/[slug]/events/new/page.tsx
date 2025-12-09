@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { OrgEventForm } from "@/components/orgs/org-event-form";
-import { LumaImportForm } from "@/components/orgs/luma-import-form";
+import { OrgEventForm } from "@/components/communities/org-event-form";
+import { LumaImportForm } from "@/components/communities/luma-import-form";
 import { getOrganizationBySlug } from "@/lib/actions/organizations";
 import { ArrowLeft, Sparkles, PenLine } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
