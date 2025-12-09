@@ -4,7 +4,6 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { communityMembers, events, eventOrganizers } from "@/lib/db/schema";
 import { eq, and, or } from "drizzle-orm";
-import { isAdmin } from "./claims";
 import { isGodMode } from "@/lib/god-mode";
 
 // ============================================
@@ -17,12 +16,9 @@ import { isGodMode } from "@/lib/god-mode";
 // 4. Event volunteers - can only view analytics for their events
 
 export async function canManageEventById(eventId: string): Promise<boolean> {
-  // 1. Check if god mode or legacy admin
+  // 1. Check if god mode
   const godMode = await isGodMode();
   if (godMode) return true;
-
-  const admin = await isAdmin();
-  if (admin) return true;
 
   const { userId } = await auth();
   if (!userId) return false;
@@ -61,12 +57,9 @@ export async function canManageEventById(eventId: string): Promise<boolean> {
 }
 
 export async function canManageEventBySlug(slug: string): Promise<boolean> {
-  // 1. Check if god mode or legacy admin
+  // 1. Check if god mode
   const godMode = await isGodMode();
   if (godMode) return true;
-
-  const admin = await isAdmin();
-  if (admin) return true;
 
   const { userId } = await auth();
   if (!userId) return false;
@@ -109,12 +102,9 @@ export async function canManageEventBySlug(slug: string): Promise<boolean> {
 // ============================================
 
 export async function canViewEventAnalytics(eventId: string): Promise<boolean> {
-  // 1. Check if god mode or legacy admin
+  // 1. Check if god mode
   const godMode = await isGodMode();
   if (godMode) return true;
-
-  const admin = await isAdmin();
-  if (admin) return true;
 
   const { userId } = await auth();
   if (!userId) return false;
@@ -155,7 +145,6 @@ export async function canViewEventAnalytics(eventId: string): Promise<boolean> {
 // ============================================
 
 export async function getUserEventRole(eventId: string, userId: string): Promise<{
-  isAdmin: boolean;
   isCommunityOwner: boolean;
   isCommunityAdmin: boolean;
   eventOrganizerRole: "lead" | "organizer" | "volunteer" | null;
@@ -166,7 +155,6 @@ export async function getUserEventRole(eventId: string, userId: string): Promise
 
   if (!event || !event.organizationId) {
     return {
-      isAdmin: false,
       isCommunityOwner: false,
       isCommunityAdmin: false,
       eventOrganizerRole: null,
@@ -188,7 +176,6 @@ export async function getUserEventRole(eventId: string, userId: string): Promise
   });
 
   return {
-    isAdmin: await isAdmin(),
     isCommunityOwner: membership?.role === "owner",
     isCommunityAdmin: membership?.role === "admin",
     eventOrganizerRole: organizer?.role || null,
