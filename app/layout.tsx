@@ -14,6 +14,9 @@ import { ourFileRouter } from "@/app/(app)/api/uploadthing/core";
 import { GlobalSearch } from "@/components/global-search";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeSelector } from "@/components/theme-selector";
+import { OnboardingGuard } from "@/components/onboarding/onboarding-guard";
+import { auth } from "@clerk/nextjs/server";
+import { hasCompletedOnboarding } from "@/lib/actions/user-preferences";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -124,11 +127,14 @@ export const viewport: Viewport = {
 	initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const { userId } = await auth();
+	const completed = userId ? await hasCompletedOnboarding() : true;
+
 	const jsonLd = {
 		"@context": "https://schema.org",
 		"@type": "WebSite",
@@ -196,6 +202,10 @@ export default function RootLayout({
 					>
 						<QueryProvider>
 							<PostHogProvider>
+								<OnboardingGuard
+									hasCompletedOnboarding={completed}
+									isAuthenticated={!!userId}
+								/>
 								<NuqsAdapter>{children}</NuqsAdapter>
 							</PostHogProvider>
 							<GlobalSearch />

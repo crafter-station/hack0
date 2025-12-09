@@ -85,6 +85,18 @@ export const approvalStatusEnum = pgEnum("approval_status", [
 	"rejected",
 ]);
 
+export const userRoleEnum = pgEnum("user_role", [
+	"member", // Participante/asistente a eventos
+	"organizer", // Organizador de eventos/comunidad
+]);
+
+export const formatPreferenceEnum = pgEnum("format_preference", [
+	"virtual",
+	"in-person",
+	"hybrid",
+	"any", // Sin preferencia
+]);
+
 // Events table (hackathons, conferences, workshops, etc.)
 export const events = pgTable("events", {
 	id: uuid("id").primaryKey().defaultRandom(),
@@ -639,6 +651,29 @@ export const IMPORT_STATUSES = [
 	"completed",
 	"failed",
 ] as const;
+
+// User Preferences (Onboarding)
+export const userPreferences = pgTable("user_preferences", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	clerkUserId: varchar("clerk_user_id", { length: 255 }).unique().notNull(),
+
+	// Onboarding data
+	role: userRoleEnum("role").notNull(), // member o organizer
+	department: varchar("department", { length: 100 }), // Lima, Arequipa, etc.
+	city: varchar("city", { length: 100 }), // Para ciudades específicas
+	formatPreference: formatPreferenceEnum("format_preference").default("any"),
+	skillLevel: skillLevelEnum("skill_level").default("all"),
+
+	// Estado de onboarding
+	hasCompletedOnboarding: boolean("has_completed_onboarding").default(false),
+
+	// Timestamps
+	createdAt: timestamp("created_at").defaultNow(),
+	updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type UserPreferences = typeof userPreferences.$inferSelect;
+export type NewUserPreferences = typeof userPreferences.$inferInsert;
 
 // ============================================
 // RELATIONS
