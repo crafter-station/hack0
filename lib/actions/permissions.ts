@@ -11,18 +11,18 @@ import { isGodMode } from "@/lib/god-mode";
 // PERMISSION SYSTEM
 // ============================================
 // Priority order:
-// 1. Global admin - can do everything
+// 1. God mode (admin emails) - can do everything
 // 2. Community owner/admin - can manage all events in their community
 // 3. Event organizers (lead/organizer) - can manage their specific events
 // 4. Event volunteers - can only view analytics for their events
 
 export async function canManageEventById(eventId: string): Promise<boolean> {
-  // 1. Check if global admin or god mode
-  const admin = await isAdmin();
-  if (admin) return true;
-
+  // 1. Check if god mode or legacy admin
   const godMode = await isGodMode();
   if (godMode) return true;
+
+  const admin = await isAdmin();
+  if (admin) return true;
 
   const { userId } = await auth();
   if (!userId) return false;
@@ -61,12 +61,12 @@ export async function canManageEventById(eventId: string): Promise<boolean> {
 }
 
 export async function canManageEventBySlug(slug: string): Promise<boolean> {
-  // 1. Check if global admin or god mode
-  const admin = await isAdmin();
-  if (admin) return true;
-
+  // 1. Check if god mode or legacy admin
   const godMode = await isGodMode();
   if (godMode) return true;
+
+  const admin = await isAdmin();
+  if (admin) return true;
 
   const { userId } = await auth();
   if (!userId) return false;
@@ -109,12 +109,12 @@ export async function canManageEventBySlug(slug: string): Promise<boolean> {
 // ============================================
 
 export async function canViewEventAnalytics(eventId: string): Promise<boolean> {
-  // 1. Check if global admin or god mode
-  const admin = await isAdmin();
-  if (admin) return true;
-
+  // 1. Check if god mode or legacy admin
   const godMode = await isGodMode();
   if (godMode) return true;
+
+  const admin = await isAdmin();
+  if (admin) return true;
 
   const { userId } = await auth();
   if (!userId) return false;
