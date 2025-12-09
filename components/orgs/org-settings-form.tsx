@@ -56,7 +56,7 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
       router.refresh();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Error al actualizar la organización"
+        err instanceof Error ? err.message : "Error al actualizar la comunidad"
       );
     } finally {
       setIsSubmitting(false);
@@ -73,7 +73,7 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
         <div className="grid gap-4">
           <div className="space-y-2">
             <label htmlFor="name" className="text-sm font-medium">
-              Nombre de la organización *
+              Nombre de la comunidad *
             </label>
             <Input
               id="name"
@@ -111,7 +111,7 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
               id="description"
               name="description"
               defaultValue={organization.description || ""}
-              placeholder="Breve descripción de tu organización..."
+              placeholder="Breve descripción de tu comunidad..."
               className="min-h-20 resize-none"
             />
           </div>
@@ -121,7 +121,7 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
       {/* Type */}
       <section className="space-y-4">
         <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-          Tipo de organización
+          Tipo de comunidad
         </h2>
         <div className="grid gap-4">
           <div className="space-y-2">
@@ -187,7 +187,7 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
       {success && (
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
           <p className="text-sm text-emerald-600">
-            Organización actualizada correctamente
+            Comunidad actualizada correctamente
           </p>
         </div>
       )}

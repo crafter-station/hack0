@@ -48,7 +48,7 @@ Focus on the main organization name, not event names. Look for "About", "Nosotro
       await metadata.set("status", "error");
 
       if (error.message?.includes("not currently supported")) {
-        await metadata.set("error", "Este sitio no está soportado por Firecrawl. Intenta con el sitio web oficial de tu organización (evita redes sociales como Instagram, Facebook, Twitter).");
+        await metadata.set("error", "Este sitio no está soportado por Firecrawl. Intenta con el sitio web oficial de tu comunidad (evita redes sociales como Instagram, Facebook, Twitter).");
         throw new Error("Sitio no soportado por Firecrawl");
       }
 

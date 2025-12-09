@@ -280,7 +280,7 @@ function ImportProgress({
               ¿Quieres publicar eventos al instante?
             </p>
             <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-              Verifica tu organización escribiendo a{" "}
+              Verifica tu comunidad escribiendo a{" "}
               <a
                 href="mailto:railly@crafterstation.com"
                 className="font-medium underline underline-offset-2"

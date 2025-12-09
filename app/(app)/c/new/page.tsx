@@ -20,10 +20,10 @@ export default async function OnboardingPage() {
           {/* Sidebar */}
           <div className="lg:sticky lg:top-28 lg:self-start space-y-4">
             <h1 className="text-2xl font-semibold tracking-tight">
-              Configura tu organización
+              Configura tu comunidad
             </h1>
             <p className="text-muted-foreground">
-              Crea tu perfil de organización para empezar a publicar eventos en
+              Crea tu perfil de comunidad para empezar a publicar eventos en
               hack0.
             </p>
             <div className="text-sm text-muted-foreground space-y-2 pt-4 border-t">

@@ -45,7 +45,7 @@ Focus on the main organization name, not event names. Look for "About", "Nosotro
       let errorMessage = "Error al extraer datos del sitio web. Verifica que la URL sea correcta y esté accesible.";
 
       if (error.message?.includes("not currently supported")) {
-        errorMessage = "Este sitio no está soportado por Firecrawl. Intenta con el sitio web oficial de tu organización (evita redes sociales como Instagram, Facebook, Twitter).";
+        errorMessage = "Este sitio no está soportado por Firecrawl. Intenta con el sitio web oficial de tu comunidad (evita redes sociales como Instagram, Facebook, Twitter).";
       } else if (error.message?.includes("rate limit")) {
         errorMessage = "Límite de scraping alcanzado. Intenta de nuevo en unos minutos.";
       }

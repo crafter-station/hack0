@@ -111,7 +111,7 @@ export function SponsorManager({
 					Sponsors
 				</FieldLabel>
 				<FieldDescription>
-					Organizaciones que patrocinan este evento
+					Comunidades que patrocinan este evento
 				</FieldDescription>
 			</Field>
 
@@ -190,7 +190,7 @@ export function SponsorManager({
 					<div className="relative">
 						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 						<Input
-							placeholder="Buscar organización..."
+							placeholder="Buscar comunidad..."
 							value={searchQuery}
 							onChange={(e) => handleSearch(e.target.value)}
 							className="pl-9"

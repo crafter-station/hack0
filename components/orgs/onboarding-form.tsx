@@ -189,7 +189,7 @@ export function OnboardingForm() {
 			router.push(`/c/${slug}`);
 		} catch (err) {
 			setError(
-				err instanceof Error ? err.message : "Error al crear la organización",
+				err instanceof Error ? err.message : "Error al crear la comunidad",
 			);
 			setIsSubmitting(false);
 		}
@@ -210,7 +210,7 @@ export function OnboardingForm() {
 							<h3 className="font-medium">Auto-rellenar desde sitio web</h3>
 						</div>
 						<p className="text-sm text-muted-foreground">
-							Ingresa el sitio web oficial de tu organización y rellenaremos
+							Ingresa el sitio web oficial de tu comunidad y rellenaremos
 							automáticamente los datos.
 						</p>
 						<p className="text-xs text-muted-foreground">
@@ -225,7 +225,7 @@ export function OnboardingForm() {
 									</InputGroupAddon>
 									<InputGroupInput
 										type="url"
-										placeholder="https://tu-organizacion.com"
+										placeholder="https://tu-comunidad.com"
 										value={websiteUrl}
 										onChange={(e) => setWebsiteUrl(e.target.value)}
 										disabled={isScraping || run?.isExecuting}
@@ -294,7 +294,7 @@ export function OnboardingForm() {
 				<FieldGroup>
 					{/* Name */}
 					<Field>
-						<FieldLabel htmlFor="name">Nombre de la organización *</FieldLabel>
+						<FieldLabel htmlFor="name">Nombre de la comunidad *</FieldLabel>
 						<InputGroup>
 							<InputGroupInput
 								id="name"
@@ -324,7 +324,7 @@ export function OnboardingForm() {
 										e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""),
 									);
 								}}
-								placeholder="mi-organizacion"
+								placeholder="mi-comunidad"
 								required
 								className={isScrapingActive ? "input-shimmer" : ""}
 							/>
@@ -372,7 +372,7 @@ export function OnboardingForm() {
 							<InputGroupTextarea
 								id="description"
 								name="description"
-								placeholder="Breve descripción de tu organización..."
+								placeholder="Breve descripción de tu comunidad..."
 								className={`min-h-[80px] ${isScrapingActive ? "input-shimmer" : ""}`}
 								value={description}
 								onChange={(e) => setDescription(e.target.value)}
@@ -424,7 +424,7 @@ export function OnboardingForm() {
 						</>
 					) : (
 						<>
-							Crear organización
+							Crear comunidad
 							<ArrowRight className="ml-2 h-4 w-4" />
 						</>
 					)}

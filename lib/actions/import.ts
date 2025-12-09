@@ -36,7 +36,7 @@ export async function startLumaImport(
   });
 
   if (!org) {
-    return { success: false, error: "No tienes una organización" };
+    return { success: false, error: "No tienes una comunidad" };
   }
 
   if (!isLumaUrl(url)) {
@@ -150,7 +150,7 @@ export async function createEventFromExtracted(
   });
 
   if (!org) {
-    return { success: false, error: "No tienes una organización" };
+    return { success: false, error: "No tienes una comunidad" };
   }
 
   const job = await db.query.importJobs.findFirst({
