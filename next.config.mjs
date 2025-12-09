@@ -12,6 +12,8 @@ const nextConfig = {
       { hostname: "images.lumacdn.com" },
       { hostname: "cdn.lu.ma" },
       { hostname: "og.luma.com" },
+      { hostname: "img.clerk.com" },
+      { hostname: "images.clerk.dev" },
     ],
   },
 }
