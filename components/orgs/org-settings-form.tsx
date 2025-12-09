@@ -89,7 +89,7 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
             </label>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">
-                hack0.dev/org/
+                hack0.dev/c/
               </span>
               <Input
                 id="slug"
