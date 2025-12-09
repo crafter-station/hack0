@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 /**
- * Migration script to create personal orgs for all existing organizers
+ * Migration script to create personal orgs for ALL existing users
  *
  * IMPORTANT: Make sure CLERK_SECRET_KEY matches your database environment:
  * - For PROD database: Use sk_live_... key
@@ -15,7 +15,7 @@
  *   CLERK_SECRET_KEY=sk_live_xxx bun run migrate:personal-orgs
  *
  * What it does:
- * 1. Finds all users with role="organizer" in user_preferences
+ * 1. Finds ALL users (members and organizers) in user_preferences
  * 2. For each, checks if they already have a personal org
  * 3. If not, creates one with @username slug from GitHub/Clerk
  * 4. Syncs profile image from Clerk
@@ -98,21 +98,19 @@ async function createPersonalOrgForUser(userId: string) {
 }
 
 async function main() {
-  console.log("🚀 Starting personal org migration...\n");
+  console.log("🚀 Starting personal org migration for ALL users...\n");
 
-  // Get all users with role "organizer"
-  const organizers = await db.query.userPreferences.findMany({
-    where: eq(userPreferences.role, "organizer"),
-  });
+  // Get ALL users (both members and organizers)
+  const allUsers = await db.query.userPreferences.findMany();
 
-  console.log(`Found ${organizers.length} organizers\n`);
+  console.log(`Found ${allUsers.length} users total\n`);
 
   let created = 0;
   let existed = 0;
   let failed = 0;
 
-  for (const organizer of organizers) {
-    const result = await createPersonalOrgForUser(organizer.clerkUserId);
+  for (const user of allUsers) {
+    const result = await createPersonalOrgForUser(user.clerkUserId);
 
     if (result.success) {
       if (result.existed) {

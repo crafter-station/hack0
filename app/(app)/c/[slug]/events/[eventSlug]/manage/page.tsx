@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Award, BarChart3, Calendar, Edit3, LayoutDashboard, Users } from "lucide-react";
+import { ArrowLeft, Award, BarChart3, Calendar, LayoutDashboard, Settings, Users } from "lucide-react";
 import { canManageEventBySlug } from "@/lib/actions/permissions";
 import { getOrganizationBySlug } from "@/lib/actions/organizations";
 import { getEventBySlug, getEventSponsors } from "@/lib/actions/events";
@@ -39,10 +39,10 @@ async function EventManageHero({
 
   const tabs = [
     { id: "overview", label: "Vista general", icon: LayoutDashboard },
-    { id: "edit", label: "Editar", icon: Edit3 },
     { id: "team", label: "Equipo", icon: Users },
     ...(isHackathon ? [{ id: "winners", label: "Ganadores", icon: Award }] : []),
     { id: "analytics", label: "Analytics", icon: BarChart3 },
+    { id: "edit", label: "Configuración", icon: Settings },
   ];
 
   return (

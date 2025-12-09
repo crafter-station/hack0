@@ -38,11 +38,15 @@ export default async function OnboardingRedirectPage({ searchParams }: Onboardin
 		redirect(redirect_url);
 	}
 
+	// Create personal org for ALL users (both organizers and members)
+	const personalOrg = await getOrCreatePersonalOrg();
+
+	// Redirect based on role
 	if (prefs.role === "organizer") {
-		const personalOrg = await getOrCreatePersonalOrg();
 		redirect(`/c/${personalOrg.slug}`);
 	}
 
+	// For members, check if they follow any communities
 	const followedCommunities = await db.query.communityMembers.findMany({
 		where: eq(communityMembers.userId, userId),
 		limit: 1,

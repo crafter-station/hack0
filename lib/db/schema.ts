@@ -112,9 +112,9 @@ export const events = pgTable("events", {
 	dayNumber: integer("day_number"), // Day 1, 2, 3... for child events
 
 	// Dates
-	startDate: timestamp("start_date"),
-	endDate: timestamp("end_date"),
-	registrationDeadline: timestamp("registration_deadline"),
+	startDate: timestamp("start_date", { mode: "date", withTimezone: true }),
+	endDate: timestamp("end_date", { mode: "date", withTimezone: true }),
+	registrationDeadline: timestamp("registration_deadline", { mode: "date", withTimezone: true }),
 
 	// Location
 	format: formatEnum("format").default("virtual"),
@@ -155,9 +155,9 @@ export const events = pgTable("events", {
 	verifiedOrganizerId: varchar("verified_organizer_id", { length: 255 }), // Clerk user ID
 
 	// Timestamps
-	createdAt: timestamp("created_at").defaultNow(),
-	updatedAt: timestamp("updated_at").defaultNow(),
-	sourceScrapedAt: timestamp("source_scraped_at"),
+	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow(),
+	sourceScrapedAt: timestamp("source_scraped_at", { mode: "date", withTimezone: true }),
 });
 
 // Types
@@ -187,8 +187,8 @@ export const subscriptions = pgTable("subscriptions", {
 	unsubscribeToken: varchar("unsubscribe_token", { length: 255 }),
 
 	// Timestamps
-	createdAt: timestamp("created_at").defaultNow(),
-	lastEmailSentAt: timestamp("last_email_sent_at"),
+	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	lastEmailSentAt: timestamp("last_email_sent_at", { mode: "date", withTimezone: true }),
 });
 
 export type Subscription = typeof subscriptions.$inferSelect;
@@ -205,7 +205,7 @@ export const notificationLogs = pgTable("notification_logs", {
 
 	// Email details
 	subject: varchar("subject", { length: 500 }),
-	sentAt: timestamp("sent_at").defaultNow(),
+	sentAt: timestamp("sent_at", { mode: "date", withTimezone: true }).defaultNow(),
 
 	// Status
 	status: varchar("status", { length: 20 }).default("sent"), // sent, failed, bounced
@@ -238,11 +238,11 @@ export const winnerClaims = pgTable("winner_claims", {
 
 	// Status: pending, approved, rejected
 	status: varchar("status", { length: 20 }).default("pending"),
-	reviewedAt: timestamp("reviewed_at"),
+	reviewedAt: timestamp("reviewed_at", { mode: "date", withTimezone: true }),
 	reviewedBy: varchar("reviewed_by", { length: 255 }),
 	rejectionReason: text("rejection_reason"),
 
-	createdAt: timestamp("created_at").defaultNow(),
+	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
 });
 
 export type WinnerClaim = typeof winnerClaims.$inferSelect;
@@ -448,8 +448,8 @@ export const organizations = pgTable("organizations", {
 	isVerified: boolean("is_verified").default(false), // Admin can verify
 
 	// Timestamps
-	createdAt: timestamp("created_at").defaultNow(),
-	updatedAt: timestamp("updated_at").defaultNow(),
+	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow(),
 });
 
 export type Organization = typeof organizations.$inferSelect;
@@ -477,7 +477,7 @@ export const communityMembers = pgTable("community_members", {
 	role: communityRoleEnum("role").default("follower"),
 
 	// Tracking
-	joinedAt: timestamp("joined_at").defaultNow(),
+	joinedAt: timestamp("joined_at", { mode: "date", withTimezone: true }).defaultNow(),
 	invitedBy: varchar("invited_by", { length: 255 }), // Clerk user ID of inviter
 });
 
@@ -521,10 +521,10 @@ export const communityInvites = pgTable("community_invites", {
 
 	// Status
 	isActive: boolean("is_active").default(true),
-	expiresAt: timestamp("expires_at"),
+	expiresAt: timestamp("expires_at", { mode: "date", withTimezone: true }),
 
 	// Timestamps
-	createdAt: timestamp("created_at").defaultNow(),
+	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
 });
 
 export type CommunityInvite = typeof communityInvites.$inferSelect;
@@ -557,7 +557,7 @@ export const eventSponsors = pgTable("event_sponsors", {
 	orderIndex: integer("order_index").default(0), // For custom ordering within tier
 
 	// Timestamps
-	createdAt: timestamp("created_at").defaultNow(),
+	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
 });
 
 export type EventSponsor = typeof eventSponsors.$inferSelect;
@@ -602,7 +602,7 @@ export const eventOrganizers = pgTable("event_organizers", {
 	role: eventOrganizerRoleEnum("role").default("organizer"),
 
 	// Timestamps
-	createdAt: timestamp("created_at").defaultNow(),
+	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
 });
 
 export type EventOrganizer = typeof eventOrganizers.$inferSelect;
@@ -639,8 +639,8 @@ export const importJobs = pgTable("import_jobs", {
 	eventId: uuid("event_id").references(() => events.id),
 	extractedData: text("extracted_data"),
 	errorMessage: text("error_message"),
-	createdAt: timestamp("created_at").defaultNow(),
-	completedAt: timestamp("completed_at"),
+	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	completedAt: timestamp("completed_at", { mode: "date", withTimezone: true }),
 });
 
 export type ImportJob = typeof importJobs.$inferSelect;
@@ -669,8 +669,8 @@ export const userPreferences = pgTable("user_preferences", {
 	hasCompletedOnboarding: boolean("has_completed_onboarding").default(false),
 
 	// Timestamps
-	createdAt: timestamp("created_at").defaultNow(),
-	updatedAt: timestamp("updated_at").defaultNow(),
+	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow(),
 });
 
 export type UserPreferences = typeof userPreferences.$inferSelect;

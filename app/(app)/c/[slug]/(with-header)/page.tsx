@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { db } from "@/lib/db";
 import { organizations, events } from "@/lib/db/schema";
-import { eq, desc, asc } from "drizzle-orm";
+import { eq, desc, asc, sql } from "drizzle-orm";
 import { EventList } from "@/components/events/event-list";
 
 interface CommunityPageProps {
@@ -17,13 +17,34 @@ async function CommunityEvents({ slug }: { slug: string }) {
 
 	if (!community) return null;
 
+	// Status priority: 1=upcoming, 2=open, 3=ongoing, 4=ended
+	const statusPriority = sql<number>`
+		CASE
+			WHEN ${events.endDate} IS NOT NULL AND ${events.endDate} < NOW() THEN 4
+			WHEN ${events.startDate} IS NOT NULL AND ${events.startDate} <= NOW()
+				 AND (${events.endDate} IS NULL OR ${events.endDate} > NOW()) THEN 3
+			WHEN ${events.registrationDeadline} IS NOT NULL AND ${events.registrationDeadline} > NOW() THEN 2
+			ELSE 1
+		END
+	`;
+
+	// Date sorting: ended events by most recent first, active events by soonest first
+	const dateSortOrder = sql`
+		CASE
+			WHEN ${events.endDate} IS NOT NULL AND ${events.endDate} < NOW()
+				THEN -EXTRACT(EPOCH FROM ${events.endDate})
+			ELSE EXTRACT(EPOCH FROM COALESCE(${events.startDate}, '9999-12-31'))
+		END
+	`;
+
 	// Fetch events directly filtered by organization
 	const communityEvents = await db.query.events.findMany({
 		where: eq(events.organizationId, community.id),
 		limit: 50,
-		orderBy: (eventsTable, { desc, asc }) => [
-			desc(eventsTable.isFeatured),
-			asc(eventsTable.startDate),
+		orderBy: [
+			desc(events.isFeatured),
+			asc(statusPriority),
+			asc(dateSortOrder),
 		],
 		with: {
 			organization: true,

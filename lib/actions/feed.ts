@@ -243,9 +243,13 @@ export async function getSuggestedCommunities(limit = 3) {
 		where: followedIds.length > 0
 			? and(
 				eq(organizations.type, "community"),
+				eq(organizations.isPersonalOrg, false),
 				sql`${organizations.id} NOT IN ${followedIds}`
 			)
-			: eq(organizations.type, "community"),
+			: and(
+				eq(organizations.type, "community"),
+				eq(organizations.isPersonalOrg, false)
+			),
 		orderBy: [desc(organizations.isVerified), desc(organizations.createdAt)],
 		limit,
 	});

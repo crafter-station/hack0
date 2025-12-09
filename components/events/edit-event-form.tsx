@@ -24,6 +24,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Textarea } from "@/components/ui/textarea";
 import { updateEvent } from "@/lib/actions/claims";
 import type { Event } from "@/lib/db/schema";
@@ -177,18 +178,14 @@ export function EditEventForm({ event, sponsors, onSuccess }: EditEventFormProps
 						<div className="grid sm:grid-cols-2 gap-4">
 							<Field>
 								<FieldLabel htmlFor="eventType">Tipo de evento</FieldLabel>
-								<Select value={eventType} onValueChange={setEventType}>
-									<SelectTrigger id="eventType">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										{EVENT_TYPE_OPTIONS.map((option) => (
-											<SelectItem key={option.value} value={option.value}>
-												{option.label}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
+								<SearchableSelect
+									options={EVENT_TYPE_OPTIONS}
+									value={eventType}
+									onValueChange={setEventType}
+									placeholder="Seleccionar tipo..."
+									searchPlaceholder="Buscar tipo de evento..."
+									emptyMessage="No se encontró ningún tipo"
+								/>
 							</Field>
 
 							<Field>
