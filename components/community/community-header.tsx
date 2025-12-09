@@ -63,7 +63,7 @@ export async function CommunityHeader({
 								{community.displayName || community.name}
 							</h1>
 							{community.description && (
-								<p className="text-sm text-muted-foreground truncate max-w-xl">
+								<p className="text-sm text-muted-foreground max-w-xl">
 									{community.description}
 								</p>
 							)}
