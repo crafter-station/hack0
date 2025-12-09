@@ -5,6 +5,9 @@ import { GodModeBanner } from "@/components/god-mode/god-mode-banner";
 import { SearchTrigger } from "@/components/search-command";
 import { ThemeSwitcherButton } from "@/components/theme-switcher-button";
 import { getAllUserOrganizations } from "@/lib/actions/organizations";
+import { db } from "@/lib/db";
+import { organizations as orgsTable } from "@/lib/db/schema";
+import { and, eq } from "drizzle-orm";
 import { OrgSwitcher } from "./org-switcher";
 
 interface SiteHeaderProps {
@@ -14,6 +17,16 @@ interface SiteHeaderProps {
 export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 	const { userId } = await auth();
 	const organizations = userId ? await getAllUserOrganizations() : [];
+
+	// Get user's personal org
+	const personalOrg = userId
+		? await db.query.organizations.findFirst({
+				where: and(
+					eq(orgsTable.ownerUserId, userId),
+					eq(orgsTable.isPersonalOrg, true)
+				),
+		  })
+		: null;
 
 	return (
 		<>
@@ -73,7 +86,10 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 								</Link>
 							</SignedOut>
 							<SignedIn>
-								<OrgSwitcher organizations={organizations} />
+								<OrgSwitcher
+									organizations={organizations}
+									personalOrg={personalOrg}
+								/>
 								<UserButton
 									appearance={{
 										elements: {

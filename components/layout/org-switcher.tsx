@@ -9,6 +9,7 @@ import {
 	Plus,
 	Search,
 	Shield,
+	User,
 	UserPlus,
 	Users,
 } from "lucide-react";
@@ -25,6 +26,7 @@ interface OrganizationWithRole {
 
 interface OrgSwitcherProps {
 	organizations: OrganizationWithRole[];
+	personalOrg: Organization | null;
 }
 
 const ROLE_CONFIG = {
@@ -50,7 +52,7 @@ const ROLE_CONFIG = {
 	},
 };
 
-export function OrgSwitcher({ organizations }: OrgSwitcherProps) {
+export function OrgSwitcher({ organizations, personalOrg }: OrgSwitcherProps) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 	const params = useParams();
@@ -209,6 +211,19 @@ export function OrgSwitcher({ organizations }: OrgSwitcherProps) {
 							</div>
 						</div>
 						<div className="border-t border-border p-2 space-y-1">
+							{personalOrg && (
+								<Link
+									href={`/c/${personalOrg.slug}`}
+									onClick={() => {
+										setIsOpen(false);
+										setSearchQuery("");
+									}}
+									className="flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors hover:bg-accent"
+								>
+									<User className="h-4 w-4" />
+									Mi Perfil
+								</Link>
+							)}
 							<Link
 								href="/c"
 								onClick={() => {
