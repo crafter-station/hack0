@@ -166,6 +166,7 @@ export async function createOrganization(
 /**
  * Create or get personal organization for an individual organizer
  * Auto-creates a personal org with @username slug
+ * Resilient to Clerk API failures
  */
 export async function getOrCreatePersonalOrg() {
   const { userId } = await auth();
@@ -185,28 +186,75 @@ export async function getOrCreatePersonalOrg() {
     return existingOrg;
   }
 
-  const { getUserInfo, getPersonalOrgSlug } = await import("@/lib/clerk-utils");
-  const userInfo = await getUserInfo(userId);
-  const slug = await getPersonalOrgSlug(userId);
+  try {
+    const { getUserInfo, getPersonalOrgSlug } = await import("@/lib/clerk-utils");
+    const userInfo = await getUserInfo(userId);
+    let slug = await getPersonalOrgSlug(userId);
 
-  const [org] = await db
-    .insert(organizations)
-    .values({
-      slug,
-      name: userInfo.fullName,
-      displayName: null,
-      type: "community",
-      ownerUserId: userId,
-      isPersonalOrg: true,
-      isPublic: false,
-      logoUrl: userInfo.imageUrl,
-    })
-    .returning();
+    // Check if slug is taken
+    const slugTaken = await db.query.organizations.findFirst({
+      where: eq(organizations.slug, slug),
+    });
 
-  revalidatePath(`/c/${org.slug}`);
-  revalidatePath("/c");
+    // Add number suffix if taken
+    if (slugTaken) {
+      let counter = 1;
+      let finalSlug = slug;
+      while (true) {
+        finalSlug = `${slug}${counter}`;
+        const taken = await db.query.organizations.findFirst({
+          where: eq(organizations.slug, finalSlug),
+        });
+        if (!taken) {
+          slug = finalSlug;
+          break;
+        }
+        counter++;
+      }
+    }
 
-  return org;
+    const [org] = await db
+      .insert(organizations)
+      .values({
+        slug,
+        name: userInfo.fullName,
+        displayName: null,
+        type: "community",
+        ownerUserId: userId,
+        isPersonalOrg: true,
+        isPublic: false,
+        logoUrl: userInfo.imageUrl,
+      })
+      .returning();
+
+    revalidatePath(`/c/${org.slug}`);
+    revalidatePath("/c");
+
+    return org;
+  } catch (error) {
+    console.error("Error creating personal org, using fallback:", error);
+
+    // Fallback: create org with userId-based slug if Clerk API fails
+    const fallbackSlug = `@user-${userId.slice(-8)}`;
+
+    const [org] = await db
+      .insert(organizations)
+      .values({
+        slug: fallbackSlug,
+        name: "Mi Perfil",
+        displayName: null,
+        type: "community",
+        ownerUserId: userId,
+        isPersonalOrg: true,
+        isPublic: false,
+      })
+      .returning();
+
+    revalidatePath(`/c/${org.slug}`);
+    revalidatePath("/c");
+
+    return org;
+  }
 }
 
 /**
