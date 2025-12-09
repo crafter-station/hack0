@@ -55,6 +55,11 @@ export function OnboardingForm() {
 	const [websiteUrl, setWebsiteUrl] = useState("");
 	const [type, setType] = useState<string>("");
 	const [description, setDescription] = useState("");
+	const [twitterUrl, setTwitterUrl] = useState("");
+	const [linkedinUrl, setLinkedinUrl] = useState("");
+	const [instagramUrl, setInstagramUrl] = useState("");
+	const [facebookUrl, setFacebookUrl] = useState("");
+	const [githubUrl, setGithubUrl] = useState("");
 
 	const [runId, setRunId] = useState<string | null>(null);
 	const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -73,6 +78,13 @@ export function OnboardingForm() {
 				description?: string;
 				type?: string;
 				email?: string;
+				socialLinks?: {
+					twitter?: string;
+					linkedin?: string;
+					instagram?: string;
+					facebook?: string;
+					github?: string;
+				};
 		  }
 		| undefined;
 	const extractedLogoUrl = run?.metadata?.logoUrl as string | undefined;
@@ -95,6 +107,23 @@ export function OnboardingForm() {
 			if (extractedLogoUrl && !logoUrl) {
 				setLogoUrl(extractedLogoUrl);
 			}
+			if (extractedData.socialLinks) {
+				if (extractedData.socialLinks.twitter && !twitterUrl) {
+					setTwitterUrl(extractedData.socialLinks.twitter);
+				}
+				if (extractedData.socialLinks.linkedin && !linkedinUrl) {
+					setLinkedinUrl(extractedData.socialLinks.linkedin);
+				}
+				if (extractedData.socialLinks.instagram && !instagramUrl) {
+					setInstagramUrl(extractedData.socialLinks.instagram);
+				}
+				if (extractedData.socialLinks.facebook && !facebookUrl) {
+					setFacebookUrl(extractedData.socialLinks.facebook);
+				}
+				if (extractedData.socialLinks.github && !githubUrl) {
+					setGithubUrl(extractedData.socialLinks.github);
+				}
+			}
 			setIsScraping(false);
 		}
 	}, [
@@ -105,6 +134,11 @@ export function OnboardingForm() {
 		description,
 		type,
 		logoUrl,
+		twitterUrl,
+		linkedinUrl,
+		instagramUrl,
+		facebookUrl,
+		githubUrl,
 	]);
 
 	useEffect(() => {
@@ -184,6 +218,11 @@ export function OnboardingForm() {
 				type: (type as OrganizerType) || undefined,
 				websiteUrl: websiteUrl || undefined,
 				logoUrl: logoUrl || undefined,
+				twitterUrl: twitterUrl || undefined,
+				linkedinUrl: linkedinUrl || undefined,
+				instagramUrl: instagramUrl || undefined,
+				facebookUrl: facebookUrl || undefined,
+				githubUrl: githubUrl || undefined,
 			});
 
 			router.push(`/c/${slug}`);
@@ -383,6 +422,76 @@ export function OnboardingForm() {
 						</InputGroup>
 						<FieldDescription>
 							Opcional. Aparecerá en tu perfil público.
+						</FieldDescription>
+					</Field>
+
+					{/* Social Links */}
+					<Field>
+						<FieldLabel>Redes sociales (opcional)</FieldLabel>
+						<div className="space-y-3">
+							<InputGroup>
+								<InputGroupAddon align="inline-start">
+									<span className="text-muted-foreground text-sm">Twitter</span>
+								</InputGroupAddon>
+								<InputGroupInput
+									type="url"
+									placeholder="https://twitter.com/tu-comunidad"
+									value={twitterUrl}
+									onChange={(e) => setTwitterUrl(e.target.value)}
+									className={isScrapingActive ? "input-shimmer" : ""}
+								/>
+							</InputGroup>
+							<InputGroup>
+								<InputGroupAddon align="inline-start">
+									<span className="text-muted-foreground text-sm">LinkedIn</span>
+								</InputGroupAddon>
+								<InputGroupInput
+									type="url"
+									placeholder="https://linkedin.com/company/tu-comunidad"
+									value={linkedinUrl}
+									onChange={(e) => setLinkedinUrl(e.target.value)}
+									className={isScrapingActive ? "input-shimmer" : ""}
+								/>
+							</InputGroup>
+							<InputGroup>
+								<InputGroupAddon align="inline-start">
+									<span className="text-muted-foreground text-sm">Instagram</span>
+								</InputGroupAddon>
+								<InputGroupInput
+									type="url"
+									placeholder="https://instagram.com/tu-comunidad"
+									value={instagramUrl}
+									onChange={(e) => setInstagramUrl(e.target.value)}
+									className={isScrapingActive ? "input-shimmer" : ""}
+								/>
+							</InputGroup>
+							<InputGroup>
+								<InputGroupAddon align="inline-start">
+									<span className="text-muted-foreground text-sm">Facebook</span>
+								</InputGroupAddon>
+								<InputGroupInput
+									type="url"
+									placeholder="https://facebook.com/tu-comunidad"
+									value={facebookUrl}
+									onChange={(e) => setFacebookUrl(e.target.value)}
+									className={isScrapingActive ? "input-shimmer" : ""}
+								/>
+							</InputGroup>
+							<InputGroup>
+								<InputGroupAddon align="inline-start">
+									<span className="text-muted-foreground text-sm">GitHub</span>
+								</InputGroupAddon>
+								<InputGroupInput
+									type="url"
+									placeholder="https://github.com/tu-comunidad"
+									value={githubUrl}
+									onChange={(e) => setGithubUrl(e.target.value)}
+									className={isScrapingActive ? "input-shimmer" : ""}
+								/>
+							</InputGroup>
+						</div>
+						<FieldDescription>
+							Los enlaces extraídos automáticamente se pueden editar antes de crear la comunidad.
 						</FieldDescription>
 					</Field>
 				</FieldGroup>
