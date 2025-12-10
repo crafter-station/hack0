@@ -33,10 +33,7 @@ async function CommunityHeaderWrapper({ slug }: { slug: string }) {
 			: []),
 		...(canManage
 			? [
-					// Analytics don't make sense for personal orgs either
-					...(!community.isPersonalOrg
-						? [{ id: "analytics" as const, label: "Analytics", icon: "BarChart3" }]
-						: []),
+					{ id: "analytics" as const, label: "Analytics", icon: "BarChart3" },
 					{ id: "settings" as const, label: "Configuración", icon: "Settings" },
 				]
 			: []),
