@@ -65,6 +65,12 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 							</Link>
 							<nav className="hidden md:flex items-center gap-4 text-sm text-muted-foreground">
 								<Link
+									href="/events"
+									className="hover:text-foreground transition-colors"
+								>
+									Eventos
+								</Link>
+								<Link
 									href="/feed"
 									className="hover:text-foreground transition-colors"
 								>
