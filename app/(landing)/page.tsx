@@ -55,9 +55,8 @@ async function HeroContent() {
 					</div>
 
 					<h1 className="text-4xl font-semibold tracking-tight md:text-5xl mb-3">
-						El calendario vivo del
-						<br />
-						<span className="text-muted-foreground">ecosistema tech peruano</span>
+						Todos los eventos tech de Peru en un solo lugar
+					
 					</h1>
 
 					<p className="text-base text-muted-foreground mb-6">
