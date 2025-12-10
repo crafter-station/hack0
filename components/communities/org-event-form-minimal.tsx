@@ -1,0 +1,752 @@
+"use client";
+
+import {
+	ArrowLeft,
+	Calendar as CalendarIcon,
+	DollarSign,
+	FileText,
+	Globe,
+	Image as ImageIcon,
+	Link2,
+	Loader2,
+	MapPin,
+	Plus,
+	Sparkles,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, useEffect, useTransition } from "react";
+import { useRealtimeRun } from "@trigger.dev/react-hooks";
+import { Button } from "@/components/ui/button";
+import { ImageUpload } from "@/components/ui/image-upload";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	ResponsiveModal,
+	ResponsiveModalClose,
+	ResponsiveModalContent,
+	ResponsiveModalFooter,
+	ResponsiveModalHeader,
+	ResponsiveModalTitle,
+	ResponsiveModalTrigger,
+} from "@/components/ui/responsive-modal";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { Textarea } from "@/components/ui/textarea";
+import Markdown from "react-markdown";
+import { createEvent } from "@/lib/actions/events";
+import { startLumaImport } from "@/lib/actions/import";
+import { EVENT_TYPE_OPTIONS, SKILL_LEVEL_OPTIONS } from "@/lib/event-utils";
+
+interface OrgEventFormMinimalProps {
+	communityId: string;
+	communityName: string;
+	communityLogo?: string | null;
+	communitySlug: string;
+}
+
+interface ExtractedData {
+	name?: string;
+	description?: string;
+	startDate?: string;
+	endDate?: string;
+	city?: string;
+	venue?: string;
+	format?: string;
+	eventImageUrl?: string;
+	organizerName?: string;
+	websiteUrl?: string;
+	registrationUrl?: string;
+	eventType?: string;
+	country?: string;
+	step?: string;
+	error?: string;
+}
+
+export function OrgEventFormMinimal({
+	communityId,
+	communityName,
+	communitySlug,
+}: OrgEventFormMinimalProps) {
+	const router = useRouter();
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [descriptionOpen, setDescriptionOpen] = useState(false);
+
+	const [name, setName] = useState("");
+	const [description, setDescription] = useState("");
+	const [startDate, setStartDate] = useState("");
+	const [startTime, setStartTime] = useState("");
+	const [endDate, setEndDate] = useState("");
+	const [endTime, setEndTime] = useState("");
+	const [format, setFormat] = useState<"virtual" | "in-person" | "hybrid">(
+		"in-person",
+	);
+	const [department, setDepartment] = useState("");
+	const [city, setCity] = useState("");
+	const [venue, setVenue] = useState("");
+	const [prizePool, setPrizePool] = useState("");
+	const [prizeCurrency, setPrizeCurrency] = useState<"USD" | "PEN">("USD");
+	const [websiteUrl, setWebsiteUrl] = useState("");
+	const [registrationUrl, setRegistrationUrl] = useState("");
+	const [eventImageUrl, setEventImageUrl] = useState("");
+	const [eventType, setEventType] = useState("hackathon");
+	const [skillLevel, setSkillLevel] = useState("all");
+	const [linksOpen, setLinksOpen] = useState(false);
+	const [locationOpen, setLocationOpen] = useState(false);
+	const [optionsOpen, setOptionsOpen] = useState(false);
+	const [importOpen, setImportOpen] = useState(false);
+	const [lumaImportOpen, setLumaImportOpen] = useState(false);
+	const [isImporting, setIsImporting] = useState(false);
+	const [lumaUrl, setLumaUrl] = useState("");
+	const [importState, setImportState] = useState<{
+		runId: string;
+		accessToken: string;
+	} | null>(null);
+	const [isPending, startTransition] = useTransition();
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setError(null);
+		setLoading(true);
+
+		const result = await createEvent({
+			name,
+			description: description || undefined,
+			startDate: startDate ? `${startDate}T${startTime || "00:00"}` : undefined,
+			endDate: endDate ? `${endDate}T${endTime || "23:59"}` : undefined,
+			format,
+			department: department || undefined,
+			city: city || undefined,
+			venue: venue || undefined,
+			timezone: "America/Lima", // Siempre Lima
+			prizePool: prizePool ? parseInt(prizePool, 10) : undefined,
+			prizeCurrency,
+			websiteUrl: websiteUrl || undefined,
+			registrationUrl: registrationUrl || undefined,
+			eventImageUrl: eventImageUrl || undefined,
+			eventType,
+			skillLevel,
+			organizationId: communityId,
+			country: "PE",
+		});
+
+		setLoading(false);
+
+		if (result.success && result.event) {
+			router.push(`/c/${communitySlug}/events/${result.event.slug}`);
+		} else {
+			setError(result.error || "Error al crear el evento");
+		}
+	};
+
+	// Use realtime run hook when we have import state
+	const { run } = useRealtimeRun<ExtractedData>(
+		importState?.runId || "",
+		{
+			accessToken: importState?.accessToken || "",
+			enabled: !!importState,
+		}
+	);
+
+	const metadata = (run?.metadata || {}) as ExtractedData;
+	const step = metadata.step;
+
+	// Populate form when extraction is completed
+	useEffect(() => {
+		if (step === "completed" && metadata.name) {
+			// Parse dates to get date and time separately
+			const parseDateTime = (dateString?: string) => {
+				if (!dateString) return { date: "", time: "" };
+				try {
+					const date = new Date(dateString);
+					const dateStr = date.toISOString().split('T')[0];
+					const timeStr = date.toTimeString().slice(0, 5);
+					return { date: dateStr, time: timeStr };
+				} catch {
+					return { date: "", time: "" };
+				}
+			};
+
+			const start = parseDateTime(metadata.startDate);
+			const end = parseDateTime(metadata.endDate);
+
+			// Populate all form fields
+			setName(metadata.name);
+			if (metadata.description) setDescription(metadata.description);
+			if (start.date) setStartDate(start.date);
+			if (start.time) setStartTime(start.time);
+			if (end.date) setEndDate(end.date);
+			if (end.time) setEndTime(end.time);
+			if (metadata.venue) setVenue(metadata.venue);
+			if (metadata.city) setCity(metadata.city);
+			if (metadata.format) setFormat(metadata.format as any);
+			if (metadata.eventType) setEventType(metadata.eventType);
+			if (metadata.websiteUrl) setWebsiteUrl(metadata.websiteUrl);
+			if (metadata.registrationUrl) setRegistrationUrl(metadata.registrationUrl);
+			if (metadata.eventImageUrl) setEventImageUrl(metadata.eventImageUrl);
+
+			// Clear import state
+			setIsImporting(false);
+			setImportState(null);
+			setLumaUrl("");
+		}
+	}, [step, metadata]);
+
+	// Handle import errors
+	useEffect(() => {
+		if (step === "error" && metadata.error) {
+			setError(metadata.error);
+			setIsImporting(false);
+			setImportState(null);
+		}
+	}, [step, metadata.error]);
+
+	const handleImportFromLuma = () => {
+		if (!lumaUrl) return;
+
+		// Cerrar modal y empezar shimmer inmediatamente
+		setLumaImportOpen(false);
+		setIsImporting(true);
+
+		startTransition(async () => {
+			const result = await startLumaImport(lumaUrl, false, communityId);
+
+			if (!result.success) {
+				setError(result.error || "Error al iniciar la importación");
+				setIsImporting(false);
+				return;
+			}
+
+			if (result.runId && result.publicAccessToken) {
+				setImportState({
+					runId: result.runId,
+					accessToken: result.publicAccessToken,
+				});
+			}
+		});
+	};
+
+	return (
+		<form onSubmit={handleSubmit} className="max-w-3xl mx-auto px-4">
+			{error && (
+				<div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/20 p-2.5 text-sm text-red-600">
+					{error}
+				</div>
+			)}
+
+			{/* Header with Back and Import */}
+			<div className="mb-6 flex items-center justify-between">
+				<Link
+					href={`/c/${communitySlug}`}
+					className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+				>
+					<ArrowLeft className="h-3.5 w-3.5" />
+					Volver a {communityName}
+				</Link>
+				<ResponsiveModal open={importOpen} onOpenChange={setImportOpen}>
+					<ResponsiveModalTrigger asChild>
+						<Button type="button" variant="outline" className="gap-2">
+							<Sparkles className="h-4 w-4" />
+							Import
+						</Button>
+					</ResponsiveModalTrigger>
+					<ResponsiveModalContent className="max-w-lg">
+						<ResponsiveModalHeader>
+							<ResponsiveModalTitle>Importar evento</ResponsiveModalTitle>
+						</ResponsiveModalHeader>
+						<div className="p-4 space-y-3">
+							<button
+								type="button"
+								className="w-full p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors text-left"
+								onClick={() => {
+									setImportOpen(false);
+									setLumaImportOpen(true);
+								}}
+							>
+								<div className="flex items-center gap-3">
+									<div className="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+										<Sparkles className="h-5 w-5 text-white" />
+									</div>
+									<div>
+										<div className="font-medium">Luma</div>
+										<div className="text-sm text-muted-foreground">Importar desde lu.ma</div>
+									</div>
+								</div>
+							</button>
+							<button
+								type="button"
+								className="w-full p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors text-left opacity-50 cursor-not-allowed"
+								disabled
+							>
+								<div className="flex items-center gap-3">
+									<div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+										<FileText className="h-5 w-5 text-muted-foreground" />
+									</div>
+									<div>
+										<div className="font-medium">Texto sin estructura</div>
+										<div className="text-sm text-muted-foreground">Próximamente</div>
+									</div>
+								</div>
+							</button>
+						</div>
+					</ResponsiveModalContent>
+				</ResponsiveModal>
+
+				{/* Luma Import Modal */}
+				<ResponsiveModal open={lumaImportOpen} onOpenChange={setLumaImportOpen}>
+					<ResponsiveModalContent className="max-w-lg">
+						<ResponsiveModalHeader>
+							<ResponsiveModalTitle>Importar desde Luma</ResponsiveModalTitle>
+						</ResponsiveModalHeader>
+						<div className="p-4 space-y-4">
+							<div>
+								<Label className="text-sm mb-2 block">URL del evento en Luma</Label>
+								<Input
+									type="url"
+									value={lumaUrl}
+									onChange={(e) => setLumaUrl(e.target.value)}
+									placeholder="https://lu.ma/..."
+									className="h-9"
+								/>
+								<p className="text-xs text-muted-foreground mt-2">
+									Pega el link del evento de lu.ma que quieres importar
+								</p>
+							</div>
+						</div>
+						<ResponsiveModalFooter>
+							<ResponsiveModalClose asChild>
+								<Button variant="outline" disabled={isPending}>Cancelar</Button>
+							</ResponsiveModalClose>
+							<Button
+								onClick={handleImportFromLuma}
+								disabled={!lumaUrl || isPending}
+								className="gap-2"
+							>
+								{isPending ? (
+									<>
+										<Loader2 className="h-4 w-4 animate-spin" />
+										Iniciando...
+									</>
+								) : (
+									<>
+										<Sparkles className="h-4 w-4" />
+										Importar
+									</>
+								)}
+							</Button>
+						</ResponsiveModalFooter>
+					</ResponsiveModalContent>
+				</ResponsiveModal>
+			</div>
+
+			<div className="flex gap-6">
+				{/* Left Column - Image */}
+				<div className="space-y-3">
+					<div className={`w-72 h-72 flex-shrink-0 overflow-hidden bg-muted border border-border rounded-lg ${isImporting ? "input-shimmer" : ""}`}>
+						{eventImageUrl ? (
+							<div className="relative w-full h-full group">
+								<img
+									src={eventImageUrl}
+									alt="Event"
+									className="w-full h-full object-cover"
+								/>
+								<button
+									type="button"
+									onClick={() => setEventImageUrl("")}
+									className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+									disabled={isImporting}
+								>
+									<span className="text-white text-xs">Cambiar</span>
+								</button>
+							</div>
+						) : (
+							<ImageUpload
+								value={eventImageUrl}
+								onChange={setEventImageUrl}
+								className="w-full h-full"
+								aspectRatio="square"
+								disabled={isImporting}
+							/>
+						)}
+					</div>
+				</div>
+
+				{/* Right Column - Form */}
+				<div className="flex-1 space-y-3">
+					{/* Title */}
+					<textarea
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+						required
+						placeholder="Nombre del evento"
+						rows={2}
+						className={`w-full text-2xl font-semibold bg-transparent border-none outline-none focus:outline-none placeholder:text-muted-foreground/40 p-0 resize-none ${isImporting ? "input-shimmer" : ""}`}
+						disabled={isImporting}
+					/>
+
+					{/* Dates & Time */}
+					<div className="border border-border rounded-lg overflow-hidden">
+						{/* Start */}
+						<div className="p-3 flex items-center gap-3">
+							<div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
+							<Label className="text-sm text-muted-foreground w-12">Inicio</Label>
+							<Input
+								type="date"
+								value={startDate}
+								onChange={(e) => setStartDate(e.target.value)}
+								className={`h-8 text-sm flex-1 ${isImporting ? "input-shimmer" : ""}`}
+								disabled={isImporting}
+							/>
+							<Input
+								type="time"
+								value={startTime}
+								onChange={(e) => setStartTime(e.target.value)}
+								className={`h-8 text-sm w-24 ${isImporting ? "input-shimmer" : ""}`}
+								disabled={isImporting}
+							/>
+						</div>
+
+						<div className="border-t border-border" />
+
+						{/* End */}
+						<div className="p-3 flex items-center gap-3">
+							<div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
+							<Label className="text-sm text-muted-foreground w-12">Fin</Label>
+							<Input
+								type="date"
+								value={endDate}
+								onChange={(e) => setEndDate(e.target.value)}
+								className={`h-8 text-sm flex-1 ${isImporting ? "input-shimmer" : ""}`}
+								disabled={isImporting}
+							/>
+							<Input
+								type="time"
+								value={endTime}
+								onChange={(e) => setEndTime(e.target.value)}
+								className={`h-8 text-sm w-24 ${isImporting ? "input-shimmer" : ""}`}
+								disabled={isImporting}
+							/>
+						</div>
+					</div>
+
+					{/* Description Button */}
+					<ResponsiveModal
+						open={descriptionOpen}
+						onOpenChange={setDescriptionOpen}
+					>
+						<ResponsiveModalTrigger asChild>
+							<button
+								type="button"
+								className={`w-full border border-border rounded-lg p-3 text-left flex items-start gap-2 hover:bg-muted/50 transition-colors ${isImporting ? "input-shimmer" : ""}`}
+								disabled={isImporting}
+							>
+								<FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
+								<div className="flex-1 min-w-0">
+									<div className="text-xs text-muted-foreground mb-1">Event Description</div>
+									{description ? (
+										<div className="text-sm line-clamp-2 prose prose-sm max-w-none">
+											<Markdown
+												components={{
+													h2: ({ children }) => <span className="font-semibold">{children}</span>,
+													h3: ({ children }) => <span className="font-medium">{children}</span>,
+													p: ({ children }) => <span>{children}</span>,
+													ul: ({ children }) => <span>{children}</span>,
+													li: ({ children }) => <span>• {children}</span>,
+													strong: ({ children }) => <strong>{children}</strong>,
+													a: ({ children }) => <span>{children}</span>,
+												}}
+											>
+												{description}
+											</Markdown>
+										</div>
+									) : (
+										<div className="text-sm text-muted-foreground">Describe tu evento...</div>
+									)}
+								</div>
+							</button>
+						</ResponsiveModalTrigger>
+						<ResponsiveModalContent className="max-w-2xl max-h-[80vh]">
+							<ResponsiveModalHeader>
+								<ResponsiveModalTitle>
+									Descripción del evento
+								</ResponsiveModalTitle>
+							</ResponsiveModalHeader>
+							<div className="p-4">
+								<Textarea
+									value={description}
+									onChange={(e) => setDescription(e.target.value)}
+									rows={12}
+									placeholder="Describe tu evento... Puedes usar Markdown."
+									className="w-full min-h-[300px]"
+								/>
+							</div>
+							<ResponsiveModalFooter>
+								<ResponsiveModalClose asChild>
+									<Button>Guardar</Button>
+								</ResponsiveModalClose>
+							</ResponsiveModalFooter>
+						</ResponsiveModalContent>
+					</ResponsiveModal>
+
+					{/* Location Button */}
+					<ResponsiveModal open={locationOpen} onOpenChange={setLocationOpen}>
+						<ResponsiveModalTrigger asChild>
+							<button
+								type="button"
+								className={`w-full border border-border rounded-lg p-3 text-left flex items-start gap-2 hover:bg-muted/50 transition-colors ${isImporting ? "input-shimmer" : ""}`}
+								disabled={isImporting}
+							>
+								<MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+								<div className="flex-1">
+									<div className="text-xs text-muted-foreground mb-1">Ubicación</div>
+									<div className="text-sm">
+										{format === "in-person"
+											? venue || city || "Presencial"
+											: format === "virtual"
+												? "Virtual"
+												: "Híbrido"}
+									</div>
+								</div>
+							</button>
+						</ResponsiveModalTrigger>
+						<ResponsiveModalContent className="max-w-2xl">
+							<ResponsiveModalHeader>
+								<ResponsiveModalTitle>Ubicación del evento</ResponsiveModalTitle>
+							</ResponsiveModalHeader>
+							<div className="p-4 space-y-4">
+								<div>
+									<Label className="text-sm mb-2 block">Formato</Label>
+									<div className="flex gap-2">
+										{["in-person", "virtual", "hybrid"].map((f) => (
+											<button
+												key={f}
+												type="button"
+												onClick={() => setFormat(f as any)}
+												className={`flex-1 px-3 py-2 rounded-md text-sm transition-colors ${
+													format === f
+														? "bg-foreground text-background"
+														: "bg-muted hover:bg-muted/80"
+												}`}
+											>
+												{f === "in-person"
+													? "Presencial"
+													: f === "virtual"
+														? "Virtual"
+														: "Híbrido"}
+											</button>
+										))}
+									</div>
+								</div>
+
+								{format !== "virtual" && (
+									<div className="space-y-3">
+										<div>
+											<Label className="text-sm mb-2 block">Lugar o link virtual</Label>
+											<Input
+												type="text"
+												value={venue}
+												onChange={(e) => setVenue(e.target.value)}
+												placeholder="Ej: Universidad Nacional, Zoom link, etc."
+												className="h-9"
+											/>
+										</div>
+										<div className="grid grid-cols-2 gap-3">
+											<div>
+												<Label className="text-sm mb-2 block">Ciudad</Label>
+												<Input
+													type="text"
+													value={city}
+													onChange={(e) => setCity(e.target.value)}
+													placeholder="Lima"
+													className="h-9"
+												/>
+											</div>
+											<div>
+												<Label className="text-sm mb-2 block">Región</Label>
+												<Input
+													type="text"
+													value={department}
+													onChange={(e) => setDepartment(e.target.value)}
+													placeholder="Lima"
+													className="h-9"
+												/>
+											</div>
+										</div>
+									</div>
+								)}
+							</div>
+							<ResponsiveModalFooter>
+								<ResponsiveModalClose asChild>
+									<Button>Guardar</Button>
+								</ResponsiveModalClose>
+							</ResponsiveModalFooter>
+						</ResponsiveModalContent>
+					</ResponsiveModal>
+
+					{/* Event Options Button */}
+					<ResponsiveModal open={optionsOpen} onOpenChange={setOptionsOpen}>
+						<ResponsiveModalTrigger asChild>
+							<button
+								type="button"
+								className={`w-full border border-border rounded-lg p-3 text-left flex items-start gap-2 hover:bg-muted/50 transition-colors ${isImporting ? "input-shimmer" : ""}`}
+								disabled={isImporting}
+							>
+								<div className="h-4 w-4 text-muted-foreground mt-0.5">
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+										<path d="M8 3.5a.5.5 0 0 1 .5.5v3.5H12a.5.5 0 0 1 0 1H8.5V12a.5.5 0 0 1-1 0V8.5H4a.5.5 0 0 1 0-1h3.5V4a.5.5 0 0 1 .5-.5z"/>
+									</svg>
+								</div>
+								<div className="flex-1">
+									<div className="text-xs text-muted-foreground mb-1">Event Options</div>
+									<div className="text-sm">
+										{EVENT_TYPE_OPTIONS.find(opt => opt.value === eventType)?.label || "Hackathon"} • {SKILL_LEVEL_OPTIONS.find(opt => opt.value === skillLevel)?.label || "Todos"}
+										{prizePool && ` • ${prizeCurrency === "PEN" ? "S/" : "$"}${prizePool}`}
+									</div>
+								</div>
+							</button>
+						</ResponsiveModalTrigger>
+						<ResponsiveModalContent className="max-w-2xl">
+							<ResponsiveModalHeader>
+								<ResponsiveModalTitle>Opciones del evento</ResponsiveModalTitle>
+							</ResponsiveModalHeader>
+							<div className="p-4 space-y-4">
+								<div className="grid grid-cols-2 gap-4">
+									{/* Type */}
+									<div>
+										<Label className="text-sm mb-2 block">Tipo de evento</Label>
+										<SearchableSelect
+											options={EVENT_TYPE_OPTIONS}
+											value={eventType}
+											onValueChange={setEventType}
+											placeholder="Seleccionar tipo"
+											searchPlaceholder="Buscar tipo..."
+											emptyMessage="No se encontró"
+											className="h-9"
+										/>
+									</div>
+
+									{/* Skill Level */}
+									<div>
+										<Label className="text-sm mb-2 block">Nivel</Label>
+										<SearchableSelect
+											options={SKILL_LEVEL_OPTIONS}
+											value={skillLevel}
+											onValueChange={setSkillLevel}
+											placeholder="Seleccionar nivel"
+											searchPlaceholder="Buscar nivel..."
+											emptyMessage="No se encontró"
+											className="h-9"
+										/>
+									</div>
+								</div>
+
+								{/* Prize */}
+								{(eventType === "hackathon" ||
+									eventType === "competition" ||
+									eventType === "olympiad") && (
+									<div>
+										<Label className="text-sm mb-2 flex items-center gap-1.5">
+											<DollarSign className="h-4 w-4" />
+											Premio
+										</Label>
+										<div className="flex gap-2">
+											<SearchableSelect
+												options={[
+													{ value: "USD", label: "USD", description: "Dólares" },
+													{ value: "PEN", label: "PEN", description: "Soles" },
+												]}
+												value={prizeCurrency}
+												onValueChange={(val) => setPrizeCurrency(val as "USD" | "PEN")}
+												placeholder="USD"
+												searchPlaceholder="Buscar..."
+												emptyMessage="No se encontró"
+												className="h-9 w-24"
+											/>
+											<Input
+												type="number"
+												value={prizePool}
+												onChange={(e) => setPrizePool(e.target.value)}
+												placeholder="0"
+												className="flex-1 h-9"
+											/>
+										</div>
+									</div>
+								)}
+							</div>
+							<ResponsiveModalFooter>
+								<ResponsiveModalClose asChild>
+									<Button>Guardar</Button>
+								</ResponsiveModalClose>
+							</ResponsiveModalFooter>
+						</ResponsiveModalContent>
+					</ResponsiveModal>
+
+					{/* Links Button */}
+					<ResponsiveModal open={linksOpen} onOpenChange={setLinksOpen}>
+						<ResponsiveModalTrigger asChild>
+							<Button
+								type="button"
+								variant="outline"
+								className={`w-full justify-start text-muted-foreground gap-2 h-9 ${isImporting ? "input-shimmer" : ""}`}
+								disabled={isImporting}
+							>
+								<Link2 className="h-4 w-4" />
+								{websiteUrl || registrationUrl
+									? "Enlaces configurados"
+									: "Agregar enlaces (opcional)"}
+							</Button>
+						</ResponsiveModalTrigger>
+						<ResponsiveModalContent className="max-w-2xl">
+							<ResponsiveModalHeader>
+								<ResponsiveModalTitle>Enlaces del evento</ResponsiveModalTitle>
+							</ResponsiveModalHeader>
+							<div className="p-4 space-y-4">
+								<div>
+									<Label className="text-sm flex items-center gap-1.5 mb-2">
+										<Globe className="h-3.5 w-3.5" />
+										Sitio web
+									</Label>
+									<Input
+										type="url"
+										value={websiteUrl}
+										onChange={(e) => setWebsiteUrl(e.target.value)}
+										placeholder="https://..."
+										className="h-9"
+									/>
+								</div>
+								<div>
+									<Label className="text-sm flex items-center gap-1.5 mb-2">
+										<Link2 className="h-3.5 w-3.5" />
+										Registro
+									</Label>
+									<Input
+										type="url"
+										value={registrationUrl}
+										onChange={(e) => setRegistrationUrl(e.target.value)}
+										placeholder="https://..."
+										className="h-9"
+									/>
+								</div>
+							</div>
+							<ResponsiveModalFooter>
+								<ResponsiveModalClose asChild>
+									<Button>Guardar</Button>
+								</ResponsiveModalClose>
+							</ResponsiveModalFooter>
+						</ResponsiveModalContent>
+					</ResponsiveModal>
+
+					{/* Submit */}
+					<Button
+						type="submit"
+						disabled={loading || !name || isImporting}
+						className={`w-full h-10 text-sm gap-2 ${isImporting ? "input-shimmer" : ""}`}
+					>
+						{(loading || isImporting) && <Loader2 className="h-4 w-4 animate-spin" />}
+						{isImporting ? "Importando..." : "Crear Evento"}
+					</Button>
+				</div>
+			</div>
+		</form>
+	);
+}

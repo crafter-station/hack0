@@ -601,6 +601,9 @@ export const eventOrganizers = pgTable("event_organizers", {
 	// Role specific to this event
 	role: eventOrganizerRoleEnum("role").default("organizer"),
 
+	// Organization this person represents (personal or community org)
+	representingOrgId: uuid("representing_org_id").references(() => organizations.id),
+
 	// Timestamps
 	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
 });
@@ -615,6 +618,35 @@ export const EVENT_ORGANIZER_ROLE_LABELS: Record<string, string> = {
 	organizer: "Co-organizador",
 	volunteer: "Voluntario",
 };
+
+// ============================================
+// EVENT HOST ORGANIZATIONS - Multi-org co-hosting
+// ============================================
+
+export const eventHostOrganizations = pgTable("event_host_organizations", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	eventId: uuid("event_id")
+		.references(() => events.id)
+		.notNull(),
+	organizationId: uuid("organization_id")
+		.references(() => organizations.id)
+		.notNull(),
+
+	// Primary host (only one per event - the creator)
+	isPrimary: boolean("is_primary").default(false),
+
+	// Invitation status (pending = invited but not accepted yet)
+	status: approvalStatusEnum("status").default("pending"),
+	invitedBy: varchar("invited_by", { length: 255 }), // Clerk user ID
+	inviteToken: varchar("invite_token", { length: 255 }).unique(),
+
+	// Timestamps
+	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	acceptedAt: timestamp("accepted_at", { mode: "date", withTimezone: true }),
+});
+
+export type EventHostOrganization = typeof eventHostOrganizations.$inferSelect;
+export type NewEventHostOrganization = typeof eventHostOrganizations.$inferInsert;
 
 // ============================================
 // IMPORT JOBS - For Luma/external event imports
@@ -687,6 +719,7 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
 	}),
 	sponsors: many(eventSponsors),
 	organizers: many(eventOrganizers),
+	hostOrganizations: many(eventHostOrganizations),
 }));
 
 export const organizationsRelations = relations(organizations, ({ many }) => ({
@@ -694,6 +727,7 @@ export const organizationsRelations = relations(organizations, ({ many }) => ({
 	members: many(communityMembers),
 	invites: many(communityInvites),
 	sponsorships: many(eventSponsors),
+	hostingEvents: many(eventHostOrganizations),
 }));
 
 export const communityMembersRelations = relations(
@@ -732,4 +766,22 @@ export const eventOrganizersRelations = relations(eventOrganizers, ({ one }) => 
 		fields: [eventOrganizers.eventId],
 		references: [events.id],
 	}),
+	representingOrg: one(organizations, {
+		fields: [eventOrganizers.representingOrgId],
+		references: [organizations.id],
+	}),
 }));
+
+export const eventHostOrganizationsRelations = relations(
+	eventHostOrganizations,
+	({ one }) => ({
+		event: one(events, {
+			fields: [eventHostOrganizations.eventId],
+			references: [events.id],
+		}),
+		organization: one(organizations, {
+			fields: [eventHostOrganizations.organizationId],
+			references: [organizations.id],
+		}),
+	}),
+);

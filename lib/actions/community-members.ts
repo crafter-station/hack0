@@ -431,3 +431,50 @@ export async function getUserCommunityRole(organizationId: string) {
 
   return membership?.role || null;
 }
+
+// ============================================
+// GET COMMUNITY MEMBERS WITH CLERK INFO
+// ============================================
+
+export async function getCommunityMembersWithClerkInfo(organizationId: string) {
+  const { userId: currentUserId } = await auth();
+
+  if (!currentUserId) {
+    return [];
+  }
+
+  const members = await db
+    .select()
+    .from(communityMembers)
+    .where(eq(communityMembers.communityId, organizationId));
+
+  const { clerkClient } = await import("@clerk/nextjs/server");
+  const clerk = await clerkClient();
+
+  const membersWithInfo = await Promise.all(
+    members.map(async (member) => {
+      try {
+        const user = await clerk.users.getUser(member.userId);
+        const name = user.fullName || user.username || user.emailAddresses[0]?.emailAddress?.split('@')[0] || "Usuario";
+        const email = user.emailAddresses[0]?.emailAddress || null;
+
+        return {
+          ...member,
+          name,
+          email,
+          imageUrl: user.imageUrl,
+        };
+      } catch (error) {
+        console.error(`Error fetching user ${member.userId}:`, error);
+        return {
+          ...member,
+          name: "Usuario sin nombre",
+          email: null,
+          imageUrl: null,
+        };
+      }
+    })
+  );
+
+  return membersWithInfo.filter(m => m.name !== "Usuario sin nombre");
+}

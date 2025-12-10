@@ -49,6 +49,7 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-email/components": "^1.0.1",
+    "@react-email/render": "^2.0.0",
     "@tailwindcss/typography": "^0.5.19",
     "@takumi-rs/image-response": "^0.57.3",
     "@takumi-rs/template": "^0.57.3",

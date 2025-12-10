@@ -32,6 +32,7 @@ import {
 	getEventSponsors,
 } from "@/lib/actions/events";
 import { getOrganizationBySlug } from "@/lib/actions/organizations";
+import { getEventCohost } from "@/lib/actions/cohost-invites";
 import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
 import {
 	formatEventDate,
@@ -137,13 +138,16 @@ export default async function EventPage({ params }: EventPageProps) {
 		notFound();
 	}
 
-	const [childEvents, eventSponsors] = await Promise.all([
+	const [childEvents, eventSponsors, cohosts] = await Promise.all([
 		getChildEvents(hackathon.id),
 		getEventSponsors(hackathon.id),
+		getEventCohost(hackathon.id),
 	]);
 
 	const hasChildEvents = childEvents.length > 0;
 	const hasSponsors = eventSponsors.length > 0;
+	const approvedCohosts = cohosts.filter((c) => c.status === "approved" && !c.isPrimary);
+	const hasCohosts = approvedCohosts.length > 0;
 
 	const status = getEventStatus(hackathon);
 	const isEnded = status.status === "ended";
@@ -281,8 +285,8 @@ export default async function EventPage({ params }: EventPageProps) {
 					</div>
 				</div>
 
-				<section className="mx-auto max-w-screen-xl px-4 py-6 md:py-12">
-					<div className="grid md:grid-cols-[240px_1fr] gap-6 md:gap-8">
+				<section className="mx-auto max-w-screen-xl px-4 py-4 md:py-6">
+					<div className="grid md:grid-cols-[240px_1fr] gap-4 md:gap-6">
 						<div className="hidden md:block">
 							<div className="aspect-square w-full overflow-hidden bg-muted border border-border">
 								{hackathon.eventImageUrl ? (
@@ -305,7 +309,7 @@ export default async function EventPage({ params }: EventPageProps) {
 							</div>
 						</div>
 
-						<div className="space-y-4">
+						<div className="space-y-3">
 							<div className="flex items-start justify-between gap-4">
 								<h1 className="text-2xl md:text-3xl font-bold tracking-tight">
 									{hackathon.name}
@@ -473,9 +477,9 @@ export default async function EventPage({ params }: EventPageProps) {
 					</div>
 				</section>
 
-				<section className="mx-auto max-w-screen-xl px-4 pb-12">
-					<div className="grid lg:grid-cols-[1fr_320px] gap-8 lg:gap-12">
-						<div className="space-y-10 min-w-0">
+				<section className="mx-auto max-w-screen-xl px-4 pb-8">
+					<div className="grid lg:grid-cols-[1fr_320px] gap-6 lg:gap-8">
+						<div className="space-y-8 min-w-0">
 							{hackathon.description && (
 								<div className="space-y-4">
 									<h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
@@ -697,51 +701,103 @@ export default async function EventPage({ params }: EventPageProps) {
 							{community && (
 								<div className="rounded-lg border bg-card">
 									<div className="px-5 py-4 border-b">
-										<h3 className="text-sm font-semibold">Organizado por</h3>
+										<h3 className="text-sm font-semibold">
+											Organizado por{hasCohosts && ` (${approvedCohosts.length + 1})`}
+										</h3>
 									</div>
-									<div className="p-5">
-										<div className="flex items-center gap-3 mb-3">
-											{community.logoUrl ? (
-												<div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-white border">
-													<Image
-														src={community.logoUrl}
-														alt={community.displayName || community.name}
-														fill
-														className="object-contain"
-														sizes="40px"
-													/>
-												</div>
-											) : (
-												<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted border">
-													<Building2 className="h-5 w-5 text-muted-foreground" />
-												</div>
-											)}
-											<div className="flex-1 min-w-0">
-												<div className="flex items-center gap-2 flex-wrap">
-													<Link
-														href={`/c/${slug}`}
-														className="text-sm font-medium hover:underline underline-offset-2 truncate"
-													>
-														{community.displayName || community.name}
-													</Link>
-													{community.isVerified && (
-														<CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-													)}
-												</div>
-												{community.type && (
-													<p className="text-xs text-muted-foreground mt-0.5">
-														{getOrganizerTypeLabel(community.type)}
-													</p>
+									<div className="p-5 space-y-4">
+										<div>
+											<div className="flex items-center gap-3 mb-3">
+												{community.logoUrl ? (
+													<div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-white border">
+														<Image
+															src={community.logoUrl}
+															alt={community.displayName || community.name}
+															fill
+															className="object-contain"
+															sizes="40px"
+														/>
+													</div>
+												) : (
+													<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted border">
+														<Building2 className="h-5 w-5 text-muted-foreground" />
+													</div>
 												)}
+												<div className="flex-1 min-w-0">
+													<div className="flex items-center gap-2 flex-wrap">
+														<Link
+															href={`/c/${slug}`}
+															className="text-sm font-medium hover:underline underline-offset-2 truncate"
+														>
+															{community.displayName || community.name}
+														</Link>
+														{community.isVerified && (
+															<CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+														)}
+													</div>
+													<div className="flex items-center gap-2 mt-0.5">
+														{community.type && (
+															<p className="text-xs text-muted-foreground">
+																{getOrganizerTypeLabel(community.type)}
+															</p>
+														)}
+														<span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+															Principal
+														</span>
+													</div>
+												</div>
 											</div>
+											<Link
+												href={`/c/${slug}`}
+												className="flex w-full h-9 items-center justify-center gap-2 rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+											>
+												<Building2 className="h-4 w-4" />
+												Ver comunidad
+											</Link>
 										</div>
-										<Link
-											href={`/c/${slug}`}
-											className="flex w-full h-9 items-center justify-center gap-2 rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-										>
-											<Building2 className="h-4 w-4" />
-											Ver comunidad
-										</Link>
+
+										{hasCohosts && (
+											<div className="space-y-3 pt-4 border-t">
+												<p className="text-xs font-medium text-muted-foreground">Co-organizadores</p>
+												{approvedCohosts.map((cohost) => (
+													<div key={cohost.id} className="flex items-center gap-3">
+														{cohost.organization.logoUrl ? (
+															<div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-white border">
+																<Image
+																	src={cohost.organization.logoUrl}
+																	alt={cohost.organization.displayName || cohost.organization.name}
+																	fill
+																	className="object-contain"
+																	sizes="32px"
+																/>
+															</div>
+														) : (
+															<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted border">
+																<Building2 className="h-4 w-4 text-muted-foreground" />
+															</div>
+														)}
+														<div className="flex-1 min-w-0">
+															<div className="flex items-center gap-2 flex-wrap">
+																<Link
+																	href={`/c/${cohost.organization.slug}`}
+																	className="text-sm font-medium hover:underline underline-offset-2 truncate"
+																>
+																	{cohost.organization.displayName || cohost.organization.name}
+																</Link>
+																{cohost.organization.isVerified && (
+																	<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+																)}
+															</div>
+															{cohost.organization.type && (
+																<p className="text-xs text-muted-foreground">
+																	{getOrganizerTypeLabel(cohost.organization.type)}
+																</p>
+															)}
+														</div>
+													</div>
+												))}
+											</div>
+										)}
 									</div>
 								</div>
 							)}

@@ -6,8 +6,8 @@ import { canManageEventBySlug } from "@/lib/actions/permissions";
 import { getOrganizationBySlug } from "@/lib/actions/organizations";
 import { getEventBySlug, getEventSponsors } from "@/lib/actions/events";
 import { getEventWinnerClaims } from "@/lib/actions/claims";
-import { getEventOrganizers } from "@/lib/actions/event-organizers";
 import { getEventImportJobs, getEventNotificationLogs } from "@/lib/actions/analytics";
+import { getEventCohost } from "@/lib/actions/cohost-invites";
 import { ManageContent } from "@/components/manage/manage-content";
 import { Button } from "@/components/ui/button";
 
@@ -136,7 +136,7 @@ export default async function ManageEventPage({
   }
 
   const sponsors = await getEventSponsors(event.id);
-  const eventOrganizers = await getEventOrganizers(event.id);
+  const cohosts = await getEventCohost(event.id);
 
   const isHackathon = event.eventType === "hackathon" || event.eventType === "competition" || event.eventType === "olympiad";
   const winnerClaims = isHackathon ? await getEventWinnerClaims(event.id) : [];
@@ -156,7 +156,7 @@ export default async function ManageEventPage({
           eventSlug={eventSlug}
           tab={tab}
           sponsors={sponsors}
-          eventOrganizers={eventOrganizers}
+          cohosts={cohosts}
           winnerClaims={winnerClaims}
           importJobs={importJobs}
           notificationLogs={notificationLogs}

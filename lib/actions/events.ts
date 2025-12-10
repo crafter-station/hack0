@@ -376,16 +376,20 @@ export async function getUpcomingEvents(
 export interface CreateEventInput {
 	name: string;
 	description?: string;
-	websiteUrl: string;
+	websiteUrl?: string;
 	eventType?: string;
 	format?: string;
 	skillLevel?: string;
 	country?: string;
+	department?: string;
 	city?: string;
+	venue?: string;
+	timezone?: string;
 	startDate?: string;
 	endDate?: string;
 	registrationDeadline?: string;
 	prizePool?: number;
+	prizeCurrency?: "USD" | "PEN";
 	registrationUrl?: string;
 	organizationId: string;
 	eventImageUrl?: string;
@@ -442,19 +446,23 @@ export async function createEvent(
 			slug,
 			name: input.name,
 			description: input.description,
-			websiteUrl: input.websiteUrl,
+			websiteUrl: input.websiteUrl || input.registrationUrl,
 			registrationUrl: input.registrationUrl || input.websiteUrl,
 			eventType: (input.eventType as any) || "hackathon",
 			format: (input.format as any) || "virtual",
 			skillLevel: (input.skillLevel as any) || "all",
 			country: input.country || "PE",
+			department: input.department,
 			city: input.city,
+			venue: input.venue,
+			timezone: input.timezone || "America/Lima",
 			startDate: input.startDate ? new Date(input.startDate) : undefined,
 			endDate: input.endDate ? new Date(input.endDate) : undefined,
 			registrationDeadline: input.registrationDeadline
 				? new Date(input.registrationDeadline)
 				: undefined,
 			prizePool: input.prizePool,
+			prizeCurrency: (input.prizeCurrency as any) || "USD",
 			eventImageUrl: input.eventImageUrl,
 			status: "upcoming",
 			isApproved,

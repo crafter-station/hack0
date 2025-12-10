@@ -39,6 +39,8 @@ export const lumaImportTask = task({
       const result = await firecrawl.scrape(lumaUrl, {
         formats: [
           "markdown",
+          "html",
+          "links",
           {
             type: "json",
             prompt: `Extract event information from this Luma event page. Return a JSON object with:
@@ -47,9 +49,33 @@ export const lumaImportTask = task({
 - startDate (ISO 8601 string)
 - endDate (ISO 8601 string)
 - location (object with venue, city, country, isVirtual boolean)
-- imageUrl (string, banner/cover image URL)
 - organizerName (string)
-- registrationUrl (string)`,
+- registrationUrl (string)
+- eventType (string, choose the MOST APPROPRIATE option from this list based on the event content and description):
+  * "hackathon" - Programming competitions, hack events
+  * "conference" - Conferences, congresses, symposiums
+  * "seminar" - Seminars, talks, presentations
+  * "research_fair" - Science fairs, poster sessions
+  * "workshop" - Practical workshops, hands-on sessions
+  * "bootcamp" - Intensive training programs
+  * "summer_school" - Summer/winter schools
+  * "course" - Courses, diplomas
+  * "certification" - Certification programs
+  * "meetup" - Community meetups, casual gatherings
+  * "networking" - Networking events, mixers
+  * "olympiad" - Academic olympiads (math, physics, programming)
+  * "competition" - General competitions
+  * "robotics" - Robotics tournaments
+  * "accelerator" - Acceleration programs
+  * "incubator" - Incubator programs
+  * "fellowship" - Fellowships, scholarships
+  * "call_for_papers" - Academic calls for papers
+
+  IMPORTANT: Choose the option that BEST matches the event's main purpose. For example:
+  - If it's a casual community gathering or meetup → use "meetup"
+  - If it's focused on professional connections → use "networking"
+  - If it's a coding competition → use "hackathon"
+  - If it's a talk or presentation series → use "seminar"`,
           },
         ],
       });
@@ -61,9 +87,33 @@ export const lumaImportTask = task({
 
       const extracted = result.json as LumaExtractedData;
 
-      let imageUrl = extracted.imageUrl;
-      if (!imageUrl && result.metadata?.ogImage) {
-        imageUrl = result.metadata.ogImage as string;
+      // Extraer imagen del HTML directamente buscando URLs de Luma CDN
+      let imageUrl: string | undefined;
+
+      // Buscar en el HTML por imágenes de lumacdn.com
+      if (result.html) {
+        const lumaImageRegex = /https:\/\/images\.lumacdn\.com\/[^\s"'<>]+/g;
+        const matches = result.html.match(lumaImageRegex);
+
+        if (matches && matches.length > 0) {
+          // Tomar la primera imagen encontrada (usualmente es la cover)
+          imageUrl = matches[0];
+          console.log('Found Luma CDN image:', imageUrl);
+        }
+      }
+
+      // Fallback: intentar usar la que el LLM extrajo si es válida
+      if (!imageUrl && extracted.imageUrl) {
+        const llmImage = extracted.imageUrl;
+        if (llmImage &&
+            !llmImage.includes('placeholder') &&
+            !llmImage.includes('_url_here') &&
+            !llmImage.includes('example.') &&
+            llmImage.startsWith('http') &&
+            llmImage.includes('lumacdn.com')
+        ) {
+          imageUrl = llmImage;
+        }
       }
 
       metadata.set("name", extracted.name || "");
@@ -80,6 +130,7 @@ export const lumaImportTask = task({
       metadata.set("registrationUrl", extracted.registrationUrl || lumaUrl);
       metadata.set("websiteUrl", lumaUrl);
       metadata.set("sourceImageUrl", imageUrl || "");
+      metadata.set("eventType", extracted.eventType || "");
 
       metadata.set("step", "uploading_image");
 
@@ -100,7 +151,8 @@ export const lumaImportTask = task({
 
       metadata.set("step", "completed");
 
-      const eventType = inferEventType(
+      // Usar el eventType extraído por el LLM, o hacer fallback a inferencia
+      const eventType = extracted.eventType || inferEventType(
         extracted.name,
         extracted.description
       );

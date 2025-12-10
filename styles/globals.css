@@ -144,6 +144,16 @@
 
 .input-shimmer {
   position: relative;
+  overflow: hidden;
+}
+
+.input-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: linear-gradient(
     90deg,
     transparent 0%,
@@ -152,14 +162,14 @@
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+  pointer-events: none;
 }
 
-.dark .input-shimmer {
+.dark .input-shimmer::after {
   background: linear-gradient(
     90deg,
     transparent 0%,
     oklch(0.93 0 0 / 0.15) 50%,
     transparent 100%
   );
-  background-size: 200% 100%;
 }

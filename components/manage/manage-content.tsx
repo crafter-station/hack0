@@ -12,7 +12,6 @@ import {
 	Copy,
 	Database,
 	ExternalLink,
-	Eye,
 	Facebook,
 	Globe,
 	Linkedin,
@@ -27,10 +26,11 @@ import Link from "next/link";
 import { useState } from "react";
 import { EditEventForm } from "@/components/events/edit-event-form";
 import { DeleteEventButton } from "@/components/events/delete-event-button";
+import { CohostSelector } from "@/components/events/cohost-selector";
 import { Button } from "@/components/ui/button";
 import type { EventSponsorWithOrg } from "@/lib/actions/events";
-import type { Event, Organization, EventOrganizer, WinnerClaim, ImportJob, NotificationLog } from "@/lib/db/schema";
-import { SPONSOR_TIER_LABELS, EVENT_ORGANIZER_ROLE_LABELS } from "@/lib/db/schema";
+import type { Event, Organization, WinnerClaim, ImportJob, NotificationLog, EventHostOrganization } from "@/lib/db/schema";
+import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
 import {
 	getEventStatus,
 	getEventTypeLabel,
@@ -45,7 +45,7 @@ interface ManageContentProps {
 	eventSlug: string;
 	tab: string;
 	sponsors: EventSponsorWithOrg[];
-	eventOrganizers: EventOrganizer[];
+	cohosts: (EventHostOrganization & { organization: Organization })[];
 	winnerClaims: WinnerClaim[];
 	importJobs: ImportJob[];
 	notificationLogs: NotificationLog[];
@@ -58,7 +58,7 @@ export function ManageContent({
 	eventSlug,
 	tab,
 	sponsors,
-	eventOrganizers,
+	cohosts,
 	winnerClaims,
 	importJobs,
 	notificationLogs,
@@ -539,68 +539,23 @@ export function ManageContent({
 	}
 
 	if (tab === "team") {
-		return (
-			<div className="space-y-6">
-				{/* Event Organizers */}
-				<div className="rounded-lg border bg-card">
-					<div className="px-5 py-4 border-b">
-						<div className="flex items-center justify-between">
-							<div className="flex items-center gap-2">
-								<Users className="h-4 w-4 text-muted-foreground" />
-								<h3 className="text-sm font-semibold">
-									Equipo del Evento ({eventOrganizers.length})
-								</h3>
-							</div>
-						</div>
-					</div>
-					<div className="p-6">
-						{eventOrganizers.length === 0 ? (
-							<div className="text-center py-8 space-y-3">
-								<p className="text-sm text-muted-foreground">
-									No hay organizadores asignados todavía
-								</p>
-								<p className="text-xs text-muted-foreground">
-									Los owner/admin de la comunidad pueden asignar miembros como organizadores del evento
-								</p>
-							</div>
-						) : (
-							<div className="space-y-3">
-								{eventOrganizers.map((organizer) => (
-									<div
-										key={organizer.id}
-										className="rounded-lg border p-4 space-y-2"
-									>
-										<div className="flex items-start justify-between">
-											<div className="space-y-1">
-												<p className="text-sm font-medium">User ID: {organizer.userId}</p>
-												<p className="text-xs text-muted-foreground">
-													Agregado {formatDistanceToNow(new Date(organizer.createdAt), { addSuffix: true, locale: es })}
-												</p>
-											</div>
-											<div className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium bg-blue-500/10 text-blue-700 dark:text-blue-400">
-												{EVENT_ORGANIZER_ROLE_LABELS[organizer.role]}
-											</div>
-										</div>
-									</div>
-								))}
-							</div>
-						)}
-					</div>
-				</div>
+		const transformedCohosts = cohosts.map((cohost) => ({
+			id: cohost.id,
+			organizationId: cohost.organizationId,
+			organizationName: cohost.organization.displayName || cohost.organization.name,
+			organizationSlug: cohost.organization.slug,
+			organizationLogoUrl: cohost.organization.logoUrl,
+			status: cohost.status,
+			isPrimary: cohost.isPrimary,
+		}));
 
-				<div className="rounded-lg border bg-muted/30 p-4">
-					<div className="flex items-start gap-3">
-						<AlertCircle className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
-						<div className="space-y-1">
-							<p className="text-sm font-medium">Gestión de equipo</p>
-							<p className="text-xs text-muted-foreground">
-								Solo los owner y admin de la comunidad pueden agregar o remover organizadores del evento.
-								Los organizadores deben ser miembros de la comunidad primero.
-							</p>
-						</div>
-					</div>
-				</div>
-			</div>
+		return (
+			<CohostSelector
+				eventId={event.id}
+				organizationId={community.id}
+				currentUserId={community.ownerUserId}
+				existingCohosts={transformedCohosts}
+			/>
 		);
 	}
 
