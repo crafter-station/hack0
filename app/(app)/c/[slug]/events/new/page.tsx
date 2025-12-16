@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { OrgEventFormMinimal } from "@/components/communities/org-event-form-minimal";
 import { getUserCommunityRole } from "@/lib/actions/community-members";
-import { getOrganizationBySlug } from "@/lib/actions/organizations";
+import { getAllUserOrganizations, getOrganizationBySlug } from "@/lib/actions/organizations";
 import { isGodMode } from "@/lib/god-mode";
 
 interface NewEventPageProps {
@@ -34,13 +34,17 @@ export default async function NewEventPage({ params }: NewEventPageProps) {
 		}
 	}
 
+	const allOrganizations = await getAllUserOrganizations();
+
 	return (
 		<main className="flex-1 w-full py-4 md:py-6">
 			<OrgEventFormMinimal
 				communityId={org.id}
 				communityName={org.displayName || org.name}
 				communityLogo={org.logoUrl}
-				communitySlug={slug}
+				communitySlug={org.slug}
+				currentOrg={org}
+				availableOrganizations={allOrganizations}
 			/>
 		</main>
 	);

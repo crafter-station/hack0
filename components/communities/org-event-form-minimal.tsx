@@ -2,25 +2,40 @@
 
 import {
 	ArrowLeft,
-	Calendar as CalendarIcon,
+	Building2,
+	Check,
+	ChevronsUpDown,
 	DollarSign,
 	FileText,
 	Globe,
-	Image as ImageIcon,
 	Link2,
 	Loader2,
 	MapPin,
-	Plus,
+	Search,
 	Sparkles,
+	User,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect, useTransition, useMemo } from "react";
 import { useRealtimeRun } from "@trigger.dev/react-hooks";
 import { Button } from "@/components/ui/button";
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from "@/components/ui/command";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 import {
 	ResponsiveModal,
 	ResponsiveModalClose,
@@ -36,12 +51,20 @@ import Markdown from "react-markdown";
 import { createEvent } from "@/lib/actions/events";
 import { startLumaImport } from "@/lib/actions/import";
 import { EVENT_TYPE_OPTIONS, SKILL_LEVEL_OPTIONS } from "@/lib/event-utils";
+import type { Organization } from "@/lib/db/schema";
+
+interface OrganizationWithRole {
+	organization: Organization;
+	role: "owner" | "admin" | "member" | "follower";
+}
 
 interface OrgEventFormMinimalProps {
 	communityId: string;
 	communityName: string;
 	communityLogo?: string | null;
 	communitySlug: string;
+	currentOrg?: Organization;
+	availableOrganizations?: OrganizationWithRole[];
 }
 
 interface ExtractedData {
@@ -66,6 +89,8 @@ export function OrgEventFormMinimal({
 	communityId,
 	communityName,
 	communitySlug,
+	currentOrg,
+	availableOrganizations,
 }: OrgEventFormMinimalProps) {
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
@@ -103,6 +128,27 @@ export function OrgEventFormMinimal({
 		accessToken: string;
 	} | null>(null);
 	const [isPending, startTransition] = useTransition();
+	const [orgSelectorOpen, setOrgSelectorOpen] = useState(false);
+
+	const creatableOrgs = useMemo(() => {
+		const orgs: Array<{ organization: Organization; role: string }> = [];
+
+		if (currentOrg) {
+			orgs.push({ organization: currentOrg, role: "owner" });
+		}
+
+		if (availableOrganizations) {
+			for (const orgWithRole of availableOrganizations) {
+				if (orgWithRole.role === "owner" || orgWithRole.role === "admin") {
+					if (!orgs.some(o => o.organization.id === orgWithRole.organization.id)) {
+						orgs.push(orgWithRole);
+					}
+				}
+			}
+		}
+
+		return orgs;
+	}, [currentOrg, availableOrganizations]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -241,7 +287,7 @@ export function OrgEventFormMinimal({
 					className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
 				>
 					<ArrowLeft className="h-3.5 w-3.5" />
-					Volver a {communityName}
+					Volver
 				</Link>
 				<ResponsiveModal open={importOpen} onOpenChange={setImportOpen}>
 					<ResponsiveModalTrigger asChild>
@@ -339,10 +385,102 @@ export function OrgEventFormMinimal({
 				</ResponsiveModal>
 			</div>
 
-			<div className="flex gap-6">
-				{/* Left Column - Image */}
-				<div className="space-y-3">
-					<div className={`w-72 h-72 flex-shrink-0 overflow-hidden bg-muted border border-border rounded-lg ${isImporting ? "input-shimmer" : ""}`}>
+				<div className="flex flex-col md:flex-row gap-6">
+				{/* Left Column - Org Selector + Image */}
+				<div className="w-full md:w-72 flex-shrink-0 space-y-3">
+					{/* Org Selector */}
+					{creatableOrgs.length > 0 && (
+						<div>
+							<Label className="text-xs text-muted-foreground mb-2 block">
+								Publicar en
+							</Label>
+							<Popover open={orgSelectorOpen} onOpenChange={setOrgSelectorOpen}>
+								<PopoverTrigger asChild>
+									<Button
+										variant="outline"
+										role="combobox"
+										aria-expanded={orgSelectorOpen}
+										className="w-full justify-between h-auto py-2"
+									>
+										<div className="flex items-center gap-2">
+											{currentOrg?.logoUrl ? (
+												<img
+													src={currentOrg.logoUrl}
+													alt={currentOrg.displayName || currentOrg.name}
+													className="h-6 w-6 rounded-md object-cover"
+												/>
+											) : currentOrg?.isPersonalOrg ? (
+												<div className="h-6 w-6 rounded-md bg-muted flex items-center justify-center">
+													<User className="h-3.5 w-3.5 text-muted-foreground" />
+												</div>
+											) : (
+												<div className="h-6 w-6 rounded-md bg-muted flex items-center justify-center">
+													<Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+												</div>
+											)}
+											<span className="truncate">
+												{currentOrg?.displayName || currentOrg?.name || communityName}
+											</span>
+										</div>
+										<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+									</Button>
+								</PopoverTrigger>
+								<PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+									<Command>
+										<CommandInput placeholder="Buscar comunidad..." />
+										<CommandList>
+											<CommandEmpty>No se encontraron comunidades</CommandEmpty>
+											<CommandGroup>
+												{creatableOrgs.map(({ organization }) => (
+													<CommandItem
+														key={organization.id}
+														value={organization.slug}
+														onSelect={(value) => {
+															setOrgSelectorOpen(false);
+															if (value !== communitySlug) {
+																router.push(`/c/${value}/events/new`);
+															}
+														}}
+														className="flex items-center gap-2 py-2"
+													>
+														{organization.logoUrl ? (
+															<img
+																src={organization.logoUrl}
+																alt={organization.displayName || organization.name}
+																className="h-6 w-6 rounded-md object-cover"
+															/>
+														) : organization.isPersonalOrg ? (
+															<div className="h-6 w-6 rounded-md bg-muted flex items-center justify-center">
+																<User className="h-3.5 w-3.5 text-muted-foreground" />
+															</div>
+														) : (
+															<div className="h-6 w-6 rounded-md bg-muted flex items-center justify-center">
+																<Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+															</div>
+														)}
+														<div className="flex-1 min-w-0">
+															<div className="truncate font-medium">
+																{organization.displayName || organization.name}
+															</div>
+															<div className="text-xs text-muted-foreground truncate">
+																{organization.isPersonalOrg ? "Tu perfil" : `@${organization.slug}`}
+															</div>
+														</div>
+														{organization.slug === communitySlug && (
+															<Check className="h-4 w-4 shrink-0" />
+														)}
+													</CommandItem>
+												))}
+											</CommandGroup>
+										</CommandList>
+									</Command>
+								</PopoverContent>
+							</Popover>
+						</div>
+					)}
+
+					{/* Image Upload */}
+					<div className={`w-full aspect-square md:h-72 overflow-hidden bg-muted border border-border rounded-lg ${isImporting ? "input-shimmer" : ""}`}>
 						{eventImageUrl ? (
 							<div className="relative w-full h-full group">
 								<img

@@ -1,14 +1,10 @@
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import { GodModeBanner } from "@/components/god-mode/god-mode-banner";
 import { SearchTrigger } from "@/components/search-command";
-import { ThemeSwitcherButton } from "@/components/theme-switcher-button";
-import { getAllUserOrganizations } from "@/lib/actions/organizations";
-import { db } from "@/lib/db";
-import { organizations as orgsTable } from "@/lib/db/schema";
-import { and, eq } from "drizzle-orm";
-import { OrgSwitcher } from "./org-switcher";
+import { UserDropdown } from "./user-dropdown";
 
 interface SiteHeaderProps {
 	showBackButton?: boolean;
@@ -16,9 +12,7 @@ interface SiteHeaderProps {
 
 export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 	const { userId } = await auth();
-	const organizations = userId ? await getAllUserOrganizations() : [];
 
-	// Get or create user's personal org (ensures all logged-in users have one)
 	const personalOrg = userId
 		? await (async () => {
 				const { getOrCreatePersonalOrg } = await import("@/lib/actions/organizations");
@@ -80,7 +74,6 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 						</div>
 						<div className="flex items-center gap-3">
 							<SearchTrigger />
-							<ThemeSwitcherButton />
 							<SignedOut>
 								<Link
 									href="/sign-in"
@@ -90,17 +83,16 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 								</Link>
 							</SignedOut>
 							<SignedIn>
-								<OrgSwitcher
-									organizations={organizations}
-									personalOrg={personalOrg}
-								/>
-								<UserButton
-									appearance={{
-										elements: {
-											avatarBox: "h-8 w-8",
-										},
-									}}
-								/>
+								{personalOrg && (
+									<Link
+										href={`/c/${personalOrg.slug}/events/new`}
+										className="inline-flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+									>
+										<Plus className="h-3.5 w-3.5" />
+										<span className="hidden sm:inline">Crear evento</span>
+									</Link>
+								)}
+								<UserDropdown />
 							</SignedIn>
 						</div>
 					</div>

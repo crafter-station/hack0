@@ -35,6 +35,22 @@ import {
 import type { EventSponsorWithOrg } from "@/lib/actions/events";
 import { SponsorManager } from "@/components/events/sponsor-manager";
 
+const utcToLimaDatetimeLocal = (utcDate: Date | string): string => {
+	const date = new Date(utcDate);
+	const limaOffset = -5 * 60;
+	const localTime = date.getTime();
+	const localOffset = date.getTimezoneOffset() * 60000;
+	const utc = localTime + localOffset;
+	const limaTime = new Date(utc + limaOffset * 60000);
+	return limaTime.toISOString().slice(0, 16);
+};
+
+const limaDatetimeLocalToUTC = (datetimeLocal: string): Date => {
+	const [datePart, timePart] = datetimeLocal.split("T");
+	const limaDateString = `${datePart}T${timePart}:00-05:00`;
+	return new Date(limaDateString);
+};
+
 interface EditEventFormProps {
 	event: Event;
 	sponsors: EventSponsorWithOrg[];
@@ -49,14 +65,14 @@ export function EditEventForm({ event, sponsors, onSuccess }: EditEventFormProps
 	const [name, setName] = useState(event.name);
 	const [description, setDescription] = useState(event.description || "");
 	const [startDate, setStartDate] = useState(
-		event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : "",
+		event.startDate ? utcToLimaDatetimeLocal(event.startDate) : "",
 	);
 	const [endDate, setEndDate] = useState(
-		event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : "",
+		event.endDate ? utcToLimaDatetimeLocal(event.endDate) : "",
 	);
 	const [registrationDeadline, setRegistrationDeadline] = useState(
 		event.registrationDeadline
-			? new Date(event.registrationDeadline).toISOString().slice(0, 16)
+			? utcToLimaDatetimeLocal(event.registrationDeadline)
 			: "",
 	);
 	const [format, setFormat] = useState<"virtual" | "in-person" | "hybrid">(
@@ -90,15 +106,16 @@ export function EditEventForm({ event, sponsors, onSuccess }: EditEventFormProps
 			eventId: event.id,
 			name,
 			description: description || undefined,
-			startDate: startDate ? new Date(startDate) : null,
-			endDate: endDate ? new Date(endDate) : null,
+			startDate: startDate ? limaDatetimeLocalToUTC(startDate) : null,
+			endDate: endDate ? limaDatetimeLocalToUTC(endDate) : null,
 			registrationDeadline: registrationDeadline
-				? new Date(registrationDeadline)
+				? limaDatetimeLocalToUTC(registrationDeadline)
 				: null,
 			format,
 			department: department || undefined,
 			city: city || undefined,
 			venue: venue || undefined,
+			timezone: "America/Lima",
 			prizePool: prizePool ? parseInt(prizePool, 10) : null,
 			prizeCurrency,
 			prizeDescription: prizeDescription || undefined,
