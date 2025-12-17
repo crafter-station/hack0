@@ -6,7 +6,6 @@ import { Loader2, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { getPersonalizedFeed, type FeedEvent, type FeedFilterType } from "@/lib/actions/feed";
 import { EventRowWithChildren } from "@/components/events/event-row-with-children";
-import { FeedSkeleton } from "./feed-skeleton";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Button } from "@/components/ui/button";
 
@@ -68,7 +67,13 @@ export function FeedEventsTable({
 	};
 
 	if (isLoading && events.length === 0) {
-		return <FeedSkeleton count={5} />;
+		return (
+			<div className="animate-pulse space-y-4">
+				{Array.from({ length: 8 }).map((_, i) => (
+					<div key={i} className="h-20 bg-muted rounded" />
+				))}
+			</div>
+		);
 	}
 
 	if (events.length === 0) {

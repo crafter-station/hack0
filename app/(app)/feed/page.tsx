@@ -7,7 +7,6 @@ import { CategoryTabs } from "@/components/events/category-tabs";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { FeedEventsTable } from "@/components/feed/feed-events-table";
-import { FeedSkeleton } from "@/components/feed/feed-skeleton";
 import { getPersonalizedFeed, type FeedFilterType } from "@/lib/actions/feed";
 import { getUserPreferences } from "@/lib/actions/user-preferences";
 import { isGodMode } from "@/lib/god-mode";
@@ -75,7 +74,11 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 			</section>
 
 			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-8 flex-1 w-full">
-				<Suspense fallback={<FeedSkeleton count={8} />}>
+				<Suspense fallback={<div className="animate-pulse space-y-4">
+					{Array.from({ length: 8 }).map((_, i) => (
+						<div key={i} className="h-20 bg-muted rounded" />
+					))}
+				</div>}>
 					<FeedContent category={params.category} />
 				</Suspense>
 			</main>
