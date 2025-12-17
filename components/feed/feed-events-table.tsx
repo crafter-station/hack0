@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { Loader2, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { getPersonalizedFeed, type FeedEvent } from "@/lib/actions/feed";
+import { getPersonalizedFeed, type FeedEvent, type FeedFilterType } from "@/lib/actions/feed";
 import { EventRowWithChildren } from "@/components/events/event-row-with-children";
-import { useCurrentFilter } from "./filter-pills";
 import { FeedSkeleton } from "./feed-skeleton";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Button } from "@/components/ui/button";
@@ -15,14 +14,15 @@ interface FeedEventsTableProps {
 	initialEvents: FeedEvent[];
 	initialCursor: string | null;
 	initialHasMore: boolean;
+	category: string;
 }
 
 export function FeedEventsTable({
 	initialEvents,
 	initialCursor,
 	initialHasMore,
+	category,
 }: FeedEventsTableProps) {
-	const filter = useCurrentFilter();
 	const [events, setEvents] = useState(initialEvents);
 	const [cursor, setCursor] = useState(initialCursor);
 	const [hasMore, setHasMore] = useState(initialHasMore);
@@ -34,25 +34,10 @@ export function FeedEventsTable({
 	});
 
 	useEffect(() => {
-		const fetchFiltered = async () => {
-			setIsLoading(true);
-			try {
-				const result = await getPersonalizedFeed({
-					limit: 15,
-					filter,
-				});
-				setEvents(result.events);
-				setCursor(result.nextCursor);
-				setHasMore(result.hasMore);
-			} catch (error) {
-				console.error("Error fetching filtered events:", error);
-			} finally {
-				setIsLoading(false);
-			}
-		};
-
-		fetchFiltered();
-	}, [filter]);
+		setEvents(initialEvents);
+		setCursor(initialCursor);
+		setHasMore(initialHasMore);
+	}, [initialEvents, initialCursor, initialHasMore, category]);
 
 	useEffect(() => {
 		if (inView && hasMore && !isLoading) {
@@ -65,6 +50,7 @@ export function FeedEventsTable({
 
 		setIsLoading(true);
 		try {
+			const filter = (category === "all" ? "all" : category) as FeedFilterType;
 			const result = await getPersonalizedFeed({
 				cursor,
 				limit: 10,
