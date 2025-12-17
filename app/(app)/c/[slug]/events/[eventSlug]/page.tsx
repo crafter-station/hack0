@@ -1,6 +1,4 @@
 import { auth } from "@clerk/nextjs/server";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import {
 	AlertCircle,
 	ArrowUpRight,
@@ -36,14 +34,20 @@ import { getEventCohost } from "@/lib/actions/cohost-invites";
 import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
 import {
 	formatEventDate,
+	formatEventDateFull,
+	formatEventDay,
+	formatEventMonth,
+	formatEventTime,
 	getDomainLabel,
 	getEventStatus,
 	getEventTypeLabel,
 	getFormatLabel,
 	getOrganizerTypeLabel,
+	getPeruDate,
 	getSkillLevelLabel,
 	isDateInFuture,
 	isEventJuniorFriendly,
+	PERU_TIMEZONE,
 } from "@/lib/event-utils";
 import { isGodMode } from "@/lib/god-mode";
 
@@ -340,35 +344,33 @@ export default async function EventPage({ params }: EventPageProps) {
 								<div className="flex items-center gap-4">
 									<div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-muted border border-border shrink-0">
 										<span className="text-[10px] uppercase font-medium text-muted-foreground leading-none">
-											{format(startDate, "MMM", { locale: es })}
+											{formatEventMonth(startDate)}
 										</span>
 										<span className="text-xl font-bold leading-none mt-0.5">
-											{format(startDate, "d")}
+											{formatEventDay(startDate)}
 										</span>
 									</div>
 									<div>
 										<p className="font-medium">
-											{format(startDate, "EEEE, d 'de' MMMM", { locale: es })}
+											{formatEventDateFull(startDate)}
 											{endDate &&
 												startDate.toDateString() !== endDate.toDateString() && (
 													<span className="text-muted-foreground">
 														{" "}
-														– {format(endDate, "d 'de' MMMM", { locale: es })}
+														– {formatEventDate(endDate, "d 'de' MMMM")}
 													</span>
 												)}
 										</p>
 										{hasValidTime ? (
 											<p className="text-sm text-muted-foreground">
-												{format(startDate, "h:mm a", { locale: es })}
+												{formatEventTime(startDate)}
 												{endDate && (
-													<> – {format(endDate, "h:mm a", { locale: es })}</>
+													<> – {formatEventTime(endDate)}</>
 												)}
-												{hackathon.timezone && (
-													<span className="text-muted-foreground/60">
-														{" "}
-														· {hackathon.timezone}
-													</span>
-												)}
+												<span className="text-muted-foreground/60">
+													{" "}
+													· {PERU_TIMEZONE}
+												</span>
 											</p>
 										) : (
 											<p className="text-sm text-muted-foreground">
@@ -826,9 +828,7 @@ export default async function EventPage({ params }: EventPageProps) {
 															: "Registro abre"}
 													</p>
 													<p className="text-xs font-medium">
-														{format(deadline, "d 'de' MMMM, yyyy", {
-															locale: es,
-														})}
+														{formatEventDate(deadline, "d 'de' MMMM, yyyy")}
 													</p>
 												</div>
 											)}
@@ -930,10 +930,10 @@ export default async function EventPage({ params }: EventPageProps) {
 									</div>
 									<div className="p-5">
 										<p className="text-sm font-medium">
-											{format(deadline, "d 'de' MMMM, yyyy", { locale: es })}
+											{formatEventDate(deadline, "d 'de' MMMM, yyyy")}
 										</p>
 										<p className="text-xs text-muted-foreground mt-1">
-											{format(deadline, "h:mm a", { locale: es })}
+											{formatEventTime(deadline)}
 										</p>
 									</div>
 								</div>
@@ -951,18 +951,18 @@ export default async function EventPage({ params }: EventPageProps) {
 									</div>
 									<div className="p-5">
 										<p className="text-sm font-medium">
-											{format(startDate, "d MMM", { locale: es })}
+											{formatEventDate(startDate, "d MMM")}
 											{endDate &&
 												startDate.toDateString() !== endDate.toDateString() && (
 													<>
 														{" "}
-														– {format(endDate, "d MMM yyyy", { locale: es })}
+														– {formatEventDate(endDate, "d MMM yyyy")}
 													</>
 												)}
 											{(!endDate ||
 												startDate.toDateString() ===
 													endDate.toDateString()) && (
-												<>, {format(startDate, "yyyy")}</>
+												<>, {formatEventDate(startDate, "yyyy")}</>
 											)}
 										</p>
 									</div>

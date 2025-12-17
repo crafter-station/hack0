@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, MapPin, Users, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { getEventStatus, getFormatLabel, formatEventDateSmart } from "@/lib/event-utils";
+import { getEventStatus, getFormatLabel, formatEventDateRange, formatEventDateKey, formatCalendarMonth } from "@/lib/event-utils";
 import type { Event } from "@/lib/db/schema";
 
 interface EventsCalendarProps {
@@ -26,14 +26,15 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 	// Filter events that have dates
 	const eventsWithDates = events.filter(event => event.startDate);
 
-	// Group events by date
 	const eventsByDate = new Map<string, Event[]>();
 	eventsWithDates.forEach(event => {
-		const date = format(new Date(event.startDate!), "yyyy-MM-dd");
-		if (!eventsByDate.has(date)) {
-			eventsByDate.set(date, []);
+		const dateKey = formatEventDateKey(event.startDate);
+		if (dateKey) {
+			if (!eventsByDate.has(dateKey)) {
+				eventsByDate.set(dateKey, []);
+			}
+			eventsByDate.get(dateKey)!.push(event);
 		}
-		eventsByDate.get(date)!.push(event);
 	});
 
 	// Generate calendar days
@@ -110,11 +111,11 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 				>
 					<ChevronLeft className="h-4 w-4" />
 				</Button>
-				
+
 				<h2 className="text-xl font-semibold">
-					{format(currentMonth, "MMMM yyyy", { locale: es })}
+					{formatCalendarMonth(currentMonth)}
 				</h2>
-				
+
 				<Button
 					variant="outline"
 					size="sm"
@@ -192,7 +193,7 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 			{/* Events List */}
 			<div className="space-y-4">
 				<h3 className="text-lg font-semibold">
-					Eventos de {format(currentMonth, "MMMM", { locale: es })}
+					Eventos de {formatCalendarMonth(currentMonth, "MMMM")}
 				</h3>
 				
 				{eventsWithDates.length === 0 ? (
@@ -227,7 +228,7 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 
 												{/* Date */}
 												<div className="text-sm text-muted-foreground">
-													{formatEventDateSmart(event.startDate, event.endDate)}
+													{formatEventDateRange(event.startDate, event.endDate)}
 												</div>
 
 												{/* Details */}

@@ -32,6 +32,8 @@ import type { EventSponsorWithOrg } from "@/lib/actions/events";
 import type { Event, Organization, WinnerClaim, ImportJob, NotificationLog, EventHostOrganization } from "@/lib/db/schema";
 import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
 import {
+	formatEventDate,
+	formatEventDateTime,
 	getEventStatus,
 	getEventTypeLabel,
 	getFormatLabel,
@@ -220,12 +222,12 @@ export function ManageContent({
 										</div>
 										{startDate && endDate ? (
 											<p className="text-sm font-medium">
-												{format(startDate, "d MMM", { locale: es })} –{" "}
-												{format(endDate, "d MMM yyyy", { locale: es })}
+												{formatEventDate(startDate, "d MMM")} –{" "}
+												{formatEventDate(endDate, "d MMM yyyy")}
 											</p>
 										) : startDate ? (
 											<p className="text-sm font-medium">
-												{format(startDate, "d MMMM yyyy", { locale: es })}
+												{formatEventDate(startDate, "d MMMM yyyy")}
 											</p>
 										) : (
 											<p className="text-sm text-muted-foreground">
@@ -234,7 +236,7 @@ export function ManageContent({
 										)}
 										{deadline && (
 											<p className="text-xs text-muted-foreground mt-0.5">
-												Cierra {format(deadline, "d MMM", { locale: es })}
+												Cierra {formatEventDate(deadline, "d MMM")}
 											</p>
 										)}
 									</div>
@@ -693,7 +695,7 @@ export function ManageContent({
 												</a>
 												{job.createdAt && (
 													<p className="text-xs text-muted-foreground">
-														{format(new Date(job.createdAt), "d MMM yyyy, HH:mm", { locale: es })}
+														{formatEventDateTime(new Date(job.createdAt), "d MMM yyyy, HH:mm")}
 													</p>
 												)}
 											</div>
@@ -748,7 +750,7 @@ export function ManageContent({
 												<p className="text-sm font-medium">{log.subject}</p>
 												{log.sentAt && (
 													<p className="text-xs text-muted-foreground">
-														{format(new Date(log.sentAt), "d MMM yyyy, HH:mm", { locale: es })}
+														{formatEventDateTime(new Date(log.sentAt), "d MMM yyyy, HH:mm")}
 													</p>
 												)}
 											</div>

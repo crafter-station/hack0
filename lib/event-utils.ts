@@ -1,5 +1,8 @@
 import { format, formatDistanceToNow, isAfter, isBefore, isSameDay } from "date-fns";
+import { toZonedTime, format as formatTz } from "date-fns-tz";
 import { es } from "date-fns/locale";
+
+export const PERU_TIMEZONE = "America/Lima";
 import {
   EVENT_TYPE_LABELS,
   ORGANIZER_TYPE_LABELS,
@@ -157,16 +160,58 @@ export function getCountryFlag(countryCode: string | null): string {
 }
 
 // =============================================================================
-// DATE FORMATTING
+// DATE FORMATTING (with Peru timezone support)
 // =============================================================================
+
+function toPeruTime(date: Date | null): Date | null {
+  if (!date) return null;
+  return toZonedTime(new Date(date), PERU_TIMEZONE);
+}
 
 export function formatEventDate(date: Date | null, formatStr = "d MMM yyyy"): string | null {
   if (!date) return null;
-  return format(new Date(date), formatStr, { locale: es });
+  const peruDate = toPeruTime(date);
+  if (!peruDate) return null;
+  return formatTz(peruDate, formatStr, { locale: es, timeZone: PERU_TIMEZONE });
 }
 
 export function formatEventDateShort(date: Date | null): string | null {
   return formatEventDate(date, "d MMM");
+}
+
+export function formatEventTime(date: Date | null, formatStr = "h:mm a"): string | null {
+  if (!date) return null;
+  const peruDate = toPeruTime(date);
+  if (!peruDate) return null;
+  return formatTz(peruDate, formatStr, { locale: es, timeZone: PERU_TIMEZONE });
+}
+
+export function formatEventDateTime(date: Date | null, formatStr = "d MMM yyyy, h:mm a"): string | null {
+  if (!date) return null;
+  const peruDate = toPeruTime(date);
+  if (!peruDate) return null;
+  return formatTz(peruDate, formatStr, { locale: es, timeZone: PERU_TIMEZONE });
+}
+
+export function formatEventDateFull(date: Date | null, formatStr = "EEEE, d 'de' MMMM"): string | null {
+  if (!date) return null;
+  const peruDate = toPeruTime(date);
+  if (!peruDate) return null;
+  return formatTz(peruDate, formatStr, { locale: es, timeZone: PERU_TIMEZONE });
+}
+
+export function formatEventMonth(date: Date | null, formatStr = "MMM"): string | null {
+  if (!date) return null;
+  const peruDate = toPeruTime(date);
+  if (!peruDate) return null;
+  return formatTz(peruDate, formatStr, { locale: es, timeZone: PERU_TIMEZONE });
+}
+
+export function formatEventDay(date: Date | null): string | null {
+  if (!date) return null;
+  const peruDate = toPeruTime(date);
+  if (!peruDate) return null;
+  return formatTz(peruDate, "d", { locale: es, timeZone: PERU_TIMEZONE });
 }
 
 /**
@@ -176,14 +221,16 @@ export function formatEventDateShort(date: Date | null): string | null {
  */
 export function formatEventDateSmart(date: Date | null): string | null {
   if (!date) return null;
-  const d = new Date(date);
+  const peruDate = toPeruTime(date);
+  if (!peruDate) return null;
+
   const currentYear = new Date().getFullYear();
-  const eventYear = d.getFullYear();
+  const eventYear = peruDate.getFullYear();
 
   if (eventYear !== currentYear) {
-    return format(d, "d MMM yyyy", { locale: es }); // "20 sep 2025"
+    return formatTz(peruDate, "d MMM yyyy", { locale: es, timeZone: PERU_TIMEZONE });
   }
-  return format(d, "d MMM", { locale: es }); // "20 sep"
+  return formatTz(peruDate, "d MMM", { locale: es, timeZone: PERU_TIMEZONE });
 }
 
 /**
@@ -198,8 +245,10 @@ export function formatEventDateRange(
 ): string | null {
   if (!startDate) return null;
 
-  const start = new Date(startDate);
-  const end = endDate ? new Date(endDate) : null;
+  const start = toPeruTime(startDate);
+  const end = endDate ? toPeruTime(endDate) : null;
+  if (!start) return null;
+
   const currentYear = new Date().getFullYear();
   const startYear = start.getFullYear();
 
@@ -207,25 +256,38 @@ export function formatEventDateRange(
     return formatEventDateSmart(startDate);
   }
 
-  // Same day - don't repeat the date
   if (isSameDay(start, end)) {
     return formatEventDateSmart(startDate);
   }
 
   const endYear = end.getFullYear();
 
-  // Different years - always show both years
   if (startYear !== endYear) {
-    return `${format(start, "d MMM yyyy", { locale: es })} – ${format(end, "d MMM yyyy", { locale: es })}`;
+    return `${formatTz(start, "d MMM yyyy", { locale: es, timeZone: PERU_TIMEZONE })} – ${formatTz(end, "d MMM yyyy", { locale: es, timeZone: PERU_TIMEZONE })}`;
   }
 
-  // Same year but not current year - show year only at the end
   if (startYear !== currentYear) {
-    return `${format(start, "d MMM", { locale: es })} – ${format(end, "d MMM yyyy", { locale: es })}`;
+    return `${formatTz(start, "d MMM", { locale: es, timeZone: PERU_TIMEZONE })} – ${formatTz(end, "d MMM yyyy", { locale: es, timeZone: PERU_TIMEZONE })}`;
   }
 
-  // Same year and current year - no year needed
-  return `${format(start, "d MMM", { locale: es })} – ${format(end, "d MMM", { locale: es })}`;
+  return `${formatTz(start, "d MMM", { locale: es, timeZone: PERU_TIMEZONE })} – ${formatTz(end, "d MMM", { locale: es, timeZone: PERU_TIMEZONE })}`;
+}
+
+export function formatEventDateRangeWithDay(
+  startDate: Date | null,
+  endDate: Date | null
+): string | null {
+  if (!startDate) return null;
+
+  const start = toPeruTime(startDate);
+  const end = endDate ? toPeruTime(endDate) : null;
+  if (!start) return null;
+
+  if (!end || isSameDay(start, end)) {
+    return formatEventDateFull(startDate);
+  }
+
+  return `${formatTz(start, "EEEE, d 'de' MMMM", { locale: es, timeZone: PERU_TIMEZONE })} – ${formatTz(end, "d 'de' MMMM", { locale: es, timeZone: PERU_TIMEZONE })}`;
 }
 
 export function formatRelativeDate(date: Date | null): string | null {
@@ -236,6 +298,21 @@ export function formatRelativeDate(date: Date | null): string | null {
 export function isDateInFuture(date: Date | null): boolean {
   if (!date) return false;
   return isAfter(new Date(date), new Date());
+}
+
+export function getPeruDate(date: Date | null): Date | null {
+  return toPeruTime(date);
+}
+
+export function formatEventDateKey(date: Date | null): string | null {
+  if (!date) return null;
+  const peruDate = toPeruTime(date);
+  if (!peruDate) return null;
+  return formatTz(peruDate, "yyyy-MM-dd", { timeZone: PERU_TIMEZONE });
+}
+
+export function formatCalendarMonth(date: Date, formatStr = "MMMM yyyy"): string {
+  return formatTz(date, formatStr, { locale: es, timeZone: PERU_TIMEZONE });
 }
 
 // =============================================================================
