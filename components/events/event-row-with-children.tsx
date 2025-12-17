@@ -15,7 +15,6 @@ import { PinIcon } from "@/components/icons/pin";
 import { TrophyIcon } from "@/components/icons/trophy";
 import { getChildEvents } from "@/lib/actions/events";
 import type { Event } from "@/lib/db/schema";
-import type { EventCategoryConfig } from "@/lib/event-categories";
 import {
 	formatEventDateRange,
 	formatEventDateSmart,
@@ -26,16 +25,21 @@ import {
 	isEventJuniorFriendly,
 } from "@/lib/event-utils";
 
+interface OrganizationInfo {
+	slug: string;
+	name: string;
+	displayName: string | null;
+	isVerified: boolean | null;
+}
+
 interface EventRowWithChildrenProps {
 	event: Event & {
-		organization: {
-			slug: string;
-			name: string;
-			displayName: string | null;
-			isVerified: boolean;
-		} | null;
+		organization: OrganizationInfo | null;
 	};
-	categoryConfig?: EventCategoryConfig;
+	categoryConfig?: {
+		showPrize?: boolean;
+		showSkillLevel?: boolean;
+	};
 }
 
 export function EventRowWithChildren({
@@ -428,7 +432,7 @@ export function EventRowWithChildren({
 function ChildEventRow({
 	event,
 }: {
-	event: Event & { organization: { slug: string } | null };
+	event: Event & { organization?: { slug: string } | null };
 }) {
 	const startDate = event.startDate ? new Date(event.startDate) : null;
 	const status = getEventStatus(event);
