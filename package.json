@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@ai-sdk/openai": "^2.0.79",
+    "@ai-sdk/rsc": "^1.0.116",
     "@clerk/nextjs": "^6.35.5",
     "@clerk/themes": "^2.4.40",
     "@hookform/resolvers": "^5.2.2",

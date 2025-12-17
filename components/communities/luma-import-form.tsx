@@ -15,8 +15,8 @@ import {
   Check,
   AlertCircle,
   Link as LinkIcon,
-  Sparkles,
 } from "lucide-react";
+import { LumaIcon } from "@/components/icons/luma";
 
 type Step =
   | "idle"
@@ -382,7 +382,7 @@ export function LumaImportForm({
       <div className="space-y-4">
         <div className="flex items-center gap-3 p-4 rounded-lg border border-dashed border-border bg-muted/30">
           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <Sparkles className="h-5 w-5 text-primary" />
+            <LumaIcon className="h-5 w-5 text-primary" />
           </div>
           <div>
             <p className="font-medium">Importación automática</p>
@@ -427,7 +427,7 @@ export function LumaImportForm({
           </>
         ) : (
           <>
-            <Sparkles className="h-4 w-4" />
+            <LumaIcon className="h-4 w-4" />
             Importar evento
           </>
         )}

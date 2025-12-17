@@ -1,5 +1,6 @@
 "use client";
 
+import { useRealtimeRun } from "@trigger.dev/react-hooks";
 import {
 	ArrowLeft,
 	Building2,
@@ -11,14 +12,15 @@ import {
 	Link2,
 	Loader2,
 	MapPin,
-	Search,
 	Sparkles,
 	User,
+	Wand2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useTransition, useMemo } from "react";
-import { useRealtimeRun } from "@trigger.dev/react-hooks";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import Markdown from "react-markdown";
+import { LumaIcon } from "@/components/icons/luma";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
@@ -47,11 +49,12 @@ import {
 } from "@/components/ui/responsive-modal";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Textarea } from "@/components/ui/textarea";
-import Markdown from "react-markdown";
 import { createEvent } from "@/lib/actions/events";
 import { startLumaImport } from "@/lib/actions/import";
-import { EVENT_TYPE_OPTIONS, SKILL_LEVEL_OPTIONS } from "@/lib/event-utils";
 import type { Organization } from "@/lib/db/schema";
+import { EVENT_TYPE_OPTIONS, SKILL_LEVEL_OPTIONS } from "@/lib/event-utils";
+import type { ExtractedEventData } from "@/lib/schemas/event-extraction";
+import { AIExtractModal } from "./ai-extract-modal";
 
 interface OrganizationWithRole {
 	organization: Organization;
@@ -121,6 +124,7 @@ export function OrgEventFormMinimal({
 	const [optionsOpen, setOptionsOpen] = useState(false);
 	const [importOpen, setImportOpen] = useState(false);
 	const [lumaImportOpen, setLumaImportOpen] = useState(false);
+	const [aiExtractOpen, setAiExtractOpen] = useState(false);
 	const [isImporting, setIsImporting] = useState(false);
 	const [lumaUrl, setLumaUrl] = useState("");
 	const [importState, setImportState] = useState<{
@@ -140,7 +144,9 @@ export function OrgEventFormMinimal({
 		if (availableOrganizations) {
 			for (const orgWithRole of availableOrganizations) {
 				if (orgWithRole.role === "owner" || orgWithRole.role === "admin") {
-					if (!orgs.some(o => o.organization.id === orgWithRole.organization.id)) {
+					if (
+						!orgs.some((o) => o.organization.id === orgWithRole.organization.id)
+					) {
 						orgs.push(orgWithRole);
 					}
 				}
@@ -186,13 +192,10 @@ export function OrgEventFormMinimal({
 	};
 
 	// Use realtime run hook when we have import state
-	const { run } = useRealtimeRun<ExtractedData>(
-		importState?.runId || "",
-		{
-			accessToken: importState?.accessToken || "",
-			enabled: !!importState,
-		}
-	);
+	const { run } = useRealtimeRun<ExtractedData>(importState?.runId || "", {
+		accessToken: importState?.accessToken || "",
+		enabled: !!importState,
+	});
 
 	const metadata = (run?.metadata || {}) as ExtractedData;
 	const step = metadata.step;
@@ -205,7 +208,7 @@ export function OrgEventFormMinimal({
 				if (!dateString) return { date: "", time: "" };
 				try {
 					const date = new Date(dateString);
-					const dateStr = date.toISOString().split('T')[0];
+					const dateStr = date.toISOString().split("T")[0];
 					const timeStr = date.toTimeString().slice(0, 5);
 					return { date: dateStr, time: timeStr };
 				} catch {
@@ -228,7 +231,8 @@ export function OrgEventFormMinimal({
 			if (metadata.format) setFormat(metadata.format as any);
 			if (metadata.eventType) setEventType(metadata.eventType);
 			if (metadata.websiteUrl) setWebsiteUrl(metadata.websiteUrl);
-			if (metadata.registrationUrl) setRegistrationUrl(metadata.registrationUrl);
+			if (metadata.registrationUrl)
+				setRegistrationUrl(metadata.registrationUrl);
 			if (metadata.eventImageUrl) setEventImageUrl(metadata.eventImageUrl);
 
 			// Clear import state
@@ -250,7 +254,6 @@ export function OrgEventFormMinimal({
 	const handleImportFromLuma = () => {
 		if (!lumaUrl) return;
 
-		// Cerrar modal y empezar shimmer inmediatamente
 		setLumaImportOpen(false);
 		setIsImporting(true);
 
@@ -270,6 +273,49 @@ export function OrgEventFormMinimal({
 				});
 			}
 		});
+	};
+
+	const handleAIExtract = (data: Partial<ExtractedEventData>) => {
+		const parseDateTime = (dateString?: string) => {
+			if (!dateString) return { date: "", time: "" };
+			try {
+				const date = new Date(dateString);
+				const dateStr = date.toISOString().split("T")[0];
+				const timeStr = date.toTimeString().slice(0, 5);
+				return { date: dateStr, time: timeStr };
+			} catch {
+				return { date: "", time: "" };
+			}
+		};
+
+		if (data.name) setName(data.name);
+		if (data.description) setDescription(data.description);
+
+		const start = parseDateTime(data.startDate);
+		const end = parseDateTime(data.endDate);
+
+		if (start.date) setStartDate(start.date);
+		if (start.time) setStartTime(start.time);
+		if (end.date) setEndDate(end.date);
+		if (end.time) setEndTime(end.time);
+
+		if (data.venue) setVenue(data.venue);
+		if (data.city) setCity(data.city);
+		if (data.format) setFormat(data.format);
+		if (data.eventType) setEventType(data.eventType);
+		if (data.websiteUrl) setWebsiteUrl(data.websiteUrl);
+		if (data.registrationUrl) setRegistrationUrl(data.registrationUrl);
+		if (data.prizePool) setPrizePool(data.prizePool.toString());
+		if (data.prizeCurrency) setPrizeCurrency(data.prizeCurrency);
+		if (data.skillLevel) setSkillLevel(data.skillLevel);
+	};
+
+	const handleAIStreamStart = () => {
+		setIsImporting(true);
+	};
+
+	const handleAIStreamEnd = () => {
+		setIsImporting(false);
 	};
 
 	return (
@@ -293,12 +339,12 @@ export function OrgEventFormMinimal({
 					<ResponsiveModalTrigger asChild>
 						<Button type="button" variant="outline" className="gap-2">
 							<Sparkles className="h-4 w-4" />
-							Import
+							Autocompletar
 						</Button>
 					</ResponsiveModalTrigger>
 					<ResponsiveModalContent className="max-w-lg">
 						<ResponsiveModalHeader>
-							<ResponsiveModalTitle>Importar evento</ResponsiveModalTitle>
+							<ResponsiveModalTitle>Autocompletar</ResponsiveModalTitle>
 						</ResponsiveModalHeader>
 						<div className="p-4 space-y-3">
 							<button
@@ -310,27 +356,34 @@ export function OrgEventFormMinimal({
 								}}
 							>
 								<div className="flex items-center gap-3">
-									<div className="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-										<Sparkles className="h-5 w-5 text-white" />
+									<div className="h-10 w-10 rounded-lg bg-foreground flex items-center justify-center">
+										<LumaIcon className="h-5 w-5 text-background" />
 									</div>
 									<div>
-										<div className="font-medium">Luma</div>
-										<div className="text-sm text-muted-foreground">Importar desde lu.ma</div>
+										<div className="font-medium">Desde Luma</div>
+										<div className="text-sm text-muted-foreground">
+											Pega el link del evento en lu.ma
+										</div>
 									</div>
 								</div>
 							</button>
 							<button
 								type="button"
-								className="w-full p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors text-left opacity-50 cursor-not-allowed"
-								disabled
+								className="w-full p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors text-left"
+								onClick={() => {
+									setImportOpen(false);
+									setAiExtractOpen(true);
+								}}
 							>
 								<div className="flex items-center gap-3">
-									<div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-										<FileText className="h-5 w-5 text-muted-foreground" />
+									<div className="h-10 w-10 rounded-lg bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 flex items-center justify-center">
+										<Wand2 className="h-5 w-5 text-violet-500" />
 									</div>
 									<div>
-										<div className="font-medium">Texto sin estructura</div>
-										<div className="text-sm text-muted-foreground">Próximamente</div>
+										<div className="font-medium">Desde texto o imagen</div>
+										<div className="text-sm text-muted-foreground">
+											Pega descripción o sube el flyer
+										</div>
 									</div>
 								</div>
 							</button>
@@ -342,11 +395,13 @@ export function OrgEventFormMinimal({
 				<ResponsiveModal open={lumaImportOpen} onOpenChange={setLumaImportOpen}>
 					<ResponsiveModalContent className="max-w-lg">
 						<ResponsiveModalHeader>
-							<ResponsiveModalTitle>Importar desde Luma</ResponsiveModalTitle>
+							<ResponsiveModalTitle>Desde Luma</ResponsiveModalTitle>
 						</ResponsiveModalHeader>
 						<div className="p-4 space-y-4">
 							<div>
-								<Label className="text-sm mb-2 block">URL del evento en Luma</Label>
+								<Label className="text-sm mb-2 block">
+									URL del evento en Luma
+								</Label>
 								<Input
 									type="url"
 									value={lumaUrl}
@@ -361,7 +416,9 @@ export function OrgEventFormMinimal({
 						</div>
 						<ResponsiveModalFooter>
 							<ResponsiveModalClose asChild>
-								<Button variant="outline" disabled={isPending}>Cancelar</Button>
+								<Button variant="outline" disabled={isPending}>
+									Cancelar
+								</Button>
 							</ResponsiveModalClose>
 							<Button
 								onClick={handleImportFromLuma}
@@ -371,21 +428,30 @@ export function OrgEventFormMinimal({
 								{isPending ? (
 									<>
 										<Loader2 className="h-4 w-4 animate-spin" />
-										Iniciando...
+										Procesando...
 									</>
 								) : (
 									<>
 										<Sparkles className="h-4 w-4" />
-										Importar
+										Autocompletar
 									</>
 								)}
 							</Button>
 						</ResponsiveModalFooter>
 					</ResponsiveModalContent>
 				</ResponsiveModal>
+
+				{/* AI Extract Modal */}
+				<AIExtractModal
+					open={aiExtractOpen}
+					onOpenChange={setAiExtractOpen}
+					onExtract={handleAIExtract}
+					onStreamStart={handleAIStreamStart}
+					onStreamEnd={handleAIStreamEnd}
+				/>
 			</div>
 
-				<div className="flex flex-col md:flex-row gap-6">
+			<div className="flex flex-col md:flex-row gap-6">
 				{/* Left Column - Org Selector + Image */}
 				<div className="w-full md:w-72 flex-shrink-0 space-y-3">
 					{/* Org Selector */}
@@ -419,13 +485,18 @@ export function OrgEventFormMinimal({
 												</div>
 											)}
 											<span className="truncate">
-												{currentOrg?.displayName || currentOrg?.name || communityName}
+												{currentOrg?.displayName ||
+													currentOrg?.name ||
+													communityName}
 											</span>
 										</div>
 										<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 									</Button>
 								</PopoverTrigger>
-								<PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+								<PopoverContent
+									className="w-[--radix-popover-trigger-width] p-0"
+									align="start"
+								>
 									<Command>
 										<CommandInput placeholder="Buscar comunidad..." />
 										<CommandList>
@@ -446,7 +517,9 @@ export function OrgEventFormMinimal({
 														{organization.logoUrl ? (
 															<img
 																src={organization.logoUrl}
-																alt={organization.displayName || organization.name}
+																alt={
+																	organization.displayName || organization.name
+																}
 																className="h-6 w-6 rounded-md object-cover"
 															/>
 														) : organization.isPersonalOrg ? (
@@ -463,7 +536,9 @@ export function OrgEventFormMinimal({
 																{organization.displayName || organization.name}
 															</div>
 															<div className="text-xs text-muted-foreground truncate">
-																{organization.isPersonalOrg ? "Tu perfil" : `@${organization.slug}`}
+																{organization.isPersonalOrg
+																	? "Tu perfil"
+																	: `@${organization.slug}`}
 															</div>
 														</div>
 														{organization.slug === communitySlug && (
@@ -480,7 +555,9 @@ export function OrgEventFormMinimal({
 					)}
 
 					{/* Image Upload */}
-					<div className={`w-full aspect-square md:h-72 overflow-hidden bg-muted border border-border rounded-lg ${isImporting ? "input-shimmer" : ""}`}>
+					<div
+						className={`w-full aspect-square md:h-72 overflow-hidden bg-muted border border-border rounded-lg ${isImporting ? "input-shimmer" : ""}`}
+					>
 						{eventImageUrl ? (
 							<div className="relative w-full h-full group">
 								<img
@@ -527,7 +604,9 @@ export function OrgEventFormMinimal({
 						{/* Start */}
 						<div className="p-3 flex items-center gap-3">
 							<div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
-							<Label className="text-sm text-muted-foreground w-12">Inicio</Label>
+							<Label className="text-sm text-muted-foreground w-12">
+								Inicio
+							</Label>
 							<Input
 								type="date"
 								value={startDate}
@@ -580,13 +659,19 @@ export function OrgEventFormMinimal({
 							>
 								<FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
 								<div className="flex-1 min-w-0">
-									<div className="text-xs text-muted-foreground mb-1">Event Description</div>
+									<div className="text-xs text-muted-foreground mb-1">
+										Event Description
+									</div>
 									{description ? (
 										<div className="text-sm line-clamp-2 prose prose-sm max-w-none">
 											<Markdown
 												components={{
-													h2: ({ children }) => <span className="font-semibold">{children}</span>,
-													h3: ({ children }) => <span className="font-medium">{children}</span>,
+													h2: ({ children }) => (
+														<span className="font-semibold">{children}</span>
+													),
+													h3: ({ children }) => (
+														<span className="font-medium">{children}</span>
+													),
 													p: ({ children }) => <span>{children}</span>,
 													ul: ({ children }) => <span>{children}</span>,
 													li: ({ children }) => <span>• {children}</span>,
@@ -598,7 +683,9 @@ export function OrgEventFormMinimal({
 											</Markdown>
 										</div>
 									) : (
-										<div className="text-sm text-muted-foreground">Describe tu evento...</div>
+										<div className="text-sm text-muted-foreground">
+											Describe tu evento...
+										</div>
 									)}
 								</div>
 							</button>
@@ -636,7 +723,9 @@ export function OrgEventFormMinimal({
 							>
 								<MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
 								<div className="flex-1">
-									<div className="text-xs text-muted-foreground mb-1">Ubicación</div>
+									<div className="text-xs text-muted-foreground mb-1">
+										Ubicación
+									</div>
 									<div className="text-sm">
 										{format === "in-person"
 											? venue || city || "Presencial"
@@ -649,7 +738,9 @@ export function OrgEventFormMinimal({
 						</ResponsiveModalTrigger>
 						<ResponsiveModalContent className="max-w-2xl">
 							<ResponsiveModalHeader>
-								<ResponsiveModalTitle>Ubicación del evento</ResponsiveModalTitle>
+								<ResponsiveModalTitle>
+									Ubicación del evento
+								</ResponsiveModalTitle>
 							</ResponsiveModalHeader>
 							<div className="p-4 space-y-4">
 								<div>
@@ -679,7 +770,9 @@ export function OrgEventFormMinimal({
 								{format !== "virtual" && (
 									<div className="space-y-3">
 										<div>
-											<Label className="text-sm mb-2 block">Lugar o link virtual</Label>
+											<Label className="text-sm mb-2 block">
+												Lugar o link virtual
+											</Label>
 											<Input
 												type="text"
 												value={venue}
@@ -730,15 +823,26 @@ export function OrgEventFormMinimal({
 								disabled={isImporting}
 							>
 								<div className="h-4 w-4 text-muted-foreground mt-0.5">
-									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-										<path d="M8 3.5a.5.5 0 0 1 .5.5v3.5H12a.5.5 0 0 1 0 1H8.5V12a.5.5 0 0 1-1 0V8.5H4a.5.5 0 0 1 0-1h3.5V4a.5.5 0 0 1 .5-.5z"/>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 16 16"
+										fill="currentColor"
+									>
+										<path d="M8 3.5a.5.5 0 0 1 .5.5v3.5H12a.5.5 0 0 1 0 1H8.5V12a.5.5 0 0 1-1 0V8.5H4a.5.5 0 0 1 0-1h3.5V4a.5.5 0 0 1 .5-.5z" />
 									</svg>
 								</div>
 								<div className="flex-1">
-									<div className="text-xs text-muted-foreground mb-1">Event Options</div>
+									<div className="text-xs text-muted-foreground mb-1">
+										Event Options
+									</div>
 									<div className="text-sm">
-										{EVENT_TYPE_OPTIONS.find(opt => opt.value === eventType)?.label || "Hackathon"} • {SKILL_LEVEL_OPTIONS.find(opt => opt.value === skillLevel)?.label || "Todos"}
-										{prizePool && ` • ${prizeCurrency === "PEN" ? "S/" : "$"}${prizePool}`}
+										{EVENT_TYPE_OPTIONS.find((opt) => opt.value === eventType)
+											?.label || "Hackathon"}{" "}
+										•{" "}
+										{SKILL_LEVEL_OPTIONS.find((opt) => opt.value === skillLevel)
+											?.label || "Todos"}
+										{prizePool &&
+											` • ${prizeCurrency === "PEN" ? "S/" : "$"}${prizePool}`}
 									</div>
 								</div>
 							</button>
@@ -790,11 +894,17 @@ export function OrgEventFormMinimal({
 										<div className="flex gap-2">
 											<SearchableSelect
 												options={[
-													{ value: "USD", label: "USD", description: "Dólares" },
+													{
+														value: "USD",
+														label: "USD",
+														description: "Dólares",
+													},
 													{ value: "PEN", label: "PEN", description: "Soles" },
 												]}
 												value={prizeCurrency}
-												onValueChange={(val) => setPrizeCurrency(val as "USD" | "PEN")}
+												onValueChange={(val) =>
+													setPrizeCurrency(val as "USD" | "PEN")
+												}
 												placeholder="USD"
 												searchPlaceholder="Buscar..."
 												emptyMessage="No se encontró"
@@ -822,17 +932,48 @@ export function OrgEventFormMinimal({
 					{/* Links Button */}
 					<ResponsiveModal open={linksOpen} onOpenChange={setLinksOpen}>
 						<ResponsiveModalTrigger asChild>
-							<Button
-								type="button"
-								variant="outline"
-								className={`w-full justify-start text-muted-foreground gap-2 h-9 ${isImporting ? "input-shimmer" : ""}`}
-								disabled={isImporting}
-							>
-								<Link2 className="h-4 w-4" />
-								{websiteUrl || registrationUrl
-									? "Enlaces configurados"
-									: "Agregar enlaces (opcional)"}
-							</Button>
+							{websiteUrl || registrationUrl ? (
+								<button
+									type="button"
+									className={`w-full border border-border rounded-lg p-3 text-left flex items-start gap-2 hover:bg-muted/50 transition-colors ${isImporting ? "input-shimmer" : ""}`}
+									disabled={isImporting}
+								>
+									<Link2 className="h-4 w-4 text-muted-foreground mt-0.5" />
+									<div className="flex-1 min-w-0">
+										<div className="text-xs text-muted-foreground mb-1">
+											Enlaces
+										</div>
+										<div className="text-sm grid grid-cols-2 gap-x-3">
+											{websiteUrl && (
+												<div className="flex items-center gap-1.5 min-w-0">
+													<Globe className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+													<span className="truncate">
+														{websiteUrl.replace(/^https?:\/\//, "")}
+													</span>
+												</div>
+											)}
+											{registrationUrl && (
+												<div className="flex items-center gap-1.5 min-w-0">
+													<Link2 className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+													<span className="truncate">
+														{registrationUrl.replace(/^https?:\/\//, "")}
+													</span>
+												</div>
+											)}
+										</div>
+									</div>
+								</button>
+							) : (
+								<Button
+									type="button"
+									variant="outline"
+									className={`w-full justify-start text-muted-foreground gap-2 h-9 ${isImporting ? "input-shimmer" : ""}`}
+									disabled={isImporting}
+								>
+									<Link2 className="h-4 w-4" />
+									Agregar enlaces (opcional)
+								</Button>
+							)}
 						</ResponsiveModalTrigger>
 						<ResponsiveModalContent className="max-w-2xl">
 							<ResponsiveModalHeader>
@@ -880,8 +1021,10 @@ export function OrgEventFormMinimal({
 						disabled={loading || !name || isImporting}
 						className={`w-full h-10 text-sm gap-2 ${isImporting ? "input-shimmer" : ""}`}
 					>
-						{(loading || isImporting) && <Loader2 className="h-4 w-4 animate-spin" />}
-						{isImporting ? "Importando..." : "Crear Evento"}
+						{(loading || isImporting) && (
+							<Loader2 className="h-4 w-4 animate-spin" />
+						)}
+						{isImporting ? "Autocompletando..." : "Crear Evento"}
 					</Button>
 				</div>
 			</div>
