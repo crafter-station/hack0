@@ -1,15 +1,11 @@
 import type { SearchParams } from "nuqs/server";
 import { Suspense } from "react";
-import { Calendar, List } from "lucide-react";
 import { AdvancedFilters } from "@/components/events/advanced-filters";
 import { CategoryTabs } from "@/components/events/category-tabs";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
 	getEvents,
-	getPlatformStats,
 	type EventFilters,
 } from "@/lib/actions/events";
 import { loadSearchParams } from "@/lib/search-params";
@@ -38,40 +34,8 @@ async function EventsContent({ filters, viewMode }: { filters: EventFilters; vie
 	);
 }
 
-async function EventsHeader({ stats }: { stats: Awaited<ReturnType<typeof getPlatformStats>> }) {
-	const formatPrize = (amount: number) => {
-		if (amount >= 1000) {
-			return `$${Math.round(amount / 1000)}K+`;
-		}
-		return `$${amount}`;
-	};
-
-	return (
-		<div className="space-y-6">
-			<h1 className="text-4xl font-semibold tracking-tight md:text-5xl mb-3">
-				Todos los Eventos Tech
-			</h1>
-
-			<p className="text-base text-muted-foreground mb-6">
-				Explora el calendario completo de eventos tecnológicos en Perú.
-				Hackathones, conferencias, workshops y más en un solo lugar.
-			</p>
-
-			{/* Quick stats */}
-			<div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-				<span>{stats.totalEvents} eventos</span>
-				<span>•</span>
-				<span>{formatPrize(stats.totalPrizePool)} en premios</span>
-				<span>•</span>
-				<span>25+ comunidades</span>
-			</div>
-		</div>
-	);
-}
-
 export default async function EventsPage({ searchParams }: EventsPageProps) {
 	const params = await loadSearchParams(searchParams);
-	const stats = await getPlatformStats();
 
 	const filters: EventFilters = {
 		category: params.category,
@@ -88,38 +52,11 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 		page: params.page,
 	};
 
-	// Default to table view, allow URL param to override
-	const viewMode: "table" | "calendar" = (params.view as "table" | "calendar") || "table";
+	const viewMode = params.view;
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
 			<SiteHeader />
-
-			{/* Hero section */}
-			<section className="relative border-b overflow-hidden">
-				{/* Subtle grid background */}
-				<div
-					className="absolute inset-0 opacity-[0.02]"
-					style={{
-						backgroundImage: `linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)`,
-						backgroundSize: "48px 48px",
-					}}
-				/>
-
-				<div className="relative mx-auto max-w-screen-xl px-4 lg:px-8 pt-10 pb-8 md:pt-14 md:pb-10">
-					<div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
-						{/* Left - Content */}
-						<div className="flex-1 max-w-2xl">
-							<EventsHeader stats={stats} />
-						</div>
-
-						{/* Right - View Mode Toggle */}
-						<div className="lg:pt-12">
-							<ViewToggle />
-						</div>
-					</div>
-				</div>
-			</section>
 
 			{/* Category tabs + Search + Filters */}
 			<section className="sticky top-14 z-40 border-b bg-background/95 backdrop-blur-md shadow-sm">
@@ -128,9 +65,12 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 						<Suspense fallback={<div className="h-10 animate-pulse w-64" />}>
 							<CategoryTabs />
 						</Suspense>
-						<Suspense fallback={<div className="h-9 animate-pulse w-48" />}>
-							<AdvancedFilters />
-						</Suspense>
+						<div className="flex items-center gap-2">
+							<ViewToggle />
+							<Suspense fallback={<div className="h-9 animate-pulse w-48" />}>
+								<AdvancedFilters />
+							</Suspense>
+						</div>
 					</div>
 				</div>
 			</section>

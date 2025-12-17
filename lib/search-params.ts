@@ -9,6 +9,7 @@ import {
 import type { EventCategory } from "./event-categories";
 
 const categoryValues = ["all", "competitions", "learning", "community"] as const;
+const viewValues = ["table", "calendar"] as const;
 
 // Define all search param parsers
 export const searchParamsParsers = {
@@ -24,6 +25,7 @@ export const searchParamsParsers = {
   department: parseAsArrayOf(parseAsString).withDefault([]),
   juniorFriendly: parseAsBoolean.withDefault(false),
   page: parseAsInteger.withDefault(1),
+  view: parseAsStringLiteral(viewValues).withDefault("table"),
 };
 
 // Create server-side loader
