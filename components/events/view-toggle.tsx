@@ -25,13 +25,13 @@ export function ViewToggle() {
 			type="single"
 			value={currentView}
 			onValueChange={handleValueChange}
-			size="sm"
+			className="h-7"
 		>
-			<ToggleGroupItem value="table" aria-label="Vista de tabla">
-				<List className="h-4 w-4" />
+			<ToggleGroupItem value="table" aria-label="Vista de tabla" className="h-7 w-7 p-0">
+				<List className="h-3.5 w-3.5" />
 			</ToggleGroupItem>
-			<ToggleGroupItem value="calendar" aria-label="Vista de calendario">
-				<Calendar className="h-4 w-4" />
+			<ToggleGroupItem value="calendar" aria-label="Vista de calendario" className="h-7 w-7 p-0">
+				<Calendar className="h-3.5 w-3.5" />
 			</ToggleGroupItem>
 		</ToggleGroup>
 	);

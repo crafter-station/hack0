@@ -92,12 +92,11 @@ export function EventRowWithChildren({
 	// Minimal amber stripe pattern for featured/sponsored events
 	const featuredStripe = `url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 6L6 0' stroke='%23F59E0B' stroke-width='0.5' fill='none' opacity='0.15'/%3E%3C/svg%3E")`;
 
-	// Dynamic grid based on category
 	const gridCols = showPrize
-		? "lg:grid-cols-[1fr_200px_120px_100px_130px]"
+		? "lg:grid-cols-[1fr_140px_100px_80px_100px]"
 		: showSkillLevel
-			? "lg:grid-cols-[1fr_200px_120px_120px_130px]"
-			: "lg:grid-cols-[1fr_200px_120px_130px]";
+			? "lg:grid-cols-[1fr_140px_100px_100px_100px]"
+			: "lg:grid-cols-[1fr_140px_100px_100px]";
 
 	const eventUrl = event.organization?.slug
 		? `/c/${event.organization.slug}/events/${event.slug}`
@@ -111,7 +110,7 @@ export function EventRowWithChildren({
 			>
 				<Link
 					href={eventUrl}
-					className={`group relative block lg:grid ${gridCols} lg:gap-4 lg:items-center px-4 py-4 lg:px-5 transition-all overflow-hidden ${
+					className={`group relative block lg:grid ${gridCols} lg:gap-3 lg:items-center px-3 py-2 transition-all overflow-hidden ${
 						isEnded && !isFeatured ? "opacity-50" : ""
 					}`}
 				>
@@ -143,61 +142,56 @@ export function EventRowWithChildren({
 						/>
 					)}
 
-					{/* Mobile Layout - Stacked */}
-					<div className="lg:hidden relative z-10 space-y-2.5">
-						{/* Header with thumbnail and title */}
-						<div className="flex items-start gap-2.5">
-							{/* Expand button for parent events with children */}
+					<div className="lg:hidden relative z-10 space-y-1.5">
+						<div className="flex items-start gap-2">
 							{hasChildren && (
 								<button
 									onClick={handleToggle}
-									className="shrink-0 p-0.5 mt-0.5 rounded hover:bg-muted transition-colors"
+									className="shrink-0 p-0.5 mt-0.5 hover:bg-muted transition-colors"
 								>
 									{isLoading ? (
-										<div className="h-4 w-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
+										<div className="h-3.5 w-3.5 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
 									) : isExpanded ? (
-										<ChevronDown className="h-4 w-4 text-muted-foreground" />
+										<ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
 									) : (
-										<ChevronRight className="h-4 w-4 text-muted-foreground" />
+										<ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
 									)}
 								</button>
 							)}
-							{/* Thumbnail */}
-							<div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted border border-border">
+							<div className="relative h-9 w-9 shrink-0 overflow-hidden bg-muted border border-border/50">
 								{event.eventImageUrl ? (
 									<Image
 										src={event.eventImageUrl}
 										alt={event.name}
 										fill
 										className="object-cover"
-										sizes="48px"
+										sizes="36px"
 									/>
 								) : (
-									<div className="flex h-full w-full items-center justify-center text-sm font-medium text-muted-foreground">
+									<div className="flex h-full w-full items-center justify-center text-xs font-medium text-muted-foreground">
 										{event.name.charAt(0).toUpperCase()}
 									</div>
 								)}
 							</div>
 							<div className="flex-1 min-w-0">
-								<h3 className="font-semibold text-[15px] leading-tight mb-1 line-clamp-2 group-hover:underline underline-offset-2">
+								<h3 className="font-medium text-xs leading-tight line-clamp-2 group-hover:underline underline-offset-2">
 									{event.name}
 								</h3>
-								<div className="text-[11px] text-muted-foreground/70 truncate">
+								<div className="text-[10px] text-muted-foreground truncate">
 									{event.organization?.displayName ||
 										event.organization?.name ||
 										getEventTypeLabel(event.eventType)}
 								</div>
 							</div>
-							{/* Status badge on mobile - top right */}
 							<span
-								className={`shrink-0 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-medium ${
+								className={`shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-medium ${
 									isEnded
-										? "bg-muted text-muted-foreground"
+										? "text-muted-foreground"
 										: isOngoing
-											? "bg-emerald-500/10 text-emerald-500"
+											? "text-emerald-400"
 											: isOpen
-												? "bg-blue-500/10 text-blue-500"
-												: "bg-amber-500/10 text-amber-500"
+												? "text-blue-400"
+												: "text-amber-400"
 								}`}
 							>
 								<span
@@ -205,209 +199,176 @@ export function EventRowWithChildren({
 										isEnded
 											? "bg-muted-foreground/50"
 											: isOngoing
-												? "bg-emerald-500 animate-pulse"
+												? "bg-emerald-400 animate-pulse"
 												: isOpen
-													? "bg-blue-500"
-													: "bg-amber-500"
+													? "bg-blue-400"
+													: "bg-amber-400"
 									}`}
 								/>
 								{status.label}
 							</span>
 						</div>
 
-						{/* Info row - date, location, prize */}
-						<div className="flex items-center gap-2.5 text-xs text-muted-foreground flex-wrap">
+						<div className="flex items-center gap-2 text-[10px] text-muted-foreground flex-wrap">
 							{startDate && (
 								<span className="inline-flex items-center gap-1">
-									<CalendarIcon className="h-3 w-3" />
+									<CalendarIcon className="h-2.5 w-2.5" />
 									{formatEventDateSmart(startDate)}
 								</span>
 							)}
 							<span className="inline-flex items-center gap-1">
-								<PinIcon className="h-3 w-3" />
+								<PinIcon className="h-2.5 w-2.5" />
 								{getFormatLabel(event.format, event.department)}
 							</span>
 							{showPrize && event.prizePool && event.prizePool > 0 && (
 								<span className="inline-flex items-center gap-1 font-medium text-foreground">
-									<TrophyIcon className="h-3 w-3 text-amber-500" />
+									<TrophyIcon className="h-2.5 w-2.5 text-amber-400" />
 									{event.prizeCurrency === "PEN" ? "S/" : "$"}
 									{event.prizePool.toLocaleString()}
 								</span>
 							)}
+							{hasChildren && (
+								<span className="text-blue-400">{childEvents.length || "3"} días</span>
+							)}
+							{isFeatured && (
+								<span className="text-amber-400">Sponsored</span>
+							)}
+							{isEventJuniorFriendly(event.skillLevel) && (
+								<span className="inline-flex items-center gap-0.5 text-amber-400">
+									<Sparkles className="h-2.5 w-2.5" />
+									Junior
+								</span>
+							)}
 						</div>
-
-						{/* Badges row - bottom */}
-						{(hasChildren ||
-							isFeatured ||
-							isEventJuniorFriendly(event.skillLevel)) && (
-							<div className="flex items-center gap-1.5 flex-wrap">
-								{hasChildren && (
-									<span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-medium text-blue-500">
-										{childEvents.length || "3"} días
-									</span>
-								)}
-								{isFeatured && (
-									<span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-500">
-										Sponsored
-									</span>
-								)}
-								{isEventJuniorFriendly(event.skillLevel) && (
-									<span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-500">
-										<Sparkles className="h-2.5 w-2.5" />
-										Junior
-									</span>
-								)}
-							</div>
-						)}
 					</div>
 
-					{/* Desktop Layout - Original Grid */}
-					<div className="hidden lg:flex min-w-0 items-center gap-3 relative z-10">
-						{/* Expand button for parent events with children */}
+					<div className="hidden lg:flex min-w-0 items-center gap-2 relative z-10">
 						{hasChildren && (
 							<button
 								onClick={handleToggle}
-								className="shrink-0 p-1 rounded hover:bg-muted transition-colors"
+								className="shrink-0 p-0.5 hover:bg-muted transition-colors"
 							>
 								{isLoading ? (
-									<div className="h-4 w-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
+									<div className="h-3.5 w-3.5 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
 								) : isExpanded ? (
-									<ChevronDown className="h-4 w-4 text-muted-foreground" />
+									<ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
 								) : (
-									<ChevronRight className="h-4 w-4 text-muted-foreground" />
+									<ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
 								)}
 							</button>
 						)}
 
-						{/* Thumbnail */}
-						<div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md bg-muted border border-border">
+						<div className="relative h-7 w-7 shrink-0 overflow-hidden bg-muted border border-border/50">
 							{event.eventImageUrl ? (
 								<Image
 									src={event.eventImageUrl}
 									alt={event.name}
 									fill
 									className="object-cover"
-									sizes="40px"
+									sizes="28px"
 								/>
 							) : (
-								<div className="flex h-full w-full items-center justify-center text-xs font-medium text-muted-foreground">
+								<div className="flex h-full w-full items-center justify-center text-[10px] font-medium text-muted-foreground">
 									{event.name.charAt(0).toUpperCase()}
 								</div>
 							)}
 						</div>
 						<div className="min-w-0 flex-1">
-							<div className="flex items-center gap-2.5">
-								<h3 className="text-base font-semibold truncate group-hover:underline underline-offset-2">
+							<div className="flex items-center gap-2">
+								<h3 className="text-xs font-medium truncate group-hover:underline underline-offset-2">
 									{event.name}
 								</h3>
 								{hasChildren && (
-									<span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-medium text-blue-500 shrink-0">
-										{childEvents.length} días
+									<span className="text-[9px] font-medium text-blue-400 shrink-0">
+										{childEvents.length}d
 									</span>
 								)}
 								{isFeatured && (
-									<span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-500 shrink-0">
-										Sponsored
+									<span className="text-[9px] font-medium text-amber-400 shrink-0">
+										★
 									</span>
 								)}
 								{isEventJuniorFriendly(event.skillLevel) && (
-									<span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-500 shrink-0">
-										<Sparkles className="h-2.5 w-2.5" />
-										Junior
+									<span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-amber-400 shrink-0">
+										<Sparkles className="h-2 w-2" />
 									</span>
 								)}
 							</div>
-							<div className="flex items-center gap-1.5 mt-0.5">
+							<div className="flex items-center gap-1">
 								{(event.organization?.displayName || event.organization?.name) && (
 									<>
-										<span className="text-[13px] text-muted-foreground/90">
+										<span className="text-[10px] text-muted-foreground truncate max-w-[120px]">
 											{event.organization?.displayName || event.organization?.name}
 										</span>
-										{event.organization?.isVerified ? (
-											<CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
-										) : (
-											<span className="inline-flex h-3 w-3 items-center justify-center rounded-full border border-dashed border-muted-foreground/40 shrink-0">
-												<span className="text-[7px] text-muted-foreground/40">
-													?
-												</span>
-											</span>
+										{event.organization?.isVerified && (
+											<CheckCircle2 className="h-2.5 w-2.5 text-emerald-400 shrink-0" />
 										)}
 										<span className="text-muted-foreground/40">·</span>
 									</>
 								)}
-								<span className="text-[11px] text-muted-foreground/50">
+								<span className="text-[10px] text-muted-foreground/50">
 									{getEventTypeLabel(event.eventType)}
 								</span>
 							</div>
 						</div>
 					</div>
 
-					{/* Date */}
-					<div className="hidden lg:block text-sm text-muted-foreground relative z-10">
+					<div className="hidden lg:block text-xs text-muted-foreground relative z-10">
 						{startDate ? (
-							<div className="flex items-center gap-1.5">
-								<CalendarIcon className="h-3.5 w-3.5" />
-								<span>{formatEventDateRange(startDate, endDate)}</span>
-							</div>
+							<span>{formatEventDateRange(startDate, endDate)}</span>
 						) : (
-							<span className="text-muted-foreground/50">—</span>
+							<span className="text-muted-foreground/40">—</span>
 						)}
 					</div>
 
-					{/* Format */}
 					<div className="hidden lg:block relative z-10">
-						<span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-							<PinIcon className="h-3.5 w-3.5" />
+						<span className="text-xs text-muted-foreground">
 							{getFormatLabel(event.format, event.department)}
 						</span>
 					</div>
 
-					{/* Prize - only for competitions */}
 					{showPrize && (
 						<div className="hidden lg:block text-right relative z-10">
 							{event.prizePool && event.prizePool > 0 ? (
-								<span className="inline-flex items-center gap-1 text-sm font-medium">
-									<TrophyIcon className="h-3.5 w-3.5 text-amber-500" />
+								<span className="text-xs font-medium text-emerald-400">
 									{event.prizeCurrency === "PEN" ? "S/" : "$"}
 									{event.prizePool.toLocaleString()}
 								</span>
 							) : (
-								<span className="text-sm text-muted-foreground/40">—</span>
+								<span className="text-xs text-muted-foreground/40">—</span>
 							)}
 						</div>
 					)}
 
-					{/* Skill Level - only for learning */}
 					{showSkillLevel && (
 						<div className="hidden lg:block relative z-10">
-							<span className="text-sm text-muted-foreground">
+							<span className="text-xs text-muted-foreground">
 								{getSkillLevelLabel(event.skillLevel)}
 							</span>
 						</div>
 					)}
 
-					{/* Status - Desktop only */}
 					<div className="hidden lg:flex items-center justify-end relative z-10">
 						<span
-							className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+							className={`inline-flex items-center gap-1 text-[10px] font-medium ${
 								isEnded
-									? "bg-muted text-muted-foreground"
+									? "text-muted-foreground"
 									: isOngoing
-										? "bg-emerald-500/10 text-emerald-500"
+										? "text-emerald-400"
 										: isOpen
-											? "bg-blue-500/10 text-blue-500"
-											: "bg-amber-500/10 text-amber-500"
+											? "text-blue-400"
+											: "text-amber-400"
 							}`}
 						>
 							<span
-								className={`h-1.5 w-1.5 rounded-full ${
+								className={`h-1 w-1 rounded-full ${
 									isEnded
 										? "bg-muted-foreground/50"
 										: isOngoing
-											? "bg-emerald-500 animate-pulse"
+											? "bg-emerald-400 animate-pulse"
 											: isOpen
-												? "bg-blue-500"
-												: "bg-amber-500"
+												? "bg-blue-400"
+												: "bg-amber-400"
 								}`}
 							/>
 							{status.label}
@@ -416,9 +377,8 @@ export function EventRowWithChildren({
 				</Link>
 			</div>
 
-			{/* Child events (collapsible) */}
 			{isExpanded && childEvents.length > 0 && (
-				<div className="border-l-2 border-l-muted ml-8 bg-muted/20">
+				<div className="border-l border-l-border/50 ml-6 bg-muted/10">
 					{childEvents.map((child) => (
 						<ChildEventRow key={child.id} event={child} />
 					))}
@@ -428,7 +388,6 @@ export function EventRowWithChildren({
 	);
 }
 
-// Simplified row for child events
 function ChildEventRow({
 	event,
 }: {
@@ -447,78 +406,67 @@ function ChildEventRow({
 	return (
 		<Link
 			href={childEventUrl}
-			className={`group flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/50 ${
-				isEnded ? "opacity-60" : ""
+			className={`group flex items-center gap-2 px-3 py-1.5 transition-colors hover:bg-muted/30 ${
+				isEnded ? "opacity-50" : ""
 			}`}
 		>
-			{/* Day number badge */}
 			{event.dayNumber && (
-				<span className="shrink-0 inline-flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-medium">
+				<span className="shrink-0 inline-flex h-5 w-5 items-center justify-center bg-muted text-[10px] font-medium">
 					{event.dayNumber}
 				</span>
 			)}
 
-			{/* Thumbnail */}
-			<div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-md bg-muted border border-border">
+			<div className="relative h-5 w-5 shrink-0 overflow-hidden bg-muted border border-border/50">
 				{event.eventImageUrl ? (
 					<Image
 						src={event.eventImageUrl}
 						alt={event.name}
 						fill
 						className="object-cover"
-						sizes="32px"
+						sizes="20px"
 					/>
 				) : (
-					<div className="flex h-full w-full items-center justify-center text-[10px] font-medium text-muted-foreground">
+					<div className="flex h-full w-full items-center justify-center text-[8px] font-medium text-muted-foreground">
 						{event.name.charAt(0).toUpperCase()}
 					</div>
 				)}
 			</div>
 
-			{/* Name */}
 			<div className="min-w-0 flex-1">
-				<h4 className="text-sm font-medium truncate group-hover:underline underline-offset-2">
+				<h4 className="text-[11px] font-medium truncate group-hover:underline underline-offset-2">
 					{event.name}
 				</h4>
 				{event.city && (
-					<div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-						<MapPin className="h-3 w-3" />
+					<span className="text-[10px] text-muted-foreground/70">
 						{event.city}
-					</div>
+					</span>
 				)}
 			</div>
 
-			{/* Date */}
-			<div className="text-sm text-muted-foreground">
-				{startDate && (
-					<div className="flex items-center gap-1.5">
-						<CalendarIcon className="h-3.5 w-3.5" />
-						<span>{formatEventDateSmart(startDate)}</span>
-					</div>
-				)}
-			</div>
+			<span className="text-[10px] text-muted-foreground">
+				{startDate && formatEventDateSmart(startDate)}
+			</span>
 
-			{/* Status */}
 			<span
-				className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
+				className={`inline-flex items-center gap-1 text-[9px] font-medium ${
 					isEnded
-						? "bg-muted text-muted-foreground"
+						? "text-muted-foreground"
 						: isOngoing
-							? "bg-emerald-500/10 text-emerald-500"
+							? "text-emerald-400"
 							: isOpen
-								? "bg-blue-500/10 text-blue-500"
-								: "bg-amber-500/10 text-amber-500"
+								? "text-blue-400"
+								: "text-amber-400"
 				}`}
 			>
 				<span
-					className={`h-1.5 w-1.5 rounded-full ${
+					className={`h-1 w-1 rounded-full ${
 						isEnded
 							? "bg-muted-foreground/50"
 							: isOngoing
-								? "bg-emerald-500 animate-pulse"
+								? "bg-emerald-400 animate-pulse"
 								: isOpen
-									? "bg-blue-500"
-									: "bg-amber-500"
+									? "bg-blue-400"
+									: "bg-amber-400"
 					}`}
 				/>
 				{status.label}

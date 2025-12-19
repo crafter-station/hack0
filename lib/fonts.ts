@@ -38,6 +38,18 @@ export const SYSTEM_FONTS = [
 
 export const FALLBACK_FONTS: FontInfo[] = [
   {
+    family: "Geist Mono",
+    category: "monospace",
+    variants: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+    variable: true,
+  },
+  {
+    family: "Geist",
+    category: "sans-serif",
+    variants: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+    variable: true,
+  },
+  {
     family: "Inter",
     category: "sans-serif",
     variants: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],

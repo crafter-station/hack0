@@ -167,9 +167,9 @@ function generateTailwindPalette(baseColor: string): PaletteColor[] {
 // ============================================================================
 
 const DEFAULT_FONTS = {
-  "font-sans": "Inter, system-ui, sans-serif",
+  "font-sans": "Geist, system-ui, sans-serif",
   "font-serif": "Georgia, serif",
-  "font-mono": "JetBrains Mono, monospace",
+  "font-mono": "Geist Mono, ui-monospace, SFMono-Regular, monospace",
 };
 
 const DEFAULT_BASE = {

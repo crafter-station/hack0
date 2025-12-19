@@ -45,8 +45,18 @@ export interface EventFilters {
 	limit?: number;
 }
 
+interface OrganizationInfo {
+	id: string;
+	slug: string;
+	name: string;
+	displayName: string | null;
+	isVerified: boolean | null;
+}
+
+export type EventWithOrg = Event & { organization: OrganizationInfo | null };
+
 export interface EventsResult {
-	events: Event[];
+	events: EventWithOrg[];
 	total: number;
 	page: number;
 	totalPages: number;

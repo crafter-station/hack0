@@ -114,41 +114,39 @@ export function AdvancedFilters() {
 
 	return (
 		<div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-			{/* Search input */}
 			<div className="relative flex-1 sm:flex-none">
-				<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+				<Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
 				<input
 					type="text"
-					placeholder="Buscar eventos..."
+					placeholder="Buscar..."
 					value={search}
 					onChange={(e) => setFilters({ search: e.target.value, page: 1 })}
-					className="h-9 w-full sm:w-56 rounded-lg border border-border bg-background pl-9 pr-9 text-sm placeholder:text-muted-foreground focus:border-foreground/30 focus:outline-none focus:ring-2 focus:ring-foreground/10 transition-all"
+					className="h-7 w-full sm:w-44 border border-border/50 bg-background pl-7 pr-7 text-xs placeholder:text-muted-foreground focus:border-foreground/30 focus:outline-none transition-colors"
 				/>
 				{search && (
 					<button
 						onClick={() => setFilters({ search: "", page: 1 })}
-						className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+						className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
 					>
-						<X className="h-4 w-4" />
+						<X className="h-3.5 w-3.5" />
 					</button>
 				)}
 			</div>
 
-			{/* Advanced filters popover */}
 			<Popover open={open} onOpenChange={setOpen}>
 				<PopoverTrigger asChild>
 					<button
-						className={`inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-sm font-medium transition-colors ${
+						className={`inline-flex h-7 items-center gap-1.5 border px-2 text-xs font-medium transition-colors ${
 							activeFiltersCount > 0
-								? "border-foreground/20 bg-foreground text-background shadow-sm"
-								: "border-border text-muted-foreground hover:bg-muted hover:text-foreground hover:border-foreground/10"
+								? "border-foreground/20 bg-foreground text-background"
+								: "border-border/50 text-muted-foreground hover:text-foreground"
 						}`}
 					>
-						<SlidersHorizontal className="h-4 w-4" />
+						<SlidersHorizontal className="h-3.5 w-3.5" />
 						<span className="hidden sm:inline">Filtros</span>
 						{activeFiltersCount > 0 && (
 							<span
-								className={`rounded-full px-1.5 py-0.5 text-xs font-semibold ${
+								className={`px-1 text-[10px] font-semibold ${
 									activeFiltersCount > 0
 										? "bg-background text-foreground"
 										: "bg-foreground/10"
@@ -159,14 +157,14 @@ export function AdvancedFilters() {
 						)}
 					</button>
 				</PopoverTrigger>
-				<PopoverContent align="end" className="w-96 p-0 border-border/50 max-h-[80vh] overflow-hidden flex flex-col">
-					<div className="p-4 border-b bg-muted/30 shrink-0">
+				<PopoverContent align="end" className="w-80 p-0 border-border/50 max-h-[80vh] overflow-hidden flex flex-col">
+					<div className="px-3 py-2 border-b border-border/50 bg-muted/20 shrink-0">
 						<div className="flex items-center justify-between">
-							<h4 className="font-semibold text-sm">Filtros avanzados</h4>
+							<h4 className="font-medium text-xs">Filtros</h4>
 							{activeFiltersCount > 0 && (
 								<button
 									onClick={clearAllFilters}
-									className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
+									className="text-[10px] text-muted-foreground hover:text-foreground transition-colors font-medium"
 								>
 									Limpiar ({activeFiltersCount})
 								</button>
@@ -174,38 +172,34 @@ export function AdvancedFilters() {
 						</div>
 					</div>
 
-					<div className="p-4 space-y-5 overflow-y-auto">
-						{/* Junior friendly */}
-						<div className="space-y-2.5">
-							<label className="text-xs font-semibold text-foreground uppercase tracking-wider">
+					<div className="p-3 space-y-3 overflow-y-auto">
+						<div className="space-y-1.5">
+							<label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
 								Nivel
 							</label>
 							<button
 								onClick={() =>
 									setFilters({ juniorFriendly: !juniorFriendly, page: 1 })
 								}
-								className={`flex w-full items-center gap-2.5 rounded-lg border px-4 py-3 text-sm font-medium transition-all ${
+								className={`flex w-full items-center gap-2 border px-2.5 py-1.5 text-xs font-medium transition-colors ${
 									juniorFriendly
-										? "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-500 shadow-sm ring-1 ring-amber-500/20"
-										: "border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:border-foreground/20"
+										? "border-amber-400/30 bg-amber-400/10 text-amber-400"
+										: "border-border/50 text-muted-foreground hover:text-foreground"
 								}`}
 							>
-								<Sparkles className="h-4 w-4" />
+								<Sparkles className="h-3 w-3" />
 								Para principiantes
 								{juniorFriendly && (
-									<span className="ml-auto text-amber-600 dark:text-amber-400">
-										✓
-									</span>
+									<span className="ml-auto">✓</span>
 								)}
 							</button>
 						</div>
 
-						{/* Event Type */}
-						<div className="space-y-2.5">
-							<label className="text-xs font-semibold text-foreground uppercase tracking-wider">
-								Tipo de evento
+						<div className="space-y-1.5">
+							<label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+								Tipo
 							</label>
-							<div className="flex flex-wrap gap-2">
+							<div className="flex flex-wrap gap-1">
 								{POPULAR_EVENT_TYPES.map((type) => (
 									<button
 										key={type}
@@ -215,10 +209,10 @@ export function AdvancedFilters() {
 												: [...eventType, type];
 											setFilters({ eventType: newEventType, page: 1 });
 										}}
-										className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all ${
+										className={`border px-2 py-1 text-[10px] font-medium transition-colors ${
 											eventType.includes(type)
-												? "border-foreground/20 bg-foreground text-background shadow-sm"
-												: "border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:border-foreground/20"
+												? "border-foreground/20 bg-foreground text-background"
+												: "border-border/50 text-muted-foreground hover:text-foreground"
 										}`}
 									>
 										{EVENT_TYPE_LABELS[type]}
@@ -227,12 +221,11 @@ export function AdvancedFilters() {
 							</div>
 						</div>
 
-						{/* Organizer Type */}
-						<div className="space-y-2.5">
-							<label className="text-xs font-semibold text-foreground uppercase tracking-wider">
+						<div className="space-y-1.5">
+							<label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
 								Organizador
 							</label>
-							<div className="flex flex-wrap gap-2">
+							<div className="flex flex-wrap gap-1">
 								{POPULAR_ORGANIZERS.map((type) => (
 									<button
 										key={type}
@@ -242,10 +235,10 @@ export function AdvancedFilters() {
 												: [...organizerType, type];
 											setFilters({ organizerType: newOrganizerType, page: 1 });
 										}}
-										className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all ${
+										className={`border px-2 py-1 text-[10px] font-medium transition-colors ${
 											organizerType.includes(type)
-												? "border-foreground/20 bg-foreground text-background shadow-sm"
-												: "border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:border-foreground/20"
+												? "border-foreground/20 bg-foreground text-background"
+												: "border-border/50 text-muted-foreground hover:text-foreground"
 										}`}
 									>
 										{ORGANIZER_TYPE_LABELS[type]}
@@ -254,12 +247,11 @@ export function AdvancedFilters() {
 							</div>
 						</div>
 
-						{/* Skill Level */}
-						<div className="space-y-2.5">
-							<label className="text-xs font-semibold text-foreground uppercase tracking-wider">
-								Nivel de habilidad
+						<div className="space-y-1.5">
+							<label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+								Habilidad
 							</label>
-							<div className="flex flex-wrap gap-2">
+							<div className="flex flex-wrap gap-1">
 								{SKILL_LEVELS.map((level) => (
 									<button
 										key={level}
@@ -269,10 +261,10 @@ export function AdvancedFilters() {
 												: [...skillLevel, level];
 											setFilters({ skillLevel: newSkillLevel, page: 1 });
 										}}
-										className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all ${
+										className={`border px-2 py-1 text-[10px] font-medium transition-colors ${
 											skillLevel.includes(level)
-												? "border-foreground/20 bg-foreground text-background shadow-sm"
-												: "border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:border-foreground/20"
+												? "border-foreground/20 bg-foreground text-background"
+												: "border-border/50 text-muted-foreground hover:text-foreground"
 										}`}
 									>
 										{SKILL_LEVEL_LABELS[level]}
@@ -281,12 +273,11 @@ export function AdvancedFilters() {
 							</div>
 						</div>
 
-						{/* Format */}
-						<div className="space-y-2.5">
-							<label className="text-xs font-semibold text-foreground uppercase tracking-wider">
+						<div className="space-y-1.5">
+							<label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
 								Formato
 							</label>
-							<div className="flex flex-wrap gap-2">
+							<div className="flex flex-wrap gap-1">
 								{FORMATS.map((fmt) => (
 									<button
 										key={fmt}
@@ -296,10 +287,10 @@ export function AdvancedFilters() {
 												: [...format, fmt];
 											setFilters({ format: newFormat, page: 1 });
 										}}
-										className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all ${
+										className={`border px-2 py-1 text-[10px] font-medium transition-colors ${
 											format.includes(fmt)
-												? "border-foreground/20 bg-foreground text-background shadow-sm"
-												: "border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:border-foreground/20"
+												? "border-foreground/20 bg-foreground text-background"
+												: "border-border/50 text-muted-foreground hover:text-foreground"
 										}`}
 									>
 										{FORMAT_LABELS[fmt]}
@@ -308,12 +299,11 @@ export function AdvancedFilters() {
 							</div>
 						</div>
 
-						{/* Domains */}
-						<div className="space-y-2.5">
-							<label className="text-xs font-semibold text-foreground uppercase tracking-wider">
-								Dominio / Tema
+						<div className="space-y-1.5">
+							<label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+								Tema
 							</label>
-							<div className="flex flex-wrap gap-2">
+							<div className="flex flex-wrap gap-1">
 								{POPULAR_DOMAINS.map((dom) => (
 									<button
 										key={dom}
@@ -323,10 +313,10 @@ export function AdvancedFilters() {
 												: [...domain, dom];
 											setFilters({ domain: newDomain, page: 1 });
 										}}
-										className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all ${
+										className={`border px-2 py-1 text-[10px] font-medium transition-colors ${
 											domain.includes(dom)
-												? "border-foreground/20 bg-foreground text-background shadow-sm"
-												: "border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:border-foreground/20"
+												? "border-foreground/20 bg-foreground text-background"
+												: "border-border/50 text-muted-foreground hover:text-foreground"
 										}`}
 									>
 										{DOMAIN_LABELS[dom]}
@@ -335,12 +325,11 @@ export function AdvancedFilters() {
 							</div>
 						</div>
 
-						{/* Department/Region */}
-						<div className="space-y-2.5">
-							<label className="text-xs font-semibold text-foreground uppercase tracking-wider">
+						<div className="space-y-1.5">
+							<label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
 								Región
 							</label>
-							<div className="flex flex-wrap gap-2">
+							<div className="flex flex-wrap gap-1">
 								{POPULAR_DEPARTMENTS.map((dept) => (
 									<button
 										key={dept}
@@ -350,10 +339,10 @@ export function AdvancedFilters() {
 												: [...department, dept];
 											setFilters({ department: newDepartment, page: 1 });
 										}}
-										className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all ${
+										className={`border px-2 py-1 text-[10px] font-medium transition-colors ${
 											department.includes(dept)
-												? "border-foreground/20 bg-foreground text-background shadow-sm"
-												: "border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:border-foreground/20"
+												? "border-foreground/20 bg-foreground text-background"
+												: "border-border/50 text-muted-foreground hover:text-foreground"
 										}`}
 									>
 										{dept}

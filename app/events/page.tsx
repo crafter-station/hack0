@@ -58,16 +58,15 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 		<div className="min-h-screen bg-background flex flex-col">
 			<SiteHeader />
 
-			{/* Category tabs + Search + Filters */}
-			<section className="sticky top-14 z-40 border-b bg-background/95 backdrop-blur-md shadow-sm">
-				<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
-					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 py-3">
-						<Suspense fallback={<div className="h-10 animate-pulse w-64" />}>
+			<section className="sticky top-11 z-40 border-b border-border/50 bg-background/95 backdrop-blur-sm">
+				<div className="mx-auto max-w-screen-xl px-4 lg:px-6">
+					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-2">
+						<Suspense fallback={<div className="h-7 animate-pulse w-48" />}>
 							<CategoryTabs />
 						</Suspense>
 						<div className="flex items-center gap-2">
 							<ViewToggle />
-							<Suspense fallback={<div className="h-9 animate-pulse w-48" />}>
+							<Suspense fallback={<div className="h-7 animate-pulse w-40" />}>
 								<AdvancedFilters />
 							</Suspense>
 						</div>
@@ -75,11 +74,10 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 				</div>
 			</section>
 
-			{/* Main content */}
-			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-8 flex-1 w-full">
-				<Suspense fallback={<div className="animate-pulse space-y-4">
-					{Array.from({ length: 8 }).map((_, i) => (
-						<div key={i} className="h-20 bg-muted rounded" />
+			<main className="mx-auto max-w-screen-xl px-4 lg:px-6 py-4 flex-1 w-full">
+				<Suspense fallback={<div className="animate-pulse space-y-1">
+					{Array.from({ length: 12 }).map((_, i) => (
+						<div key={i} className="h-10 bg-muted/30" />
 					))}
 				</div>}>
 					<EventsContent filters={filters} viewMode={viewMode} />

@@ -90,12 +90,6 @@ export function SearchCommand({ hackathons }: SearchCommandProps) {
 				{/* Quick actions */}
 				<CommandGroup heading="Acciones rápidas">
 					<CommandItem
-						onSelect={() => runCommand(() => router.push("/submit"))}
-					>
-						<Sparkles className="mr-2 h-4 w-4" />
-						Agregar nuevo evento
-					</CommandItem>
-					<CommandItem
 						onSelect={() =>
 							runCommand(() => router.push("/?juniorFriendly=true"))
 						}

@@ -92,8 +92,8 @@ export function CommunityActions({
 
   if (userRole === "owner" || userRole === "admin") {
     return (
-      <Button className="gap-2" onClick={() => router.push(`/c/${communitySlug}/events/new`)}>
-        <UserPlus className="h-4 w-4" />
+      <Button size="sm" className="gap-1.5 h-7 text-xs" onClick={() => router.push(`/c/${communitySlug}/events/new`)}>
+        <UserPlus className="h-3.5 w-3.5" />
         Nuevo evento
       </Button>
     );
@@ -104,8 +104,8 @@ export function CommunityActions({
       <>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              <Users className="h-4 w-4" />
+            <Button variant="outline" size="sm" className="gap-1.5 h-7 text-xs">
+              <Users className="h-3.5 w-3.5" />
               Miembro
             </Button>
           </DropdownMenuTrigger>
@@ -140,8 +140,8 @@ export function CommunityActions({
       <>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              <Users className="h-4 w-4" />
+            <Button variant="outline" size="sm" className="gap-1.5 h-7 text-xs">
+              <Users className="h-3.5 w-3.5" />
               Seguidor
             </Button>
           </DropdownMenuTrigger>
@@ -175,10 +175,11 @@ export function CommunityActions({
   if (!isAuthenticated) {
     return (
       <Button
-        className="gap-2"
+        size="sm"
+        className="gap-1.5 h-7 text-xs"
         onClick={() => router.push(`/sign-in?redirect_url=${encodeURIComponent(`/c/${communitySlug}`)}`)}
       >
-        <UserPlus className="h-4 w-4" />
+        <UserPlus className="h-3.5 w-3.5" />
         Seguir
       </Button>
     );
@@ -187,7 +188,8 @@ export function CommunityActions({
   // Authenticated but no role - follow directly (no dialog)
   return (
     <Button
-      className="gap-2"
+      size="sm"
+      className="gap-1.5 h-7 text-xs"
       onClick={handleFollow}
       disabled={isFollowing || showSuccess}
     >

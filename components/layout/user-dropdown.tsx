@@ -1,7 +1,7 @@
 "use client";
 
 import { useClerk, useUser } from "@clerk/nextjs";
-import { LogOut, Moon, Sun, User } from "lucide-react";
+import { LogOut, Moon, Sun, User, Zap } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import {
@@ -13,7 +13,11 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function UserDropdown() {
+interface UserDropdownProps {
+	isGodMode?: boolean;
+}
+
+export function UserDropdown({ isGodMode = false }: UserDropdownProps) {
 	const { user } = useUser();
 	const { signOut } = useClerk();
 	const { theme, setTheme } = useTheme();
@@ -26,7 +30,7 @@ export function UserDropdown() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<button className="relative h-8 w-8 rounded-full overflow-hidden ring-1 ring-border hover:ring-foreground/20 transition-all">
+				<button className="relative h-7 w-7 rounded-full overflow-hidden ring-1 ring-border hover:ring-foreground/20 transition-all">
 					{user.imageUrl ? (
 						<img
 							src={user.imageUrl}
@@ -35,27 +39,38 @@ export function UserDropdown() {
 						/>
 					) : (
 						<div className="h-full w-full bg-muted flex items-center justify-center">
-							<User className="h-4 w-4 text-muted-foreground" />
+							<User className="h-3.5 w-3.5 text-muted-foreground" />
 						</div>
 					)}
 				</button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" className="w-56">
-				<DropdownMenuLabel className="font-normal">
-					<div className="flex flex-col space-y-1">
-						<p className="text-sm font-medium leading-none">{userName}</p>
+			<DropdownMenuContent align="end" className="w-48">
+				<DropdownMenuLabel className="font-normal py-1.5">
+					<div className="flex flex-col gap-0.5">
+						<p className="text-xs font-medium leading-none">{userName}</p>
 						{userEmail && (
-							<p className="text-xs leading-none text-muted-foreground">
+							<p className="text-[10px] leading-none text-muted-foreground truncate">
 								{userEmail}
 							</p>
 						)}
 					</div>
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
+				{isGodMode && (
+					<>
+						<DropdownMenuItem asChild className="text-amber-600 dark:text-amber-400">
+							<Link href="/god">
+								<Zap className="h-3.5 w-3.5" />
+								<span className="text-xs">Panel Admin</span>
+							</Link>
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
+					</>
+				)}
 				<DropdownMenuItem asChild>
 					<Link href="/profile">
-						<User className="h-4 w-4" />
-						Perfil
+						<User className="h-3.5 w-3.5" />
+						<span className="text-xs">Perfil</span>
 					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuItem
@@ -63,13 +78,13 @@ export function UserDropdown() {
 				>
 					{theme === "dark" ? (
 						<>
-							<Sun className="h-4 w-4" />
-							Tema claro
+							<Sun className="h-3.5 w-3.5" />
+							<span className="text-xs">Tema claro</span>
 						</>
 					) : (
 						<>
-							<Moon className="h-4 w-4" />
-							Tema oscuro
+							<Moon className="h-3.5 w-3.5" />
+							<span className="text-xs">Tema oscuro</span>
 						</>
 					)}
 				</DropdownMenuItem>
@@ -78,8 +93,8 @@ export function UserDropdown() {
 					variant="destructive"
 					onClick={() => signOut({ redirectUrl: "/" })}
 				>
-					<LogOut className="h-4 w-4" />
-					Cerrar sesión
+					<LogOut className="h-3.5 w-3.5" />
+					<span className="text-xs">Cerrar sesión</span>
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>

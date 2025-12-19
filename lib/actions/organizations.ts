@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { organizations, events, communityMembers, type NewOrganization } from "@/lib/db/schema";
-import { eq, desc, and, or, ilike } from "drizzle-orm";
+import { eq, desc, and, or, ilike, sql } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { tasks } from "@trigger.dev/sdk/v3";
@@ -121,6 +121,114 @@ export async function searchOrganizations(query: string, limit = 10) {
     .limit(limit);
 
   return results;
+}
+
+export interface PublicOrganization {
+  id: string;
+  slug: string;
+  name: string;
+  displayName: string | null;
+  type: string | null;
+  logoUrl: string | null;
+  isVerified: boolean | null;
+  eventCount: number;
+}
+
+export interface OrganizationsResult {
+  organizations: PublicOrganization[];
+  total: number;
+  page: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+export interface OrganizationFilters {
+  search?: string;
+  type?: string[];
+  page?: number;
+  limit?: number;
+}
+
+export async function getPublicOrganizations(
+  filters: OrganizationFilters = {}
+): Promise<OrganizationsResult> {
+  const { search, type, page = 1, limit = 12 } = filters;
+
+  const conditions: ReturnType<typeof eq>[] = [];
+
+  conditions.push(eq(organizations.isPublic, true));
+  conditions.push(eq(organizations.isPersonalOrg, false));
+
+  if (search && search.trim()) {
+    conditions.push(
+      or(
+        ilike(organizations.name, `%${search}%`),
+        ilike(organizations.displayName, `%${search}%`),
+        ilike(organizations.slug, `%${search}%`)
+      )!
+    );
+  }
+
+  if (type && type.length > 0) {
+    conditions.push(
+      or(...type.map((t) => eq(organizations.type, t as any)))!
+    );
+  }
+
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const countResult = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(organizations)
+    .where(whereClause);
+  const total = Number(countResult[0]?.count || 0);
+
+  const offset = (page - 1) * limit;
+
+  const results = await db
+    .select({
+      id: organizations.id,
+      slug: organizations.slug,
+      name: organizations.name,
+      displayName: organizations.displayName,
+      type: organizations.type,
+      logoUrl: organizations.logoUrl,
+      isVerified: organizations.isVerified,
+    })
+    .from(organizations)
+    .where(whereClause)
+    .orderBy(
+      desc(organizations.isVerified),
+      desc(organizations.createdAt)
+    )
+    .limit(limit)
+    .offset(offset);
+
+  const orgsWithEventCount = await Promise.all(
+    results.map(async (org) => {
+      const eventCountResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(events)
+        .where(and(
+          eq(events.organizationId, org.id),
+          eq(events.isApproved, true)
+        ));
+      return {
+        ...org,
+        eventCount: Number(eventCountResult[0]?.count || 0),
+      };
+    })
+  );
+
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    organizations: orgsWithEventCount,
+    total,
+    page,
+    totalPages,
+    hasMore: page < totalPages,
+  };
 }
 
 // ============================================

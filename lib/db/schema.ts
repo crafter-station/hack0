@@ -709,6 +709,190 @@ export type UserPreferences = typeof userPreferences.$inferSelect;
 export type NewUserPreferences = typeof userPreferences.$inferInsert;
 
 // ============================================
+// LUMA INTEGRATION - Direct API calendar sync
+// ============================================
+
+export const syncFrequencyEnum = pgEnum("sync_frequency", [
+	"hourly",
+	"daily",
+	"weekly",
+	"manual",
+]);
+
+export const lumaCalendars = pgTable("luma_calendars", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	organizationId: uuid("organization_id")
+		.references(() => organizations.id)
+		.notNull(),
+	lumaCalendarId: varchar("luma_calendar_id", { length: 255 }).notNull(),
+	lumaCalendarSlug: varchar("luma_calendar_slug", { length: 255 }),
+	name: varchar("name", { length: 255 }),
+	apiKey: varchar("api_key", { length: 500 }),
+	isActive: boolean("is_active").default(true),
+	syncFrequency: syncFrequencyEnum("sync_frequency").default("daily"),
+	lastSyncAt: timestamp("last_sync_at", { mode: "date", withTimezone: true }),
+	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow(),
+});
+
+export type LumaCalendar = typeof lumaCalendars.$inferSelect;
+export type NewLumaCalendar = typeof lumaCalendars.$inferInsert;
+
+export const lumaEventMappings = pgTable("luma_event_mappings", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	lumaEventId: varchar("luma_event_id", { length: 255 }).notNull().unique(),
+	eventId: uuid("event_id")
+		.references(() => events.id)
+		.notNull(),
+	lumaCalendarId: uuid("luma_calendar_id").references(() => lumaCalendars.id),
+	lastSyncedAt: timestamp("last_synced_at", { mode: "date", withTimezone: true }),
+	lumaUpdatedAt: timestamp("luma_updated_at", { mode: "date", withTimezone: true }),
+	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+});
+
+export type LumaEventMapping = typeof lumaEventMappings.$inferSelect;
+export type NewLumaEventMapping = typeof lumaEventMappings.$inferInsert;
+
+// ============================================
+// MULTI-SOURCE SCRAPING - Scheduled scraping system
+// ============================================
+
+export const scrapeSourceTypeEnum = pgEnum("scrape_source_type", [
+	"devpost",
+	"ecosistema_peruano",
+	"dev_events",
+	"rss",
+	"luma_public",
+	"custom",
+]);
+
+export const scrapeSources = pgTable("scrape_sources", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	name: varchar("name", { length: 255 }).notNull(),
+	sourceType: scrapeSourceTypeEnum("source_type").notNull(),
+	sourceUrl: varchar("source_url", { length: 500 }).notNull(),
+	isActive: boolean("is_active").default(true),
+	scrapeFrequency: syncFrequencyEnum("scrape_frequency").default("daily"),
+	lastScrapeAt: timestamp("last_scrape_at", { mode: "date", withTimezone: true }),
+	config: text("config"),
+	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow(),
+});
+
+export type ScrapeSource = typeof scrapeSources.$inferSelect;
+export type NewScrapeSource = typeof scrapeSources.$inferInsert;
+
+export const scrapeRunStatusEnum = pgEnum("scrape_run_status", [
+	"pending",
+	"running",
+	"completed",
+	"failed",
+]);
+
+export const scrapeRuns = pgTable("scrape_runs", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	sourceId: uuid("source_id")
+		.references(() => scrapeSources.id)
+		.notNull(),
+	status: scrapeRunStatusEnum("status").default("pending"),
+	eventsFound: integer("events_found").default(0),
+	eventsCreated: integer("events_created").default(0),
+	eventsUpdated: integer("events_updated").default(0),
+	errorMessage: text("error_message"),
+	triggerRunId: varchar("trigger_run_id", { length: 255 }),
+	startedAt: timestamp("started_at", { mode: "date", withTimezone: true }),
+	completedAt: timestamp("completed_at", { mode: "date", withTimezone: true }),
+	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+});
+
+export type ScrapeRun = typeof scrapeRuns.$inferSelect;
+export type NewScrapeRun = typeof scrapeRuns.$inferInsert;
+
+export const rssFeedSubscriptions = pgTable("rss_feed_subscriptions", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	organizationId: uuid("organization_id").references(() => organizations.id),
+	feedUrl: varchar("feed_url", { length: 500 }).notNull(),
+	feedTitle: varchar("feed_title", { length: 255 }),
+	isActive: boolean("is_active").default(true),
+	lastFetchedAt: timestamp("last_fetched_at", { mode: "date", withTimezone: true }),
+	lastItemGuid: varchar("last_item_guid", { length: 500 }),
+	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow(),
+});
+
+export type RssFeedSubscription = typeof rssFeedSubscriptions.$inferSelect;
+export type NewRssFeedSubscription = typeof rssFeedSubscriptions.$inferInsert;
+
+// ============================================
+// SOCIAL SHARING - Share images and analytics
+// ============================================
+
+export const shareAssetTypeEnum = pgEnum("share_asset_type", [
+	"og",
+	"twitter",
+	"linkedin",
+	"instagram_post",
+	"instagram_story",
+	"whatsapp",
+]);
+
+export const eventShareAssets = pgTable("event_share_assets", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	eventId: uuid("event_id")
+		.references(() => events.id)
+		.notNull(),
+	assetType: shareAssetTypeEnum("asset_type").notNull(),
+	imageUrl: varchar("image_url", { length: 500 }).notNull(),
+	generatedAt: timestamp("generated_at", { mode: "date", withTimezone: true }).defaultNow(),
+});
+
+export type EventShareAsset = typeof eventShareAssets.$inferSelect;
+export type NewEventShareAsset = typeof eventShareAssets.$inferInsert;
+
+export const attendanceStatusEnum = pgEnum("attendance_status", [
+	"attending",
+	"interested",
+	"not_going",
+]);
+
+export const userEventAttendance = pgTable("user_event_attendance", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	eventId: uuid("event_id")
+		.references(() => events.id)
+		.notNull(),
+	userId: varchar("user_id", { length: 255 }).notNull(),
+	status: attendanceStatusEnum("status").default("attending"),
+	sharedAt: timestamp("shared_at", { mode: "date", withTimezone: true }),
+	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow(),
+});
+
+export type UserEventAttendance = typeof userEventAttendance.$inferSelect;
+export type NewUserEventAttendance = typeof userEventAttendance.$inferInsert;
+
+export const sharePlatformEnum = pgEnum("share_platform", [
+	"twitter",
+	"linkedin",
+	"facebook",
+	"whatsapp",
+	"instagram",
+	"copy",
+]);
+
+export const shareAnalytics = pgTable("share_analytics", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	eventId: uuid("event_id")
+		.references(() => events.id)
+		.notNull(),
+	userId: varchar("user_id", { length: 255 }),
+	platform: sharePlatformEnum("platform").notNull(),
+	sharedAt: timestamp("shared_at", { mode: "date", withTimezone: true }).defaultNow(),
+});
+
+export type ShareAnalytic = typeof shareAnalytics.$inferSelect;
+export type NewShareAnalytic = typeof shareAnalytics.$inferInsert;
+
+// ============================================
 // RELATIONS
 // ============================================
 

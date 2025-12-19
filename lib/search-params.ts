@@ -10,9 +10,13 @@ import type { EventCategory } from "./event-categories";
 
 const categoryValues = ["all", "competitions", "learning", "community"] as const;
 const viewValues = ["table", "calendar"] as const;
+const entityValues = ["events", "organizations"] as const;
+
+export type EntityType = (typeof entityValues)[number];
 
 // Define all search param parsers
 export const searchParamsParsers = {
+  entity: parseAsStringLiteral(entityValues).withDefault("events" as EntityType),
   category: parseAsStringLiteral(categoryValues).withDefault("all" as EventCategory),
   search: parseAsString.withDefault(""),
   eventType: parseAsArrayOf(parseAsString).withDefault([]),

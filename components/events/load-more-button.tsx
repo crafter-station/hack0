@@ -2,8 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 import { useState, useTransition } from "react";
-import { type EventFilters, getEvents } from "@/lib/actions/events";
-import type { Event } from "@/lib/db/schema";
+import { type EventFilters, type EventWithOrg, getEvents } from "@/lib/actions/events";
 import { getCategoryById } from "@/lib/event-categories";
 import { EventRowWithChildren } from "./event-row-with-children";
 
@@ -21,7 +20,7 @@ export function LoadMoreButton({
 	const categoryConfig = getCategoryById(filters.category || "all");
 	const [page, setPage] = useState(initialPage);
 	const [hasMore, setHasMore] = useState(initialHasMore);
-	const [additionalEvents, setAdditionalEvents] = useState<Event[]>([]);
+	const [additionalEvents, setAdditionalEvents] = useState<EventWithOrg[]>([]);
 	const [isPending, startTransition] = useTransition();
 
 	const loadMore = () => {

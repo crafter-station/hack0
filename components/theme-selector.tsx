@@ -55,16 +55,17 @@ export function ThemeSelector({ onThemeChange }: ThemeSelectorProps) {
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [bodyFont, setBodyFont] = useState<string>("Inter");
-  const [headingFont, setHeadingFont] = useState<string>("Inter");
+  const [bodyFont, setBodyFont] = useState<string>("Geist Mono");
+  const [headingFont, setHeadingFont] = useState<string>("Geist Mono");
 
   useEffect(() => {
     const saved = localStorage.getItem("selectedFonts");
     if (saved) {
       try {
         const fonts = JSON.parse(saved);
-        if (fonts.body) setBodyFont(fonts.body);
-        if (fonts.heading) setHeadingFont(fonts.heading);
+        const migrateFont = (font: string) => font === "Inter" ? "Geist Mono" : font;
+        if (fonts.body) setBodyFont(migrateFont(fonts.body));
+        if (fonts.heading) setHeadingFont(migrateFont(fonts.heading));
       } catch (e) {
         console.error("Failed to load saved fonts", e);
       }
@@ -151,13 +152,18 @@ export function ThemeSelector({ onThemeChange }: ThemeSelectorProps) {
       document.head.appendChild(styleElement);
     }
 
+    const isMonoBody = bodyFont.toLowerCase().includes('mono');
+    const isMonoHeading = headingFont.toLowerCase().includes('mono');
+    const bodyFallback = isMonoBody ? 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace' : 'ui-sans-serif, system-ui, sans-serif';
+    const headingFallback = isMonoHeading ? 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace' : 'ui-sans-serif, system-ui, sans-serif';
+
     styleElement.textContent = `
       body, p, span, div, li, td, th, label, input, textarea, select {
-        font-family: "${bodyFont}", ui-sans-serif, system-ui, sans-serif !important;
+        font-family: "${bodyFont}", ${bodyFallback} !important;
       }
 
       h1, h2, h3, h4, h5, h6, .heading {
-        font-family: "${headingFont}", ui-sans-serif, system-ui, sans-serif !important;
+        font-family: "${headingFont}", ${headingFallback} !important;
       }
     `;
 

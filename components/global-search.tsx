@@ -152,20 +152,12 @@ export function GlobalSearch() {
 									</CommandItem>
 								</>
 							) : (
-								<>
-									<CommandItem
-										onSelect={() => runCommand(() => router.push("/c/new"))}
-									>
-										<Plus className="mr-2 h-4 w-4" />
-										Crear comunidad
-									</CommandItem>
-									<CommandItem
-										onSelect={() => runCommand(() => router.push("/submit"))}
-									>
-										<Calendar className="mr-2 h-4 w-4" />
-										Publicar evento
-									</CommandItem>
-								</>
+								<CommandItem
+									onSelect={() => runCommand(() => router.push("/c/new"))}
+								>
+									<Plus className="mr-2 h-4 w-4" />
+									Crear comunidad
+								</CommandItem>
 							)}
 							<CommandItem onSelect={() => runCommand(() => router.push("/"))}>
 								<Home className="mr-2 h-4 w-4" />

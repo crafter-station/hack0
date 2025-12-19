@@ -78,81 +78,59 @@ export function SubscribeForm() {
     }
   };
 
-  // Cargando Clerk o verificando estado
   if (!isLoaded || status === "checking") {
     return (
       <button
         disabled
-        className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-3 text-sm font-medium text-background opacity-50"
+        className="inline-flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background opacity-50"
       >
-        <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-background border-t-transparent" />
+        <div className="h-3 w-3 animate-spin rounded-full border-2 border-background border-t-transparent" />
       </button>
     );
   }
 
-  // No logueado
   if (!isSignedIn) {
     return (
       <Link
         href="/sign-in?redirect_url=/"
-        className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
-        title="Recibe alertas de nuevos eventos"
+        className="inline-flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background transition-colors hover:bg-foreground/90"
       >
-        <Bell className="h-3.5 w-3.5" />
-        No te pierdas nada
+        <Bell className="h-3 w-3" />
+        Suscribirse
       </Link>
     );
   }
 
-  // Ya suscrito y verificado
   if (status === "subscribed") {
     return (
-      <button
-        disabled
-        className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-muted/50 px-3 text-sm text-muted-foreground cursor-default"
-        title="Recibirás alertas de nuevos eventos"
-      >
-        <Check className="h-3.5 w-3.5 text-emerald-500" />
-        Notificaciones activas
-      </button>
+      <span className="inline-flex h-8 items-center gap-1.5 text-xs text-muted-foreground">
+        <Check className="h-3 w-3 text-emerald-500" />
+        Suscrito
+      </span>
     );
   }
 
-  // Pendiente de verificación
   if (status === "pending") {
     return (
-      <button
-        disabled
-        className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-muted/50 px-3 text-sm text-muted-foreground cursor-default"
-        title="Revisa tu bandeja de entrada"
-      >
-        <Mail className="h-3.5 w-3.5" />
-        <span>Confirma en <span className="text-foreground">{email}</span></span>
-      </button>
+      <span className="inline-flex h-8 items-center gap-1.5 text-xs text-muted-foreground">
+        <Mail className="h-3 w-3" />
+        Confirma email
+      </span>
     );
   }
 
-  // Logueado, puede suscribirse (status === "idle" | "loading" | "error")
   return (
-    <div className="relative">
-      <button
-        onClick={handleSubscribe}
-        disabled={status === "loading"}
-        className="inline-flex h-9 items-center gap-2 rounded-md bg-foreground px-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:opacity-50"
-        title="Recibe alertas de nuevos eventos"
-      >
-        {status === "loading" ? (
-          <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-background border-t-transparent" />
-        ) : (
-          <Bell className="h-3.5 w-3.5" />
-        )}
-        No te pierdas nada
-      </button>
-      {status === "error" && error && (
-        <p className="absolute -bottom-5 left-0 text-xs text-red-500 whitespace-nowrap">
-          {error}
-        </p>
+    <button
+      onClick={handleSubscribe}
+      disabled={status === "loading"}
+      className="inline-flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background transition-colors hover:bg-foreground/90 disabled:opacity-50"
+    >
+      {status === "loading" ? (
+        <div className="h-3 w-3 animate-spin rounded-full border-2 border-background border-t-transparent" />
+      ) : (
+        <Bell className="h-3 w-3" />
       )}
-    </div>
+      Suscribirse
+    </button>
   );
 }
