@@ -1,9 +1,9 @@
-import { asc, desc, eq, sql } from "drizzle-orm";
+import { asc, desc, eq, inArray, or, sql } from "drizzle-orm";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { EventList } from "@/components/events/event-list";
 import { db } from "@/lib/db";
-import { events, organizations } from "@/lib/db/schema";
+import { events, eventHostOrganizations, organizations } from "@/lib/db/schema";
 
 interface CommunityPageProps {
 	params: Promise<{ slug: string }>;
@@ -16,6 +16,13 @@ async function CommunityEvents({ slug }: { slug: string }) {
 	});
 
 	if (!community) return null;
+
+	const coHostedEvents = await db
+		.select({ eventId: eventHostOrganizations.eventId })
+		.from(eventHostOrganizations)
+		.where(eq(eventHostOrganizations.organizationId, community.id));
+
+	const coHostedEventIds = coHostedEvents.map((e) => e.eventId);
 
 	// Status priority: 1=upcoming, 2=open, 3=ongoing, 4=ended
 	const statusPriority = sql<number>`
@@ -37,9 +44,16 @@ async function CommunityEvents({ slug }: { slug: string }) {
 		END
 	`;
 
-	// Fetch events directly filtered by organization
+	const whereCondition =
+		coHostedEventIds.length > 0
+			? or(
+					eq(events.organizationId, community.id),
+					inArray(events.id, coHostedEventIds),
+				)
+			: eq(events.organizationId, community.id);
+
 	const communityEvents = await db.query.events.findMany({
-		where: eq(events.organizationId, community.id),
+		where: whereCondition,
 		limit: 50,
 		orderBy: [desc(events.isFeatured), asc(statusPriority), asc(dateSortOrder)],
 		with: {

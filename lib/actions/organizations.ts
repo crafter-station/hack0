@@ -533,7 +533,7 @@ export async function getOrganizationStats(organizationId?: string) {
 
 /**
  * Check if current user can manage a specific organization
- * (either owner or admin member)
+ * (either owner, admin member, or god mode)
  */
 export async function canManageOrganization(
 	organizationId: string,
@@ -542,6 +542,12 @@ export async function canManageOrganization(
 
 	if (!userId) {
 		return false;
+	}
+
+	const { isGodMode } = await import("@/lib/god-mode");
+	const godMode = await isGodMode();
+	if (godMode) {
+		return true;
 	}
 
 	const org = await db.query.organizations.findFirst({

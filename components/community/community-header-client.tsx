@@ -65,7 +65,11 @@ export function CommunityHeaderClient({
 									className="object-cover"
 								/>
 							</div>
-						) : null}
+						) : (
+							<div className="h-10 w-10 shrink-0 rounded-lg bg-muted border border-border flex items-center justify-center text-sm font-medium text-muted-foreground">
+								{(community.displayName || community.name).charAt(0).toUpperCase()}
+							</div>
+						)}
 
 						<div className="min-w-0">
 							<div className="flex items-center gap-2">
