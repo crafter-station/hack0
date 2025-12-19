@@ -15,7 +15,7 @@ interface EventsPreviewSectionProps {
 
 export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 	return (
-		<section className="py-12 md:py-16">
+		<section className="py-12 md:py-16 font-mono">
 			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
 				<div className="flex items-center justify-between mb-6">
 					<div>

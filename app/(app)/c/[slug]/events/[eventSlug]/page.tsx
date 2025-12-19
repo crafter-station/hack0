@@ -48,6 +48,7 @@ import {
 	PERU_TIMEZONE,
 } from "@/lib/event-utils";
 import { isGodMode } from "@/lib/god-mode";
+import remarkGfm from "remark-gfm";
 
 interface EventPageProps {
 	params: Promise<{ slug: string; eventSlug: string }>;
@@ -217,39 +218,39 @@ export default async function EventPage({ params }: EventPageProps) {
 		location:
 			hackathon.format === "virtual"
 				? {
-						"@type": "VirtualLocation",
-						url: hackathon.websiteUrl || hackathon.registrationUrl,
-					}
+					"@type": "VirtualLocation",
+					url: hackathon.websiteUrl || hackathon.registrationUrl,
+				}
 				: {
-						"@type": "Place",
-						name: hackathon.venue || hackathon.city || "Perú",
-						address: {
-							"@type": "PostalAddress",
-							addressLocality: hackathon.city,
-							addressRegion: hackathon.department,
-							addressCountry: "PE",
-						},
+					"@type": "Place",
+					name: hackathon.venue || hackathon.city || "Perú",
+					address: {
+						"@type": "PostalAddress",
+						addressLocality: hackathon.city,
+						addressRegion: hackathon.department,
+						addressCountry: "PE",
 					},
+				},
 		image: hackathon.eventImageUrl,
 		url: `https://hack0.dev/c/${slug}/events/${hackathon.slug}`,
 		organizer: community
 			? {
-					"@type": "Organization",
-					name: community.displayName || community.name,
-					url: community.websiteUrl,
-				}
+				"@type": "Organization",
+				name: community.displayName || community.name,
+				url: community.websiteUrl,
+			}
 			: undefined,
 		offers:
 			hackathon.prizePool && hackathon.prizePool > 0
 				? {
-						"@type": "Offer",
-						price: "0",
-						priceCurrency: "USD",
-						availability: isEnded
-							? "https://schema.org/SoldOut"
-							: "https://schema.org/InStock",
-						url: hackathon.registrationUrl,
-					}
+					"@type": "Offer",
+					price: "0",
+					priceCurrency: "USD",
+					availability: isEnded
+						? "https://schema.org/SoldOut"
+						: "https://schema.org/InStock",
+					url: hackathon.registrationUrl,
+				}
 				: undefined,
 	};
 
@@ -418,26 +419,24 @@ export default async function EventPage({ params }: EventPageProps) {
 
 							<div className="flex flex-wrap items-center gap-2">
 								<span
-									className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-										isEnded
-											? "bg-muted text-muted-foreground"
-											: isOngoing
-												? "bg-emerald-500/10 text-emerald-500"
-												: isOpen
-													? "bg-blue-500/10 text-blue-500"
-													: "bg-amber-500/10 text-amber-500"
-									}`}
+									className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${isEnded
+										? "bg-muted text-muted-foreground"
+										: isOngoing
+											? "bg-emerald-500/10 text-emerald-500"
+											: isOpen
+												? "bg-blue-500/10 text-blue-500"
+												: "bg-amber-500/10 text-amber-500"
+										}`}
 								>
 									<span
-										className={`h-1.5 w-1.5 rounded-full ${
-											isEnded
-												? "bg-muted-foreground/50"
-												: isOngoing
-													? "bg-emerald-500 animate-pulse"
-													: isOpen
-														? "bg-blue-500"
-														: "bg-amber-500"
-										}`}
+										className={`h-1.5 w-1.5 rounded-full ${isEnded
+											? "bg-muted-foreground/50"
+											: isOngoing
+												? "bg-emerald-500 animate-pulse"
+												: isOpen
+													? "bg-blue-500"
+													: "bg-amber-500"
+											}`}
 									/>
 									{status.label}
 								</span>
@@ -485,6 +484,7 @@ export default async function EventPage({ params }: EventPageProps) {
 									</h2>
 									<div className="space-y-4">
 										<Markdown
+											remarkPlugins={[remarkGfm]}
 											components={{
 												h2: ({ children }) => (
 													<h3 className="text-lg font-semibold text-foreground mt-6 mb-2">
@@ -523,6 +523,34 @@ export default async function EventPage({ params }: EventPageProps) {
 													>
 														{children}
 													</a>
+												),
+												table: ({ children }) => (
+													<div className="overflow-x-auto">
+														<table className="min-w-full border border-border border-collapse text-sm">
+															{children}
+														</table>
+													</div>
+												),
+												thead: ({ children }) => (
+													<thead className="bg-muted text-foreground">
+														{children}
+													</thead>
+												),
+												tbody: ({ children }) => (
+													<tbody className="text-foreground">{children}</tbody>
+												),
+												tr: ({ children }) => (
+													<tr className="border-b border-border last:border-b-0">
+														{children}
+													</tr>
+												),
+												th: ({ children }) => (
+													<th className="px-3 py-2 text-left font-semibold align-top">
+														{children}
+													</th>
+												),
+												td: ({ children }) => (
+													<td className="px-3 py-2 align-top">{children}</td>
 												),
 											}}
 										>
@@ -590,26 +618,24 @@ export default async function EventPage({ params }: EventPageProps) {
 															</div>
 														</div>
 														<span
-															className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-																childStatus.status === "ended"
-																	? "bg-muted text-muted-foreground"
-																	: childStatus.status === "ongoing"
-																		? "bg-emerald-500/10 text-emerald-500"
-																		: childStatus.status === "open"
-																			? "bg-blue-500/10 text-blue-500"
-																			: "bg-amber-500/10 text-amber-500"
-															}`}
+															className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${childStatus.status === "ended"
+																? "bg-muted text-muted-foreground"
+																: childStatus.status === "ongoing"
+																	? "bg-emerald-500/10 text-emerald-500"
+																	: childStatus.status === "open"
+																		? "bg-blue-500/10 text-blue-500"
+																		: "bg-amber-500/10 text-amber-500"
+																}`}
 														>
 															<span
-																className={`h-1.5 w-1.5 rounded-full ${
-																	childStatus.status === "ended"
-																		? "bg-muted-foreground/50"
-																		: childStatus.status === "ongoing"
-																			? "bg-emerald-500 animate-pulse"
-																			: childStatus.status === "open"
-																				? "bg-blue-500"
-																				: "bg-amber-500"
-																}`}
+																className={`h-1.5 w-1.5 rounded-full ${childStatus.status === "ended"
+																	? "bg-muted-foreground/50"
+																	: childStatus.status === "ongoing"
+																		? "bg-emerald-500 animate-pulse"
+																		: childStatus.status === "open"
+																			? "bg-blue-500"
+																			: "bg-amber-500"
+																	}`}
 															/>
 															{childStatus.label}
 														</span>
@@ -653,11 +679,10 @@ export default async function EventPage({ params }: EventPageProps) {
 																href={sponsor.organization.websiteUrl || "#"}
 																target="_blank"
 																rel="noopener noreferrer"
-																className={`group flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-muted/50 ${
-																	tier === "platinum" || tier === "gold"
-																		? "border-amber-500/30 bg-amber-500/5"
-																		: ""
-																}`}
+																className={`group flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-muted/50 ${tier === "platinum" || tier === "gold"
+																	? "border-amber-500/30 bg-amber-500/5"
+																	: ""
+																	}`}
 															>
 																{sponsor.organization.logoUrl ? (
 																	<div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-white">
@@ -966,9 +991,9 @@ export default async function EventPage({ params }: EventPageProps) {
 												)}
 											{(!endDate ||
 												startDate.toDateString() ===
-													endDate.toDateString()) && (
-												<>, {formatEventDate(startDate, "yyyy")}</>
-											)}
+												endDate.toDateString()) && (
+													<>, {formatEventDate(startDate, "yyyy")}</>
+												)}
 										</p>
 									</div>
 								</div>
