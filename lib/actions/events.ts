@@ -206,17 +206,17 @@ export async function getEvents(
 	const total = Number(countResult[0]?.count || 0);
 
 	// Compute sort priority based on event status
-	// 1 = upcoming (próximamente - hasn't started, no deadline or deadline passed)
+	// 1 = ongoing (en curso - happening now)
 	// 2 = open (abierto - registration open)
-	// 3 = ongoing (en curso - happening now)
-	// 4 = ended (terminado)
+	// 3 = upcoming (próximamente - hasn't started, no deadline or deadline passed)
+	// 4 = ended (terminado) - always last
 	const statusPriority = sql<number>`
     CASE
       WHEN ${events.endDate} IS NOT NULL AND ${events.endDate} < NOW() THEN 4
       WHEN ${events.startDate} IS NOT NULL AND ${events.startDate} <= NOW()
-           AND (${events.endDate} IS NULL OR ${events.endDate} > NOW()) THEN 3
+           AND (${events.endDate} IS NULL OR ${events.endDate} > NOW()) THEN 1
       WHEN ${events.registrationDeadline} IS NOT NULL AND ${events.registrationDeadline} > NOW() THEN 2
-      ELSE 1
+      ELSE 3
     END
   `;
 

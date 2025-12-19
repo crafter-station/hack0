@@ -38,7 +38,7 @@ export const searchParamsParsers = {
 	department: parseAsArrayOf(parseAsString).withDefault([]),
 	juniorFriendly: parseAsBoolean.withDefault(false),
 	page: parseAsInteger.withDefault(1),
-	view: parseAsStringLiteral(viewValues).withDefault("table"),
+	view: parseAsStringLiteral(viewValues).withDefault("cards"),
 };
 
 // Create server-side loader

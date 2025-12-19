@@ -48,7 +48,7 @@ export function AllEventsTable({
 	hasMore = false,
 	filters = {},
 }: AllEventsTableProps) {
-	const [sortField, setSortField] = useState<SortField>("date");
+	const [sortField, setSortField] = useState<SortField>("status");
 	const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
 	const sortedEvents = useMemo(() => {

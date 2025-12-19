@@ -74,10 +74,16 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 								Comunidades
 							</Link>
 							<Link
+								href="/roadmap"
+								className="hover:text-foreground transition-colors"
+							>
+								Roadmap
+							</Link>
+							<Link
 								href="/feed"
 								className="hover:text-foreground transition-colors"
 							>
-								Tu Feed
+								Feed
 							</Link>
 						</nav>
 					</div>

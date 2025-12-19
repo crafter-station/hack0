@@ -3,7 +3,9 @@ import { redirect } from "next/navigation";
 import type { SearchParams } from "nuqs/server";
 import { Suspense } from "react";
 import { AdvancedFilters } from "@/components/events/advanced-filters";
+import { EventsCalendar } from "@/components/events/events-calendar";
 import { ViewToggle } from "@/components/events/view-toggle";
+import { FeedEventsCards } from "@/components/feed/feed-events-cards";
 import { FeedEventsTable } from "@/components/feed/feed-events-table";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -13,7 +15,7 @@ import { isGodMode } from "@/lib/god-mode";
 import { loadSearchParams } from "@/lib/search-params";
 
 export const metadata = {
-	title: "Tu Feed | hack0.dev",
+	title: "Feed | hack0.dev",
 	description:
 		"Eventos personalizados basados en tus preferencias y comunidades",
 };
@@ -22,13 +24,34 @@ interface FeedPageProps {
 	searchParams: Promise<SearchParams>;
 }
 
-async function FeedContent({ category }: { category: string }) {
+async function FeedContent({
+	category,
+	viewMode,
+}: {
+	category: string;
+	viewMode: "table" | "cards" | "calendar";
+}) {
 	const filter = (category === "all" ? "all" : category) as FeedFilterType;
 
 	const { events, nextCursor, hasMore } = await getPersonalizedFeed({
 		limit: 15,
 		filter,
 	});
+
+	if (viewMode === "calendar") {
+		return <EventsCalendar events={events} />;
+	}
+
+	if (viewMode === "cards") {
+		return (
+			<FeedEventsCards
+				initialEvents={events}
+				initialCursor={nextCursor}
+				initialHasMore={hasMore}
+				category={category}
+			/>
+		);
+	}
 
 	return (
 		<FeedEventsTable
@@ -82,7 +105,7 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 						</div>
 					}
 				>
-					<FeedContent category={params.category} />
+					<FeedContent category={params.category} viewMode={params.view} />
 				</Suspense>
 			</main>
 

@@ -10,7 +10,7 @@ export function ViewToggle() {
 	const searchParams = useSearchParams();
 
 	const currentView =
-		(searchParams.get("view") as "table" | "cards" | "calendar") || "table";
+		(searchParams.get("view") as "table" | "cards" | "calendar") || "cards";
 
 	const handleValueChange = (value: "table" | "cards" | "calendar") => {
 		if (!value) return;
@@ -28,20 +28,20 @@ export function ViewToggle() {
 			className="h-7"
 		>
 			<ToggleGroupItem
-				value="table"
-				aria-label="Vista de lista"
-				className="h-7 px-2.5 gap-1.5"
-			>
-				<List className="h-3.5 w-3.5" />
-				<span className="text-xs">Lista</span>
-			</ToggleGroupItem>
-			<ToggleGroupItem
 				value="cards"
 				aria-label="Vista de tarjetas"
 				className="h-7 px-2.5 gap-1.5"
 			>
 				<LayoutGrid className="h-3.5 w-3.5" />
 				<span className="text-xs">Tarjetas</span>
+			</ToggleGroupItem>
+			<ToggleGroupItem
+				value="table"
+				aria-label="Vista de lista"
+				className="h-7 px-2.5 gap-1.5"
+			>
+				<List className="h-3.5 w-3.5" />
+				<span className="text-xs">Lista</span>
 			</ToggleGroupItem>
 			<ToggleGroupItem
 				value="calendar"

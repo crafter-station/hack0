@@ -24,14 +24,14 @@ async function CommunityEvents({ slug }: { slug: string }) {
 
 	const coHostedEventIds = coHostedEvents.map((e) => e.eventId);
 
-	// Status priority: 1=upcoming, 2=open, 3=ongoing, 4=ended
+	// Status priority: 1=ongoing, 2=open, 3=upcoming, 4=ended
 	const statusPriority = sql<number>`
 		CASE
 			WHEN ${events.endDate} IS NOT NULL AND ${events.endDate} < NOW() THEN 4
 			WHEN ${events.startDate} IS NOT NULL AND ${events.startDate} <= NOW()
-				 AND (${events.endDate} IS NULL OR ${events.endDate} > NOW()) THEN 3
+				 AND (${events.endDate} IS NULL OR ${events.endDate} > NOW()) THEN 1
 			WHEN ${events.registrationDeadline} IS NOT NULL AND ${events.registrationDeadline} > NOW() THEN 2
-			ELSE 1
+			ELSE 3
 		END
 	`;
 
