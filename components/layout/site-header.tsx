@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { SearchTrigger } from "@/components/search-command";
 import { isGodMode } from "@/lib/god-mode";
+import { MobileNav } from "./mobile-nav";
 import { UserDropdown } from "./user-dropdown";
 
 interface SiteHeaderProps {
@@ -27,9 +28,10 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 
 	return (
 		<header className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur-sm">
-			<div className="mx-auto max-w-screen-xl px-4 lg:px-6">
+			<div className="mx-auto max-w-screen-xl px-4">
 				<div className="flex h-11 items-center justify-between">
-					<div className="flex items-center gap-5">
+					<div className="flex items-center gap-3 md:gap-5">
+						<MobileNav />
 						{showBackButton && (
 							<Link
 								href="/"
@@ -52,13 +54,8 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 							</Link>
 						)}
 						<Link href="/" className="flex items-center">
-							<span className="text-sm font-semibold tracking-tight">
-								<span className="sm:hidden">h0</span>
-								<span className="hidden sm:inline">hack0</span>
-							</span>
-							<span className="hidden sm:inline text-sm text-muted-foreground">
-								.dev
-							</span>
+							<span className="text-sm font-semibold tracking-tight">hack0</span>
+							<span className="text-sm text-muted-foreground">.dev</span>
 						</Link>
 						<nav className="hidden md:flex items-center gap-4 text-xs text-muted-foreground">
 							<Link
