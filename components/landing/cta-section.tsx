@@ -1,26 +1,31 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Plus } from "lucide-react";
 import Link from "next/link";
-import { SubscribeForm } from "@/components/subscribe-form";
 
 export function CTASection() {
 	return (
 		<section className="border-t py-16 md:py-20">
 			<div className="mx-auto max-w-screen-xl px-4 lg:px-8 text-center">
 				<h2 className="text-2xl font-semibold">
-					Unete a la comunidad de builders
+					¿Tienes una comunidad tech?
 				</h2>
 				<p className="text-muted-foreground mt-2 max-w-md mx-auto">
-					Recibe notificaciones de nuevos eventos y conecta con otros builders
-					en Peru.
+					Publica tus eventos gratis y dale visibilidad a tu comunidad. Sin
+					límites, sin costos, sin complicaciones.
 				</p>
 				<div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
-					<SubscribeForm />
 					<Link
-						href="/for-organizers"
-						className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+						href="/onboarding"
+						className="inline-flex h-11 items-center gap-2 rounded-lg bg-foreground px-5 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
 					>
-						Soy organizador
-						<ArrowRight className="h-3.5 w-3.5" />
+						<Plus className="h-4 w-4" />
+						Publicar mi primer evento
+					</Link>
+					<Link
+						href="/events"
+						className="inline-flex h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+					>
+						Ver ejemplos
+						<ArrowRight className="h-4 w-4" />
 					</Link>
 				</div>
 			</div>

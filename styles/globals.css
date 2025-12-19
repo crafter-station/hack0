@@ -163,7 +163,7 @@
 		@apply border-border outline-ring/50;
 	}
 	body {
-		@apply bg-background text-foreground font-mono text-sm;
+		@apply bg-background text-foreground font-sans text-sm;
 		font-feature-settings: "ss01", "ss02", "cv01";
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;

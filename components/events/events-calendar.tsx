@@ -15,7 +15,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import type { Event } from "@/lib/db/schema";
+import type { EventWithOrg } from "@/lib/actions/events";
 import {
 	formatCalendarMonth,
 	formatEventDateKey,
@@ -25,12 +25,12 @@ import {
 } from "@/lib/event-utils";
 
 interface EventsCalendarProps {
-	events: Event[];
+	events: EventWithOrg[];
 }
 
 interface CalendarDay {
 	date: Date;
-	events: Event[];
+	events: EventWithOrg[];
 	isCurrentMonth: boolean;
 }
 
@@ -40,7 +40,7 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 	// Filter events that have dates
 	const eventsWithDates = events.filter((event) => event.startDate);
 
-	const eventsByDate = new Map<string, Event[]>();
+	const eventsByDate = new Map<string, EventWithOrg[]>();
 	eventsWithDates.forEach((event) => {
 		const dateKey = formatEventDateKey(event.startDate);
 		if (dateKey) {
@@ -100,7 +100,7 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 		);
 	};
 
-	const getStatusColor = (event: Event) => {
+	const getStatusColor = (event: EventWithOrg) => {
 		const status = getEventStatus(event);
 		switch (status.type) {
 			case "ongoing":
@@ -182,7 +182,13 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 											<div
 												key={event.id}
 												className="group cursor-pointer"
-												onClick={() => window.open(`/${event.slug}`, "_blank")}
+												onClick={() =>
+													event.organization?.slug &&
+													window.open(
+														`/c/${event.organization.slug}/events/${event.slug}`,
+														"_blank",
+													)
+												}
 											>
 												<div className="flex items-center gap-1">
 													<div
@@ -232,7 +238,13 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 									<Card
 										key={event.id}
 										className="group cursor-pointer hover:shadow-md transition-shadow"
-										onClick={() => window.open(`/${event.slug}`, "_blank")}
+										onClick={() =>
+											event.organization?.slug &&
+											window.open(
+												`/c/${event.organization.slug}/events/${event.slug}`,
+												"_blank",
+											)
+										}
 									>
 										<CardContent className="p-4">
 											<div className="space-y-3">

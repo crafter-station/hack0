@@ -190,7 +190,7 @@ export default function RootLayout({
 					/>
 				</head>
 				<body
-					className={`${geistSans.variable} ${geistMono.variable} font-mono antialiased`}
+					className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
 				>
 					<NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
 					<ThemeProvider

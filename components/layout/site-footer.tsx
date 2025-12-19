@@ -1,12 +1,19 @@
 import { Github, Rss } from "lucide-react";
+import Link from "next/link";
 
 export function SiteFooter() {
 	return (
 		<footer className="border-t border-border/50">
 			<div className="mx-auto max-w-screen-xl px-4 lg:px-6 py-3">
 				<div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-					<p>Centralizando eventos tech para Perú.</p>
+					<p>Mapeando el ecosistema tech de LATAM 🌎</p>
 					<div className="flex items-center gap-3">
+						<Link
+							href="/roadmap"
+							className="hover:text-foreground transition-colors"
+						>
+							Roadmap
+						</Link>
 						<a
 							href="mailto:hey@hack0.dev"
 							className="hover:text-foreground transition-colors"

@@ -14,7 +14,7 @@ const categoryValues = [
 	"learning",
 	"community",
 ] as const;
-const viewValues = ["table", "calendar"] as const;
+const viewValues = ["table", "cards", "calendar"] as const;
 const entityValues = ["events", "organizations"] as const;
 
 export type EntityType = (typeof entityValues)[number];

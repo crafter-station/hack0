@@ -23,6 +23,7 @@ import { ManageEventButton } from "@/components/events/manage-event-button";
 import { WinnerSection } from "@/components/events/winner-section";
 import { CalendarIcon } from "@/components/icons/calendar";
 import { TrophyIcon } from "@/components/icons/trophy";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getEventCohost } from "@/lib/actions/cohost-invites";
 import {
 	getChildEvents,
@@ -62,6 +63,18 @@ function stripMarkdown(text: string): string {
 		.replace(/-\s/g, "")
 		.replace(/\n+/g, " ")
 		.trim();
+}
+
+function getInitials(name: string): string {
+	const words = name.split(/\s+/).filter(Boolean);
+	if (words.length === 1) {
+		return words[0].slice(0, 2).toUpperCase();
+	}
+	return words
+		.slice(0, 2)
+		.map((word) => word[0])
+		.join("")
+		.toUpperCase();
 }
 
 export async function generateMetadata({
@@ -684,21 +697,16 @@ export default async function EventPage({ params }: EventPageProps) {
 																	: ""
 																	}`}
 															>
-																{sponsor.organization.logoUrl ? (
-																	<div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-white">
-																		<Image
-																			src={sponsor.organization.logoUrl}
-																			alt={sponsor.organization.name}
-																			fill
-																			className="object-contain"
-																			sizes="40px"
-																		/>
-																	</div>
-																) : (
-																	<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm font-medium text-muted-foreground">
-																		{sponsor.organization.name.charAt(0)}
-																	</div>
-																)}
+																<Avatar className="h-10 w-10 rounded-lg">
+																	<AvatarImage
+																		src={sponsor.organization.logoUrl || undefined}
+																		alt={sponsor.organization.name}
+																		className="object-contain bg-white"
+																	/>
+																	<AvatarFallback className="rounded-lg text-sm font-medium">
+																		{getInitials(sponsor.organization.name)}
+																	</AvatarFallback>
+																</Avatar>
 																<span className="text-sm font-medium group-hover:underline underline-offset-2">
 																	{sponsor.organization.name}
 																</span>
@@ -918,33 +926,34 @@ export default async function EventPage({ params }: EventPageProps) {
 												<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
 													Distribución
 												</p>
-												<div className="space-y-1.5">
-													{hackathon.prizeDescription
-														.split("\n")
-														.filter((line) => line.trim())
-														.map((line, i) => {
-															const hasEmoji = /[🥇🥈🥉]/u.test(line);
-															return (
-																<div
-																	key={i}
-																	className={`text-sm flex items-start gap-2 ${hasEmoji ? "font-medium" : ""}`}
-																>
-																	{hasEmoji && (
-																		<span className="shrink-0">
-																			{line.match(/[🥇🥈🥉]/u)?.[0]}
-																		</span>
-																	)}
-																	<span
-																		className={
-																			hasEmoji ? "" : "text-muted-foreground"
-																		}
-																	>
-																		{line.replace(/[🥇🥈🥉]/gu, "").trim()}
-																	</span>
-																</div>
-															);
-														})}
-												</div>
+												<Markdown
+													remarkPlugins={[remarkGfm]}
+													components={{
+														p: ({ children }) => (
+															<p className="text-sm text-foreground leading-relaxed">
+																{children}
+															</p>
+														),
+														ul: ({ children }) => (
+															<ul className="space-y-1 text-sm">
+																{children}
+															</ul>
+														),
+														li: ({ children }) => (
+															<li className="text-foreground flex items-start gap-1">
+																<span className="text-muted-foreground">•</span>
+																<span>{children}</span>
+															</li>
+														),
+														strong: ({ children }) => (
+															<strong className="font-semibold text-foreground">
+																{children}
+															</strong>
+														),
+													}}
+												>
+													{hackathon.prizeDescription}
+												</Markdown>
 											</div>
 										)}
 									</div>

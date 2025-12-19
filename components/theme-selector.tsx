@@ -55,8 +55,8 @@ export function ThemeSelector({ onThemeChange }: ThemeSelectorProps) {
 	const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
 	const [_currentPage, setCurrentPage] = useState(1);
 
-	const [bodyFont, setBodyFont] = useState<string>("Geist Mono");
-	const [headingFont, setHeadingFont] = useState<string>("Geist Mono");
+	const [bodyFont, setBodyFont] = useState<string>("Geist");
+	const [headingFont, setHeadingFont] = useState<string>("Geist");
 
 	useEffect(() => {
 		const saved = localStorage.getItem("selectedFonts");
@@ -64,7 +64,7 @@ export function ThemeSelector({ onThemeChange }: ThemeSelectorProps) {
 			try {
 				const fonts = JSON.parse(saved);
 				const migrateFont = (font: string) =>
-					font === "Inter" ? "Geist Mono" : font;
+					font === "Inter" || font === "Geist Mono" ? "Geist" : font;
 				if (fonts.body) setBodyFont(migrateFont(fonts.body));
 				if (fonts.heading) setHeadingFont(migrateFont(fonts.heading));
 			} catch (e) {

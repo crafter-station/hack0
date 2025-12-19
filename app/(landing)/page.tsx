@@ -9,7 +9,7 @@ import { getEvents, getPlatformStats } from "@/lib/actions/events";
 export default async function HomePage() {
 	const [stats, eventsResult] = await Promise.all([
 		getPlatformStats(),
-		getEvents({ limit: 5, status: ["ongoing", "open", "upcoming"] }),
+		getEvents({ limit: 8, status: ["ongoing", "open", "upcoming"] }),
 	]);
 
 	return (
