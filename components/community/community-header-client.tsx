@@ -104,13 +104,13 @@ export function CommunityHeaderClient({
 							<Link
 								key={tab.id}
 								href={href}
-								className={`inline-flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+								className={`inline-flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
 									isActive
 										? "border-foreground text-foreground"
 										: "border-transparent text-muted-foreground hover:text-foreground"
 								}`}
 							>
-								<Icon className="h-4 w-4" />
+								<Icon className="h-3.5 w-3.5" />
 								{tab.label}
 							</Link>
 						);

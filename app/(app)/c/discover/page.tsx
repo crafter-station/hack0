@@ -1,8 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
-import { BadgeCheck, Search, Users } from "lucide-react";
+import { BadgeCheck, Search } from "lucide-react";
+import { DiscoverOrganizationList } from "@/components/communities/discover-organization-list";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { DiscoverCommunityCard } from "@/components/communities/discover-community-card";
 import { getPublicCommunities } from "@/lib/actions/communities";
 
 interface DiscoverPageProps {
@@ -37,94 +37,58 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
 		<div className="min-h-screen bg-background flex flex-col">
 			<SiteHeader />
 
-			<main className="flex-1">
-				<div className="mx-auto max-w-4xl px-4 lg:px-8 py-8">
-					<div className="space-y-6">
-						<div className="flex flex-col gap-4">
-							<div className="flex items-center justify-between">
-								<div>
-									<h1 className="text-2xl font-bold tracking-tight">
-										Explorar Comunidades
-									</h1>
-									<p className="text-muted-foreground mt-1">
-										Encuentra y únete a comunidades tech en Perú
-									</p>
-								</div>
-								<div className="flex items-center gap-2 text-sm text-muted-foreground">
-									<Users className="h-4 w-4" />
-									<span>{communities.length} comunidades</span>
-								</div>
-							</div>
-
-							<form className="flex gap-2" action="/c/discover">
-								<div className="relative flex-1">
-									<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-									<input
-										type="text"
-										name="search"
-										defaultValue={params.search}
-										placeholder="Buscar comunidades..."
-										className="w-full h-10 pl-10 pr-4 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-									/>
-								</div>
-								<select
-									name="type"
-									defaultValue={params.type || ""}
-									className="h-10 px-3 rounded-lg border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-								>
-									<option value="">Todos los tipos</option>
-									<option value="community">Comunidad</option>
-									<option value="university">Universidad</option>
-									<option value="company">Empresa</option>
-									<option value="government">Gobierno</option>
-									<option value="ngo">ONG</option>
-									<option value="accelerator">Aceleradora</option>
-								</select>
-								<label className="flex items-center gap-2 h-10 px-3 rounded-lg border bg-background text-sm cursor-pointer hover:bg-muted transition-colors">
-									<input
-										type="checkbox"
-										name="verified"
-										value="true"
-										defaultChecked={params.verified === "true"}
-										className="h-4 w-4 rounded border-muted-foreground"
-									/>
-									<BadgeCheck className="h-4 w-4 text-emerald-500" />
-									<span className="hidden sm:inline">Verificadas</span>
-								</label>
-								<button
-									type="submit"
-									className="h-10 px-4 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors"
-								>
-									Buscar
-								</button>
-							</form>
+			<section className="sticky top-11 z-40 border-b bg-background/95 backdrop-blur-md">
+				<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
+					<form className="flex items-center gap-2 py-2" action="/c/discover">
+						<div className="relative max-w-[200px]">
+							<Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+							<input
+								type="text"
+								name="search"
+								defaultValue={params.search}
+								placeholder="Buscar..."
+								className="w-full h-7 pl-8 pr-3 rounded-md border bg-background text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+							/>
 						</div>
-
-						{communities.length === 0 ? (
-							<div className="text-center py-16">
-								<Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-								<h2 className="text-lg font-medium mb-2">
-									No se encontraron comunidades
-								</h2>
-								<p className="text-muted-foreground text-sm">
-									{params.search
-										? "Intenta con otros términos de búsqueda"
-										: "Aún no hay comunidades públicas disponibles"}
-								</p>
-							</div>
-						) : (
-							<div className="grid gap-4 sm:grid-cols-2">
-								{communities.map((community) => (
-									<DiscoverCommunityCard
-										key={community.id}
-										community={community}
-										isAuthenticated={isAuthenticated}
-									/>
-								))}
-							</div>
-						)}
-					</div>
+						<select
+							name="type"
+							defaultValue={params.type || ""}
+							className="h-7 px-2 rounded-md border bg-background text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+						>
+							<option value="">Tipo</option>
+							<option value="community">Comunidad</option>
+							<option value="university">Universidad</option>
+							<option value="company">Empresa</option>
+							<option value="government">Gobierno</option>
+							<option value="ngo">ONG</option>
+							<option value="accelerator">Aceleradora</option>
+						</select>
+						<label className="flex items-center gap-1.5 h-7 px-2 rounded-md border bg-background text-xs cursor-pointer hover:bg-muted transition-colors">
+							<input
+								type="checkbox"
+								name="verified"
+								value="true"
+								defaultChecked={params.verified === "true"}
+								className="h-3 w-3 rounded"
+							/>
+							<BadgeCheck className="h-3.5 w-3.5 text-emerald-500" />
+							<span className="hidden sm:inline">Verificadas</span>
+						</label>
+						<button
+							type="submit"
+							className="h-7 px-3 rounded-md bg-foreground text-background text-xs font-medium hover:bg-foreground/90 transition-colors"
+						>
+							Filtrar
+						</button>
+					</form>
 				</div>
+			</section>
+
+			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-4 flex-1 w-full">
+				<DiscoverOrganizationList
+					organizations={communities}
+					isAuthenticated={isAuthenticated}
+				/>
 			</main>
 
 			<SiteFooter />

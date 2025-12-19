@@ -2,7 +2,6 @@ import type { SearchParams } from "nuqs/server";
 import { Suspense } from "react";
 import { AdvancedFilters } from "@/components/events/advanced-filters";
 import { AllEventsTable } from "@/components/events/all-events-table";
-import { CategoryTabs } from "@/components/events/category-tabs";
 import { EventsCalendar } from "@/components/events/events-calendar";
 import { ViewToggle } from "@/components/events/view-toggle";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -61,23 +60,18 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 		<div className="min-h-screen bg-background flex flex-col">
 			<SiteHeader />
 
-			<section className="sticky top-11 z-40 border-b border-border/50 bg-background/95 backdrop-blur-sm">
-				<div className="mx-auto max-w-screen-xl px-4 lg:px-6">
-					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-2">
-						<Suspense fallback={<div className="h-7 animate-pulse w-48" />}>
-							<CategoryTabs />
+			<section className="sticky top-11 z-40 border-b bg-background/95 backdrop-blur-md">
+				<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
+					<div className="flex items-center justify-between gap-2 py-2">
+						<ViewToggle />
+						<Suspense fallback={<div className="h-7 animate-pulse w-32" />}>
+							<AdvancedFilters />
 						</Suspense>
-						<div className="flex items-center gap-2">
-							<ViewToggle />
-							<Suspense fallback={<div className="h-7 animate-pulse w-40" />}>
-								<AdvancedFilters />
-							</Suspense>
-						</div>
 					</div>
 				</div>
 			</section>
 
-			<main className="mx-auto max-w-screen-xl px-4 lg:px-6 py-4 flex-1 w-full">
+			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-4 flex-1 w-full">
 				<Suspense
 					fallback={
 						<div className="animate-pulse space-y-1">

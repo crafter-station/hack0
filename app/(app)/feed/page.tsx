@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import type { SearchParams } from "nuqs/server";
 import { Suspense } from "react";
 import { AdvancedFilters } from "@/components/events/advanced-filters";
-import { CategoryTabs } from "@/components/events/category-tabs";
+import { ViewToggle } from "@/components/events/view-toggle";
 import { FeedEventsTable } from "@/components/feed/feed-events-table";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -61,25 +61,23 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 		<div className="min-h-screen bg-background flex flex-col">
 			<SiteHeader />
 
-			<section className="sticky top-14 z-40 border-b bg-background/95 backdrop-blur-md shadow-sm">
+			<section className="sticky top-11 z-40 border-b bg-background/95 backdrop-blur-md">
 				<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
-					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 py-3">
-						<Suspense fallback={<div className="h-10 animate-pulse w-64" />}>
-							<CategoryTabs />
-						</Suspense>
-						<Suspense fallback={<div className="h-9 animate-pulse w-48" />}>
+					<div className="flex items-center justify-between gap-2 py-2">
+						<ViewToggle />
+						<Suspense fallback={<div className="h-7 animate-pulse w-32" />}>
 							<AdvancedFilters />
 						</Suspense>
 					</div>
 				</div>
 			</section>
 
-			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-8 flex-1 w-full">
+			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-4 flex-1 w-full">
 				<Suspense
 					fallback={
-						<div className="animate-pulse space-y-4">
-							{Array.from({ length: 8 }).map((_, i) => (
-								<div key={i} className="h-20 bg-muted rounded" />
+						<div className="animate-pulse space-y-1">
+							{Array.from({ length: 12 }).map((_, i) => (
+								<div key={i} className="h-10 bg-muted/30" />
 							))}
 						</div>
 					}

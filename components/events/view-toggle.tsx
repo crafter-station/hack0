@@ -30,17 +30,19 @@ export function ViewToggle() {
 		>
 			<ToggleGroupItem
 				value="table"
-				aria-label="Vista de tabla"
-				className="h-7 w-7 p-0"
+				aria-label="Vista de lista"
+				className="h-7 px-2.5 gap-1.5"
 			>
 				<List className="h-3.5 w-3.5" />
+				<span className="text-xs">Lista</span>
 			</ToggleGroupItem>
 			<ToggleGroupItem
 				value="calendar"
 				aria-label="Vista de calendario"
-				className="h-7 w-7 p-0"
+				className="h-7 px-2.5 gap-1.5"
 			>
 				<Calendar className="h-3.5 w-3.5" />
+				<span className="text-xs">Calendario</span>
 			</ToggleGroupItem>
 		</ToggleGroup>
 	);
