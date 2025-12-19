@@ -1,296 +1,493 @@
 "use client";
 
 import {
+	addDays,
 	addMonths,
+	differenceInDays,
 	eachDayOfInterval,
 	endOfMonth,
 	format,
+	getDay,
+	isBefore,
 	isSameDay,
-	isSameMonth,
+	isWithinInterval,
+	max,
+	min,
+	startOfDay,
 	startOfMonth,
 	subMonths,
 } from "date-fns";
-import { ChevronLeft, ChevronRight, MapPin, Trophy } from "lucide-react";
-import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
+import { ChevronLeft, ChevronRight, MapPin, Calendar, Trophy } from "lucide-react";
+import { useState, useMemo, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { EventWithOrg } from "@/lib/actions/events";
 import {
 	formatCalendarMonth,
-	formatEventDateKey,
 	formatEventDateRange,
 	getEventStatus,
 	getFormatLabel,
 } from "@/lib/event-utils";
 
+const getMondayBasedDay = (date: Date) => {
+	const day = getDay(date);
+	return day === 0 ? 6 : day - 1;
+};
+
+const isWeekend = (date: Date) => {
+	const day = getDay(date);
+	return day === 0 || day === 6;
+};
+
+const isPastDay = (date: Date) => {
+	return isBefore(startOfDay(date), startOfDay(new Date()));
+};
+
 interface EventsCalendarProps {
 	events: EventWithOrg[];
 }
 
-interface CalendarDay {
-	date: Date;
-	events: EventWithOrg[];
-	isCurrentMonth: boolean;
+interface CalendarWeek {
+	days: Date[];
+	weekStart: Date;
+	weekEnd: Date;
+}
+
+interface EventSpan {
+	event: EventWithOrg;
+	startCol: number;
+	span: number;
+	isStart: boolean;
+	isEnd: boolean;
+	lane: number;
 }
 
 export function EventsCalendar({ events }: EventsCalendarProps) {
 	const [currentMonth, setCurrentMonth] = useState(new Date());
 
-	// Filter events that have dates
-	const eventsWithDates = events.filter((event) => event.startDate);
+	const eventsWithDates = useMemo(
+		() => events.filter((event) => event.startDate),
+		[events]
+	);
 
-	const eventsByDate = new Map<string, EventWithOrg[]>();
-	eventsWithDates.forEach((event) => {
-		const dateKey = formatEventDateKey(event.startDate);
-		if (dateKey) {
-			if (!eventsByDate.has(dateKey)) {
-				eventsByDate.set(dateKey, []);
-			}
-			eventsByDate.get(dateKey)!.push(event);
+	const { weeks, allDays } = useMemo(() => {
+		const monthStart = startOfMonth(currentMonth);
+		const monthEnd = endOfMonth(currentMonth);
+		const calendarDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+		const startPadding = getMondayBasedDay(monthStart);
+		const endPadding = 6 - getMondayBasedDay(monthEnd);
+
+		const allDays: Date[] = [];
+
+		for (let i = startPadding - 1; i >= 0; i--) {
+			const date = new Date(monthStart);
+			date.setDate(date.getDate() - (i + 1));
+			allDays.push(date);
 		}
-	});
 
-	// Generate calendar days
-	const monthStart = startOfMonth(currentMonth);
-	const monthEnd = endOfMonth(currentMonth);
-	const calendarDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
+		calendarDays.forEach((date) => allDays.push(date));
 
-	// Add padding days from previous/next month
-	const startPadding = monthStart.getDay();
-	const endPadding = 6 - monthEnd.getDay();
+		for (let i = 1; i <= endPadding; i++) {
+			const date = new Date(monthEnd);
+			date.setDate(date.getDate() + i);
+			allDays.push(date);
+		}
 
-	const allDays: CalendarDay[] = [];
+		const weeks: CalendarWeek[] = [];
+		for (let i = 0; i < allDays.length; i += 7) {
+			const weekDays = allDays.slice(i, i + 7);
+			weeks.push({
+				days: weekDays,
+				weekStart: weekDays[0],
+				weekEnd: weekDays[6],
+			});
+		}
 
-	// Previous month padding
-	for (let i = startPadding - 1; i >= 0; i--) {
-		const date = new Date(monthStart);
-		date.setDate(date.getDate() - (i + 1));
-		allDays.push({
-			date,
-			events: [],
-			isCurrentMonth: false,
+		return { weeks, allDays };
+	}, [currentMonth]);
+
+	const isMultiDayEvent = (event: EventWithOrg) => {
+		if (!event.startDate || !event.endDate) return false;
+		return !isSameDay(new Date(event.startDate), new Date(event.endDate));
+	};
+
+	const getEventSpansForWeek = (week: CalendarWeek): EventSpan[] => {
+		const spans: EventSpan[] = [];
+
+		eventsWithDates.forEach((event) => {
+			if (!event.startDate) return;
+
+			const eventStart = startOfDay(new Date(event.startDate));
+			const eventEnd = event.endDate
+				? startOfDay(new Date(event.endDate))
+				: eventStart;
+
+			if (!isMultiDayEvent(event)) return;
+
+			const weekStart = startOfDay(week.weekStart);
+			const weekEnd = startOfDay(week.weekEnd);
+
+			if (isBefore(eventEnd, weekStart) || isBefore(weekEnd, eventStart)) {
+				return;
+			}
+
+			const visibleStart = max([eventStart, weekStart]);
+			const visibleEnd = min([eventEnd, weekEnd]);
+
+			const startCol = differenceInDays(visibleStart, weekStart);
+			const span = differenceInDays(visibleEnd, visibleStart) + 1;
+
+			spans.push({
+				event,
+				startCol,
+				span,
+				isStart: isSameDay(visibleStart, eventStart),
+				isEnd: isSameDay(visibleEnd, eventEnd),
+				lane: 0,
+			});
 		});
-	}
 
-	// Current month days
-	calendarDays.forEach((date) => {
-		const dateKey = format(date, "yyyy-MM-dd");
-		allDays.push({
-			date,
-			events: eventsByDate.get(dateKey) || [],
-			isCurrentMonth: true,
+		spans.sort((a, b) => {
+			if (a.startCol !== b.startCol) return a.startCol - b.startCol;
+			return b.span - a.span;
 		});
-	});
 
-	// Next month padding
-	for (let i = 1; i <= endPadding; i++) {
-		const date = new Date(monthEnd);
-		date.setDate(date.getDate() + i);
-		allDays.push({
-			date,
-			events: [],
-			isCurrentMonth: false,
+		const lanes: number[][] = [];
+		spans.forEach((span) => {
+			let assignedLane = 0;
+			for (let i = 0; i < lanes.length; i++) {
+				const laneOccupied = lanes[i].some(
+					(col) => col >= span.startCol && col < span.startCol + span.span
+				);
+				if (!laneOccupied) {
+					assignedLane = i;
+					break;
+				}
+				assignedLane = i + 1;
+			}
+
+			if (!lanes[assignedLane]) lanes[assignedLane] = [];
+			for (let col = span.startCol; col < span.startCol + span.span; col++) {
+				lanes[assignedLane].push(col);
+			}
+			span.lane = assignedLane;
 		});
-	}
+
+		return spans;
+	};
+
+	const getSingleDayEventsForDay = (date: Date) => {
+		return eventsWithDates.filter((event) => {
+			if (!event.startDate) return false;
+			const eventStart = startOfDay(new Date(event.startDate));
+			if (!isSameDay(eventStart, startOfDay(date))) return false;
+			return !isMultiDayEvent(event);
+		});
+	};
 
 	const navigateMonth = (direction: "prev" | "next") => {
 		setCurrentMonth((prev) =>
-			direction === "prev" ? subMonths(prev, 1) : addMonths(prev, 1),
+			direction === "prev" ? subMonths(prev, 1) : addMonths(prev, 1)
 		);
 	};
 
-	const getStatusColor = (event: EventWithOrg) => {
-		const status = getEventStatus(event);
-		switch (status.type) {
+	const getStatusStyles = (event: EventWithOrg) => {
+		const { status } = getEventStatus(event);
+		switch (status) {
 			case "ongoing":
-				return "bg-emerald-500";
+				return {
+					bg: "bg-emerald-500/20",
+					border: "border-l-emerald-500",
+					text: "text-emerald-700 dark:text-emerald-400",
+					bar: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400",
+				};
 			case "open":
-				return "bg-blue-500";
+				return {
+					bg: "bg-blue-500/20",
+					border: "border-l-blue-500",
+					text: "text-blue-700 dark:text-blue-400",
+					bar: "bg-blue-500/20 text-blue-700 dark:text-blue-400",
+				};
 			case "upcoming":
-				return "bg-amber-500";
+				return {
+					bg: "bg-amber-500/20",
+					border: "border-l-amber-500",
+					text: "text-amber-700 dark:text-amber-400",
+					bar: "bg-amber-500/20 text-amber-700 dark:text-amber-400",
+				};
 			default:
-				return "bg-muted";
+				return {
+					bg: "bg-muted",
+					border: "border-l-muted-foreground/50",
+					text: "text-muted-foreground",
+					bar: "bg-muted text-muted-foreground",
+				};
 		}
 	};
 
+	const monthStart = startOfMonth(currentMonth);
+
+	const [tooltip, setTooltip] = useState<{
+		event: EventWithOrg;
+		x: number;
+		y: number;
+	} | null>(null);
+	const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+	const showTooltip = useCallback((event: EventWithOrg, e: React.MouseEvent) => {
+		if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
+		tooltipTimeoutRef.current = setTimeout(() => {
+			setTooltip({ event, x: e.clientX, y: e.clientY });
+		}, 200);
+	}, []);
+
+	const hideTooltip = useCallback(() => {
+		if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
+		tooltipTimeoutRef.current = setTimeout(() => {
+			setTooltip(null);
+		}, 100);
+	}, []);
+
+	const updateTooltipPosition = useCallback((e: React.MouseEvent) => {
+		if (tooltip) {
+			setTooltip((prev) => prev ? { ...prev, x: e.clientX, y: e.clientY } : null);
+		}
+	}, [tooltip]);
+
+	const EventTooltipContent = ({ event }: { event: EventWithOrg }) => {
+		const { status, label } = getEventStatus(event);
+		return (
+			<div className="flex h-32 w-64 bg-popover text-popover-foreground rounded-md border shadow-md overflow-hidden">
+				<div className="w-32 h-32 shrink-0 bg-muted">
+					{event.eventImageUrl ? (
+						<img
+							src={event.eventImageUrl}
+							alt={event.name}
+							className="w-full h-full object-cover"
+						/>
+					) : (
+						<div className="w-full h-full bg-gradient-to-br from-muted to-muted-foreground/20 flex items-center justify-center">
+							<Calendar className="w-8 h-8 text-muted-foreground/50" />
+						</div>
+					)}
+				</div>
+				<div className="w-32 h-32 p-2.5 flex flex-col justify-between overflow-hidden">
+					<div className="space-y-0.5">
+						<h4 className="font-medium text-xs line-clamp-2 leading-tight">
+							{event.name}
+						</h4>
+						<span
+							className={`text-[10px] ${status === "ongoing" ? "text-emerald-600" : status === "open" ? "text-blue-600" : "text-muted-foreground"}`}
+						>
+							{label}
+						</span>
+					</div>
+					<div className="space-y-0.5 text-[10px] text-muted-foreground">
+						<div className="flex items-center gap-1">
+							<Calendar className="w-2.5 h-2.5 shrink-0" />
+							<span className="truncate">
+								{formatEventDateRange(event.startDate, event.endDate)}
+							</span>
+						</div>
+						{event.city && (
+							<div className="flex items-center gap-1">
+								<MapPin className="w-2.5 h-2.5 shrink-0" />
+								<span className="truncate">{event.city}</span>
+							</div>
+						)}
+						{event.prizePool ? (
+							<div className="flex items-center gap-1 text-emerald-600">
+								<Trophy className="w-2.5 h-2.5 shrink-0" />$
+								{event.prizePool.toLocaleString()}
+							</div>
+						) : (
+							event.format && (
+								<div className="truncate">{getFormatLabel(event.format)}</div>
+							)
+						)}
+					</div>
+				</div>
+			</div>
+		);
+	};
+
 	return (
-		<div className="space-y-6">
-			{/* Calendar Header */}
+		<div className="space-y-4">
 			<div className="flex items-center justify-between">
-				<Button
-					variant="outline"
-					size="sm"
-					onClick={() => navigateMonth("prev")}
-				>
+				<Button variant="outline" size="sm" onClick={() => navigateMonth("prev")}>
 					<ChevronLeft className="h-4 w-4" />
 				</Button>
-
-				<h2 className="text-xl font-semibold">
-					{formatCalendarMonth(currentMonth)}
-				</h2>
-
-				<Button
-					variant="outline"
-					size="sm"
-					onClick={() => navigateMonth("next")}
-				>
+				<h2 className="text-xl font-semibold">{formatCalendarMonth(currentMonth)}</h2>
+				<Button variant="outline" size="sm" onClick={() => navigateMonth("next")}>
 					<ChevronRight className="h-4 w-4" />
 				</Button>
 			</div>
 
-			{/* Calendar Grid */}
-			<Card>
+			<Card className="py-0 overflow-hidden">
 				<CardContent className="p-0">
-					{/* Weekday headers */}
 					<div className="grid grid-cols-7 border-b">
-						{["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((day) => (
+						{["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((day, index) => (
 							<div
 								key={day}
-								className="p-3 text-center text-sm font-medium text-muted-foreground border-r last:border-r-0"
+								className={`p-3 text-center text-sm font-medium text-muted-foreground border-r last:border-r-0 ${index >= 5 ? "bg-muted/50" : ""}`}
 							>
 								{day}
 							</div>
 						))}
 					</div>
 
-					{/* Calendar days */}
-					<div className="grid grid-cols-7">
-						{allDays.map((day, index) => (
-							<div
-								key={index}
-								className={`
-									min-h-[100px] p-2 border-r border-b last:border-r-0
-									${day.isCurrentMonth ? "bg-background" : "bg-muted/30"}
-									${isSameDay(day.date, new Date()) ? "ring-2 ring-ring" : ""}
-								`}
-							>
-								<div className="space-y-1">
-									<div
-										className={`
-										text-sm font-medium
-										${day.isCurrentMonth ? "text-foreground" : "text-muted-foreground"}
-										${isSameDay(day.date, new Date()) ? "text-ring" : ""}
-									`}
-									>
-										{format(day.date, "d")}
-									</div>
+					{weeks.map((week, weekIndex) => {
+						const eventSpans = getEventSpansForWeek(week);
+						const maxLanes = eventSpans.length > 0 ? Math.max(...eventSpans.map((s) => s.lane)) + 1 : 0;
+						const isLastWeek = weekIndex === weeks.length - 1;
 
-									{/* Events for this day */}
-									<div className="space-y-1">
-										{day.events.slice(0, 3).map((event) => (
+						return (
+							<div key={weekIndex} className="relative">
+								{maxLanes > 0 && (
+									<div
+										className="grid grid-cols-7 border-b"
+										style={{ minHeight: `${maxLanes * 24}px` }}
+									>
+										{week.days.map((date, dayIndex) => {
+											const isWeekendDay = isWeekend(date);
+											const isCurrentMonth = isSameDay(startOfMonth(date), monthStart);
+											return (
+												<div
+													key={dayIndex}
+													className={`border-r last:border-r-0 ${isCurrentMonth ? (isWeekendDay ? "bg-muted/50" : "bg-background") : "bg-muted/30"}`}
+												/>
+											);
+										})}
+
+										{eventSpans.map((span, spanIndex) => {
+											const styles = getStatusStyles(span.event);
+											const isPast = isPastDay(new Date(span.event.startDate!));
+											return (
+												<div
+													key={`${span.event.id}-${spanIndex}`}
+													className={`
+														absolute cursor-pointer text-xs font-medium px-1.5 py-0.5 truncate
+														${styles.bar}
+														rounded-l-sm border-l-2 ${styles.border}
+														${span.isEnd ? "rounded-r-sm" : ""}
+														${isPast ? "opacity-50" : ""}
+													`}
+													style={{
+														left: `calc(${(span.startCol / 7) * 100}% + 2px)`,
+														width: `calc(${(span.span / 7) * 100}% - 4px)`,
+														top: `${span.lane * 24 + 2}px`,
+														height: "20px",
+													}}
+													onClick={() =>
+														span.event.organization?.slug &&
+														window.open(
+															`/c/${span.event.organization.slug}/events/${span.event.slug}`,
+															"_blank"
+														)
+													}
+													onMouseEnter={(e) => showTooltip(span.event, e)}
+													onMouseLeave={hideTooltip}
+													onMouseMove={updateTooltipPosition}
+												>
+													{span.event.name}
+												</div>
+											);
+										})}
+									</div>
+								)}
+
+								<div className="grid grid-cols-7">
+									{week.days.map((date, dayIndex) => {
+										const isToday = isSameDay(date, new Date());
+										const isWeekendDay = isWeekend(date);
+										const isPast = isPastDay(date);
+										const isCurrentMonth = isSameDay(startOfMonth(date), monthStart);
+										const singleDayEvents = getSingleDayEventsForDay(date);
+
+										return (
 											<div
-												key={event.id}
-												className="group cursor-pointer"
-												onClick={() =>
-													event.organization?.slug &&
-													window.open(
-														`/c/${event.organization.slug}/events/${event.slug}`,
-														"_blank",
-													)
-												}
+												key={dayIndex}
+												className={`
+													min-h-[80px] p-2 border-r last:border-r-0
+													${!isLastWeek ? "border-b" : ""}
+													${isCurrentMonth ? (isWeekendDay ? "bg-muted/50" : "bg-background") : "bg-muted/30"}
+												`}
 											>
-												<div className="flex items-center gap-1">
-													<div
-														className={`w-1.5 h-1.5 rounded-full ${getStatusColor(event)}`}
-													/>
-													<span className="text-xs truncate hover:text-foreground transition-colors">
-														{event.name}
-													</span>
+												<div className="space-y-1">
+													<div className="flex items-center">
+														<span
+															className={`
+																text-sm font-medium inline-flex items-center justify-center
+																${isToday ? "bg-destructive text-destructive-foreground w-6 h-6 rounded-md" : ""}
+																${!isToday && isCurrentMonth ? "text-foreground" : ""}
+																${!isToday && !isCurrentMonth ? "text-muted-foreground" : ""}
+															`}
+														>
+															{format(date, "d")}
+														</span>
+													</div>
+
+													<div className="space-y-0.5">
+														{singleDayEvents.slice(0, 2).map((event) => {
+															const styles = getStatusStyles(event);
+															return (
+																<div
+																	key={event.id}
+																	className={`
+																		cursor-pointer rounded-sm border-l-2 px-1 py-0.5 transition-opacity
+																		${styles.bg} ${styles.border} ${styles.text}
+																		${isPast ? "opacity-50" : ""}
+																	`}
+																	onClick={() =>
+																		event.organization?.slug &&
+																		window.open(
+																			`/c/${event.organization.slug}/events/${event.slug}`,
+																			"_blank"
+																		)
+																	}
+																	onMouseEnter={(e) => showTooltip(event, e)}
+																	onMouseLeave={hideTooltip}
+																	onMouseMove={updateTooltipPosition}
+																>
+																	<span className="text-[10px] truncate block font-medium">
+																		{event.name}
+																	</span>
+																</div>
+															);
+														})}
+
+														{singleDayEvents.length > 2 && (
+															<div className={`text-[10px] text-muted-foreground ${isPast ? "opacity-50" : ""}`}>
+																+{singleDayEvents.length - 2} más
+															</div>
+														)}
+													</div>
 												</div>
 											</div>
-										))}
-
-										{day.events.length > 3 && (
-											<div className="text-xs text-muted-foreground">
-												+{day.events.length - 3} más
-											</div>
-										)}
-									</div>
+										);
+									})}
 								</div>
 							</div>
-						))}
-					</div>
+						);
+					})}
 				</CardContent>
 			</Card>
 
-			{/* Events List */}
-			<div className="space-y-4">
-				<h3 className="text-lg font-semibold">
-					Eventos de {formatCalendarMonth(currentMonth, "MMMM")}
-				</h3>
-
-				{eventsWithDates.length === 0 ? (
-					<Card>
-						<CardContent className="p-6 text-center text-muted-foreground">
-							No hay eventos programados para este mes.
-						</CardContent>
-					</Card>
-				) : (
-					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-						{eventsWithDates
-							.filter((event) =>
-								isSameMonth(new Date(event.startDate!), currentMonth),
-							)
-							.map((event) => {
-								const status = getEventStatus(event);
-								return (
-									<Card
-										key={event.id}
-										className="group cursor-pointer hover:shadow-md transition-shadow"
-										onClick={() =>
-											event.organization?.slug &&
-											window.open(
-												`/c/${event.organization.slug}/events/${event.slug}`,
-												"_blank",
-											)
-										}
-									>
-										<CardContent className="p-4">
-											<div className="space-y-3">
-												{/* Header */}
-												<div className="flex items-start justify-between gap-2">
-													<h4 className="font-medium line-clamp-2 group-hover:text-primary transition-colors">
-														{event.name}
-													</h4>
-													<Badge variant="secondary" className="shrink-0">
-														{status.label}
-													</Badge>
-												</div>
-
-												{/* Date */}
-												<div className="text-sm text-muted-foreground">
-													{formatEventDateRange(event.startDate, event.endDate)}
-												</div>
-
-												{/* Details */}
-												<div className="flex items-center gap-4 text-xs text-muted-foreground">
-													{event.format && (
-														<span>{getFormatLabel(event.format)}</span>
-													)}
-													{event.prizePool && (
-														<span className="flex items-center gap-1">
-															<Trophy className="h-3 w-3" />$
-															{event.prizePool.toLocaleString()}
-														</span>
-													)}
-												</div>
-
-												{/* Location */}
-												{event.city && (
-													<div className="flex items-center gap-1 text-xs text-muted-foreground">
-														<MapPin className="h-3 w-3" />
-														{event.city}
-													</div>
-												)}
-											</div>
-										</CardContent>
-									</Card>
-								);
-							})}
-					</div>
+			{tooltip && typeof document !== "undefined" &&
+				createPortal(
+					<div
+						className="fixed z-50 pointer-events-none animate-in fade-in-0 zoom-in-95 duration-100"
+						style={{
+							left: tooltip.x + 12,
+							top: tooltip.y + 12,
+						}}
+					>
+						<EventTooltipContent event={tooltip.event} />
+					</div>,
+					document.body
 				)}
-			</div>
 		</div>
 	);
 }
