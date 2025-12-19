@@ -41,7 +41,11 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 						return (
 							<Link
 								key={event.id}
-								href={`/${event.slug}`}
+								href={
+									event.organizationId
+										? `/c/${event.organization?.slug}/events/${event.slug}`
+										: `/${event.slug}`
+								}
 								className="flex items-center gap-4 p-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors"
 							>
 								<div className="h-10 w-10 rounded-lg overflow-hidden bg-muted flex-shrink-0">
