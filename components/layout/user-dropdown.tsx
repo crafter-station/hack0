@@ -2,8 +2,8 @@
 
 import { useClerk, useUser } from "@clerk/nextjs";
 import { LogOut, Moon, Sun, User, Zap } from "lucide-react";
-import { useTheme } from "next-themes";
 import Link from "next/link";
+import { useTheme } from "next-themes";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -58,7 +58,10 @@ export function UserDropdown({ isGodMode = false }: UserDropdownProps) {
 				<DropdownMenuSeparator />
 				{isGodMode && (
 					<>
-						<DropdownMenuItem asChild className="text-amber-600 dark:text-amber-400">
+						<DropdownMenuItem
+							asChild
+							className="text-amber-600 dark:text-amber-400"
+						>
 							<Link href="/god">
 								<Zap className="h-3.5 w-3.5" />
 								<span className="text-xs">Panel Admin</span>

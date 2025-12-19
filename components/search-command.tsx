@@ -32,7 +32,9 @@ export function SearchTrigger() {
 }
 
 interface SearchCommandProps {
-	hackathons: (Event & { organization: { name: string; displayName: string | null } | null })[];
+	hackathons: (Event & {
+		organization: { name: string; displayName: string | null } | null;
+	})[];
 }
 
 export function SearchCommand({ hackathons }: SearchCommandProps) {
@@ -123,7 +125,8 @@ export function SearchCommand({ hackathons }: SearchCommandProps) {
 									<div className="flex-1 min-w-0">
 										<p className="truncate font-medium">{event.name}</p>
 										<p className="text-xs text-muted-foreground truncate">
-											{event.organization?.displayName || event.organization?.name}
+											{event.organization?.displayName ||
+												event.organization?.name}
 										</p>
 									</div>
 									<ArrowRight className="h-3 w-3 text-muted-foreground" />

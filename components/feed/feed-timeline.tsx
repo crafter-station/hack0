@@ -41,12 +41,27 @@ function groupEventsByDate(events: FeedEvent[]): GroupedEvents[] {
 	// Convert to array and add labels
 	const result: GroupedEvents[] = [];
 	const monthNames = [
-		"Ene", "Feb", "Mar", "Abr", "May", "Jun",
-		"Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
+		"Ene",
+		"Feb",
+		"Mar",
+		"Abr",
+		"May",
+		"Jun",
+		"Jul",
+		"Ago",
+		"Sep",
+		"Oct",
+		"Nov",
+		"Dic",
 	];
 	const dayNames = [
-		"Domingo", "Lunes", "Martes", "Miércoles",
-		"Jueves", "Viernes", "Sábado"
+		"Domingo",
+		"Lunes",
+		"Martes",
+		"Miércoles",
+		"Jueves",
+		"Viernes",
+		"Sábado",
 	];
 
 	for (const [key, events] of groups) {
@@ -94,20 +109,24 @@ export function FeedTimeline({ events }: FeedTimelineProps) {
 				<div key={group.date.toISOString()} className="relative">
 					{/* Timeline dot and line */}
 					<div className="absolute left-0 top-1.5 bottom-0 flex flex-col items-center">
-						<div className={`
+						<div
+							className={`
 							h-2 w-2 rounded-full border-2 border-background shrink-0
 							${group.isToday || group.isTomorrow ? "bg-emerald-500" : "bg-muted-foreground/40"}
-						`} />
+						`}
+						/>
 						<div className="w-px flex-1 bg-border mt-1.5" />
 					</div>
 
 					{/* Date header */}
 					<div className="pl-5 mb-3">
 						<div className="flex items-baseline gap-2">
-							<h2 className={`
+							<h2
+								className={`
 								text-base font-semibold
 								${group.isToday || group.isTomorrow ? "text-foreground" : "text-foreground"}
-							`}>
+							`}
+							>
 								{group.label}
 							</h2>
 							<span className="text-xs text-muted-foreground">

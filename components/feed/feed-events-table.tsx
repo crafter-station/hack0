@@ -1,13 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useInView } from "react-intersection-observer";
 import { Loader2, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { getPersonalizedFeed, type FeedEvent, type FeedFilterType } from "@/lib/actions/feed";
+import { useEffect, useState } from "react";
+import { useInView } from "react-intersection-observer";
 import { EventRowWithChildren } from "@/components/events/event-row-with-children";
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Button } from "@/components/ui/button";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@/components/ui/empty";
+import {
+	type FeedEvent,
+	type FeedFilterType,
+	getPersonalizedFeed,
+} from "@/lib/actions/feed";
 
 interface FeedEventsTableProps {
 	initialEvents: FeedEvent[];
@@ -36,13 +47,7 @@ export function FeedEventsTable({
 		setEvents(initialEvents);
 		setCursor(initialCursor);
 		setHasMore(initialHasMore);
-	}, [initialEvents, initialCursor, initialHasMore, category]);
-
-	useEffect(() => {
-		if (inView && hasMore && !isLoading) {
-			loadMore();
-		}
-	}, [inView, hasMore, isLoading]);
+	}, [initialEvents, initialCursor, initialHasMore]);
 
 	const loadMore = async () => {
 		if (!cursor || isLoading) return;
@@ -66,6 +71,12 @@ export function FeedEventsTable({
 		}
 	};
 
+	useEffect(() => {
+		if (inView && hasMore && !isLoading) {
+			loadMore();
+		}
+	}, [inView, hasMore, isLoading]);
+
 	if (isLoading && events.length === 0) {
 		return (
 			<div className="animate-pulse space-y-4">
@@ -85,7 +96,8 @@ export function FeedEventsTable({
 					</EmptyMedia>
 					<EmptyTitle>No hay eventos personalizados</EmptyTitle>
 					<EmptyDescription>
-						Sigue algunas comunidades para ver eventos recomendados basados en tus preferencias.
+						Sigue algunas comunidades para ver eventos recomendados basados en
+						tus preferencias.
 					</EmptyDescription>
 				</EmptyHeader>
 				<EmptyContent>

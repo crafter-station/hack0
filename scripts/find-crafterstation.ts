@@ -1,6 +1,6 @@
+import { like } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
-import { like } from "drizzle-orm";
 
 async function findCrafterStation() {
 	const results = await db

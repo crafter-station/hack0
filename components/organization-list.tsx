@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { ChevronDown, ChevronUp, CheckCircle2 } from "lucide-react";
-import Link from "next/link";
+import { CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
-import type { PublicOrganization, OrganizationFilters } from "@/lib/actions/organizations";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import type {
+	OrganizationFilters,
+	PublicOrganization,
+} from "@/lib/actions/organizations";
 import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
 
 interface OrganizationListProps {
@@ -33,7 +36,9 @@ export function OrganizationList({
 			let comparison = 0;
 			switch (sortField) {
 				case "name":
-					comparison = (a.displayName || a.name).localeCompare(b.displayName || b.name);
+					comparison = (a.displayName || a.name).localeCompare(
+						b.displayName || b.name,
+					);
 					break;
 				case "type":
 					comparison = (a.type || "").localeCompare(b.type || "");
@@ -114,7 +119,10 @@ export function OrganizationList({
 								className="border-b border-border/50 hover:bg-muted/30"
 							>
 								<td className="py-2 pr-4">
-									<Link href={`/c/${org.slug}`} className="group flex items-center gap-2">
+									<Link
+										href={`/c/${org.slug}`}
+										className="group flex items-center gap-2"
+									>
 										<div className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full bg-muted">
 											{org.logoUrl ? (
 												<Image
@@ -147,7 +155,13 @@ export function OrganizationList({
 									{org.type ? ORGANIZER_TYPE_LABELS[org.type] || org.type : "—"}
 								</td>
 								<td className="py-2 text-right">
-									<span className={org.eventCount > 0 ? "text-foreground" : "text-muted-foreground/50"}>
+									<span
+										className={
+											org.eventCount > 0
+												? "text-foreground"
+												: "text-muted-foreground/50"
+										}
+									>
 										{org.eventCount}
 									</span>
 								</td>

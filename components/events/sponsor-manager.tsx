@@ -18,14 +18,14 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import {
-	type EventSponsorWithOrg,
 	addEventSponsor,
+	type EventSponsorWithOrg,
 	removeEventSponsor,
 	updateEventSponsor,
 } from "@/lib/actions/events";
 import { searchOrganizations } from "@/lib/actions/organizations";
-import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
 import type { Organization } from "@/lib/db/schema";
+import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
 
 interface SponsorManagerProps {
 	eventId: string;
@@ -97,7 +97,9 @@ export function SponsorManager({
 		const result = await updateEventSponsor(sponsorId, { tier: tier as any });
 		if (result.success) {
 			setSponsors(
-				sponsors.map((s) => (s.id === sponsorId ? { ...s, tier: tier as any } : s)),
+				sponsors.map((s) =>
+					s.id === sponsorId ? { ...s, tier: tier as any } : s,
+				),
 			);
 			onUpdate?.();
 		}
@@ -223,11 +225,15 @@ export function SponsorManager({
 						<div className="space-y-3">
 							<div className="p-3 rounded-lg border bg-background">
 								<p className="text-sm font-medium">{selectedOrg.name}</p>
-								<p className="text-xs text-muted-foreground">{selectedOrg.slug}</p>
+								<p className="text-xs text-muted-foreground">
+									{selectedOrg.slug}
+								</p>
 							</div>
 
 							<Field>
-								<FieldLabel htmlFor="sponsorTier">Nivel de sponsorship</FieldLabel>
+								<FieldLabel htmlFor="sponsorTier">
+									Nivel de sponsorship
+								</FieldLabel>
 								<Select value={selectedTier} onValueChange={setSelectedTier}>
 									<SelectTrigger id="sponsorTier">
 										<SelectValue />

@@ -1,23 +1,26 @@
 import type { SearchParams } from "nuqs/server";
 import { Suspense } from "react";
 import { AdvancedFilters } from "@/components/events/advanced-filters";
-import { CategoryTabs } from "@/components/events/category-tabs";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
-import {
-	getEvents,
-	type EventFilters,
-} from "@/lib/actions/events";
-import { loadSearchParams } from "@/lib/search-params";
 import { AllEventsTable } from "@/components/events/all-events-table";
+import { CategoryTabs } from "@/components/events/category-tabs";
 import { EventsCalendar } from "@/components/events/events-calendar";
 import { ViewToggle } from "@/components/events/view-toggle";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SiteHeader } from "@/components/layout/site-header";
+import { type EventFilters, getEvents } from "@/lib/actions/events";
+import { loadSearchParams } from "@/lib/search-params";
 
 interface EventsPageProps {
 	searchParams: Promise<SearchParams>;
 }
 
-async function EventsContent({ filters, viewMode }: { filters: EventFilters; viewMode: "table" | "calendar" }) {
+async function EventsContent({
+	filters,
+	viewMode,
+}: {
+	filters: EventFilters;
+	viewMode: "table" | "calendar";
+}) {
 	const result = await getEvents(filters);
 
 	if (viewMode === "calendar") {
@@ -75,11 +78,15 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 			</section>
 
 			<main className="mx-auto max-w-screen-xl px-4 lg:px-6 py-4 flex-1 w-full">
-				<Suspense fallback={<div className="animate-pulse space-y-1">
-					{Array.from({ length: 12 }).map((_, i) => (
-						<div key={i} className="h-10 bg-muted/30" />
-					))}
-				</div>}>
+				<Suspense
+					fallback={
+						<div className="animate-pulse space-y-1">
+							{Array.from({ length: 12 }).map((_, i) => (
+								<div key={i} className="h-10 bg-muted/30" />
+							))}
+						</div>
+					}
+				>
 					<EventsContent filters={filters} viewMode={viewMode} />
 				</Suspense>
 			</main>
@@ -91,5 +98,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 
 export const metadata = {
 	title: "Todos los Eventos | hack0.dev",
-	description: "Explora el calendario completo de eventos tecnológicos en Perú. Hackathones, conferencias, workshops y más.",
+	description:
+		"Explora el calendario completo de eventos tecnológicos en Perú. Hackathones, conferencias, workshops y más.",
 };

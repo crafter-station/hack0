@@ -8,6 +8,7 @@ import { FormatSelector } from "@/components/events/format-selector";
 import { LinksInput } from "@/components/events/links-input";
 import { LocationInput } from "@/components/events/location-input";
 import { PrizeInput } from "@/components/events/prize-input";
+import { SponsorManager } from "@/components/events/sponsor-manager";
 import { Button } from "@/components/ui/button";
 import {
 	Field,
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/field";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
 	Select,
 	SelectContent,
@@ -24,16 +26,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Textarea } from "@/components/ui/textarea";
 import { updateEvent } from "@/lib/actions/claims";
-import type { Event } from "@/lib/db/schema";
-import {
-	EVENT_TYPE_OPTIONS,
-	SKILL_LEVEL_OPTIONS,
-} from "@/lib/event-utils";
 import type { EventSponsorWithOrg } from "@/lib/actions/events";
-import { SponsorManager } from "@/components/events/sponsor-manager";
+import type { Event } from "@/lib/db/schema";
+import { EVENT_TYPE_OPTIONS, SKILL_LEVEL_OPTIONS } from "@/lib/event-utils";
 
 const utcToLimaDatetimeLocal = (utcDate: Date | string): string => {
 	const date = new Date(utcDate);
@@ -57,7 +54,11 @@ interface EditEventFormProps {
 	onSuccess?: () => void;
 }
 
-export function EditEventForm({ event, sponsors, onSuccess }: EditEventFormProps) {
+export function EditEventForm({
+	event,
+	sponsors,
+	onSuccess,
+}: EditEventFormProps) {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState(false);
@@ -93,8 +94,8 @@ export function EditEventForm({ event, sponsors, onSuccess }: EditEventFormProps
 		event.registrationUrl || "",
 	);
 	const [eventImageUrl, setEventImageUrl] = useState(event.eventImageUrl || "");
-	const [eventType, setEventType] = useState(event.eventType || "hackathon");
-	const [skillLevel, setSkillLevel] = useState(event.skillLevel || "all");
+	const [eventType, setEventType] = useState<string>(event.eventType || "hackathon");
+	const [skillLevel, setSkillLevel] = useState<string>(event.skillLevel || "all");
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -192,46 +193,46 @@ export function EditEventForm({ event, sponsors, onSuccess }: EditEventFormProps
 						</div>
 
 						<div className="rounded-lg border bg-card p-6 space-y-4">
-						<div className="grid sm:grid-cols-2 gap-4">
-							<Field>
-								<FieldLabel htmlFor="eventType">Tipo de evento</FieldLabel>
-								<SearchableSelect
-									options={EVENT_TYPE_OPTIONS}
-									value={eventType}
-									onValueChange={setEventType}
-									placeholder="Seleccionar tipo..."
-									searchPlaceholder="Buscar tipo de evento..."
-									emptyMessage="No se encontró ningún tipo"
+							<div className="grid sm:grid-cols-2 gap-4">
+								<Field>
+									<FieldLabel htmlFor="eventType">Tipo de evento</FieldLabel>
+									<SearchableSelect
+										options={EVENT_TYPE_OPTIONS}
+										value={eventType}
+										onValueChange={setEventType}
+										placeholder="Seleccionar tipo..."
+										searchPlaceholder="Buscar tipo de evento..."
+										emptyMessage="No se encontró ningún tipo"
+									/>
+								</Field>
+
+								<Field>
+									<FieldLabel htmlFor="skillLevel">Nivel requerido</FieldLabel>
+									<Select value={skillLevel} onValueChange={setSkillLevel}>
+										<SelectTrigger id="skillLevel">
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
+											{SKILL_LEVEL_OPTIONS.map((option) => (
+												<SelectItem key={option.value} value={option.value}>
+													{option.label}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</Field>
+							</div>
+
+							{eventType === "hackathon" && (
+								<PrizeInput
+									prizePool={prizePool}
+									prizeCurrency={prizeCurrency}
+									prizeDescription={prizeDescription}
+									onPrizePoolChange={setPrizePool}
+									onPrizeCurrencyChange={setPrizeCurrency}
+									onPrizeDescriptionChange={setPrizeDescription}
 								/>
-							</Field>
-
-							<Field>
-								<FieldLabel htmlFor="skillLevel">Nivel requerido</FieldLabel>
-								<Select value={skillLevel} onValueChange={setSkillLevel}>
-									<SelectTrigger id="skillLevel">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										{SKILL_LEVEL_OPTIONS.map((option) => (
-											<SelectItem key={option.value} value={option.value}>
-												{option.label}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</Field>
-						</div>
-
-						{eventType === "hackathon" && (
-							<PrizeInput
-								prizePool={prizePool}
-								prizeCurrency={prizeCurrency}
-								prizeDescription={prizeDescription}
-								onPrizePoolChange={setPrizePool}
-								onPrizeCurrencyChange={setPrizeCurrency}
-								onPrizeDescriptionChange={setPrizeDescription}
-							/>
-						)}
+							)}
 						</div>
 					</div>
 

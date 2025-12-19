@@ -58,7 +58,7 @@ import { AIExtractModal } from "./ai-extract-modal";
 
 interface OrganizationWithRole {
 	organization: Organization;
-	role: "owner" | "admin" | "member" | "follower";
+	role: "owner" | "admin" | "member" | "follower" | null;
 }
 
 interface OrgEventFormMinimalProps {

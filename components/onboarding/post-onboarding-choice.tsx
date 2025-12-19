@@ -1,30 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { ArrowRight, Building2, Loader2, Sparkles, User } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Building2, User, ArrowRight, Sparkles } from "lucide-react";
+import { useState } from "react";
 
 interface PostOnboardingChoiceProps {
 	personalOrgSlug: string;
 	redirectUrl?: string;
 }
 
-export function PostOnboardingChoice({ personalOrgSlug, redirectUrl }: PostOnboardingChoiceProps) {
+export function PostOnboardingChoice({
+	personalOrgSlug,
+	redirectUrl,
+}: PostOnboardingChoiceProps) {
 	const router = useRouter();
-	const [isNavigating, setIsNavigating] = useState(false);
+	const [navigatingTo, setNavigatingTo] = useState<"profile" | "org" | null>(null);
 
 	const handlePersonalProfile = () => {
-		setIsNavigating(true);
+		setNavigatingTo("profile");
 		router.push(redirectUrl || `/c/${personalOrgSlug}`);
 		router.refresh();
 	};
 
 	const handleCreateOrganization = () => {
-		setIsNavigating(true);
+		setNavigatingTo("org");
 		router.push("/c/new");
 		router.refresh();
 	};
+
+	const isNavigating = navigatingTo !== null;
 
 	return (
 		<div className="space-y-8">
@@ -49,7 +53,11 @@ export function PostOnboardingChoice({ personalOrgSlug, redirectUrl }: PostOnboa
 				>
 					<div className="flex items-start gap-4">
 						<div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center shrink-0 group-hover:bg-foreground/5 transition-colors">
-							<User className="h-6 w-6 text-muted-foreground" />
+							{navigatingTo === "profile" ? (
+								<Loader2 className="h-6 w-6 text-muted-foreground animate-spin" />
+							) : (
+								<User className="h-6 w-6 text-muted-foreground" />
+							)}
 						</div>
 						<div className="flex-1 min-w-0">
 							<div className="flex items-center gap-2 mb-1">
@@ -59,11 +67,12 @@ export function PostOnboardingChoice({ personalOrgSlug, redirectUrl }: PostOnboa
 								</span>
 							</div>
 							<p className="text-sm text-muted-foreground mb-3">
-								Ya creamos tu perfil personal automáticamente. Comienza a explorar eventos y únete a comunidades.
+								Ya creamos tu perfil personal automáticamente. Comienza a
+								explorar eventos y únete a comunidades.
 							</p>
 							<div className="flex items-center gap-1 text-sm font-medium text-foreground group-hover:gap-2 transition-all">
-								Ir a mi perfil
-								<ArrowRight className="h-4 w-4" />
+								{navigatingTo === "profile" ? "Cargando..." : "Ir a mi perfil"}
+								{navigatingTo !== "profile" && <ArrowRight className="h-4 w-4" />}
 							</div>
 						</div>
 					</div>
@@ -77,16 +86,21 @@ export function PostOnboardingChoice({ personalOrgSlug, redirectUrl }: PostOnboa
 				>
 					<div className="flex items-start gap-4">
 						<div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center shrink-0 group-hover:bg-foreground/5 transition-colors">
-							<Building2 className="h-6 w-6 text-muted-foreground" />
+							{navigatingTo === "org" ? (
+								<Loader2 className="h-6 w-6 text-muted-foreground animate-spin" />
+							) : (
+								<Building2 className="h-6 w-6 text-muted-foreground" />
+							)}
 						</div>
 						<div className="flex-1 min-w-0">
 							<h3 className="font-semibold mb-1">Crear una organización</h3>
 							<p className="text-sm text-muted-foreground mb-3">
-								Configura una comunidad o empresa para organizar eventos, hackathons y conectar con tu audiencia.
+								Configura una comunidad o empresa para organizar eventos,
+								hackathons y conectar con tu audiencia.
 							</p>
 							<div className="flex items-center gap-1 text-sm font-medium text-foreground group-hover:gap-2 transition-all">
-								Crear organización
-								<ArrowRight className="h-4 w-4" />
+								{navigatingTo === "org" ? "Cargando..." : "Crear organización"}
+								{navigatingTo !== "org" && <ArrowRight className="h-4 w-4" />}
 							</div>
 						</div>
 					</div>
@@ -95,7 +109,8 @@ export function PostOnboardingChoice({ personalOrgSlug, redirectUrl }: PostOnboa
 
 			<div className="text-center">
 				<p className="text-xs text-muted-foreground">
-					Podrás crear organizaciones adicionales en cualquier momento desde tu perfil
+					Podrás crear organizaciones adicionales en cualquier momento desde tu
+					perfil
 				</p>
 			</div>
 		</div>

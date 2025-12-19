@@ -1,6 +1,6 @@
+import { CheckCircle2, Plus, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Users, Plus, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getFollowedCommunitiesStats } from "@/lib/actions/feed";
 

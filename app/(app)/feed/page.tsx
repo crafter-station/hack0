@@ -1,20 +1,21 @@
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import type { SearchParams } from "nuqs/server";
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
 import { AdvancedFilters } from "@/components/events/advanced-filters";
 import { CategoryTabs } from "@/components/events/category-tabs";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
 import { FeedEventsTable } from "@/components/feed/feed-events-table";
-import { getPersonalizedFeed, type FeedFilterType } from "@/lib/actions/feed";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SiteHeader } from "@/components/layout/site-header";
+import { type FeedFilterType, getPersonalizedFeed } from "@/lib/actions/feed";
 import { getUserPreferences } from "@/lib/actions/user-preferences";
 import { isGodMode } from "@/lib/god-mode";
 import { loadSearchParams } from "@/lib/search-params";
 
 export const metadata = {
 	title: "Tu Feed | hack0.dev",
-	description: "Eventos personalizados basados en tus preferencias y comunidades",
+	description:
+		"Eventos personalizados basados en tus preferencias y comunidades",
 };
 
 interface FeedPageProps {
@@ -74,11 +75,15 @@ export default async function FeedPage({ searchParams }: FeedPageProps) {
 			</section>
 
 			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-8 flex-1 w-full">
-				<Suspense fallback={<div className="animate-pulse space-y-4">
-					{Array.from({ length: 8 }).map((_, i) => (
-						<div key={i} className="h-20 bg-muted rounded" />
-					))}
-				</div>}>
+				<Suspense
+					fallback={
+						<div className="animate-pulse space-y-4">
+							{Array.from({ length: 8 }).map((_, i) => (
+								<div key={i} className="h-20 bg-muted rounded" />
+							))}
+						</div>
+					}
+				>
 					<FeedContent category={params.category} />
 				</Suspense>
 			</main>

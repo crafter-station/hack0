@@ -1,21 +1,21 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
 import {
-	X,
-	Loader2,
+	Building2,
 	Check,
 	Clock,
-	XCircle,
-	Building2,
-	Users,
-	Search,
+	Loader2,
 	Plus,
+	Search,
 	User,
+	Users,
+	X,
+	XCircle,
 } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
 	Dialog,
 	DialogContent,
@@ -24,13 +24,10 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-	inviteCohost,
-	removeCohostInvite,
-} from "@/lib/actions/cohost-invites";
-import { getAllUserOrganizations } from "@/lib/actions/organizations";
+import { Input } from "@/components/ui/input";
+import { inviteCohost, removeCohostInvite } from "@/lib/actions/cohost-invites";
 import { getCommunityMembersWithClerkInfo } from "@/lib/actions/community-members";
-import { toast } from "sonner";
+import { getAllUserOrganizations } from "@/lib/actions/organizations";
 
 interface Cohost {
 	id: string;
@@ -128,14 +125,18 @@ export function CohostSelector({
 							name: item.organization.name,
 							displayName: item.organization.displayName,
 							logoUrl: item.organization.logoUrl,
-							type: item.organization.isPersonalOrg ? "personal-org" : "organization",
+							type: item.organization.isPersonalOrg
+								? "personal-org"
+								: "organization",
 							priority: item.organization.isPersonalOrg ? 2 : 3,
 						});
 					});
 
 				items.sort((a, b) => {
 					if (a.priority !== b.priority) return a.priority - b.priority;
-					return (a.displayName || a.name).localeCompare(b.displayName || b.name);
+					return (a.displayName || a.name).localeCompare(
+						b.displayName || b.name,
+					);
 				});
 
 				setSelectableItems(items);
@@ -158,7 +159,7 @@ export function CohostSelector({
 				item.name.toLowerCase().includes(query) ||
 				item.displayName?.toLowerCase().includes(query) ||
 				item.slug.toLowerCase().includes(query) ||
-				item.email?.toLowerCase().includes(query)
+				item.email?.toLowerCase().includes(query),
 		);
 	}, [selectableItems, searchQuery]);
 
@@ -168,7 +169,8 @@ export function CohostSelector({
 		try {
 			const result = await inviteCohost({
 				eventId,
-				emailOrSlug: item.type === "member" ? item.email || item.slug : item.slug,
+				emailOrSlug:
+					item.type === "member" ? item.email || item.slug : item.slug,
 			});
 
 			if (result.success && result.invite) {
@@ -193,7 +195,7 @@ export function CohostSelector({
 			} else {
 				toast.error(result.error || "Error al agregar co-organizador");
 			}
-		} catch (error) {
+		} catch (_error) {
 			toast.error("Error al agregar co-organizador");
 		} finally {
 			setIsLoading(false);
@@ -210,7 +212,7 @@ export function CohostSelector({
 			} else {
 				toast.error(result.error || "Error al remover");
 			}
-		} catch (error) {
+		} catch (_error) {
 			toast.error("Error al remover");
 		}
 	};
@@ -264,9 +266,8 @@ export function CohostSelector({
 										{filteredItems.map((item) => {
 											const Icon = item.type === "member" ? User : Building2;
 											const displayName = item.displayName || item.name;
-											const subtitle = item.type === "member"
-												? item.email
-												: `@${item.slug}`;
+											const subtitle =
+												item.type === "member" ? item.email : `@${item.slug}`;
 
 											return (
 												<button
@@ -381,9 +382,7 @@ export function CohostSelector({
 												<StatusIcon
 													className={`h-3.5 w-3.5 ${statusConfig.className}`}
 												/>
-												<span
-													className={`text-sm ${statusConfig.className}`}
-												>
+												<span className={`text-sm ${statusConfig.className}`}>
 													{statusConfig.label}
 												</span>
 											</div>

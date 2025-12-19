@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { ChevronDown, ChevronUp, ExternalLink, MapPin, Sparkles } from "lucide-react";
-import Link from "next/link";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 import type { EventFilters, EventWithOrg } from "@/lib/actions/events";
 import {
 	formatEventDateRange,
@@ -60,23 +60,25 @@ export function AllEventsTable({
 				case "name":
 					comparison = a.name.localeCompare(b.name);
 					break;
-				case "date":
+				case "date": {
 					const dateA = a.startDate ? new Date(a.startDate).getTime() : 0;
 					const dateB = b.startDate ? new Date(b.startDate).getTime() : 0;
 					comparison = dateA - dateB;
 					break;
+				}
 				case "format":
 					comparison = (a.format || "").localeCompare(b.format || "");
 					break;
 				case "prize":
 					comparison = (a.prizePool || 0) - (b.prizePool || 0);
 					break;
-				case "status":
+				case "status": {
 					const statusOrder = { ongoing: 0, open: 1, upcoming: 2, ended: 3 };
 					const statusA = getEventStatus(a).status;
 					const statusB = getEventStatus(b).status;
 					comparison = statusOrder[statusA] - statusOrder[statusB];
 					break;
+				}
 			}
 			return sortDirection === "asc" ? comparison : -comparison;
 		});
@@ -163,7 +165,9 @@ export function AllEventsTable({
 						{sortedEvents.map((event) => {
 							const status = getEventStatus(event);
 							const isEnded = status.status === "ended";
-							const startDate = event.startDate ? new Date(event.startDate) : null;
+							const startDate = event.startDate
+								? new Date(event.startDate)
+								: null;
 							const endDate = event.endDate ? new Date(event.endDate) : null;
 
 							const eventUrl = event.organization?.slug
@@ -176,7 +180,10 @@ export function AllEventsTable({
 									className={`border-b border-border/50 hover:bg-muted/30 ${isEnded ? "opacity-50" : ""}`}
 								>
 									<td className="py-2 pr-4">
-										<Link href={eventUrl} className="group flex items-center gap-2">
+										<Link
+											href={eventUrl}
+											className="group flex items-center gap-2"
+										>
 											<div className="relative h-6 w-6 shrink-0 overflow-hidden bg-muted">
 												{event.eventImageUrl ? (
 													<Image
@@ -216,12 +223,20 @@ export function AllEventsTable({
 										{getFormatLabel(event.format, event.department)}
 									</td>
 									<td className="py-2 pr-4 text-right hidden sm:table-cell">
-										<span className={event.prizePool ? "text-emerald-400" : "text-muted-foreground/50"}>
+										<span
+											className={
+												event.prizePool
+													? "text-emerald-400"
+													: "text-muted-foreground/50"
+											}
+										>
 											{formatPrize(event.prizePool, event.prizeCurrency)}
 										</span>
 									</td>
 									<td className="py-2 text-right">
-										<span className={`inline-flex items-center gap-1 ${getStatusColor(status.status)}`}>
+										<span
+											className={`inline-flex items-center gap-1 ${getStatusColor(status.status)}`}
+										>
 											<span
 												className={`h-1 w-1 rounded-full ${
 													status.status === "ongoing"

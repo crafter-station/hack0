@@ -1,23 +1,21 @@
 "use client";
 
-import { Search, SlidersHorizontal, X, Sparkles } from "lucide-react";
+import { Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { useQueryStates } from "nuqs";
 import { useState } from "react";
-import { searchParamsParsers } from "@/lib/search-params";
-import {
-	EVENT_TYPE_LABELS,
-	ORGANIZER_TYPE_LABELS,
-	SKILL_LEVELS,
-	FORMATS,
-	DOMAINS,
-	DOMAIN_LABELS,
-} from "@/lib/db/schema";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { DEPARTMENT_OPTIONS } from "@/lib/event-utils";
+import {
+	DOMAIN_LABELS,
+	EVENT_TYPE_LABELS,
+	FORMATS,
+	ORGANIZER_TYPE_LABELS,
+	SKILL_LEVELS,
+} from "@/lib/db/schema";
+import { searchParamsParsers } from "@/lib/search-params";
 
 const SKILL_LEVEL_LABELS: Record<string, string> = {
 	beginner: "Principiante",
@@ -157,7 +155,10 @@ export function AdvancedFilters() {
 						)}
 					</button>
 				</PopoverTrigger>
-				<PopoverContent align="end" className="w-80 p-0 border-border/50 max-h-[80vh] overflow-hidden flex flex-col">
+				<PopoverContent
+					align="end"
+					className="w-80 p-0 border-border/50 max-h-[80vh] overflow-hidden flex flex-col"
+				>
 					<div className="px-3 py-2 border-b border-border/50 bg-muted/20 shrink-0">
 						<div className="flex items-center justify-between">
 							<h4 className="font-medium text-xs">Filtros</h4>
@@ -189,9 +190,7 @@ export function AdvancedFilters() {
 							>
 								<Sparkles className="h-3 w-3" />
 								Para principiantes
-								{juniorFriendly && (
-									<span className="ml-auto">✓</span>
-								)}
+								{juniorFriendly && <span className="ml-auto">✓</span>}
 							</button>
 						</div>
 

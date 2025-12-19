@@ -1,9 +1,9 @@
-import { redirect } from "next/navigation";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { GodModeNav } from "@/components/god-mode/god-mode-nav";
-import { isGodMode } from "@/lib/god-mode";
 import { Zap } from "lucide-react";
+import { redirect } from "next/navigation";
+import { GodModeNav } from "@/components/god-mode/god-mode-nav";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SiteHeader } from "@/components/layout/site-header";
+import { isGodMode } from "@/lib/god-mode";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +21,11 @@ export default async function GodLayout({ children }: GodLayoutProps) {
 	const tabs = [
 		{ id: "eventos", label: "Eventos", href: "/god/eventos" },
 		{ id: "victorias", label: "Victorias", href: "/god/victorias" },
-		{ id: "organizaciones", label: "Organizaciones", href: "/god/organizaciones" },
+		{
+			id: "organizaciones",
+			label: "Organizaciones",
+			href: "/god/organizaciones",
+		},
 	];
 
 	return (

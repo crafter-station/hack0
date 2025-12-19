@@ -1,6 +1,6 @@
 "use client";
 
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import {
 	AlertCircle,
@@ -24,12 +24,19 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { EditEventForm } from "@/components/events/edit-event-form";
-import { DeleteEventButton } from "@/components/events/delete-event-button";
 import { CohostSelector } from "@/components/events/cohost-selector";
+import { DeleteEventButton } from "@/components/events/delete-event-button";
+import { EditEventForm } from "@/components/events/edit-event-form";
 import { Button } from "@/components/ui/button";
 import type { EventSponsorWithOrg } from "@/lib/actions/events";
-import type { Event, Organization, WinnerClaim, ImportJob, NotificationLog, EventHostOrganization } from "@/lib/db/schema";
+import type {
+	Event,
+	EventHostOrganization,
+	ImportJob,
+	NotificationLog,
+	Organization,
+	WinnerClaim,
+} from "@/lib/db/schema";
 import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
 import {
 	formatEventDate,
@@ -65,17 +72,16 @@ export function ManageContent({
 	importJobs,
 	notificationLogs,
 }: ManageContentProps) {
+	const [copied, setCopied] = useState(false);
 	const status = getEventStatus(event);
 	const startDate = event.startDate ? new Date(event.startDate) : null;
 	const endDate = event.endDate ? new Date(event.endDate) : null;
 	const deadline = event.registrationDeadline
 		? new Date(event.registrationDeadline)
 		: null;
+	const eventUrl = `https://hack0.dev/c/${slug}/events/${eventSlug}`;
 
 	if (tab === "overview") {
-		const [copied, setCopied] = useState(false);
-		const eventUrl = `https://hack0.dev/c/${slug}/events/${eventSlug}`;
-
 		const copyToClipboard = () => {
 			navigator.clipboard.writeText(eventUrl);
 			setCopied(true);
@@ -86,7 +92,10 @@ export function ManageContent({
 		const hasInconsistentStatus =
 			(status.status === "upcoming" && endDate && endDate < now) ||
 			(status.status === "ongoing" && endDate && endDate < now) ||
-			(status.status === "open" && deadline && deadline < now && (!startDate || startDate > now));
+			(status.status === "open" &&
+				deadline &&
+				deadline < now &&
+				(!startDate || startDate > now));
 
 		const needsRegistrationDeadline = status.status === "open" && !deadline;
 
@@ -101,7 +110,8 @@ export function ManageContent({
 								Inconsistencia detectada
 							</p>
 							<p className="text-xs text-red-700 dark:text-red-400 mt-0.5">
-								El estado del evento ({status.label}) no coincide con las fechas. Por favor actualiza las fechas o el estado.
+								El estado del evento ({status.label}) no coincide con las
+								fechas. Por favor actualiza las fechas o el estado.
 							</p>
 						</div>
 					</div>
@@ -115,7 +125,8 @@ export function ManageContent({
 								Falta fecha de cierre
 							</p>
 							<p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-								El evento está marcado como "Abierto" pero no tiene fecha de cierre de registro.
+								El evento está marcado como "Abierto" pero no tiene fecha de
+								cierre de registro.
 							</p>
 						</div>
 					</div>
@@ -143,7 +154,9 @@ export function ManageContent({
 								<div className="flex items-center justify-between gap-4">
 									<div className="flex items-center gap-2">
 										<Calendar className="h-4 w-4 text-muted-foreground" />
-										<h3 className="text-sm font-semibold">Detalles del evento</h3>
+										<h3 className="text-sm font-semibold">
+											Detalles del evento
+										</h3>
 									</div>
 									<div className="flex items-center gap-2 flex-wrap">
 										<div
@@ -176,8 +189,14 @@ export function ManageContent({
 														: "bg-red-500/10 text-red-700 dark:text-red-400"
 											}`}
 										>
-											{event.approvalStatus === "approved" && <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />}
-											{event.approvalStatus === "approved" ? "Aprobado" : event.approvalStatus === "pending" ? "Pendiente" : "Rechazado"}
+											{event.approvalStatus === "approved" && (
+												<CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
+											)}
+											{event.approvalStatus === "approved"
+												? "Aprobado"
+												: event.approvalStatus === "pending"
+													? "Pendiente"
+													: "Rechazado"}
 										</div>
 
 										{event.isFeatured && (
@@ -203,7 +222,6 @@ export function ManageContent({
 								</div>
 							</div>
 							<div className="p-6 space-y-5">
-
 								<div className="grid sm:grid-cols-2 gap-5">
 									<div>
 										<div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
@@ -390,7 +408,9 @@ export function ManageContent({
 										</div>
 									) : (
 										<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-muted border text-lg font-semibold text-muted-foreground">
-											{(community.displayName || community.name).charAt(0).toUpperCase()}
+											{(community.displayName || community.name)
+												.charAt(0)
+												.toUpperCase()}
 										</div>
 									)}
 									<div className="flex-1 min-w-0">
@@ -544,7 +564,8 @@ export function ManageContent({
 		const transformedCohosts = cohosts.map((cohost) => ({
 			id: cohost.id,
 			organizationId: cohost.organizationId,
-			organizationName: cohost.organization.displayName || cohost.organization.name,
+			organizationName:
+				cohost.organization.displayName || cohost.organization.name,
 			organizationSlug: cohost.organization.slug,
 			organizationLogoUrl: cohost.organization.logoUrl,
 			status: cohost.status,
@@ -562,9 +583,15 @@ export function ManageContent({
 	}
 
 	if (tab === "winners") {
-		const pendingWinnerClaims = winnerClaims.filter((c) => c.status === "pending");
-		const approvedWinnerClaims = winnerClaims.filter((c) => c.status === "approved");
-		const rejectedWinnerClaims = winnerClaims.filter((c) => c.status === "rejected");
+		const pendingWinnerClaims = winnerClaims.filter(
+			(c) => c.status === "pending",
+		);
+		const approvedWinnerClaims = winnerClaims.filter(
+			(c) => c.status === "approved",
+		);
+		const _rejectedWinnerClaims = winnerClaims.filter(
+			(c) => c.status === "rejected",
+		);
 
 		return (
 			<div className="space-y-6">
@@ -579,9 +606,13 @@ export function ManageContent({
 								</h3>
 							</div>
 							<div className="flex items-center gap-2 text-xs">
-								<span className="text-amber-600">{pendingWinnerClaims.length} pendiente(s)</span>
+								<span className="text-amber-600">
+									{pendingWinnerClaims.length} pendiente(s)
+								</span>
 								<span className="text-muted-foreground">·</span>
-								<span className="text-emerald-600">{approvedWinnerClaims.length} aprobado(s)</span>
+								<span className="text-emerald-600">
+									{approvedWinnerClaims.length} aprobado(s)
+								</span>
 							</div>
 						</div>
 					</div>
@@ -601,14 +632,22 @@ export function ManageContent({
 											<div className="space-y-1">
 												<div className="flex items-center gap-2">
 													<span className="text-lg">
-														{claim.position === 1 ? "🥇" : claim.position === 2 ? "🥈" : "🥉"}
+														{claim.position === 1
+															? "🥇"
+															: claim.position === 2
+																? "🥈"
+																: "🥉"}
 													</span>
 													<p className="text-sm font-medium">
-														{claim.teamName || claim.projectName || `Posición ${claim.position}`}
+														{claim.teamName ||
+															claim.projectName ||
+															`Posición ${claim.position}`}
 													</p>
 												</div>
 												{claim.projectName && claim.teamName && (
-													<p className="text-xs text-muted-foreground">Proyecto: {claim.projectName}</p>
+													<p className="text-xs text-muted-foreground">
+														Proyecto: {claim.projectName}
+													</p>
 												)}
 												{claim.projectUrl && (
 													<a
@@ -631,7 +670,11 @@ export function ManageContent({
 															: "bg-red-500/10 text-red-700 dark:text-red-400"
 												}`}
 											>
-												{claim.status === "approved" ? "Aprobado" : claim.status === "pending" ? "Pendiente" : "Rechazado"}
+												{claim.status === "approved"
+													? "Aprobado"
+													: claim.status === "pending"
+														? "Pendiente"
+														: "Rechazado"}
 											</div>
 										</div>
 										<a
@@ -644,7 +687,9 @@ export function ManageContent({
 											Ver prueba
 										</a>
 										{claim.proofDescription && (
-											<p className="text-xs text-muted-foreground">{claim.proofDescription}</p>
+											<p className="text-xs text-muted-foreground">
+												{claim.proofDescription}
+											</p>
 										)}
 									</div>
 								))}
@@ -677,10 +722,7 @@ export function ManageContent({
 						) : (
 							<div className="space-y-3">
 								{importJobs.map((job) => (
-									<div
-										key={job.id}
-										className="rounded-lg border p-4 space-y-2"
-									>
+									<div key={job.id} className="rounded-lg border p-4 space-y-2">
 										<div className="flex items-start justify-between">
 											<div className="space-y-1">
 												<p className="text-sm font-medium">{job.sourceType}</p>
@@ -695,7 +737,10 @@ export function ManageContent({
 												</a>
 												{job.createdAt && (
 													<p className="text-xs text-muted-foreground">
-														{formatEventDateTime(new Date(job.createdAt), "d MMM yyyy, HH:mm")}
+														{formatEventDateTime(
+															new Date(job.createdAt),
+															"d MMM yyyy, HH:mm",
+														)}
 													</p>
 												)}
 											</div>
@@ -741,16 +786,16 @@ export function ManageContent({
 						) : (
 							<div className="space-y-3">
 								{notificationLogs.map((log) => (
-									<div
-										key={log.id}
-										className="rounded-lg border p-4 space-y-2"
-									>
+									<div key={log.id} className="rounded-lg border p-4 space-y-2">
 										<div className="flex items-start justify-between">
 											<div className="space-y-1">
 												<p className="text-sm font-medium">{log.subject}</p>
 												{log.sentAt && (
 													<p className="text-xs text-muted-foreground">
-														{formatEventDateTime(new Date(log.sentAt), "d MMM yyyy, HH:mm")}
+														{formatEventDateTime(
+															new Date(log.sentAt),
+															"d MMM yyyy, HH:mm",
+														)}
 													</p>
 												)}
 											</div>

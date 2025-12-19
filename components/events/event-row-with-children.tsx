@@ -4,7 +4,6 @@ import {
 	CheckCircle2,
 	ChevronDown,
 	ChevronRight,
-	MapPin,
 	Sparkles,
 } from "lucide-react";
 import Image from "next/image";
@@ -228,11 +227,11 @@ export function EventRowWithChildren({
 								</span>
 							)}
 							{hasChildren && (
-								<span className="text-blue-400">{childEvents.length || "3"} días</span>
+								<span className="text-blue-400">
+									{childEvents.length || "3"} días
+								</span>
 							)}
-							{isFeatured && (
-								<span className="text-amber-400">Sponsored</span>
-							)}
+							{isFeatured && <span className="text-amber-400">Sponsored</span>}
 							{isEventJuniorFriendly(event.skillLevel) && (
 								<span className="inline-flex items-center gap-0.5 text-amber-400">
 									<Sparkles className="h-2.5 w-2.5" />
@@ -295,10 +294,12 @@ export function EventRowWithChildren({
 								)}
 							</div>
 							<div className="flex items-center gap-1">
-								{(event.organization?.displayName || event.organization?.name) && (
+								{(event.organization?.displayName ||
+									event.organization?.name) && (
 									<>
 										<span className="text-[10px] text-muted-foreground truncate max-w-[120px]">
-											{event.organization?.displayName || event.organization?.name}
+											{event.organization?.displayName ||
+												event.organization?.name}
 										</span>
 										{event.organization?.isVerified && (
 											<CheckCircle2 className="h-2.5 w-2.5 text-emerald-400 shrink-0" />

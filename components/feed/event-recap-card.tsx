@@ -1,11 +1,11 @@
 "use client";
 
-import { Trophy, Users, Calendar, ArrowRight, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, Calendar, Sparkles, Trophy, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { formatEventDateRange } from "@/lib/event-utils";
 import type { FeedEvent } from "@/lib/actions/feed";
+import { formatEventDateRange } from "@/lib/event-utils";
 
 interface EventRecapCardProps {
 	event: FeedEvent;
@@ -13,7 +13,11 @@ interface EventRecapCardProps {
 	participantCount?: number;
 }
 
-export function EventRecapCard({ event, winnerCount, participantCount }: EventRecapCardProps) {
+export function EventRecapCard({
+	event,
+	winnerCount,
+	participantCount,
+}: EventRecapCardProps) {
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
@@ -95,7 +99,9 @@ export function EventRecapCard({ event, winnerCount, participantCount }: EventRe
 								{participantCount !== undefined && participantCount > 0 && (
 									<div className="flex items-center gap-1 font-medium text-blue-600 dark:text-blue-400">
 										<Users className="h-3 w-3" />
-										<span>{participantCount.toLocaleString()} participantes</span>
+										<span>
+											{participantCount.toLocaleString()} participantes
+										</span>
 									</div>
 								)}
 

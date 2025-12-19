@@ -1,22 +1,22 @@
 "use client";
 
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import {
+	type FeedEvent,
 	getPersonalizedFeed,
-	getSuggestedCommunities,
 	getRecentEventRecaps,
-	type FeedEvent
+	getSuggestedCommunities,
 } from "@/lib/actions/feed";
-import { FeedTimeline } from "./feed-timeline";
-import { HappeningNowSection } from "./happening-now-section";
-import { HeroEventCard } from "./hero-event-card";
+import type { organizations } from "@/lib/db/schema";
 import { CommunitySpotlightCard } from "./community-spotlight-card";
 import { EventRecapCard } from "./event-recap-card";
-import { useCurrentFilter } from "./filter-pills";
 import { FeedSkeleton } from "./feed-skeleton";
-import { Loader2 } from "lucide-react";
-import type { organizations } from "@/lib/db/schema";
+import { FeedTimeline } from "./feed-timeline";
+import { useCurrentFilter } from "./filter-pills";
+import { HappeningNowSection } from "./happening-now-section";
+import { HeroEventCard } from "./hero-event-card";
 
 interface PersonalizedFeedProps {
 	initialEvents: FeedEvent[];
@@ -26,7 +26,14 @@ interface PersonalizedFeedProps {
 
 type FeedItem =
 	| { type: "event"; data: FeedEvent }
-	| { type: "community-spotlight"; data: typeof organizations.$inferSelect & { memberCount?: number; upcomingEventCount?: number; recentActivity?: string } }
+	| {
+			type: "community-spotlight";
+			data: typeof organizations.$inferSelect & {
+				memberCount?: number;
+				upcomingEventCount?: number;
+				recentActivity?: string;
+			};
+	  }
 	| { type: "event-recap"; data: FeedEvent };
 
 export function PersonalizedFeed({
@@ -85,12 +92,6 @@ export function PersonalizedFeed({
 		fetchFiltered();
 	}, [filter]);
 
-	useEffect(() => {
-		if (inView && hasMore && !isLoading) {
-			loadMore();
-		}
-	}, [inView, hasMore, isLoading]);
-
 	const loadMore = async () => {
 		if (!cursor || isLoading) return;
 
@@ -112,10 +113,20 @@ export function PersonalizedFeed({
 		}
 	};
 
+	useEffect(() => {
+		if (inView && hasMore && !isLoading) {
+			loadMore();
+		}
+	}, [inView, hasMore, isLoading]);
+
 	const buildFeedItems = (): FeedItem[] => {
 		const items: FeedItem[] = [];
-		const heroEvent = events.find(e => e.relevanceScore >= 150 && e.status !== "ongoing");
-		const timelineEvents = heroEvent ? events.filter(e => e.id !== heroEvent.id) : events;
+		const heroEvent = events.find(
+			(e) => e.relevanceScore >= 150 && e.status !== "ongoing",
+		);
+		const timelineEvents = heroEvent
+			? events.filter((e) => e.id !== heroEvent.id)
+			: events;
 
 		let communityIndex = 0;
 		let recapIndex = 0;
@@ -123,7 +134,10 @@ export function PersonalizedFeed({
 		timelineEvents.forEach((event, index) => {
 			items.push({ type: "event", data: event });
 
-			if ((index + 1) % 8 === 0 && communityIndex < suggestedCommunities.length) {
+			if (
+				(index + 1) % 8 === 0 &&
+				communityIndex < suggestedCommunities.length
+			) {
 				items.push({
 					type: "community-spotlight",
 					data: suggestedCommunities[communityIndex],
@@ -160,7 +174,9 @@ export function PersonalizedFeed({
 		);
 	}
 
-	const heroEvent = events.find(e => e.relevanceScore >= 150 && e.status !== "ongoing");
+	const heroEvent = events.find(
+		(e) => e.relevanceScore >= 150 && e.status !== "ongoing",
+	);
 	const feedItems = buildFeedItems();
 
 	return (
@@ -170,7 +186,9 @@ export function PersonalizedFeed({
 			{heroEvent && (
 				<div>
 					<div className="flex items-center gap-2 mb-3">
-						<span className="text-sm font-medium text-muted-foreground">Destacado para ti</span>
+						<span className="text-sm font-medium text-muted-foreground">
+							Destacado para ti
+						</span>
 					</div>
 					<HeroEventCard event={heroEvent} />
 				</div>

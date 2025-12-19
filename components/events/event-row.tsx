@@ -19,7 +19,14 @@ import {
 } from "@/lib/event-utils";
 
 interface EventRowProps {
-	event: Event & { organization: { slug: string; name: string; displayName: string | null; isVerified: boolean } | null };
+	event: Event & {
+		organization: {
+			slug: string;
+			name: string;
+			displayName: string | null;
+			isVerified: boolean;
+		} | null;
+	};
 	categoryConfig?: EventCategoryConfig;
 }
 
@@ -35,7 +42,7 @@ export function EventRow({ event, categoryConfig }: EventRowProps) {
 	const isEnded = status.status === "ended";
 	const isOngoing = status.status === "ongoing";
 	const isOpen = status.status === "open";
-	const isUpcoming = status.status === "upcoming";
+	const _isUpcoming = status.status === "upcoming";
 	const isFeatured = event.isFeatured;
 
 	// Minimal amber stripe pattern for featured/sponsored events
@@ -112,7 +119,9 @@ export function EventRow({ event, categoryConfig }: EventRowProps) {
 							{event.name}
 						</h3>
 						<div className="text-xs text-muted-foreground truncate">
-							{event.organization?.displayName || event.organization?.name || getEventTypeLabel(event.eventType)}
+							{event.organization?.displayName ||
+								event.organization?.name ||
+								getEventTypeLabel(event.eventType)}
 						</div>
 					</div>
 
@@ -219,20 +228,22 @@ export function EventRow({ event, categoryConfig }: EventRowProps) {
 							)}
 						</div>
 						<div className="flex items-center gap-2 mt-1">
-							{event.organization?.displayName || event.organization?.name && (
-								<span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-									{event.organization?.displayName || event.organization?.name}
-									{event.organization?.isVerified ? (
-										<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-									) : (
-										<span className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-dashed border-muted-foreground/40">
-											<span className="text-[8px] text-muted-foreground/40">
-												?
+							{event.organization?.displayName ||
+								(event.organization?.name && (
+									<span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+										{event.organization?.displayName ||
+											event.organization?.name}
+										{event.organization?.isVerified ? (
+											<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+										) : (
+											<span className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-dashed border-muted-foreground/40">
+												<span className="text-[8px] text-muted-foreground/40">
+													?
+												</span>
 											</span>
-										</span>
-									)}
-								</span>
-							)}
+										)}
+									</span>
+								))}
 							<span className="text-xs text-muted-foreground/50">
 								{getEventTypeLabel(event.eventType)}
 							</span>

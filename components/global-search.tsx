@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
 import {
 	ArrowRight,
 	Building2,
@@ -12,15 +13,12 @@ import {
 	MapPin,
 	Plus,
 	Search,
-	Settings,
-	Shield,
 	Sparkles,
 	UserPlus,
 	Users,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { useUser } from "@clerk/nextjs";
 import {
 	CommandDialog,
 	CommandEmpty,
@@ -28,7 +26,6 @@ import {
 	CommandInput,
 	CommandItem,
 	CommandList,
-	CommandSeparator,
 } from "@/components/ui/command";
 import type { Event, Organization } from "@/lib/db/schema";
 import { formatEventDateShort, getCountryFlag } from "@/lib/event-utils";
@@ -48,7 +45,7 @@ export function GlobalSearch() {
 	const [communities, setCommunities] = React.useState<OrganizationWithRole[]>(
 		[],
 	);
-	const [allCommunities, setAllCommunities] = React.useState<Organization[]>(
+	const [_allCommunities, setAllCommunities] = React.useState<Organization[]>(
 		[],
 	);
 	const [loading, setLoading] = React.useState(false);
@@ -285,7 +282,8 @@ export function GlobalSearch() {
 												<div className="flex-1 min-w-0">
 													<p className="truncate font-medium">{event.name}</p>
 													<p className="text-xs text-muted-foreground truncate">
-														{event.organization?.displayName || event.organization?.name}
+														{event.organization?.displayName ||
+															event.organization?.name}
 													</p>
 												</div>
 												<ArrowRight className="h-3 w-3 text-muted-foreground" />

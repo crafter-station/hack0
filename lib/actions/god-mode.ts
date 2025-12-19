@@ -1,10 +1,10 @@
 "use server";
 
-import { requireGodMode } from "@/lib/god-mode";
-import { db } from "@/lib/db";
-import { events, organizations } from "@/lib/db/schema";
-import { createUniqueSlug } from "@/lib/slug-utils";
 import { revalidatePath } from "next/cache";
+import { db } from "@/lib/db";
+import { events } from "@/lib/db/schema";
+import { requireGodMode } from "@/lib/god-mode";
+import { createUniqueSlug } from "@/lib/slug-utils";
 
 export async function godModeCreateEvent(data: {
 	name: string;
@@ -52,7 +52,7 @@ export async function godModeCreateEvent(data: {
 			prizePool: data.prizePool || null,
 			prizeCurrency: data.prizeCurrency || "USD",
 			isApproved: data.isApproved ?? true,
-			approvalStatus: data.isApproved ?? true ? "approved" : "pending",
+			approvalStatus: (data.isApproved ?? true) ? "approved" : "pending",
 			status: "upcoming",
 		})
 		.returning();

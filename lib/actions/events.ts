@@ -1,5 +1,6 @@
 "use server";
 
+import { auth } from "@clerk/nextjs/server";
 import {
 	and,
 	asc,
@@ -11,22 +12,21 @@ import {
 	or,
 	sql,
 } from "drizzle-orm";
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import {
 	type Event,
+	type EventSponsor,
+	eventSponsors,
 	events,
 	type NewEvent,
 	type NewEventSponsor,
-	organizations,
-	type EventSponsor,
-	eventSponsors,
 	type Organization,
+	organizations,
 } from "@/lib/db/schema";
 import { notifySubscribersOfNewEvent } from "@/lib/email/notify-subscribers";
 import { type EventCategory, getCategoryById } from "@/lib/event-categories";
-import { createUniqueSlug } from "@/lib/slug-utils";
 import { isGodMode } from "@/lib/god-mode";
+import { createUniqueSlug } from "@/lib/slug-utils";
 import { getUserCommunityRole } from "./community-members";
 
 export interface EventFilters {
@@ -120,7 +120,7 @@ export async function getEvents(
 	}
 
 	// Search filter
-	if (search && search.trim()) {
+	if (search?.trim()) {
 		conditions.push(
 			or(
 				ilike(events.name, `%${search}%`),
@@ -280,7 +280,7 @@ export async function getEventBySlug(
 	const event = results[0] || null;
 
 	// If this is a child event, inherit eventImageUrl from parent
-	if (event && event.parentEventId) {
+	if (event?.parentEventId) {
 		const [parent] = await db
 			.select({ eventImageUrl: events.eventImageUrl })
 			.from(events)
@@ -298,9 +298,7 @@ export async function getEventBySlug(
 	return event;
 }
 
-export async function getFeaturedEvents(
-	limit: number = 6,
-): Promise<Event[]> {
+export async function getFeaturedEvents(limit: number = 6): Promise<Event[]> {
 	const results = await db
 		.select()
 		.from(events)
@@ -365,9 +363,7 @@ export async function getPlatformStats(): Promise<PlatformStats> {
 	};
 }
 
-export async function getUpcomingEvents(
-	limit: number = 10,
-): Promise<Event[]> {
+export async function getUpcomingEvents(limit: number = 10): Promise<Event[]> {
 	const results = await db
 		.select()
 		.from(events)
@@ -428,7 +424,10 @@ export async function createEvent(
 				const userRole = await getUserCommunityRole(input.organizationId);
 
 				if (userRole !== "owner" && userRole !== "admin") {
-					return { success: false, error: "No tienes permisos para crear eventos en esta comunidad" };
+					return {
+						success: false,
+						error: "No tienes permisos para crear eventos en esta comunidad",
+					};
 				}
 			}
 		}
@@ -769,4 +768,3 @@ export async function removeEventSponsor(
 		return { success: false, error: "Error al eliminar el sponsor" };
 	}
 }
-

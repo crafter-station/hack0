@@ -10,7 +10,6 @@ import {
 	ExternalLink,
 	Globe,
 	GraduationCap,
-	Languages,
 	MapPin,
 	Sparkles,
 } from "lucide-react";
@@ -24,13 +23,13 @@ import { ManageEventButton } from "@/components/events/manage-event-button";
 import { WinnerSection } from "@/components/events/winner-section";
 import { CalendarIcon } from "@/components/icons/calendar";
 import { TrophyIcon } from "@/components/icons/trophy";
+import { getEventCohost } from "@/lib/actions/cohost-invites";
 import {
 	getChildEvents,
 	getEventBySlug,
 	getEventSponsors,
 } from "@/lib/actions/events";
 import { getOrganizationBySlug } from "@/lib/actions/organizations";
-import { getEventCohost } from "@/lib/actions/cohost-invites";
 import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
 import {
 	formatEventDate,
@@ -43,7 +42,6 @@ import {
 	getEventTypeLabel,
 	getFormatLabel,
 	getOrganizerTypeLabel,
-	getPeruDate,
 	getSkillLevelLabel,
 	isDateInFuture,
 	isEventJuniorFriendly,
@@ -77,7 +75,7 @@ export async function generateMetadata({
 		};
 	}
 
-	const community = await getOrganizationBySlug(slug);
+	const _community = await getOrganizationBySlug(slug);
 
 	const title = `${hackathon.name} - ${getEventTypeLabel(hackathon.eventType)} en Perú`;
 	const description = hackathon.description
@@ -150,7 +148,9 @@ export default async function EventPage({ params }: EventPageProps) {
 
 	const hasChildEvents = childEvents.length > 0;
 	const hasSponsors = eventSponsors.length > 0;
-	const approvedCohosts = cohosts.filter((c) => c.status === "approved" && !c.isPrimary);
+	const approvedCohosts = cohosts.filter(
+		(c) => c.status === "approved" && !c.isPrimary,
+	);
 	const hasCohosts = approvedCohosts.length > 0;
 
 	const status = getEventStatus(hackathon);
@@ -364,9 +364,7 @@ export default async function EventPage({ params }: EventPageProps) {
 										{hasValidTime ? (
 											<p className="text-sm text-muted-foreground">
 												{formatEventTime(startDate)}
-												{endDate && (
-													<> – {formatEventTime(endDate)}</>
-												)}
+												{endDate && <> – {formatEventTime(endDate)}</>}
 												<span className="text-muted-foreground/60">
 													{" "}
 													· {PERU_TIMEZONE}
@@ -462,18 +460,16 @@ export default async function EventPage({ params }: EventPageProps) {
 									</span>
 								)}
 
-								{hackathon.domains && hackathon.domains.length > 0 && (
-									<>
-										{hackathon.domains.slice(0, 3).map((domain) => (
-											<span
-												key={domain}
-												className="inline-flex h-6 items-center rounded-md border border-border px-2 text-xs text-muted-foreground"
-											>
-												{getDomainLabel(domain)}
-											</span>
-										))}
-									</>
-								)}
+								{hackathon.domains &&
+									hackathon.domains.length > 0 &&
+									hackathon.domains.slice(0, 3).map((domain) => (
+										<span
+											key={domain}
+											className="inline-flex h-6 items-center rounded-md border border-border px-2 text-xs text-muted-foreground"
+										>
+											{getDomainLabel(domain)}
+										</span>
+									))}
 							</div>
 						</div>
 					</div>
@@ -704,7 +700,8 @@ export default async function EventPage({ params }: EventPageProps) {
 								<div className="rounded-lg border bg-card">
 									<div className="px-5 py-4 border-b">
 										<h3 className="text-sm font-semibold">
-											Organizado por{hasCohosts && ` (${approvedCohosts.length + 1})`}
+											Organizado por
+											{hasCohosts && ` (${approvedCohosts.length + 1})`}
 										</h3>
 									</div>
 									<div className="p-5 space-y-4">
@@ -760,14 +757,22 @@ export default async function EventPage({ params }: EventPageProps) {
 
 										{hasCohosts && (
 											<div className="space-y-3 pt-4 border-t">
-												<p className="text-xs font-medium text-muted-foreground">Co-organizadores</p>
+												<p className="text-xs font-medium text-muted-foreground">
+													Co-organizadores
+												</p>
 												{approvedCohosts.map((cohost) => (
-													<div key={cohost.id} className="flex items-center gap-3">
+													<div
+														key={cohost.id}
+														className="flex items-center gap-3"
+													>
 														{cohost.organization.logoUrl ? (
 															<div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-white border">
 																<Image
 																	src={cohost.organization.logoUrl}
-																	alt={cohost.organization.displayName || cohost.organization.name}
+																	alt={
+																		cohost.organization.displayName ||
+																		cohost.organization.name
+																	}
 																	fill
 																	className="object-contain"
 																	sizes="32px"
@@ -784,7 +789,8 @@ export default async function EventPage({ params }: EventPageProps) {
 																	href={`/c/${cohost.organization.slug}`}
 																	className="text-sm font-medium hover:underline underline-offset-2 truncate"
 																>
-																	{cohost.organization.displayName || cohost.organization.name}
+																	{cohost.organization.displayName ||
+																		cohost.organization.name}
 																</Link>
 																{cohost.organization.isVerified && (
 																	<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
@@ -792,7 +798,9 @@ export default async function EventPage({ params }: EventPageProps) {
 															</div>
 															{cohost.organization.type && (
 																<p className="text-xs text-muted-foreground">
-																	{getOrganizerTypeLabel(cohost.organization.type)}
+																	{getOrganizerTypeLabel(
+																		cohost.organization.type,
+																	)}
 																</p>
 															)}
 														</div>
@@ -954,10 +962,7 @@ export default async function EventPage({ params }: EventPageProps) {
 											{formatEventDate(startDate, "d MMM")}
 											{endDate &&
 												startDate.toDateString() !== endDate.toDateString() && (
-													<>
-														{" "}
-														– {formatEventDate(endDate, "d MMM yyyy")}
-													</>
+													<> – {formatEventDate(endDate, "d MMM yyyy")}</>
 												)}
 											{(!endDate ||
 												startDate.toDateString() ===

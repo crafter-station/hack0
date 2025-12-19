@@ -1,17 +1,19 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
-import type { FeedEvent } from "@/lib/actions/feed";
 import { Zap } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import type { FeedEvent } from "@/lib/actions/feed";
 
 interface HappeningNowSectionProps {
 	events: FeedEvent[];
 }
 
 export function HappeningNowSection({ events }: HappeningNowSectionProps) {
-	const ongoingEvents = events.filter((e) => e.status === "ongoing").slice(0, 3);
+	const ongoingEvents = events
+		.filter((e) => e.status === "ongoing")
+		.slice(0, 3);
 
 	if (ongoingEvents.length === 0) return null;
 
@@ -26,7 +28,8 @@ export function HappeningNowSection({ events }: HappeningNowSectionProps) {
 				</motion.div>
 				<h2 className="text-base font-semibold">Happening Now</h2>
 				<span className="text-xs text-muted-foreground">
-					{ongoingEvents.length} {ongoingEvents.length === 1 ? "evento" : "eventos"}
+					{ongoingEvents.length}{" "}
+					{ongoingEvents.length === 1 ? "evento" : "eventos"}
 				</span>
 			</div>
 
@@ -69,7 +72,9 @@ export function HappeningNowSection({ events }: HappeningNowSectionProps) {
 									transition={{ duration: 2, repeat: Infinity }}
 									className="h-1.5 w-1.5 rounded-full bg-emerald-400"
 								/>
-								<span className="text-[10px] font-medium text-white">EN VIVO</span>
+								<span className="text-[10px] font-medium text-white">
+									EN VIVO
+								</span>
 							</div>
 
 							{/* Content */}
@@ -88,7 +93,8 @@ export function HappeningNowSection({ events }: HappeningNowSectionProps) {
 											</div>
 										)}
 										<span className="text-[10px] opacity-90">
-											{event.organization.displayName || event.organization.name}
+											{event.organization.displayName ||
+												event.organization.name}
 										</span>
 									</div>
 								)}

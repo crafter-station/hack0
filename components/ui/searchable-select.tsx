@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Check, ChevronsUpDown, Search } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
@@ -17,6 +16,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export interface SearchableSelectOption {
 	value: string;
@@ -79,9 +79,7 @@ export function SearchableSelect({
 									key={option.value}
 									value={option.value}
 									onSelect={(currentValue) => {
-										onValueChange(
-											currentValue === value ? "" : currentValue,
-										);
+										onValueChange(currentValue === value ? "" : currentValue);
 										setOpen(false);
 									}}
 									className="flex flex-col items-start gap-1"

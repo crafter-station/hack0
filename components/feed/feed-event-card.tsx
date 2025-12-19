@@ -1,10 +1,10 @@
 "use client";
 
-import { Calendar, MapPin, TrendingUp, Users, CheckCircle2 } from "lucide-react";
+import { Calendar, CheckCircle2, MapPin, TrendingUp } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { formatEventDateRange } from "@/lib/event-utils";
 import type { FeedEvent } from "@/lib/actions/feed";
+import { formatEventDateRange } from "@/lib/event-utils";
 import { SaveEventButton } from "./save-event-button";
 import { ShareEventButton } from "./share-event-button";
 

@@ -1,6 +1,6 @@
-import { drizzle } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
 import { sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/neon-http";
 
 const queryClient = neon(process.env.DATABASE_URL!);
 const db = drizzle(queryClient);

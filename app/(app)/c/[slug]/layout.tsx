@@ -1,9 +1,9 @@
+import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SiteHeader } from "@/components/layout/site-header";
 import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
 
 interface CommunityLayoutProps {
 	children: React.ReactNode;

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { Building2, Check, X, ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { toggleOrganizationVerification } from "@/lib/actions/organizations";
-import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
+import { Building2, Check, ExternalLink, X } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { toggleOrganizationVerification } from "@/lib/actions/organizations";
 
 interface OrganizationsTableProps {
 	organizations: Array<{
@@ -15,9 +15,9 @@ interface OrganizationsTableProps {
 		name: string;
 		displayName: string | null;
 		slug: string;
-		isVerified: boolean;
+		isVerified: boolean | null;
 		logoUrl: string | null;
-		createdAt: Date;
+		createdAt: Date | null;
 		events: Array<{ id: string }>;
 	}>;
 }
@@ -31,21 +31,21 @@ export function OrganizationsTable({ organizations }: OrganizationsTableProps) {
 
 		setOptimisticOrgs((prev) =>
 			prev.map((o) =>
-				o.id === orgId ? { ...o, isVerified: !o.isVerified } : o
-			)
+				o.id === orgId ? { ...o, isVerified: !o.isVerified } : o,
+			),
 		);
 
 		try {
 			await toggleOrganizationVerification(orgId);
 			toast.success(
-				org.isVerified
-					? "Verificación removida"
-					: "Organización verificada"
+				org.isVerified ? "Verificación removida" : "Organización verificada",
 			);
 		} catch (error) {
 			setOptimisticOrgs(organizations);
 			toast.error(
-				error instanceof Error ? error.message : "Error al actualizar verificación"
+				error instanceof Error
+					? error.message
+					: "Error al actualizar verificación",
 			);
 		}
 	}
@@ -75,10 +75,7 @@ export function OrganizationsTable({ organizations }: OrganizationsTableProps) {
 					</thead>
 					<tbody className="divide-y divide-border">
 						{optimisticOrgs.map((org) => (
-							<tr
-								key={org.id}
-								className="hover:bg-muted/50 transition-colors"
-							>
+							<tr key={org.id} className="hover:bg-muted/50 transition-colors">
 								<td className="px-4 py-3">
 									<div className="flex items-center gap-3">
 										{org.logoUrl ? (
@@ -107,9 +104,7 @@ export function OrganizationsTable({ organizations }: OrganizationsTableProps) {
 										</div>
 									</div>
 								</td>
-								<td className="px-4 py-3 text-sm">
-									{org.events.length}
-								</td>
+								<td className="px-4 py-3 text-sm">{org.events.length}</td>
 								<td className="px-4 py-3 text-sm text-muted-foreground">
 									{formatDistanceToNow(new Date(org.createdAt), {
 										addSuffix: true,

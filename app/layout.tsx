@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import type React from "react";
 import "../styles/globals.css";
-import { PostHogProvider } from "../app/providers/posthog";
 import { ClerkProvider } from "@clerk/nextjs";
 import { shadcn } from "@clerk/themes";
-import { Analytics } from "@vercel/analytics/next";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
+import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
@@ -14,6 +13,7 @@ import { ourFileRouter } from "@/app/(app)/api/uploadthing/core";
 import { GlobalSearch } from "@/components/global-search";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeSelector } from "@/components/theme-selector";
+import { PostHogProvider } from "../app/providers/posthog";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -64,7 +64,9 @@ export const metadata: Metadata = {
 	},
 	description: siteConfig.description,
 	keywords: siteConfig.keywords,
-	authors: [{ name: "Crafter Station", url: "https://github.com/crafter-station" }],
+	authors: [
+		{ name: "Crafter Station", url: "https://github.com/crafter-station" },
+	],
 	creator: "Crafter Station",
 	publisher: "Crafter Station",
 	formatDetection: {
@@ -182,7 +184,9 @@ export default function RootLayout({
 					/>
 					<script
 						type="application/ld+json"
-						dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+						dangerouslySetInnerHTML={{
+							__html: JSON.stringify(organizationJsonLd),
+						}}
 					/>
 				</head>
 				<body

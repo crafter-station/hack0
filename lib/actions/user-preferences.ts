@@ -4,9 +4,9 @@ import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
-	userPreferences,
 	type NewUserPreferences,
 	type UserPreferences,
+	userPreferences,
 } from "@/lib/db/schema";
 
 export async function getUserPreferences(): Promise<UserPreferences | null> {

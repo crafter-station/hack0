@@ -1,6 +1,6 @@
-import { getAllWinnerClaims } from "@/lib/actions/claims";
 import { AdminClaimsList } from "@/components/admin/claims-list";
 import { TrophyIcon } from "@/components/icons/trophy";
+import { getAllWinnerClaims } from "@/lib/actions/claims";
 
 export const metadata = {
 	title: "Victorias - God Mode",
@@ -23,7 +23,9 @@ export default async function VictoriasPage() {
 						</div>
 						<div>
 							<p className="text-2xl font-semibold">{pendingWinners.length}</p>
-							<p className="text-xs text-muted-foreground">Victorias pendientes</p>
+							<p className="text-xs text-muted-foreground">
+								Victorias pendientes
+							</p>
 						</div>
 					</div>
 				</div>
@@ -34,7 +36,9 @@ export default async function VictoriasPage() {
 						</div>
 						<div>
 							<p className="text-2xl font-semibold">{approvedWinners.length}</p>
-							<p className="text-xs text-muted-foreground">Victorias aprobadas</p>
+							<p className="text-xs text-muted-foreground">
+								Victorias aprobadas
+							</p>
 						</div>
 					</div>
 				</div>

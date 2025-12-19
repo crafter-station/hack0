@@ -1,7 +1,7 @@
+import { eq } from "drizzle-orm";
+import type { MetadataRoute } from "next";
 import { db } from "@/lib/db";
 import { events, organizations } from "@/lib/db/schema";
-import type { MetadataRoute } from "next";
-import { eq } from "drizzle-orm";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	const baseUrl = "https://hack0.dev";

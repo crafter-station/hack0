@@ -1,9 +1,9 @@
+import { asc, desc, eq, sql } from "drizzle-orm";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { db } from "@/lib/db";
-import { organizations, events } from "@/lib/db/schema";
-import { eq, desc, asc, sql } from "drizzle-orm";
 import { EventList } from "@/components/events/event-list";
+import { db } from "@/lib/db";
+import { events, organizations } from "@/lib/db/schema";
 
 interface CommunityPageProps {
 	params: Promise<{ slug: string }>;
@@ -41,11 +41,7 @@ async function CommunityEvents({ slug }: { slug: string }) {
 	const communityEvents = await db.query.events.findMany({
 		where: eq(events.organizationId, community.id),
 		limit: 50,
-		orderBy: [
-			desc(events.isFeatured),
-			asc(statusPriority),
-			asc(dateSortOrder),
-		],
+		orderBy: [desc(events.isFeatured), asc(statusPriority), asc(dateSortOrder)],
 		with: {
 			organization: true,
 		},
@@ -104,7 +100,9 @@ export async function generateMetadata({
 
 	return {
 		title: `${community.displayName || community.name} - Eventos en hack0.dev`,
-		description: community.description || `Calendario de eventos de ${community.displayName || community.name}`,
+		description:
+			community.description ||
+			`Calendario de eventos de ${community.displayName || community.name}`,
 	};
 }
 

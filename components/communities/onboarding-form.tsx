@@ -18,13 +18,6 @@ import {
 	InputGroupInput,
 	InputGroupTextarea,
 } from "@/components/ui/input-group";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
 	createOrganization,
@@ -91,7 +84,7 @@ export function OnboardingForm() {
 	const extractedLogoUrl = run?.metadata?.logoUrl as string | undefined;
 	const metadataError = run?.metadata?.error as string | undefined;
 	const lastError = run?.metadata?.lastError as string | undefined;
-	const attemptNumber = run?.attemptNumber || 0;
+	const attemptNumber = (run as any)?.attemptNumber || 0;
 	const isRetrying = run?.status === "EXECUTING" && attemptNumber > 1;
 
 	useEffect(() => {
@@ -438,7 +431,9 @@ export function OnboardingForm() {
 							</InputGroup>
 							<InputGroup>
 								<InputGroupAddon align="inline-start">
-									<span className="text-muted-foreground text-sm">LinkedIn</span>
+									<span className="text-muted-foreground text-sm">
+										LinkedIn
+									</span>
 								</InputGroupAddon>
 								<InputGroupInput
 									type="url"
@@ -450,7 +445,9 @@ export function OnboardingForm() {
 							</InputGroup>
 							<InputGroup>
 								<InputGroupAddon align="inline-start">
-									<span className="text-muted-foreground text-sm">Instagram</span>
+									<span className="text-muted-foreground text-sm">
+										Instagram
+									</span>
 								</InputGroupAddon>
 								<InputGroupInput
 									type="url"
@@ -462,7 +459,9 @@ export function OnboardingForm() {
 							</InputGroup>
 							<InputGroup>
 								<InputGroupAddon align="inline-start">
-									<span className="text-muted-foreground text-sm">Facebook</span>
+									<span className="text-muted-foreground text-sm">
+										Facebook
+									</span>
 								</InputGroupAddon>
 								<InputGroupInput
 									type="url"
@@ -486,7 +485,8 @@ export function OnboardingForm() {
 							</InputGroup>
 						</div>
 						<FieldDescription>
-							Los enlaces extraídos automáticamente se pueden editar antes de crear la comunidad.
+							Los enlaces extraídos automáticamente se pueden editar antes de
+							crear la comunidad.
 						</FieldDescription>
 					</Field>
 				</FieldGroup>

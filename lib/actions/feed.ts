@@ -5,9 +5,9 @@ import { and, desc, eq, gte, inArray, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
 	communityMembers,
+	type Event,
 	events,
 	organizations,
-	type Event,
 } from "@/lib/db/schema";
 import { getUserPreferences } from "./user-preferences";
 
@@ -17,7 +17,12 @@ export interface FeedEvent extends Event {
 	relevanceReasons: string[];
 }
 
-export type FeedFilterType = "all" | "following" | "competitions" | "learning" | "community";
+export type FeedFilterType =
+	| "all"
+	| "following"
+	| "competitions"
+	| "learning"
+	| "community";
 
 interface FeedOptions {
 	limit?: number;
@@ -26,9 +31,7 @@ interface FeedOptions {
 	filter?: FeedFilterType;
 }
 
-export async function getPersonalizedFeed(
-	options: FeedOptions = {},
-): Promise<{
+export async function getPersonalizedFeed(options: FeedOptions = {}): Promise<{
 	events: FeedEvent[];
 	nextCursor: string | null;
 	hasMore: boolean;
@@ -51,7 +54,13 @@ export async function getPersonalizedFeed(
 
 	// Event type mapping for filters
 	const competitionTypes = ["hackathon", "olympiad", "competition", "robotics"];
-	const learningTypes = ["workshop", "bootcamp", "course", "certification", "summer_school"];
+	const learningTypes = [
+		"workshop",
+		"bootcamp",
+		"course",
+		"certification",
+		"summer_school",
+	];
 	const communityTypes = ["meetup", "networking", "conference", "seminar"];
 
 	// Build base query
@@ -121,10 +130,12 @@ export async function getPersonalizedFeed(
 
 		// 6. Boost for upcoming events (starting soon)
 		if (event.startDate) {
-			const startDate = event.startDate instanceof Date ? event.startDate : new Date(event.startDate);
+			const startDate =
+				event.startDate instanceof Date
+					? event.startDate
+					: new Date(event.startDate);
 			const daysUntilStart = Math.ceil(
-				(startDate.getTime() - now.getTime()) /
-					(1000 * 60 * 60 * 24),
+				(startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
 			);
 			if (daysUntilStart <= 7 && daysUntilStart >= 0) {
 				score += 25;
@@ -141,13 +152,14 @@ export async function getPersonalizedFeed(
 		// 8. Boost for events with prizes (for members who like competitions)
 		if (event.prizePool && event.prizePool > 0) {
 			score += 10;
-			reasons.push(`${event.prizeCurrency === "USD" ? "$" : "S/"}${event.prizePool.toLocaleString()} en premios`);
+			reasons.push(
+				`${event.prizeCurrency === "USD" ? "$" : "S/"}${event.prizePool.toLocaleString()} en premios`,
+			);
 		}
 
 		// 9. Recency boost (newer events get small boost)
 		const hoursOld = Math.floor(
-			(now.getTime() - new Date(event.createdAt).getTime()) /
-				(1000 * 60 * 60),
+			(now.getTime() - new Date(event.createdAt).getTime()) / (1000 * 60 * 60),
 		);
 		if (hoursOld < 24) {
 			score += 10;
@@ -165,20 +177,21 @@ export async function getPersonalizedFeed(
 	let filteredEvents = scoredEvents;
 	if (filter === "following") {
 		// Only events from followed communities
-		filteredEvents = scoredEvents.filter((e) =>
-			e.organizationId && followedCommunityIds.includes(e.organizationId)
+		filteredEvents = scoredEvents.filter(
+			(e) =>
+				e.organizationId && followedCommunityIds.includes(e.organizationId),
 		);
 	} else if (filter === "competitions") {
-		filteredEvents = scoredEvents.filter((e) =>
-			e.eventType && competitionTypes.includes(e.eventType)
+		filteredEvents = scoredEvents.filter(
+			(e) => e.eventType && competitionTypes.includes(e.eventType),
 		);
 	} else if (filter === "learning") {
-		filteredEvents = scoredEvents.filter((e) =>
-			e.eventType && learningTypes.includes(e.eventType)
+		filteredEvents = scoredEvents.filter(
+			(e) => e.eventType && learningTypes.includes(e.eventType),
 		);
 	} else if (filter === "community") {
-		filteredEvents = scoredEvents.filter((e) =>
-			e.eventType && communityTypes.includes(e.eventType)
+		filteredEvents = scoredEvents.filter(
+			(e) => e.eventType && communityTypes.includes(e.eventType),
 		);
 	}
 
@@ -240,16 +253,17 @@ export async function getSuggestedCommunities(limit = 3) {
 	const followedIds = followedCommunities.map((m) => m.communityId);
 
 	const suggestedCommunities = await db.query.organizations.findMany({
-		where: followedIds.length > 0
-			? and(
-				eq(organizations.type, "community"),
-				eq(organizations.isPersonalOrg, false),
-				sql`${organizations.id} NOT IN ${followedIds}`
-			)
-			: and(
-				eq(organizations.type, "community"),
-				eq(organizations.isPersonalOrg, false)
-			),
+		where:
+			followedIds.length > 0
+				? and(
+						eq(organizations.type, "community"),
+						eq(organizations.isPersonalOrg, false),
+						sql`${organizations.id} NOT IN ${followedIds}`,
+					)
+				: and(
+						eq(organizations.type, "community"),
+						eq(organizations.isPersonalOrg, false),
+					),
 		orderBy: [desc(organizations.isVerified), desc(organizations.createdAt)],
 		limit,
 	});
@@ -267,8 +281,8 @@ export async function getSuggestedCommunities(limit = 3) {
 					.where(
 						and(
 							eq(events.organizationId, community.id),
-							gte(events.endDate, new Date())
-						)
+							gte(events.endDate, new Date()),
+						),
 					),
 			]);
 
@@ -288,10 +302,12 @@ export async function getSuggestedCommunities(limit = 3) {
 				upcomingEventCount,
 				recentActivity,
 			};
-		})
+		}),
 	);
 
-	return communitiesWithStats.filter(c => c.upcomingEventCount > 0 || c.memberCount > 20);
+	return communitiesWithStats.filter(
+		(c) => c.upcomingEventCount > 0 || c.memberCount > 20,
+	);
 }
 
 export async function getRecentEventRecaps(limit = 2) {
@@ -317,10 +333,14 @@ export async function getRecentEventRecaps(limit = 2) {
 			sql`${events.endDate} >= ${twoWeeksAgo}`,
 			followedCommunityIds.length > 0
 				? or(
-					inArray(events.organizationId, followedCommunityIds),
-					prefs?.department ? eq(events.department, prefs.department) : undefined
-				)
-				: prefs?.department ? eq(events.department, prefs.department) : undefined
+						inArray(events.organizationId, followedCommunityIds),
+						prefs?.department
+							? eq(events.department, prefs.department)
+							: undefined,
+					)
+				: prefs?.department
+					? eq(events.department, prefs.department)
+					: undefined,
 		),
 		with: {
 			organization: true,
@@ -329,7 +349,7 @@ export async function getRecentEventRecaps(limit = 2) {
 		limit,
 	});
 
-	return recentlyEndedEvents.map(event => ({
+	return recentlyEndedEvents.map((event) => ({
 		...event,
 		relevanceScore: 0,
 		relevanceReasons: [],

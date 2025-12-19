@@ -1,14 +1,28 @@
 "use client";
 
+import {
+	addMonths,
+	eachDayOfInterval,
+	endOfMonth,
+	format,
+	isSameDay,
+	isSameMonth,
+	startOfMonth,
+	subMonths,
+} from "date-fns";
+import { ChevronLeft, ChevronRight, MapPin, Trophy } from "lucide-react";
 import { useState } from "react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from "date-fns";
-import { es } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, MapPin, Users, Trophy } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { getEventStatus, getFormatLabel, formatEventDateRange, formatEventDateKey, formatCalendarMonth } from "@/lib/event-utils";
 import type { Event } from "@/lib/db/schema";
+import {
+	formatCalendarMonth,
+	formatEventDateKey,
+	formatEventDateRange,
+	getEventStatus,
+	getFormatLabel,
+} from "@/lib/event-utils";
 
 interface EventsCalendarProps {
 	events: Event[];
@@ -24,10 +38,10 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 	const [currentMonth, setCurrentMonth] = useState(new Date());
 
 	// Filter events that have dates
-	const eventsWithDates = events.filter(event => event.startDate);
+	const eventsWithDates = events.filter((event) => event.startDate);
 
 	const eventsByDate = new Map<string, Event[]>();
-	eventsWithDates.forEach(event => {
+	eventsWithDates.forEach((event) => {
 		const dateKey = formatEventDateKey(event.startDate);
 		if (dateKey) {
 			if (!eventsByDate.has(dateKey)) {
@@ -60,7 +74,7 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 	}
 
 	// Current month days
-	calendarDays.forEach(date => {
+	calendarDays.forEach((date) => {
 		const dateKey = format(date, "yyyy-MM-dd");
 		allDays.push({
 			date,
@@ -81,8 +95,8 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 	}
 
 	const navigateMonth = (direction: "prev" | "next") => {
-		setCurrentMonth(prev => 
-			direction === "prev" ? subMonths(prev, 1) : addMonths(prev, 1)
+		setCurrentMonth((prev) =>
+			direction === "prev" ? subMonths(prev, 1) : addMonths(prev, 1),
 		);
 	};
 
@@ -130,7 +144,7 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 				<CardContent className="p-0">
 					{/* Weekday headers */}
 					<div className="grid grid-cols-7 border-b">
-						{["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map(day => (
+						{["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((day) => (
 							<div
 								key={day}
 								className="p-3 text-center text-sm font-medium text-muted-foreground border-r last:border-r-0"
@@ -152,24 +166,28 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 								`}
 							>
 								<div className="space-y-1">
-									<div className={`
+									<div
+										className={`
 										text-sm font-medium
 										${day.isCurrentMonth ? "text-foreground" : "text-muted-foreground"}
 										${isSameDay(day.date, new Date()) ? "text-ring" : ""}
-									`}>
+									`}
+									>
 										{format(day.date, "d")}
 									</div>
 
 									{/* Events for this day */}
 									<div className="space-y-1">
-										{day.events.slice(0, 3).map(event => (
+										{day.events.slice(0, 3).map((event) => (
 											<div
 												key={event.id}
 												className="group cursor-pointer"
 												onClick={() => window.open(`/${event.slug}`, "_blank")}
 											>
 												<div className="flex items-center gap-1">
-													<div className={`w-1.5 h-1.5 rounded-full ${getStatusColor(event)}`} />
+													<div
+														className={`w-1.5 h-1.5 rounded-full ${getStatusColor(event)}`}
+													/>
 													<span className="text-xs truncate hover:text-foreground transition-colors">
 														{event.name}
 													</span>
@@ -195,7 +213,7 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 				<h3 className="text-lg font-semibold">
 					Eventos de {formatCalendarMonth(currentMonth, "MMMM")}
 				</h3>
-				
+
 				{eventsWithDates.length === 0 ? (
 					<Card>
 						<CardContent className="p-6 text-center text-muted-foreground">
@@ -205,13 +223,15 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 				) : (
 					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 						{eventsWithDates
-							.filter(event => 
-								isSameMonth(new Date(event.startDate!), currentMonth)
+							.filter((event) =>
+								isSameMonth(new Date(event.startDate!), currentMonth),
 							)
-							.map(event => {
+							.map((event) => {
 								const status = getEventStatus(event);
 								return (
-									<Card key={event.id} className="group cursor-pointer hover:shadow-md transition-shadow"
+									<Card
+										key={event.id}
+										className="group cursor-pointer hover:shadow-md transition-shadow"
 										onClick={() => window.open(`/${event.slug}`, "_blank")}
 									>
 										<CardContent className="p-4">
@@ -238,8 +258,8 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 													)}
 													{event.prizePool && (
 														<span className="flex items-center gap-1">
-															<Trophy className="h-3 w-3" />
-															${event.prizePool.toLocaleString()}
+															<Trophy className="h-3 w-3" />$
+															{event.prizePool.toLocaleString()}
 														</span>
 													)}
 												</div>

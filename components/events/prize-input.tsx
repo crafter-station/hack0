@@ -1,6 +1,6 @@
 "use client";
 
-import { DollarSign, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -29,9 +29,7 @@ export function PrizeInput({
 			</div>
 
 			<div className="space-y-3">
-				<label className="text-xs text-muted-foreground">
-					Monto total
-				</label>
+				<label className="text-xs text-muted-foreground">Monto total</label>
 				<div className="flex items-center gap-2">
 					<div className="flex rounded-lg border bg-muted/50">
 						<button
@@ -70,7 +68,10 @@ export function PrizeInput({
 			</div>
 
 			<div className="space-y-2">
-				<label htmlFor="prize-description" className="text-xs text-muted-foreground">
+				<label
+					htmlFor="prize-description"
+					className="text-xs text-muted-foreground"
+				>
 					Distribución de premios
 				</label>
 				<Input

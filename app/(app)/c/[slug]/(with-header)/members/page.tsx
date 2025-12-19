@@ -1,18 +1,26 @@
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { MembersManagement } from "@/components/community/members-management";
+import { getUserCommunityRole } from "@/lib/actions/community-members";
+import { getOrganizationInvites } from "@/lib/actions/community-members";
 import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
-import { auth, clerkClient } from "@clerk/nextjs/server";
-import { getOrganizationInvites } from "@/lib/actions/community-members";
-import { MembersManagement } from "@/components/community/members-management";
 import { isGodMode } from "@/lib/god-mode";
 
 interface MembersPageProps {
 	params: Promise<{ slug: string }>;
 }
 
-async function MembersList({ slug, currentUserId }: { slug: string; currentUserId: string | null }) {
+async function MembersList({
+	slug,
+	currentUserId,
+}: {
+	slug: string;
+	currentUserId: string | null;
+}) {
 	const community = await db.query.organizations.findFirst({
 		where: eq(organizations.slug, slug),
 		with: {
@@ -22,18 +30,26 @@ async function MembersList({ slug, currentUserId }: { slug: string; currentUserI
 
 	if (!community) return null;
 
+	const godMode = await isGodMode();
+	if (!godMode) {
+		const userRole = await getUserCommunityRole(community.id);
+		if (userRole === "follower" || userRole === null) {
+			redirect(`/c/${slug}`);
+		}
+	}
+
 	const GHOST_ADMIN_ID = "user_36EEeOvb4zfhKhIVSfK46or5pkC";
 	const isCrafterStation = slug === "crafter-station";
 
 	const clerk = await clerkClient();
 	const uniqueMemberIds = community.members
-		.map(m => m.userId)
-		.filter(id => id !== community.ownerUserId);
+		.map((m) => m.userId)
+		.filter((id) => id !== community.ownerUserId);
 
 	let memberUserIds = [community.ownerUserId, ...uniqueMemberIds];
 
 	if (!isCrafterStation) {
-		memberUserIds = memberUserIds.filter(id => id !== GHOST_ADMIN_ID);
+		memberUserIds = memberUserIds.filter((id) => id !== GHOST_ADMIN_ID);
 	}
 
 	const users = await Promise.all(
@@ -43,21 +59,24 @@ async function MembersList({ slug, currentUserId }: { slug: string; currentUserI
 			} catch {
 				return null;
 			}
-		})
+		}),
 	);
 
-	const validUsers = users.filter((user): user is NonNullable<typeof user> => user !== null);
+	const validUsers = users.filter(
+		(user): user is NonNullable<typeof user> => user !== null,
+	);
 
 	// Get invites
 	const invites = await getOrganizationInvites(community.id);
 
 	// Check if current user is owner, admin, or god mode
 	const isOwner = currentUserId === community.ownerUserId;
-	const currentMember = community.members.find(m => m.userId === currentUserId);
+	const currentMember = community.members.find(
+		(m) => m.userId === currentUserId,
+	);
 	const isAdmin = currentMember?.role === "admin";
-	const godMode = await isGodMode();
 
-	const filteredMembers = community.members.filter(m => {
+	const filteredMembers = community.members.filter((m) => {
 		if (m.userId === community.ownerUserId) return false;
 		if (!isCrafterStation && m.userId === GHOST_ADMIN_ID) return false;
 		return true;
@@ -74,7 +93,9 @@ async function MembersList({ slug, currentUserId }: { slug: string; currentUserI
 				id: u.id,
 				firstName: u.firstName,
 				lastName: u.lastName,
-				emailAddresses: u.emailAddresses.map(e => ({ emailAddress: e.emailAddress })),
+				emailAddresses: u.emailAddresses.map((e) => ({
+					emailAddress: e.emailAddress,
+				})),
 				imageUrl: u.imageUrl,
 			}))}
 			currentUserId={currentUserId}
@@ -92,7 +113,10 @@ function MembersSkeleton() {
 			<div className="rounded-lg border border-border overflow-hidden">
 				<div className="divide-y divide-border">
 					{Array.from({ length: 5 }).map((_, i) => (
-						<div key={i} className="px-5 py-4 flex items-center gap-3 animate-pulse">
+						<div
+							key={i}
+							className="px-5 py-4 flex items-center gap-3 animate-pulse"
+						>
 							<div className="h-10 w-10 rounded-full bg-muted" />
 							<div className="space-y-2 flex-1">
 								<div className="h-4 bg-muted rounded w-48" />

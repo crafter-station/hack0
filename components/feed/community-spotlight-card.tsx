@@ -1,9 +1,9 @@
 "use client";
 
-import { Users, Calendar, TrendingUp, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, Calendar, TrendingUp, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import type { organizations } from "@/lib/db/schema";
 
 interface CommunitySpotlightCardProps {
@@ -14,7 +14,9 @@ interface CommunitySpotlightCardProps {
 	};
 }
 
-export function CommunitySpotlightCard({ community }: CommunitySpotlightCardProps) {
+export function CommunitySpotlightCard({
+	community,
+}: CommunitySpotlightCardProps) {
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
@@ -39,10 +41,7 @@ export function CommunitySpotlightCard({ community }: CommunitySpotlightCardProp
 					</div>
 				</div>
 
-				<Link
-					href={`/c/${community.slug}`}
-					className="group block"
-				>
+				<Link href={`/c/${community.slug}`} className="group block">
 					<div className="flex gap-4">
 						<div className="relative shrink-0">
 							{community.logoUrl ? (
@@ -85,15 +84,20 @@ export function CommunitySpotlightCard({ community }: CommunitySpotlightCardProp
 								{community.memberCount !== undefined && (
 									<div className="flex items-center gap-1.5">
 										<Users className="h-3.5 w-3.5" />
-										<span>{community.memberCount.toLocaleString()} miembros</span>
+										<span>
+											{community.memberCount.toLocaleString()} miembros
+										</span>
 									</div>
 								)}
-								{community.upcomingEventCount !== undefined && community.upcomingEventCount > 0 && (
-									<div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-medium">
-										<Calendar className="h-3.5 w-3.5" />
-										<span>{community.upcomingEventCount} eventos próximos</span>
-									</div>
-								)}
+								{community.upcomingEventCount !== undefined &&
+									community.upcomingEventCount > 0 && (
+										<div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-medium">
+											<Calendar className="h-3.5 w-3.5" />
+											<span>
+												{community.upcomingEventCount} eventos próximos
+											</span>
+										</div>
+									)}
 							</div>
 
 							{community.recentActivity && (

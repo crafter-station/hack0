@@ -22,7 +22,7 @@ interface Tab {
 interface CommunityHeaderClientProps {
 	community: Organization;
 	slug: string;
-	userRole: string | null;
+	userRole: "owner" | "admin" | "member" | "follower" | null;
 	isAuthenticated: boolean;
 	tabs: Tab[];
 }

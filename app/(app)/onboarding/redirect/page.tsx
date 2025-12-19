@@ -1,20 +1,22 @@
-import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
-import { getUserPreferences } from "@/lib/actions/user-preferences";
+import { eq } from "drizzle-orm";
+import { redirect } from "next/navigation";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SiteHeader } from "@/components/layout/site-header";
+import { PostOnboardingChoice } from "@/components/onboarding/post-onboarding-choice";
 import { getOrCreatePersonalOrg } from "@/lib/actions/organizations";
-import { isGodMode } from "@/lib/god-mode";
+import { getUserPreferences } from "@/lib/actions/user-preferences";
 import { db } from "@/lib/db";
 import { communityMembers } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { PostOnboardingChoice } from "@/components/onboarding/post-onboarding-choice";
+import { isGodMode } from "@/lib/god-mode";
 
 interface OnboardingRedirectPageProps {
 	searchParams: Promise<{ redirect_url?: string; skip_choice?: string }>;
 }
 
-export default async function OnboardingRedirectPage({ searchParams }: OnboardingRedirectPageProps) {
+export default async function OnboardingRedirectPage({
+	searchParams,
+}: OnboardingRedirectPageProps) {
 	const { userId } = await auth();
 	const { redirect_url, skip_choice } = await searchParams;
 

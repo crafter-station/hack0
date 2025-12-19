@@ -1,6 +1,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 
-const ADMIN_EMAILS = process.env.ADMIN_EMAILS?.split(",").map((e) => e.trim()) || [];
+const ADMIN_EMAILS =
+	process.env.ADMIN_EMAILS?.split(",").map((e) => e.trim()) || [];
 
 export async function isGodMode(): Promise<boolean> {
 	try {

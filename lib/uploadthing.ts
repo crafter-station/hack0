@@ -1,7 +1,7 @@
 import {
-  generateUploadButton,
-  generateUploadDropzone,
-  generateReactHelpers,
+	generateReactHelpers,
+	generateUploadButton,
+	generateUploadDropzone,
 } from "@uploadthing/react";
 
 import type { OurFileRouter } from "@/app/(app)/api/uploadthing/core";

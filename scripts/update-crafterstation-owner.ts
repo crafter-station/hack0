@@ -1,6 +1,6 @@
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 
 async function updateCrafterStationOwner() {
 	const result = await db

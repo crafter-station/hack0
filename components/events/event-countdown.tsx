@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
+import { useEffect, useState } from "react";
 
 type CountdownTarget = {
 	type: "registration" | "start" | "end";
@@ -19,7 +19,9 @@ interface EventCountdownProps {
 	variant?: "hero" | "compact";
 }
 
-function getCountdownTarget(event: EventCountdownProps["event"]): CountdownTarget | null {
+function getCountdownTarget(
+	event: EventCountdownProps["event"],
+): CountdownTarget | null {
 	const now = new Date();
 
 	if (
@@ -85,7 +87,10 @@ function getUrgencyColor(ms: number, type: CountdownTarget["type"]): string {
 	return "text-blue-500 bg-blue-500/10";
 }
 
-export function EventCountdown({ event, variant = "hero" }: EventCountdownProps) {
+export function EventCountdown({
+	event,
+	variant = "hero",
+}: EventCountdownProps) {
 	const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 	const [target, setTarget] = useState<CountdownTarget | null>(null);
 
@@ -115,7 +120,9 @@ export function EventCountdown({ event, variant = "hero" }: EventCountdownProps)
 
 	if (variant === "compact") {
 		return (
-			<div className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${urgencyColor}`}>
+			<div
+				className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${urgencyColor}`}
+			>
 				<Clock className="h-3 w-3" />
 				{target.label} en {formatTimeRemaining(timeRemaining)}
 			</div>
@@ -123,7 +130,9 @@ export function EventCountdown({ event, variant = "hero" }: EventCountdownProps)
 	}
 
 	return (
-		<div className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${urgencyColor}`}>
+		<div
+			className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${urgencyColor}`}
+		>
 			<Clock className="h-4 w-4" />
 			<span>
 				{target.label} en <strong>{formatTimeRemaining(timeRemaining)}</strong>

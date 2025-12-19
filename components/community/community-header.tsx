@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import {
 	BarChart3,
 	Calendar,
@@ -7,7 +8,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { auth } from "@clerk/nextjs/server";
 import { isAdmin } from "@/lib/actions/claims";
 import { getUserCommunityRole } from "@/lib/actions/community-members";
 import type { Organization } from "@/lib/db/schema";
@@ -32,14 +32,10 @@ export async function CommunityHeader({
 	const isAuthenticated = !!userId;
 
 	const tabs = [
-		{ id: "events" as const, label: "Eventos", icon: Calendar },
-		{ id: "members" as const, label: "Miembros", icon: Users },
-		...(canManage
-			? [
-					{ id: "analytics" as const, label: "Analytics", icon: BarChart3 },
-					{ id: "settings" as const, label: "Configuración", icon: Settings },
-				]
-			: []),
+		{ id: "events" as const, label: "Eventos", icon: Calendar, requiresAdmin: false },
+		{ id: "members" as const, label: "Miembros", icon: Users, requiresAdmin: false },
+		{ id: "analytics" as const, label: "Analytics", icon: BarChart3, requiresAdmin: true },
+		{ id: "settings" as const, label: "Configuración", icon: Settings, requiresAdmin: true },
 	];
 
 	return (
@@ -92,6 +88,20 @@ export async function CommunityHeader({
 						const isActive = currentTab === tab.id;
 						const href =
 							tab.id === "events" ? `/c/${slug}` : `/c/${slug}/${tab.id}`;
+						const isDisabled = tab.requiresAdmin && !canManage;
+
+						if (isDisabled) {
+							return (
+								<span
+									key={tab.id}
+									title="Solo para administradores"
+									className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 border-transparent text-muted-foreground/50 cursor-not-allowed whitespace-nowrap"
+								>
+									<Icon className="h-3.5 w-3.5" />
+									{tab.label}
+								</span>
+							);
+						}
 
 						return (
 							<Link

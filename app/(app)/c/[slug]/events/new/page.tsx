@@ -2,7 +2,10 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { OrgEventFormMinimal } from "@/components/communities/org-event-form-minimal";
 import { getUserCommunityRole } from "@/lib/actions/community-members";
-import { getAllUserOrganizations, getOrganizationBySlug } from "@/lib/actions/organizations";
+import {
+	getAllUserOrganizations,
+	getOrganizationBySlug,
+} from "@/lib/actions/organizations";
 import { isGodMode } from "@/lib/god-mode";
 
 interface NewEventPageProps {

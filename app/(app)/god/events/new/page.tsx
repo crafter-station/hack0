@@ -1,10 +1,10 @@
-import { redirect } from "next/navigation";
-import { getGodModeUser } from "@/lib/god-mode";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { GodModeEventForm } from "@/components/god-mode/god-mode-event-form";
-import { godModeGetAllOrganizations } from "@/lib/actions/god-mode";
 import { Crown } from "lucide-react";
+import { redirect } from "next/navigation";
+import { GodModeEventForm } from "@/components/god-mode/god-mode-event-form";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SiteHeader } from "@/components/layout/site-header";
+import { godModeGetAllOrganizations } from "@/lib/actions/god-mode";
+import { getGodModeUser } from "@/lib/god-mode";
 
 export const metadata = {
 	title: "Create Event (God Mode) | hack0.dev",

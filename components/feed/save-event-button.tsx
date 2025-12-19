@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
+import { Heart } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface SaveEventButtonProps {
@@ -11,7 +11,11 @@ interface SaveEventButtonProps {
 	initialSaved?: boolean;
 }
 
-export function SaveEventButton({ eventId, eventName, initialSaved = false }: SaveEventButtonProps) {
+export function SaveEventButton({
+	eventId,
+	eventName,
+	initialSaved = false,
+}: SaveEventButtonProps) {
 	const [isSaved, setIsSaved] = useState(initialSaved);
 	const [isAnimating, setIsAnimating] = useState(false);
 

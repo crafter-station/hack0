@@ -9,7 +9,6 @@ import {
 	Preview,
 	Text,
 } from "@react-email/components";
-import * as React from "react";
 
 interface CohostInviteEmailProps {
 	inviterName: string;
@@ -54,16 +53,16 @@ export function CohostInviteEmail({
 						</Link>
 					</Container>
 
-					<Text style={paragraph}>
-						Como co-organizador, podrás:
-					</Text>
+					<Text style={paragraph}>Como co-organizador, podrás:</Text>
 
 					<Container style={benefitsList}>
 						<Text style={benefitItem}>✓ Editar la información del evento</Text>
 						<Text style={benefitItem}>
 							✓ Agregar miembros de tu organización al equipo
 						</Text>
-						<Text style={benefitItem}>✓ Acceder a las analíticas del evento</Text>
+						<Text style={benefitItem}>
+							✓ Acceder a las analíticas del evento
+						</Text>
 						<Text style={benefitItem}>
 							✓ Aparecer como co-organizador oficial
 						</Text>
@@ -133,7 +132,7 @@ const eventCard = {
 	margin: "16px 0 24px",
 };
 
-const eventName = {
+const _eventName = {
 	color: "#fafafa",
 	fontSize: "16px",
 	fontWeight: "600",

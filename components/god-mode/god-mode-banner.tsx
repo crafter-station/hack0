@@ -1,6 +1,6 @@
-import { getGodModeUser } from "@/lib/god-mode";
 import { Zap } from "lucide-react";
 import Link from "next/link";
+import { getGodModeUser } from "@/lib/god-mode";
 
 export async function GodModeBanner() {
 	const godUser = await getGodModeUser();

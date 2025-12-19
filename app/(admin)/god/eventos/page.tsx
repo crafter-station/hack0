@@ -1,7 +1,6 @@
-import { getAllWinnerClaims } from "@/lib/actions/claims";
-import { getEventsByApprovalStatus } from "@/lib/actions/events";
-import { PendingEventsList } from "@/components/admin/pending-events-list";
 import { Calendar } from "lucide-react";
+import { PendingEventsList } from "@/components/admin/pending-events-list";
+import { getEventsByApprovalStatus } from "@/lib/actions/events";
 
 export const metadata = {
 	title: "Eventos - God Mode",
@@ -12,7 +11,9 @@ export default async function EventosPage() {
 	const allEvents = await getEventsByApprovalStatus("all");
 
 	const pendingEvents = allEvents.filter((e) => e.approvalStatus === "pending");
-	const approvedEvents = allEvents.filter((e) => e.approvalStatus === "approved");
+	const approvedEvents = allEvents.filter(
+		(e) => e.approvalStatus === "approved",
+	);
 
 	return (
 		<div className="space-y-6">
@@ -24,7 +25,9 @@ export default async function EventosPage() {
 						</div>
 						<div>
 							<p className="text-2xl font-semibold">{pendingEvents.length}</p>
-							<p className="text-xs text-muted-foreground">Eventos pendientes</p>
+							<p className="text-xs text-muted-foreground">
+								Eventos pendientes
+							</p>
 						</div>
 					</div>
 				</div>

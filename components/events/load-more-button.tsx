@@ -2,7 +2,11 @@
 
 import { Loader2 } from "lucide-react";
 import { useState, useTransition } from "react";
-import { type EventFilters, type EventWithOrg, getEvents } from "@/lib/actions/events";
+import {
+	type EventFilters,
+	type EventWithOrg,
+	getEvents,
+} from "@/lib/actions/events";
 import { getCategoryById } from "@/lib/event-categories";
 import { EventRowWithChildren } from "./event-row-with-children";
 

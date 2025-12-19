@@ -8,7 +8,8 @@ async function main() {
 			slug: "start-lima",
 			name: "START Lima",
 			displayName: "START Lima",
-			description: "Comunidad de emprendimiento e innovación tecnológica en Lima",
+			description:
+				"Comunidad de emprendimiento e innovación tecnológica en Lima",
 			type: "community",
 			ownerUserId: "user_temp_placeholder",
 			isPublic: true,

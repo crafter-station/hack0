@@ -1,13 +1,12 @@
-import { db } from "./index";
-import { events, type NewEvent } from "./schema";
+import type { NewEvent } from "./schema";
 
 // NOTE: This seed file needs to be updated to create organizations first
 // and link events to them via organizationId. Temporarily disabled.
 // TODO: Create organizations table entries before creating events
 
 // Manual seed data based on research of actual LATAM events
-const seedEvents: NewEvent[] = [
-  /* Temporarily disabled - needs organizationId
+const _seedEvents: NewEvent[] = [
+	/* Temporarily disabled - needs organizationId
 
   {
     slug: "hackmty-2025",
@@ -880,9 +879,11 @@ const seedEvents: NewEvent[] = [
 ];
 
 export async function seed() {
-  console.log("Seed file is temporarily disabled - needs organization migration");
-  return;
-  /*
+	console.log(
+		"Seed file is temporarily disabled - needs organization migration",
+	);
+	return;
+	/*
   console.log("Seeding database with LATAM events...");
 
   try {

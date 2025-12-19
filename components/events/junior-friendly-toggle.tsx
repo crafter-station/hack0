@@ -19,9 +19,7 @@ export function JuniorFriendlyToggle({
 			className={cn(
 				"relative flex items-start gap-4 p-4 rounded-lg border-2 transition-all text-left w-full",
 				"hover:border-amber-500/50 hover:bg-amber-500/5",
-				value
-					? "border-amber-500 bg-amber-500/5"
-					: "border-border bg-card",
+				value ? "border-amber-500 bg-amber-500/5" : "border-border bg-card",
 			)}
 		>
 			<div

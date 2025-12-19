@@ -1,15 +1,18 @@
-import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
+import { eq } from "drizzle-orm";
 import { Calendar, XCircle } from "lucide-react";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import { AcceptCohostInviteButton } from "@/components/events/accept-cohost-invite-button";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SiteHeader } from "@/components/layout/site-header";
+import { Button } from "@/components/ui/button";
+import {
+	acceptCohostInvite,
+	rejectCohostInvite,
+} from "@/lib/actions/cohost-invites";
 import { db } from "@/lib/db";
 import { eventHostOrganizations } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { Button } from "@/components/ui/button";
-import { AcceptCohostInviteButton } from "@/components/events/accept-cohost-invite-button";
-import { acceptCohostInvite, rejectCohostInvite } from "@/lib/actions/cohost-invites";
 import { formatEventDateRange } from "@/lib/event-utils";
 
 interface CohostInvitePageProps {
@@ -100,7 +103,7 @@ async function CohostInviteContent({ token }: { token: string }) {
 							<p className="text-sm text-muted-foreground">
 								{formatEventDateRange(
 									invite.event.startDate,
-									invite.event.endDate
+									invite.event.endDate,
 								)}
 							</p>
 						</div>
@@ -183,14 +186,12 @@ async function CohostInviteContent({ token }: { token: string }) {
 						)}
 					</div>
 					<div className="space-y-2">
-						<h1 className="text-2xl font-bold">
-							Invitación para co-organizar
-						</h1>
+						<h1 className="text-2xl font-bold">Invitación para co-organizar</h1>
 						<p className="text-lg font-semibold">{invite.event.name}</p>
 						<p className="text-sm text-muted-foreground">
 							{formatEventDateRange(
 								invite.event.startDate,
-								invite.event.endDate
+								invite.event.endDate,
 							)}
 						</p>
 						{invite.event.description && (
@@ -222,7 +223,7 @@ async function CohostInviteContent({ token }: { token: string }) {
 									redirect(`/events/${result.eventSlug}?accepted=true`);
 								} else {
 									redirect(
-										`/events/${invite.event.slug}/cohost-invite/${token}?error=${encodeURIComponent(result.error || "Error desconocido")}`
+										`/events/${invite.event.slug}/cohost-invite/${token}?error=${encodeURIComponent(result.error || "Error desconocido")}`,
 									);
 								}
 							}}
@@ -239,7 +240,7 @@ async function CohostInviteContent({ token }: { token: string }) {
 									redirect(`/?rejected=true`);
 								} else {
 									redirect(
-										`/events/${invite.event.slug}/cohost-invite/${token}?error=${encodeURIComponent(result.error || "Error desconocido")}`
+										`/events/${invite.event.slug}/cohost-invite/${token}?error=${encodeURIComponent(result.error || "Error desconocido")}`,
 									);
 								}
 							}}
@@ -307,9 +308,7 @@ export default async function CohostInvitePage({
 								</p>
 							</div>
 							<Button asChild>
-								<a href={`/events/cohost-invite/${token}`}>
-									Intentar de nuevo
-								</a>
+								<a href={`/events/cohost-invite/${token}`}>Intentar de nuevo</a>
 							</Button>
 						</div>
 					</div>

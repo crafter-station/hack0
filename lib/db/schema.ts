@@ -114,7 +114,10 @@ export const events = pgTable("events", {
 	// Dates
 	startDate: timestamp("start_date", { mode: "date", withTimezone: true }),
 	endDate: timestamp("end_date", { mode: "date", withTimezone: true }),
-	registrationDeadline: timestamp("registration_deadline", { mode: "date", withTimezone: true }),
+	registrationDeadline: timestamp("registration_deadline", {
+		mode: "date",
+		withTimezone: true,
+	}),
 
 	// Location
 	format: formatEnum("format").default("virtual"),
@@ -155,9 +158,18 @@ export const events = pgTable("events", {
 	verifiedOrganizerId: varchar("verified_organizer_id", { length: 255 }), // Clerk user ID
 
 	// Timestamps
-	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
-	updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow(),
-	sourceScrapedAt: timestamp("source_scraped_at", { mode: "date", withTimezone: true }),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	updatedAt: timestamp("updated_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	sourceScrapedAt: timestamp("source_scraped_at", {
+		mode: "date",
+		withTimezone: true,
+	}),
 });
 
 // Types
@@ -187,8 +199,14 @@ export const subscriptions = pgTable("subscriptions", {
 	unsubscribeToken: varchar("unsubscribe_token", { length: 255 }),
 
 	// Timestamps
-	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
-	lastEmailSentAt: timestamp("last_email_sent_at", { mode: "date", withTimezone: true }),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	lastEmailSentAt: timestamp("last_email_sent_at", {
+		mode: "date",
+		withTimezone: true,
+	}),
 });
 
 export type Subscription = typeof subscriptions.$inferSelect;
@@ -205,7 +223,10 @@ export const notificationLogs = pgTable("notification_logs", {
 
 	// Email details
 	subject: varchar("subject", { length: 500 }),
-	sentAt: timestamp("sent_at", { mode: "date", withTimezone: true }).defaultNow(),
+	sentAt: timestamp("sent_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 
 	// Status
 	status: varchar("status", { length: 20 }).default("sent"), // sent, failed, bounced
@@ -242,7 +263,10 @@ export const winnerClaims = pgTable("winner_claims", {
 	reviewedBy: varchar("reviewed_by", { length: 255 }),
 	rejectionReason: text("rejection_reason"),
 
-	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 });
 
 export type WinnerClaim = typeof winnerClaims.$inferSelect;
@@ -312,6 +336,8 @@ export const ORGANIZER_TYPES = [
 	"startup",
 	"media",
 ] as const;
+
+export type OrganizerType = (typeof ORGANIZER_TYPES)[number];
 
 export const ORGANIZER_TYPE_LABELS: Record<string, string> = {
 	university: "Universidad",
@@ -448,8 +474,14 @@ export const organizations = pgTable("organizations", {
 	isVerified: boolean("is_verified").default(false), // Admin can verify
 
 	// Timestamps
-	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
-	updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow(),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	updatedAt: timestamp("updated_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 });
 
 export type Organization = typeof organizations.$inferSelect;
@@ -477,7 +509,10 @@ export const communityMembers = pgTable("community_members", {
 	role: communityRoleEnum("role").default("follower"),
 
 	// Tracking
-	joinedAt: timestamp("joined_at", { mode: "date", withTimezone: true }).defaultNow(),
+	joinedAt: timestamp("joined_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 	invitedBy: varchar("invited_by", { length: 255 }), // Clerk user ID of inviter
 });
 
@@ -524,11 +559,44 @@ export const communityInvites = pgTable("community_invites", {
 	expiresAt: timestamp("expires_at", { mode: "date", withTimezone: true }),
 
 	// Timestamps
-	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 });
 
 export type CommunityInvite = typeof communityInvites.$inferSelect;
 export type NewCommunityInvite = typeof communityInvites.$inferInsert;
+
+// ============================================
+// COMMUNITY ROLE REQUESTS - For admin upgrade requests
+// ============================================
+
+export const roleRequestStatusEnum = pgEnum("role_request_status", [
+	"pending",
+	"approved",
+	"rejected",
+]);
+
+export const communityRoleRequests = pgTable("community_role_requests", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	communityId: uuid("community_id")
+		.references(() => organizations.id)
+		.notNull(),
+	userId: varchar("user_id", { length: 255 }).notNull(),
+	requestedRole: communityRoleEnum("requested_role").notNull(),
+	message: text("message"),
+	status: roleRequestStatusEnum("status").default("pending"),
+	reviewedBy: varchar("reviewed_by", { length: 255 }),
+	reviewedAt: timestamp("reviewed_at", { mode: "date", withTimezone: true }),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+});
+
+export type CommunityRoleRequest = typeof communityRoleRequests.$inferSelect;
+export type NewCommunityRoleRequest = typeof communityRoleRequests.$inferInsert;
 
 // ============================================
 // EVENT SPONSORS - Junction table for sponsors (using organizations)
@@ -557,7 +625,10 @@ export const eventSponsors = pgTable("event_sponsors", {
 	orderIndex: integer("order_index").default(0), // For custom ordering within tier
 
 	// Timestamps
-	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 });
 
 export type EventSponsor = typeof eventSponsors.$inferSelect;
@@ -602,16 +673,25 @@ export const eventOrganizers = pgTable("event_organizers", {
 	role: eventOrganizerRoleEnum("role").default("organizer"),
 
 	// Organization this person represents (personal or community org)
-	representingOrgId: uuid("representing_org_id").references(() => organizations.id),
+	representingOrgId: uuid("representing_org_id").references(
+		() => organizations.id,
+	),
 
 	// Timestamps
-	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 });
 
 export type EventOrganizer = typeof eventOrganizers.$inferSelect;
 export type NewEventOrganizer = typeof eventOrganizers.$inferInsert;
 
-export const EVENT_ORGANIZER_ROLES = ["lead", "organizer", "volunteer"] as const;
+export const EVENT_ORGANIZER_ROLES = [
+	"lead",
+	"organizer",
+	"volunteer",
+] as const;
 
 export const EVENT_ORGANIZER_ROLE_LABELS: Record<string, string> = {
 	lead: "Organizador Principal",
@@ -641,12 +721,16 @@ export const eventHostOrganizations = pgTable("event_host_organizations", {
 	inviteToken: varchar("invite_token", { length: 255 }).unique(),
 
 	// Timestamps
-	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 	acceptedAt: timestamp("accepted_at", { mode: "date", withTimezone: true }),
 });
 
 export type EventHostOrganization = typeof eventHostOrganizations.$inferSelect;
-export type NewEventHostOrganization = typeof eventHostOrganizations.$inferInsert;
+export type NewEventHostOrganization =
+	typeof eventHostOrganizations.$inferInsert;
 
 // ============================================
 // IMPORT JOBS - For Luma/external event imports
@@ -671,7 +755,10 @@ export const importJobs = pgTable("import_jobs", {
 	eventId: uuid("event_id").references(() => events.id),
 	extractedData: text("extracted_data"),
 	errorMessage: text("error_message"),
-	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 	completedAt: timestamp("completed_at", { mode: "date", withTimezone: true }),
 });
 
@@ -701,8 +788,14 @@ export const userPreferences = pgTable("user_preferences", {
 	hasCompletedOnboarding: boolean("has_completed_onboarding").default(false),
 
 	// Timestamps
-	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
-	updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow(),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	updatedAt: timestamp("updated_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 });
 
 export type UserPreferences = typeof userPreferences.$inferSelect;
@@ -719,20 +812,40 @@ export const syncFrequencyEnum = pgEnum("sync_frequency", [
 	"manual",
 ]);
 
+export const lumaVerificationStatusEnum = pgEnum("luma_verification_status", [
+	"pending",
+	"verified",
+	"failed",
+]);
+
 export const lumaCalendars = pgTable("luma_calendars", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	organizationId: uuid("organization_id")
 		.references(() => organizations.id)
 		.notNull(),
-	lumaCalendarId: varchar("luma_calendar_id", { length: 255 }).notNull(),
-	lumaCalendarSlug: varchar("luma_calendar_slug", { length: 255 }),
+	lumaCalendarApiId: varchar("luma_calendar_api_id", { length: 255 }),
+	lumaCalendarSlug: varchar("luma_calendar_slug", { length: 255 }).notNull(),
 	name: varchar("name", { length: 255 }),
-	apiKey: varchar("api_key", { length: 500 }),
+	verificationStatus: lumaVerificationStatusEnum("verification_status").default(
+		"pending",
+	),
+	webhookId: varchar("webhook_id", { length: 255 }),
+	lastVerificationAttempt: timestamp("last_verification_attempt", {
+		mode: "date",
+		withTimezone: true,
+	}),
+	verificationAttempts: integer("verification_attempts").default(0),
 	isActive: boolean("is_active").default(true),
 	syncFrequency: syncFrequencyEnum("sync_frequency").default("daily"),
 	lastSyncAt: timestamp("last_sync_at", { mode: "date", withTimezone: true }),
-	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
-	updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow(),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	updatedAt: timestamp("updated_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 });
 
 export type LumaCalendar = typeof lumaCalendars.$inferSelect;
@@ -745,9 +858,18 @@ export const lumaEventMappings = pgTable("luma_event_mappings", {
 		.references(() => events.id)
 		.notNull(),
 	lumaCalendarId: uuid("luma_calendar_id").references(() => lumaCalendars.id),
-	lastSyncedAt: timestamp("last_synced_at", { mode: "date", withTimezone: true }),
-	lumaUpdatedAt: timestamp("luma_updated_at", { mode: "date", withTimezone: true }),
-	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	lastSyncedAt: timestamp("last_synced_at", {
+		mode: "date",
+		withTimezone: true,
+	}),
+	lumaUpdatedAt: timestamp("luma_updated_at", {
+		mode: "date",
+		withTimezone: true,
+	}),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 });
 
 export type LumaEventMapping = typeof lumaEventMappings.$inferSelect;
@@ -773,10 +895,19 @@ export const scrapeSources = pgTable("scrape_sources", {
 	sourceUrl: varchar("source_url", { length: 500 }).notNull(),
 	isActive: boolean("is_active").default(true),
 	scrapeFrequency: syncFrequencyEnum("scrape_frequency").default("daily"),
-	lastScrapeAt: timestamp("last_scrape_at", { mode: "date", withTimezone: true }),
+	lastScrapeAt: timestamp("last_scrape_at", {
+		mode: "date",
+		withTimezone: true,
+	}),
 	config: text("config"),
-	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
-	updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow(),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	updatedAt: timestamp("updated_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 });
 
 export type ScrapeSource = typeof scrapeSources.$inferSelect;
@@ -802,7 +933,10 @@ export const scrapeRuns = pgTable("scrape_runs", {
 	triggerRunId: varchar("trigger_run_id", { length: 255 }),
 	startedAt: timestamp("started_at", { mode: "date", withTimezone: true }),
 	completedAt: timestamp("completed_at", { mode: "date", withTimezone: true }),
-	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 });
 
 export type ScrapeRun = typeof scrapeRuns.$inferSelect;
@@ -814,10 +948,19 @@ export const rssFeedSubscriptions = pgTable("rss_feed_subscriptions", {
 	feedUrl: varchar("feed_url", { length: 500 }).notNull(),
 	feedTitle: varchar("feed_title", { length: 255 }),
 	isActive: boolean("is_active").default(true),
-	lastFetchedAt: timestamp("last_fetched_at", { mode: "date", withTimezone: true }),
+	lastFetchedAt: timestamp("last_fetched_at", {
+		mode: "date",
+		withTimezone: true,
+	}),
 	lastItemGuid: varchar("last_item_guid", { length: 500 }),
-	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
-	updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow(),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	updatedAt: timestamp("updated_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 });
 
 export type RssFeedSubscription = typeof rssFeedSubscriptions.$inferSelect;
@@ -843,7 +986,10 @@ export const eventShareAssets = pgTable("event_share_assets", {
 		.notNull(),
 	assetType: shareAssetTypeEnum("asset_type").notNull(),
 	imageUrl: varchar("image_url", { length: 500 }).notNull(),
-	generatedAt: timestamp("generated_at", { mode: "date", withTimezone: true }).defaultNow(),
+	generatedAt: timestamp("generated_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 });
 
 export type EventShareAsset = typeof eventShareAssets.$inferSelect;
@@ -863,8 +1009,14 @@ export const userEventAttendance = pgTable("user_event_attendance", {
 	userId: varchar("user_id", { length: 255 }).notNull(),
 	status: attendanceStatusEnum("status").default("attending"),
 	sharedAt: timestamp("shared_at", { mode: "date", withTimezone: true }),
-	createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).defaultNow(),
-	updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).defaultNow(),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	updatedAt: timestamp("updated_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 });
 
 export type UserEventAttendance = typeof userEventAttendance.$inferSelect;
@@ -886,7 +1038,10 @@ export const shareAnalytics = pgTable("share_analytics", {
 		.notNull(),
 	userId: varchar("user_id", { length: 255 }),
 	platform: sharePlatformEnum("platform").notNull(),
-	sharedAt: timestamp("shared_at", { mode: "date", withTimezone: true }).defaultNow(),
+	sharedAt: timestamp("shared_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
 });
 
 export type ShareAnalytic = typeof shareAnalytics.$inferSelect;
@@ -934,6 +1089,16 @@ export const communityInvitesRelations = relations(
 	}),
 );
 
+export const communityRoleRequestsRelations = relations(
+	communityRoleRequests,
+	({ one }) => ({
+		community: one(organizations, {
+			fields: [communityRoleRequests.communityId],
+			references: [organizations.id],
+		}),
+	}),
+);
+
 export const eventSponsorsRelations = relations(eventSponsors, ({ one }) => ({
 	event: one(events, {
 		fields: [eventSponsors.eventId],
@@ -945,16 +1110,19 @@ export const eventSponsorsRelations = relations(eventSponsors, ({ one }) => ({
 	}),
 }));
 
-export const eventOrganizersRelations = relations(eventOrganizers, ({ one }) => ({
-	event: one(events, {
-		fields: [eventOrganizers.eventId],
-		references: [events.id],
+export const eventOrganizersRelations = relations(
+	eventOrganizers,
+	({ one }) => ({
+		event: one(events, {
+			fields: [eventOrganizers.eventId],
+			references: [events.id],
+		}),
+		representingOrg: one(organizations, {
+			fields: [eventOrganizers.representingOrgId],
+			references: [organizations.id],
+		}),
 	}),
-	representingOrg: one(organizations, {
-		fields: [eventOrganizers.representingOrgId],
-		references: [organizations.id],
-	}),
-}));
+);
 
 export const eventHostOrganizationsRelations = relations(
 	eventHostOrganizations,

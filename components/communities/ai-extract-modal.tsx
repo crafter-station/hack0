@@ -34,7 +34,7 @@ export function AIExtractModal({
 	const [isExtracting, setIsExtracting] = useState(false);
 	const [showPasteHint, setShowPasteHint] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
-	const containerRef = useRef<HTMLDivElement>(null);
+	const _containerRef = useRef<HTMLDivElement>(null);
 
 	const processFile = (file: File) => {
 		if (!file.type.startsWith("image/")) return;
@@ -73,7 +73,7 @@ export function AIExtractModal({
 			};
 		}
 		setShowPasteHint(false);
-	}, [open]);
+	}, [open, handlePaste]);
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];

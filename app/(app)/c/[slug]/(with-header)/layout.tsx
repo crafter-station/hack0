@@ -1,11 +1,11 @@
-import { Suspense } from "react";
 import { auth } from "@clerk/nextjs/server";
+import { eq } from "drizzle-orm";
+import { Suspense } from "react";
 import { CommunityHeaderClient } from "@/components/community/community-header-client";
 import { getUserCommunityRole } from "@/lib/actions/community-members";
-import { isGodMode } from "@/lib/god-mode";
 import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { isGodMode } from "@/lib/god-mode";
 
 interface WithHeaderLayoutProps {
 	children: React.ReactNode;
@@ -69,10 +69,7 @@ function CommunityHeaderSkeleton() {
 
 				<nav className="flex items-center gap-1 border-t -mb-px">
 					{Array.from({ length: 4 }).map((_, i) => (
-						<div
-							key={i}
-							className="h-12 w-28 bg-muted/50 animate-pulse"
-						/>
+						<div key={i} className="h-12 w-28 bg-muted/50 animate-pulse" />
 					))}
 				</nav>
 			</div>

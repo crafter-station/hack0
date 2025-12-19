@@ -1,6 +1,6 @@
-import { getAllOrganizations } from "@/lib/actions/organizations";
-import { OrganizationsTable } from "@/components/god-mode/organizations-table";
 import { Building2 } from "lucide-react";
+import { OrganizationsTable } from "@/components/god-mode/organizations-table";
+import { getAllOrganizations } from "@/lib/actions/organizations";
 
 export const metadata = {
 	title: "Organizaciones - God Mode",
@@ -23,7 +23,9 @@ export default async function OrganizacionesPage() {
 						</div>
 						<div>
 							<p className="text-2xl font-semibold">{organizations.length}</p>
-							<p className="text-xs text-muted-foreground">Total organizaciones</p>
+							<p className="text-xs text-muted-foreground">
+								Total organizaciones
+							</p>
 						</div>
 					</div>
 				</div>

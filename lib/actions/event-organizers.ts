@@ -1,10 +1,10 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { db } from "@/lib/db";
-import { eventOrganizers, communityMembers, events } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { db } from "@/lib/db";
+import { communityMembers, eventOrganizers, events } from "@/lib/db/schema";
 import { isAdmin } from "./claims";
 
 // ============================================
@@ -12,12 +12,12 @@ import { isAdmin } from "./claims";
 // ============================================
 
 export async function getEventOrganizers(eventId: string) {
-  const organizers = await db
-    .select()
-    .from(eventOrganizers)
-    .where(eq(eventOrganizers.eventId, eventId));
+	const organizers = await db
+		.select()
+		.from(eventOrganizers)
+		.where(eq(eventOrganizers.eventId, eventId));
 
-  return organizers;
+	return organizers;
 }
 
 // ============================================
@@ -25,73 +25,85 @@ export async function getEventOrganizers(eventId: string) {
 // ============================================
 
 export async function addEventOrganizer(
-  eventId: string,
-  userId: string,
-  role: "lead" | "organizer" | "volunteer"
+	eventId: string,
+	userId: string,
+	role: "lead" | "organizer" | "volunteer",
 ) {
-  const { userId: currentUserId } = await auth();
+	const { userId: currentUserId } = await auth();
 
-  if (!currentUserId) {
-    return { success: false, error: "Debes iniciar sesión" };
-  }
+	if (!currentUserId) {
+		return { success: false, error: "Debes iniciar sesión" };
+	}
 
-  // Get event
-  const event = await db.query.events.findFirst({
-    where: eq(events.id, eventId),
-  });
+	// Get event
+	const event = await db.query.events.findFirst({
+		where: eq(events.id, eventId),
+	});
 
-  if (!event || !event.organizationId) {
-    return { success: false, error: "Evento no encontrado" };
-  }
+	if (!event || !event.organizationId) {
+		return { success: false, error: "Evento no encontrado" };
+	}
 
-  // Check permission: must be admin or community owner/admin
-  const admin = await isAdmin();
-  if (!admin) {
-    const membership = await db.query.communityMembers.findFirst({
-      where: and(
-        eq(communityMembers.communityId, event.organizationId),
-        eq(communityMembers.userId, currentUserId)
-      ),
-    });
+	// Check permission: must be admin or community owner/admin
+	const admin = await isAdmin();
+	if (!admin) {
+		const membership = await db.query.communityMembers.findFirst({
+			where: and(
+				eq(communityMembers.communityId, event.organizationId),
+				eq(communityMembers.userId, currentUserId),
+			),
+		});
 
-    if (!membership || (membership.role !== "owner" && membership.role !== "admin")) {
-      return { success: false, error: "No tienes permiso para agregar organizadores" };
-    }
-  }
+		if (
+			!membership ||
+			(membership.role !== "owner" && membership.role !== "admin")
+		) {
+			return {
+				success: false,
+				error: "No tienes permiso para agregar organizadores",
+			};
+		}
+	}
 
-  // Verify that the userId is a member of the community
-  const targetMembership = await db.query.communityMembers.findFirst({
-    where: and(
-      eq(communityMembers.communityId, event.organizationId),
-      eq(communityMembers.userId, userId)
-    ),
-  });
+	// Verify that the userId is a member of the community
+	const targetMembership = await db.query.communityMembers.findFirst({
+		where: and(
+			eq(communityMembers.communityId, event.organizationId),
+			eq(communityMembers.userId, userId),
+		),
+	});
 
-  if (!targetMembership) {
-    return { success: false, error: "El usuario debe ser miembro de la comunidad primero" };
-  }
+	if (!targetMembership) {
+		return {
+			success: false,
+			error: "El usuario debe ser miembro de la comunidad primero",
+		};
+	}
 
-  // Check if already an organizer
-  const existing = await db.query.eventOrganizers.findFirst({
-    where: and(
-      eq(eventOrganizers.eventId, eventId),
-      eq(eventOrganizers.userId, userId)
-    ),
-  });
+	// Check if already an organizer
+	const existing = await db.query.eventOrganizers.findFirst({
+		where: and(
+			eq(eventOrganizers.eventId, eventId),
+			eq(eventOrganizers.userId, userId),
+		),
+	});
 
-  if (existing) {
-    return { success: false, error: "Este usuario ya es organizador del evento" };
-  }
+	if (existing) {
+		return {
+			success: false,
+			error: "Este usuario ya es organizador del evento",
+		};
+	}
 
-  // Add organizer
-  await db.insert(eventOrganizers).values({
-    eventId,
-    userId,
-    role,
-  });
+	// Add organizer
+	await db.insert(eventOrganizers).values({
+		eventId,
+		userId,
+		role,
+	});
 
-  revalidatePath("/");
-  return { success: true };
+	revalidatePath("/");
+	return { success: true };
 }
 
 // ============================================
@@ -99,50 +111,56 @@ export async function addEventOrganizer(
 // ============================================
 
 export async function removeEventOrganizer(organizerId: string) {
-  const { userId: currentUserId } = await auth();
+	const { userId: currentUserId } = await auth();
 
-  if (!currentUserId) {
-    return { success: false, error: "Debes iniciar sesión" };
-  }
+	if (!currentUserId) {
+		return { success: false, error: "Debes iniciar sesión" };
+	}
 
-  // Get organizer
-  const organizer = await db.query.eventOrganizers.findFirst({
-    where: eq(eventOrganizers.id, organizerId),
-  });
+	// Get organizer
+	const organizer = await db.query.eventOrganizers.findFirst({
+		where: eq(eventOrganizers.id, organizerId),
+	});
 
-  if (!organizer) {
-    return { success: false, error: "Organizador no encontrado" };
-  }
+	if (!organizer) {
+		return { success: false, error: "Organizador no encontrado" };
+	}
 
-  // Get event
-  const event = await db.query.events.findFirst({
-    where: eq(events.id, organizer.eventId),
-  });
+	// Get event
+	const event = await db.query.events.findFirst({
+		where: eq(events.id, organizer.eventId),
+	});
 
-  if (!event || !event.organizationId) {
-    return { success: false, error: "Evento no encontrado" };
-  }
+	if (!event || !event.organizationId) {
+		return { success: false, error: "Evento no encontrado" };
+	}
 
-  // Check permission: must be admin or community owner/admin
-  const admin = await isAdmin();
-  if (!admin) {
-    const membership = await db.query.communityMembers.findFirst({
-      where: and(
-        eq(communityMembers.communityId, event.organizationId),
-        eq(communityMembers.userId, currentUserId)
-      ),
-    });
+	// Check permission: must be admin or community owner/admin
+	const admin = await isAdmin();
+	if (!admin) {
+		const membership = await db.query.communityMembers.findFirst({
+			where: and(
+				eq(communityMembers.communityId, event.organizationId),
+				eq(communityMembers.userId, currentUserId),
+			),
+		});
 
-    if (!membership || (membership.role !== "owner" && membership.role !== "admin")) {
-      return { success: false, error: "No tienes permiso para remover organizadores" };
-    }
-  }
+		if (
+			!membership ||
+			(membership.role !== "owner" && membership.role !== "admin")
+		) {
+			return {
+				success: false,
+				error: "No tienes permiso para remover organizadores",
+			};
+		}
+	}
 
-  // Remove organizer
-  await db.delete(eventOrganizers).where(eq(eventOrganizers.id, organizerId));
+	// Remove organizer
+	await db.delete(eventOrganizers).where(eq(eventOrganizers.id, organizerId));
 
-  revalidatePath("/");
-  return { success: true };
+	revalidatePath("/");
+	return { success: true };
 }
 
 // ============================================
@@ -150,54 +168,57 @@ export async function removeEventOrganizer(organizerId: string) {
 // ============================================
 
 export async function updateOrganizerRole(
-  organizerId: string,
-  role: "lead" | "organizer" | "volunteer"
+	organizerId: string,
+	role: "lead" | "organizer" | "volunteer",
 ) {
-  const { userId: currentUserId } = await auth();
+	const { userId: currentUserId } = await auth();
 
-  if (!currentUserId) {
-    return { success: false, error: "Debes iniciar sesión" };
-  }
+	if (!currentUserId) {
+		return { success: false, error: "Debes iniciar sesión" };
+	}
 
-  // Get organizer
-  const organizer = await db.query.eventOrganizers.findFirst({
-    where: eq(eventOrganizers.id, organizerId),
-  });
+	// Get organizer
+	const organizer = await db.query.eventOrganizers.findFirst({
+		where: eq(eventOrganizers.id, organizerId),
+	});
 
-  if (!organizer) {
-    return { success: false, error: "Organizador no encontrado" };
-  }
+	if (!organizer) {
+		return { success: false, error: "Organizador no encontrado" };
+	}
 
-  // Get event
-  const event = await db.query.events.findFirst({
-    where: eq(events.id, organizer.eventId),
-  });
+	// Get event
+	const event = await db.query.events.findFirst({
+		where: eq(events.id, organizer.eventId),
+	});
 
-  if (!event || !event.organizationId) {
-    return { success: false, error: "Evento no encontrado" };
-  }
+	if (!event || !event.organizationId) {
+		return { success: false, error: "Evento no encontrado" };
+	}
 
-  // Check permission: must be admin or community owner/admin
-  const admin = await isAdmin();
-  if (!admin) {
-    const membership = await db.query.communityMembers.findFirst({
-      where: and(
-        eq(communityMembers.communityId, event.organizationId),
-        eq(communityMembers.userId, currentUserId)
-      ),
-    });
+	// Check permission: must be admin or community owner/admin
+	const admin = await isAdmin();
+	if (!admin) {
+		const membership = await db.query.communityMembers.findFirst({
+			where: and(
+				eq(communityMembers.communityId, event.organizationId),
+				eq(communityMembers.userId, currentUserId),
+			),
+		});
 
-    if (!membership || (membership.role !== "owner" && membership.role !== "admin")) {
-      return { success: false, error: "No tienes permiso para cambiar roles" };
-    }
-  }
+		if (
+			!membership ||
+			(membership.role !== "owner" && membership.role !== "admin")
+		) {
+			return { success: false, error: "No tienes permiso para cambiar roles" };
+		}
+	}
 
-  // Update role
-  await db
-    .update(eventOrganizers)
-    .set({ role })
-    .where(eq(eventOrganizers.id, organizerId));
+	// Update role
+	await db
+		.update(eventOrganizers)
+		.set({ role })
+		.where(eq(eventOrganizers.id, organizerId));
 
-  revalidatePath("/");
-  return { success: true };
+	revalidatePath("/");
+	return { success: true };
 }

@@ -8,7 +8,6 @@ import {
 	Plus,
 	Search,
 	Shield,
-	Sparkles,
 	UserPlus,
 	Users,
 } from "lucide-react";
@@ -28,7 +27,7 @@ import type { Organization } from "@/lib/db/schema";
 
 interface OrganizationWithRole {
 	organization: Organization;
-	role: "owner" | "admin" | "member" | "follower";
+	role: "owner" | "admin" | "member" | "follower" | null;
 }
 
 interface OrganizationSelectorProps {
@@ -270,9 +269,9 @@ function OrganizationCard({
 	role,
 }: {
 	organization: Organization;
-	role: "owner" | "admin" | "member" | "follower";
+	role: "owner" | "admin" | "member" | "follower" | null;
 }) {
-	const roleConfig = ROLE_CONFIG[role];
+	const roleConfig = ROLE_CONFIG[role ?? "follower"];
 	const RoleIcon = roleConfig.icon;
 
 	return (

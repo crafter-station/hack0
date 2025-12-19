@@ -1,9 +1,9 @@
+import { eq } from "drizzle-orm";
 import { db } from "../lib/db";
 import { events } from "../lib/db/schema";
-import { eq } from "drizzle-orm";
 
 const updates: Record<string, string> = {
-  "desafio-hackathon-ai-griculture-2024": `Hackathon de **Inteligencia Artificial aplicada a la Agricultura** en Latinoamérica.
+	"desafio-hackathon-ai-griculture-2024": `Hackathon de **Inteligencia Artificial aplicada a la Agricultura** en Latinoamérica.
 
 ## Objetivo
 
@@ -15,7 +15,7 @@ Desarrollar soluciones innovadoras usando IA para transformar la agricultura en 
 - Equipos de toda Latinoamérica
 - Enfoque en problemas reales del sector agrícola`,
 
-  "ia-hackathon-peru-2025": `Hackathon de **24 horas** enfocado en Inteligencia Artificial.
+	"ia-hackathon-peru-2025": `Hackathon de **24 horas** enfocado en Inteligencia Artificial.
 
 ## ¿Qué esperar?
 
@@ -31,7 +31,7 @@ Universidad Cayetano Heredia, Lima
 
 Desarrolladores, científicos de datos y entusiastas de la IA.`,
 
-  "ethereum-lima-2025": `Construye el futuro de **Web3** en Perú.
+	"ethereum-lima-2025": `Construye el futuro de **Web3** en Perú.
 
 ## Sobre el evento
 
@@ -49,7 +49,7 @@ Ethereum Lima reúne a desarrolladores blockchain para crear dApps, protocolos D
 
 Parte de la comunidad global de Ethereum.`,
 
-  "minedu-hackathon-peru-2025": `Hackathon del **Ministerio de Educación del Perú** para revolucionar la educación.
+	"minedu-hackathon-peru-2025": `Hackathon del **Ministerio de Educación del Perú** para revolucionar la educación.
 
 ## Participantes
 
@@ -65,7 +65,7 @@ Parte de la comunidad global de Ethereum.`,
 
 Desarrollar soluciones tecnológicas que mejoren la experiencia educativa en Perú.`,
 
-  "hackathon-lima-segura": `Hackathon de **tecnología cívica** organizado por la Municipalidad de Lima.
+	"hackathon-lima-segura": `Hackathon de **tecnología cívica** organizado por la Municipalidad de Lima.
 
 ## Retos
 
@@ -77,7 +77,7 @@ Desarrollar soluciones tecnológicas que mejoren la experiencia educativa en Per
 
 Municipalidad Metropolitana de Lima`,
 
-  "techstars-startup-weekend-lima-2025": `**54 horas** para lanzar tu startup.
+	"techstars-startup-weekend-lima-2025": `**54 horas** para lanzar tu startup.
 
 ## Dinámica
 
@@ -95,7 +95,7 @@ Municipalidad Metropolitana de Lima`,
 
 Techstars Startup Weekend - validada a nivel mundial.`,
 
-  "peru-fintech-forum-hackathon-2025": `Hackathon enfocado en **innovación financiera**.
+	"peru-fintech-forum-hackathon-2025": `Hackathon enfocado en **innovación financiera**.
 
 ## Parte de
 
@@ -110,7 +110,7 @@ Perú Fintech Forum 2025
 
 Desarrollar productos y servicios que transformen el sector financiero peruano.`,
 
-  "codeon-2025": `Conferencia tech y mini-hackathon para **estudiantes universitarios**.
+	"codeon-2025": `Conferencia tech y mini-hackathon para **estudiantes universitarios**.
 
 ## ¿Qué incluye?
 
@@ -122,7 +122,7 @@ Desarrollar productos y servicios que transformen el sector financiero peruano.`
 
 Universidad Tecnológica del Perú (UTP), Lima`,
 
-  "ayni-hackathon-2024": `Hackathon nacional en el marco de **APEC Perú**.
+	"ayni-hackathon-2024": `Hackathon nacional en el marco de **APEC Perú**.
 
 ## Sedes
 
@@ -138,7 +138,7 @@ Innovación y colaboración tecnológica a nivel nacional.
 
 Universidad Peruana de Ciencias Aplicadas (UPC)`,
 
-  "hackathon-social-internacional-2024": `Hackathon organizado por **Casa Rusa**.
+	"hackathon-social-internacional-2024": `Hackathon organizado por **Casa Rusa**.
 
 ## Metodología
 
@@ -148,7 +148,7 @@ Design Sprint para diseñar propuestas innovadoras.
 
 **Hi!Chik** de Arequipa - Plataforma de participación ciudadana juvenil.`,
 
-  "peru-hub-digital-hackathon-2025": `Evento que conecta a la comunidad académica con la **alta tecnología**.
+	"peru-hub-digital-hackathon-2025": `Evento que conecta a la comunidad académica con la **alta tecnología**.
 
 ## Actividades
 
@@ -166,7 +166,7 @@ Design Sprint para diseñar propuestas innovadoras.
 
 Estudiantes, técnicos y docentes.`,
 
-  "hackathon-economia-circular-produce-2025": `Hackathon de la **I Cumbre Produce Circular**.
+	"hackathon-economia-circular-produce-2025": `Hackathon de la **I Cumbre Produce Circular**.
 
 ## Objetivo
 
@@ -181,7 +181,7 @@ Desarrollar soluciones sostenibles para la industria manufacturera y comercio in
 
 Economía circular y sostenibilidad.`,
 
-  "justihack-peru-2025": `Hackathon para fortalecer la **transparencia judicial**.
+	"justihack-peru-2025": `Hackathon para fortalecer la **transparencia judicial**.
 
 ## Objetivo
 
@@ -191,7 +191,7 @@ Proponer soluciones innovadoras que mejoren la imparcialidad y confianza en el s
 
 **Semáforo Judicial** - Plataforma de IA desarrollada por la Universidad del Pacífico (2do lugar).`,
 
-  "energ-ia-hackathon-ulima-2025": `Hackathon nacional de **innovación energética**.
+	"energ-ia-hackathon-ulima-2025": `Hackathon nacional de **innovación energética**.
 
 ## Dirigido a
 
@@ -209,7 +209,7 @@ Proponer soluciones innovadoras que mejoren la imparcialidad y confianza en el s
 
 IA y herramientas tecnológicas para revolucionar el sector energético.`,
 
-  "hackathon-chiclayo-servicios-publicos-2025": `Primera Hackathon de la **Municipalidad Provincial de Chiclayo**.
+	"hackathon-chiclayo-servicios-publicos-2025": `Primera Hackathon de la **Municipalidad Provincial de Chiclayo**.
 
 ## Objetivo
 
@@ -219,7 +219,7 @@ Desarrollar soluciones innovadoras para la prestación de servicios públicos.
 
 Colegio de Ingenieros del Perú - Consejo Departamental Lambayeque`,
 
-  "nasa-space-apps-huanuco-2025": `Primera edición oficial del **NASA Space Apps Challenge** en Huánuco.
+	"nasa-space-apps-huanuco-2025": `Primera edición oficial del **NASA Space Apps Challenge** en Huánuco.
 
 ## Proyectos desarrollados
 
@@ -231,7 +231,7 @@ Colegio de Ingenieros del Perú - Consejo Departamental Lambayeque`,
 
 Uso de datos abiertos de la NASA.`,
 
-  "conasein-hackathon-cientifica-2025": `**III Congreso Nacional de Semilleros de Investigación**
+	"conasein-hackathon-cientifica-2025": `**III Congreso Nacional de Semilleros de Investigación**
 
 ## Actividades
 
@@ -244,7 +244,7 @@ Uso de datos abiertos de la NASA.`,
 
 Estudiantes de universidades públicas y privadas de todo el Perú.`,
 
-  "nasa-space-apps-peru-2025": `El **hackathon internacional más grande del mundo** llega a Perú.
+	"nasa-space-apps-peru-2025": `El **hackathon internacional más grande del mundo** llega a Perú.
 
 ## Sedes en Perú
 
@@ -259,7 +259,7 @@ Estudiantes de universidades públicas y privadas de todo el Perú.`,
 
 Resolver problemas reales usando datos abiertos de la NASA sobre la Tierra y el espacio.`,
 
-  "escuela-computacion-cuantica-hackathon-2025": `Programa intensivo de **7 días** sobre Computación Cuántica.
+	"escuela-computacion-cuantica-hackathon-2025": `Programa intensivo de **7 días** sobre Computación Cuántica.
 
 ## Incluye
 
@@ -276,7 +276,7 @@ Año Internacional de Ciencia y Tecnología Cuántica (IYQ)
 
 **100% gratuito** con certificado de participación.`,
 
-  "hacklife-pmi-2023": `Hackathon de **innovación social** organizado por PMI Perú.
+	"hacklife-pmi-2023": `Hackathon de **innovación social** organizado por PMI Perú.
 
 ## Caring Us Edition
 
@@ -290,7 +290,7 @@ Año Internacional de Ciencia y Tecnología Cuántica (IYQ)
 - Construcción de MVP
 - Mentoría especializada`,
 
-  "eneisoft-hackathon-2025": `El evento donde las **ideas se convierten en soluciones reales**.
+	"eneisoft-hackathon-2025": `El evento donde las **ideas se convierten en soluciones reales**.
 
 ## ¿Para quién?
 
@@ -304,7 +304,7 @@ XV edición del Hackathon ENEISOFT
 
 Crear, conectar y competir con los mejores talentos del país.`,
 
-  "jakumbre-2025-dia-3-sociales": `**Día 3: Área de Sociales** - JAKUMBRE 2025
+	"jakumbre-2025-dia-3-sociales": `**Día 3: Área de Sociales** - JAKUMBRE 2025
 
 ## Enfoque
 
@@ -316,7 +316,7 @@ El rol de la comunidad emprendedora y el ecosistema de innovación.
 - Aprendizajes y experiencias
 - Conferencia magistral sobre innovación social`,
 
-  "jakumbre-2025-dia-2-ingenierias": `**Día 2: Área de Ingenierías** - JAKUMBRE 2025
+	"jakumbre-2025-dia-2-ingenierias": `**Día 2: Área de Ingenierías** - JAKUMBRE 2025
 
 ## Enfoque
 
@@ -329,7 +329,7 @@ Cómo convertir soluciones técnicas en empresas reales desde la ingeniería.
 - Casos de éxito
 - Intercambio entre especialistas`,
 
-  "jakumbre-2025-dia-1-biomedicas": `**Día 1: Área de Biomédicas** - JAKUMBRE 2025
+	"jakumbre-2025-dia-1-biomedicas": `**Día 1: Área de Biomédicas** - JAKUMBRE 2025
 
 ## Enfoque
 
@@ -341,7 +341,7 @@ Innovación en salud y biotecnología.
 - Panel de experiencias con startups de biotecnología
 - Networking con profesionales del sector`,
 
-  "jakumbre-2025": `**Tres días** para aprender, conectar y transformar.
+	"jakumbre-2025": `**Tres días** para aprender, conectar y transformar.
 
 ## Sobre JAKUMBRE
 
@@ -359,7 +359,7 @@ Cada día en una sede distinta, con enfoque específico:
 
 Innovación, tecnología y emprendimiento transformando Arequipa y el Perú.`,
 
-  "contecih-2025-videojuegos": `**Eje: Desarrollo de Videojuegos** - CONTECIH 2025
+	"contecih-2025-videojuegos": `**Eje: Desarrollo de Videojuegos** - CONTECIH 2025
 
 ## Contenido
 
@@ -373,7 +373,7 @@ Innovación, tecnología y emprendimiento transformando Arequipa y el Perú.`,
 
 100% Virtual`,
 
-  "contecih-2025-ciberseguridad": `**Eje: Ciberseguridad** - CONTECIH 2025
+	"contecih-2025-ciberseguridad": `**Eje: Ciberseguridad** - CONTECIH 2025
 
 ## Contenido
 
@@ -387,7 +387,7 @@ Innovación, tecnología y emprendimiento transformando Arequipa y el Perú.`,
 
 UTEC – Barranco, Lima`,
 
-  "contecih-2025-inteligencia-artificial": `**Eje: Inteligencia Artificial** - CONTECIH 2025
+	"contecih-2025-inteligencia-artificial": `**Eje: Inteligencia Artificial** - CONTECIH 2025
 
 ## Contenido
 
@@ -401,7 +401,7 @@ UTEC – Barranco, Lima`,
 
 UTP Lima Centro`,
 
-  "contecih-2025-congreso-tecnologia-innovacion": `**V Congreso de Tecnología, Innovación y Habilidades para el Futuro**
+	"contecih-2025-congreso-tecnologia-innovacion": `**V Congreso de Tecnología, Innovación y Habilidades para el Futuro**
 
 ## Organizan
 
@@ -428,7 +428,7 @@ UTP Lima Centro`,
 
 Estudiantes de ingeniería, docentes, investigadores, profesionales TI y comunidad IEEE.`,
 
-  "casual-code-brew-chatting-open-source-vibe-coding-ai": `Meetup casual para **builders** en Lima.
+	"casual-code-brew-chatting-open-source-vibe-coding-ai": `Meetup casual para **builders** en Lima.
 
 ## Temas
 
@@ -445,26 +445,26 @@ Estudiantes de ingeniería, docentes, investigadores, profesionales TI y comunid
 
 ## Formato
 
-Café relajado, máximo 10 personas. Trae tus ideas y tu laptop para demos rápidas.`
+Café relajado, máximo 10 personas. Trae tus ideas y tu laptop para demos rápidas.`,
 };
 
 async function main() {
-  console.log("Actualizando descripciones...\n");
+	console.log("Actualizando descripciones...\n");
 
-  for (const [slug, newDescription] of Object.entries(updates)) {
-    try {
-      const result = await db
-        .update(events)
-        .set({ description: newDescription })
-        .where(eq(events.slug, slug));
+	for (const [slug, newDescription] of Object.entries(updates)) {
+		try {
+			const _result = await db
+				.update(events)
+				.set({ description: newDescription })
+				.where(eq(events.slug, slug));
 
-      console.log(`✓ ${slug}`);
-    } catch (error) {
-      console.error(`✗ ${slug}:`, error);
-    }
-  }
+			console.log(`✓ ${slug}`);
+		} catch (error) {
+			console.error(`✗ ${slug}:`, error);
+		}
+	}
 
-  console.log("\n¡Listo! Descripciones actualizadas.");
+	console.log("\n¡Listo! Descripciones actualizadas.");
 }
 
 main();

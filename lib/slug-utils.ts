@@ -1,7 +1,7 @@
+import { and, eq, ne } from "drizzle-orm";
+import { z } from "zod";
 import { db } from "@/lib/db";
 import { events } from "@/lib/db/schema";
-import { eq, and, ne } from "drizzle-orm";
-import { z } from "zod";
 
 /**
  * Generates a URL-safe slug from a string
@@ -17,17 +17,17 @@ import { z } from "zod";
  * generateSlug("Perú Fintech Forum") // "peru-fintech-forum"
  */
 export function generateSlug(text: string): string {
-  return text
-    .toString()
-    .toLowerCase()
-    .normalize('NFD') // Decompose accented characters
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
-    .replace(/ñ/g, 'n') // Handle Spanish ñ specifically
-    .replace(/[^a-z0-9\s-]/g, '') // Remove all non-alphanumeric except spaces and hyphens
-    .trim()
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-    .replace(/^-+|-+$/g, ''); // Trim hyphens from start and end
+	return text
+		.toString()
+		.toLowerCase()
+		.normalize("NFD") // Decompose accented characters
+		.replace(/[\u0300-\u036f]/g, "") // Remove diacritics
+		.replace(/ñ/g, "n") // Handle Spanish ñ specifically
+		.replace(/[^a-z0-9\s-]/g, "") // Remove all non-alphanumeric except spaces and hyphens
+		.trim()
+		.replace(/\s+/g, "-") // Replace spaces with hyphens
+		.replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
+		.replace(/^-+|-+$/g, ""); // Trim hyphens from start and end
 }
 
 /**
@@ -45,35 +45,35 @@ export function generateSlug(text: string): string {
  * await ensureUniqueSlug("hackathon-2025", "event-uuid") // "hackathon-2025" if it's the same event
  */
 export async function ensureUniqueSlug(
-  baseSlug: string,
-  existingId?: string
+	baseSlug: string,
+	existingId?: string,
 ): Promise<string> {
-  let slug = baseSlug;
-  let counter = 2;
-  let isUnique = false;
+	let slug = baseSlug;
+	let counter = 2;
+	let isUnique = false;
 
-  while (!isUnique) {
-    // Check if slug exists (excluding the event being updated)
-    const existing = await db
-      .select({ id: events.id })
-      .from(events)
-      .where(
-        existingId
-          ? and(eq(events.slug, slug), ne(events.id, existingId))
-          : eq(events.slug, slug)
-      )
-      .limit(1);
+	while (!isUnique) {
+		// Check if slug exists (excluding the event being updated)
+		const existing = await db
+			.select({ id: events.id })
+			.from(events)
+			.where(
+				existingId
+					? and(eq(events.slug, slug), ne(events.id, existingId))
+					: eq(events.slug, slug),
+			)
+			.limit(1);
 
-    if (existing.length === 0) {
-      isUnique = true;
-    } else {
-      // Append counter and try again
-      slug = `${baseSlug}-${counter}`;
-      counter++;
-    }
-  }
+		if (existing.length === 0) {
+			isUnique = true;
+		} else {
+			// Append counter and try again
+			slug = `${baseSlug}-${counter}`;
+			counter++;
+		}
+	}
 
-  return slug;
+	return slug;
 }
 
 /**
@@ -89,11 +89,11 @@ export async function ensureUniqueSlug(
  * await createUniqueSlug("HackAru 2025") // "hackaru-2025-2" (if first one exists)
  */
 export async function createUniqueSlug(
-  name: string,
-  existingId?: string
+	name: string,
+	existingId?: string,
 ): Promise<string> {
-  const baseSlug = generateSlug(name);
-  return ensureUniqueSlug(baseSlug, existingId);
+	const baseSlug = generateSlug(name);
+	return ensureUniqueSlug(baseSlug, existingId);
 }
 
 /**
@@ -107,18 +107,18 @@ export async function createUniqueSlug(
  * @returns true if valid, false otherwise
  */
 export function isValidSlugFormat(slug: string): boolean {
-  if (!slug || slug.length === 0) return false;
+	if (!slug || slug.length === 0) return false;
 
-  // Must match: lowercase alphanumeric and hyphens only
-  if (!/^[a-z0-9-]+$/.test(slug)) return false;
+	// Must match: lowercase alphanumeric and hyphens only
+	if (!/^[a-z0-9-]+$/.test(slug)) return false;
 
-  // No consecutive hyphens
-  if (/--/.test(slug)) return false;
+	// No consecutive hyphens
+	if (/--/.test(slug)) return false;
 
-  // No leading or trailing hyphens
-  if (slug.startsWith('-') || slug.endsWith('-')) return false;
+	// No leading or trailing hyphens
+	if (slug.startsWith("-") || slug.endsWith("-")) return false;
 
-  return true;
+	return true;
 }
 
 /**
@@ -131,14 +131,17 @@ export function isValidSlugFormat(slug: string): boolean {
  * schema.parse({ slug: "INVALID-SLUG" }); // Throws error
  */
 export const slugSchema = z
-  .string()
-  .min(1, "Slug cannot be empty")
-  .max(200, "Slug is too long")
-  .regex(/^[a-z0-9-]+$/, "Slug must contain only lowercase letters, numbers, and hyphens")
-  .regex(/^[^-]/, "Slug cannot start with a hyphen")
-  .regex(/[^-]$/, "Slug cannot end with a hyphen")
-  .regex(/^(?!.*--).*$/, "Slug cannot contain consecutive hyphens")
-  .describe("A URL-safe slug identifier");
+	.string()
+	.min(1, "Slug cannot be empty")
+	.max(200, "Slug is too long")
+	.regex(
+		/^[a-z0-9-]+$/,
+		"Slug must contain only lowercase letters, numbers, and hyphens",
+	)
+	.regex(/^[^-]/, "Slug cannot start with a hyphen")
+	.regex(/[^-]$/, "Slug cannot end with a hyphen")
+	.regex(/^(?!.*--).*$/, "Slug cannot contain consecutive hyphens")
+	.describe("A URL-safe slug identifier");
 
 /**
  * Zod refinement for checking slug uniqueness in database
@@ -150,15 +153,15 @@ export const slugSchema = z
  * });
  */
 export const isSlugUnique = async (slug: string, existingId?: string) => {
-  const existing = await db
-    .select({ id: events.id })
-    .from(events)
-    .where(
-      existingId
-        ? and(eq(events.slug, slug), ne(events.id, existingId))
-        : eq(events.slug, slug)
-    )
-    .limit(1);
+	const existing = await db
+		.select({ id: events.id })
+		.from(events)
+		.where(
+			existingId
+				? and(eq(events.slug, slug), ne(events.id, existingId))
+				: eq(events.slug, slug),
+		)
+		.limit(1);
 
-  return existing.length === 0;
+	return existing.length === 0;
 };

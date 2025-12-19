@@ -1,23 +1,42 @@
-import type { Metadata } from "next";
-import { Suspense } from "react";
-import Link from "next/link";
-import { redirect, notFound } from "next/navigation";
-import { Calendar, BarChart3, TrendingUp, Eye, Award, ExternalLink, Edit3, Loader2, Plus, UserPlus } from "lucide-react";
-import { db } from "@/lib/db";
-import { organizations, events } from "@/lib/db/schema";
-import { eq, and, count, sql, desc, asc } from "drizzle-orm";
-import { Button } from "@/components/ui/button";
 import { auth } from "@clerk/nextjs/server";
-import { formatEventDateRange } from "@/lib/event-utils";
+import { and, asc, count, desc, eq, sql } from "drizzle-orm";
+import {
+	Award,
+	BarChart3,
+	Calendar,
+	Edit3,
+	ExternalLink,
+	Eye,
+	Loader2,
+	Plus,
+	TrendingUp,
+} from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { Suspense } from "react";
+import { Button } from "@/components/ui/button";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@/components/ui/empty";
 import { getOrgImportJobs } from "@/lib/actions/import";
+import {
+	canManageOrganization,
+	getOrganizationBySlug,
+} from "@/lib/actions/organizations";
+import { db } from "@/lib/db";
+import { events, organizations } from "@/lib/db/schema";
+import { formatEventDateRange } from "@/lib/event-utils";
 import { isGodMode } from "@/lib/god-mode";
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
-import { getOrganizationBySlug, canManageOrganization } from "@/lib/actions/organizations";
 
 interface AnalyticsPageProps {
 	params: Promise<{ slug: string }>;
 }
-
 
 async function AnalyticsContent({ slug }: { slug: string }) {
 	const community = await db.query.organizations.findFirst({
@@ -36,7 +55,7 @@ async function AnalyticsContent({ slug }: { slug: string }) {
 	]);
 
 	const pendingJobs = importJobs.filter(
-		(job) => job.status === "pending" || job.status === "processing"
+		(job) => job.status === "pending" || job.status === "processing",
 	);
 
 	const now = new Date();
@@ -51,39 +70,44 @@ async function AnalyticsContent({ slug }: { slug: string }) {
 		recentEvents,
 		totalPrizePool,
 	] = await Promise.all([
-		db.select({ count: count() })
+		db
+			.select({ count: count() })
 			.from(events)
 			.where(eq(events.organizationId, community.id)),
-		db.select({ count: count() })
+		db
+			.select({ count: count() })
 			.from(events)
 			.where(
 				and(
 					eq(events.organizationId, community.id),
-					sql`${events.startDate} >= ${nowStr}`
-				)
+					sql`${events.startDate} >= ${nowStr}`,
+				),
 			),
-		db.select({ count: count() })
+		db
+			.select({ count: count() })
 			.from(events)
 			.where(
 				and(
 					eq(events.organizationId, community.id),
-					sql`${events.endDate} < ${nowStr}`
-				)
+					sql`${events.endDate} < ${nowStr}`,
+				),
 			),
-		db.select({ count: count() })
+		db
+			.select({ count: count() })
 			.from(events)
 			.where(
 				and(
 					eq(events.organizationId, community.id),
-					sql`${events.createdAt} >= ${thirtyDaysAgoStr}`
-				)
+					sql`${events.createdAt} >= ${thirtyDaysAgoStr}`,
+				),
 			),
-		db.select({
-			total: sql<number>`COALESCE(SUM(CASE
+		db
+			.select({
+				total: sql<number>`COALESCE(SUM(CASE
 				WHEN ${events.prizeCurrency} = 'PEN' THEN ${events.prizePool} / 3.5
 				ELSE ${events.prizePool}
-			END), 0)`
-		})
+			END), 0)`,
+			})
 			.from(events)
 			.where(eq(events.organizationId, community.id)),
 	]);
@@ -107,9 +131,7 @@ async function AnalyticsContent({ slug }: { slug: string }) {
 							<p className="text-sm">Total eventos</p>
 						</div>
 						<p className="text-3xl font-bold tabular-nums">{stats.total}</p>
-						<p className="text-xs text-muted-foreground">
-							Todos los tiempos
-						</p>
+						<p className="text-xs text-muted-foreground">Todos los tiempos</p>
 					</div>
 
 					<div className="rounded-lg border border-border p-5 space-y-2">
@@ -117,10 +139,10 @@ async function AnalyticsContent({ slug }: { slug: string }) {
 							<TrendingUp className="h-4 w-4" />
 							<p className="text-sm">Próximos eventos</p>
 						</div>
-						<p className="text-3xl font-bold tabular-nums text-blue-500">{stats.upcoming}</p>
-						<p className="text-xs text-muted-foreground">
-							Eventos futuros
+						<p className="text-3xl font-bold tabular-nums text-blue-500">
+							{stats.upcoming}
 						</p>
+						<p className="text-xs text-muted-foreground">Eventos futuros</p>
 					</div>
 
 					<div className="rounded-lg border border-border p-5 space-y-2">
@@ -128,10 +150,10 @@ async function AnalyticsContent({ slug }: { slug: string }) {
 							<Award className="h-4 w-4" />
 							<p className="text-sm">Eventos completados</p>
 						</div>
-						<p className="text-3xl font-bold tabular-nums text-emerald-500">{stats.completed}</p>
-						<p className="text-xs text-muted-foreground">
-							Eventos pasados
+						<p className="text-3xl font-bold tabular-nums text-emerald-500">
+							{stats.completed}
 						</p>
+						<p className="text-xs text-muted-foreground">Eventos pasados</p>
 					</div>
 
 					<div className="rounded-lg border border-border p-5 space-y-2">
@@ -139,10 +161,10 @@ async function AnalyticsContent({ slug }: { slug: string }) {
 							<BarChart3 className="h-4 w-4" />
 							<p className="text-sm">Eventos recientes</p>
 						</div>
-						<p className="text-3xl font-bold tabular-nums text-amber-500">{stats.recent}</p>
-						<p className="text-xs text-muted-foreground">
-							Últimos 30 días
+						<p className="text-3xl font-bold tabular-nums text-amber-500">
+							{stats.recent}
 						</p>
+						<p className="text-xs text-muted-foreground">Últimos 30 días</p>
 					</div>
 				</div>
 			</div>
@@ -172,7 +194,8 @@ async function AnalyticsContent({ slug }: { slug: string }) {
 							</EmptyMedia>
 							<EmptyTitle>Aún no has creado ningún evento</EmptyTitle>
 							<EmptyDescription>
-								Crea tu primer evento para comenzar a atraer participantes y construir tu comunidad.
+								Crea tu primer evento para comenzar a atraer participantes y
+								construir tu comunidad.
 							</EmptyDescription>
 						</EmptyHeader>
 						<EmptyContent>
@@ -224,11 +247,14 @@ async function AnalyticsContent({ slug }: { slug: string }) {
 											{event.startDate && event.endDate
 												? formatEventDateRange(
 														new Date(event.startDate),
-														new Date(event.endDate)
+														new Date(event.endDate),
 													)
 												: "Sin fecha"}
 											{!event.isApproved && (
-												<span className="text-amber-600"> · Pendiente de aprobación</span>
+												<span className="text-amber-600">
+													{" "}
+													· Pendiente de aprobación
+												</span>
 											)}
 										</p>
 									</div>
@@ -261,8 +287,8 @@ async function AnalyticsContent({ slug }: { slug: string }) {
 						<Eye className="h-12 w-12 text-muted-foreground/50 mx-auto" />
 						<h3 className="font-semibold">Más analytics próximamente</h3>
 						<p className="text-sm text-muted-foreground">
-							Estamos trabajando en traerte métricas de engagement, vistas de eventos,
-							conversiones de registro y más insights detallados.
+							Estamos trabajando en traerte métricas de engagement, vistas de
+							eventos, conversiones de registro y más insights detallados.
 						</p>
 					</div>
 				</div>
@@ -278,7 +304,10 @@ function AnalyticsSkeleton() {
 				<div className="h-6 bg-muted rounded w-40 mb-4 animate-pulse" />
 				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 					{Array.from({ length: 4 }).map((_, i) => (
-						<div key={i} className="rounded-lg border border-border p-5 space-y-3 animate-pulse">
+						<div
+							key={i}
+							className="rounded-lg border border-border p-5 space-y-3 animate-pulse"
+						>
 							<div className="h-4 bg-muted rounded w-32" />
 							<div className="h-9 bg-muted rounded w-24" />
 							<div className="h-3 bg-muted rounded w-28" />

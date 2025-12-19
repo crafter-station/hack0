@@ -12,7 +12,9 @@ import {
 } from "@/lib/event-utils";
 
 interface HackathonCardProps {
-	hackathon: Event & { organization: { name: string; displayName: string | null } | null };
+	hackathon: Event & {
+		organization: { name: string; displayName: string | null } | null;
+	};
 }
 
 export function HackathonCard({ hackathon }: HackathonCardProps) {
@@ -46,11 +48,13 @@ export function HackathonCard({ hackathon }: HackathonCardProps) {
 							<h3 className="font-medium truncate group-hover:underline underline-offset-2">
 								{hackathon.name}
 							</h3>
-							{hackathon.organization?.displayName || hackathon.organization?.name && (
-								<p className="text-sm text-muted-foreground truncate">
-									{hackathon.organization?.displayName || hackathon.organization?.name}
-								</p>
-							)}
+							{hackathon.organization?.displayName ||
+								(hackathon.organization?.name && (
+									<p className="text-sm text-muted-foreground truncate">
+										{hackathon.organization?.displayName ||
+											hackathon.organization?.name}
+									</p>
+								))}
 						</div>
 						<ArrowUpRight className="h-4 w-4 flex-shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
 					</div>

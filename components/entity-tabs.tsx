@@ -1,15 +1,24 @@
 "use client";
 
+import { Calendar, Users } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Calendar, Users } from "lucide-react";
 
 export type EntityType = "events" | "organizations";
 
-const ENTITY_TABS: { id: EntityType; label: string; icon: React.ReactNode }[] = [
-	{ id: "events", label: "Eventos", icon: <Calendar className="h-3.5 w-3.5" /> },
-	{ id: "organizations", label: "Organizaciones", icon: <Users className="h-3.5 w-3.5" /> },
-];
+const ENTITY_TABS: { id: EntityType; label: string; icon: React.ReactNode }[] =
+	[
+		{
+			id: "events",
+			label: "Eventos",
+			icon: <Calendar className="h-3.5 w-3.5" />,
+		},
+		{
+			id: "organizations",
+			label: "Organizaciones",
+			icon: <Users className="h-3.5 w-3.5" />,
+		},
+	];
 
 export function EntityTabs() {
 	const searchParams = useSearchParams();

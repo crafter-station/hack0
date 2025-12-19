@@ -8,7 +8,6 @@ import {
 	Loader2,
 	MapPin,
 	Pencil,
-	Sparkles,
 	Trophy,
 	X,
 } from "lucide-react";

@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { Loader2, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
 	Select,
 	SelectContent,
@@ -13,10 +15,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { SearchableSelect } from "@/components/ui/searchable-select";
-import { ImageUpload } from "@/components/ui/image-upload";
+import { Textarea } from "@/components/ui/textarea";
 import { godModeCreateEvent } from "@/lib/actions/god-mode";
-import { Loader2, Sparkles } from "lucide-react";
 import type { Organization } from "@/lib/db/schema";
 
 const PERU_DEPARTMENTS = [
@@ -120,12 +120,7 @@ export function GodModeEventForm({ organizations }: GodModeEventFormProps) {
 
 				<div className="space-y-2">
 					<Label htmlFor="name">Event Name *</Label>
-					<Input
-						id="name"
-						name="name"
-						placeholder="HackLima 2025"
-						required
-					/>
+					<Input id="name" name="name" placeholder="HackLima 2025" required />
 				</div>
 
 				<div className="space-y-2">

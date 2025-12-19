@@ -1,8 +1,8 @@
 "use client";
 
-import { Calendar, Trophy, GraduationCap, Users, Sparkles, Heart } from "lucide-react";
-import { useQueryState, parseAsStringLiteral } from "nuqs";
 import { motion } from "framer-motion";
+import { GraduationCap, Heart, Sparkles, Trophy, Users } from "lucide-react";
+import { parseAsStringLiteral, useQueryState } from "nuqs";
 
 const FILTERS = {
 	all: { label: "Todos", icon: Sparkles },

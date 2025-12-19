@@ -1,24 +1,24 @@
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import type { SearchParams } from "nuqs/server";
 import { Suspense } from "react";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { EntityTabs } from "@/components/entity-tabs";
 import { AdvancedFilters } from "@/components/events/advanced-filters";
 import { EventList } from "@/components/events/event-list";
-import { OrganizationList } from "@/components/organization-list";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { OrganizationList } from "@/components/organization-list";
 import { SubscribeForm } from "@/components/subscribe-form";
 import {
+	type EventFilters,
 	getEvents,
 	getPlatformStats,
-	type EventFilters,
 } from "@/lib/actions/events";
 import {
 	getPublicOrganizations,
 	type OrganizationFilters,
 } from "@/lib/actions/organizations";
-import { loadSearchParams, type EntityType } from "@/lib/search-params";
+import { type EntityType, loadSearchParams } from "@/lib/search-params";
 
 interface HomePageProps {
 	searchParams: Promise<SearchParams>;
@@ -36,7 +36,11 @@ async function EventResults({ filters }: { filters: EventFilters }) {
 	);
 }
 
-async function OrganizationResults({ filters }: { filters: OrganizationFilters }) {
+async function OrganizationResults({
+	filters,
+}: {
+	filters: OrganizationFilters;
+}) {
 	const result = await getPublicOrganizations(filters);
 	return (
 		<OrganizationList
@@ -82,12 +86,20 @@ async function HeroContent() {
 
 				<div className="hidden md:flex items-center gap-8 text-right">
 					<div>
-						<p className="text-xl font-medium tabular-nums">{stats.totalEvents}</p>
-						<p className="text-[10px] text-muted-foreground uppercase tracking-wider">eventos</p>
+						<p className="text-xl font-medium tabular-nums">
+							{stats.totalEvents}
+						</p>
+						<p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+							eventos
+						</p>
 					</div>
 					<div>
-						<p className="text-xl font-medium tabular-nums">{formatPrize(stats.totalPrizePool)}</p>
-						<p className="text-[10px] text-muted-foreground uppercase tracking-wider">en premios</p>
+						<p className="text-xl font-medium tabular-nums">
+							{formatPrize(stats.totalPrizePool)}
+						</p>
+						<p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+							en premios
+						</p>
 					</div>
 					{stats.activeEvents > 0 && (
 						<div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">

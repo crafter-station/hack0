@@ -1,15 +1,14 @@
 "use server";
 
 import { auth, clerkClient, currentUser } from "@clerk/nextjs/server";
-import { db } from "@/lib/db";
-import { eventHostOrganizations, organizations, events } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
-import { nanoid } from "nanoid";
-import { resend, EMAIL_FROM } from "@/lib/email/resend";
 import { render } from "@react-email/render";
+import { and, eq } from "drizzle-orm";
+import { nanoid } from "nanoid";
+import { revalidatePath } from "next/cache";
+import { db } from "@/lib/db";
+import { eventHostOrganizations, events, organizations } from "@/lib/db/schema";
+import { EMAIL_FROM, resend } from "@/lib/email/resend";
 import { CohostInviteEmail } from "@/lib/email/templates/cohost-invite";
-import { getOrCreatePersonalOrg } from "./organizations";
 
 export interface InviteCohostInput {
 	eventId: string;
@@ -35,7 +34,7 @@ async function getOrCreatePersonalOrgByEmail(email: string) {
 		const existingOrg = await db.query.organizations.findFirst({
 			where: and(
 				eq(organizations.ownerUserId, clerkUserId),
-				eq(organizations.isPersonalOrg, true)
+				eq(organizations.isPersonalOrg, true),
 			),
 		});
 
@@ -44,7 +43,9 @@ async function getOrCreatePersonalOrgByEmail(email: string) {
 		}
 
 		try {
-			const { getUserInfo, getPersonalOrgSlug } = await import("@/lib/clerk-utils");
+			const { getUserInfo, getPersonalOrgSlug } = await import(
+				"@/lib/clerk-utils"
+			);
 			const userInfo = await getUserInfo(clerkUserId);
 			let slug = await getPersonalOrgSlug(clerkUserId);
 
@@ -152,7 +153,7 @@ export async function inviteCohost(input: InviteCohostInput) {
 	const existingInvite = await db.query.eventHostOrganizations.findFirst({
 		where: and(
 			eq(eventHostOrganizations.eventId, input.eventId),
-			eq(eventHostOrganizations.organizationId, targetOrg.id)
+			eq(eventHostOrganizations.organizationId, targetOrg.id),
 		),
 	});
 
@@ -192,7 +193,7 @@ export async function inviteCohost(input: InviteCohostInput) {
 					eventUrl,
 					acceptUrl,
 					recipientEmail: input.emailOrSlug,
-				})
+				}),
 			);
 
 			await resend.emails.send({
@@ -244,7 +245,8 @@ export async function acceptCohostInvite(inviteToken: string) {
 	if (invite.organization.ownerUserId !== userId) {
 		return {
 			success: false,
-			error: "Solo el propietario de la organización puede aceptar esta invitación",
+			error:
+				"Solo el propietario de la organización puede aceptar esta invitación",
 		};
 	}
 
@@ -298,7 +300,8 @@ export async function rejectCohostInvite(inviteToken: string) {
 	if (invite.organization.ownerUserId !== userId) {
 		return {
 			success: false,
-			error: "Solo el propietario de la organización puede rechazar esta invitación",
+			error:
+				"Solo el propietario de la organización puede rechazar esta invitación",
 		};
 	}
 
@@ -363,11 +366,17 @@ export async function removeCohostInvite(inviteId: string) {
 		};
 	}
 
-	await db.delete(eventHostOrganizations).where(eq(eventHostOrganizations.id, inviteId));
+	await db
+		.delete(eventHostOrganizations)
+		.where(eq(eventHostOrganizations.id, inviteId));
 
 	if (invite.event.organization) {
-		revalidatePath(`/c/${invite.event.organization.slug}/events/${invite.event.slug}`);
-		revalidatePath(`/c/${invite.event.organization.slug}/manage/events/${invite.event.slug}`);
+		revalidatePath(
+			`/c/${invite.event.organization.slug}/events/${invite.event.slug}`,
+		);
+		revalidatePath(
+			`/c/${invite.event.organization.slug}/manage/events/${invite.event.slug}`,
+		);
 	}
 
 	return { success: true, message: "Invitación eliminada" };
