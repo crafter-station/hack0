@@ -54,10 +54,7 @@ export async function getAllUserOrganizations() {
 	}
 
 	const ownedOrgs = await db.query.organizations.findMany({
-		where: and(
-			eq(organizations.ownerUserId, userId),
-			eq(organizations.isPersonalOrg, false),
-		),
+		where: eq(organizations.ownerUserId, userId),
 	});
 
 	const memberOrgs = await db
@@ -70,12 +67,7 @@ export async function getAllUserOrganizations() {
 			organizations,
 			eq(communityMembers.communityId, organizations.id),
 		)
-		.where(
-			and(
-				eq(communityMembers.userId, userId),
-				eq(organizations.isPersonalOrg, false),
-			),
-		);
+		.where(eq(communityMembers.userId, userId));
 
 	const allOrgs = [
 		...ownedOrgs.map((org) => ({ organization: org, role: "owner" as const })),

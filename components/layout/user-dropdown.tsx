@@ -22,6 +22,7 @@ interface UserDropdownProps {
 			name: string;
 			displayName: string | null;
 			logoUrl: string | null;
+			isPersonalOrg: boolean | null;
 		};
 		role: "owner" | "admin";
 	}>;
@@ -88,7 +89,16 @@ export function UserDropdown({
 						<DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground font-medium px-2 py-1.5">
 							Mis comunidades
 						</DropdownMenuLabel>
-						{adminCommunities.map(({ organization }) => (
+						{[...adminCommunities]
+							.sort((a, b) => {
+								if (a.organization.isPersonalOrg && !b.organization.isPersonalOrg) return -1;
+								if (!a.organization.isPersonalOrg && b.organization.isPersonalOrg) return 1;
+								const nameA = a.organization.displayName || a.organization.name;
+								const nameB = b.organization.displayName || b.organization.name;
+								return nameA.localeCompare(nameB);
+							})
+							.slice(0, 5)
+							.map(({ organization }) => (
 							<DropdownMenuItem asChild key={organization.id}>
 								<Link
 									href={`/c/${organization.slug}`}
@@ -98,17 +108,31 @@ export function UserDropdown({
 										<img
 											src={organization.logoUrl}
 											alt={organization.displayName || organization.name}
-											className="h-4 w-4 rounded object-cover"
+											className="h-4 w-4 rounded-full object-cover ring-1 ring-border"
 										/>
+									) : organization.isPersonalOrg ? (
+										<User className="h-3.5 w-3.5" />
 									) : (
 										<Building2 className="h-3.5 w-3.5" />
 									)}
 									<span className="text-xs truncate">
-										{organization.displayName || organization.name}
+										{organization.isPersonalOrg
+											? "Personal"
+											: organization.displayName || organization.name}
 									</span>
 								</Link>
 							</DropdownMenuItem>
 						))}
+						{adminCommunities.length > 5 && (
+							<DropdownMenuItem asChild>
+								<Link
+									href="/c"
+									className="flex items-center justify-center text-muted-foreground"
+								>
+									<span className="text-xs">Ver todas ({adminCommunities.length})</span>
+								</Link>
+							</DropdownMenuItem>
+						)}
 						<DropdownMenuSeparator />
 					</>
 				)}
