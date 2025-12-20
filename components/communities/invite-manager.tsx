@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Check, Copy, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -81,9 +82,14 @@ export function InviteManager({ communityId }: InviteManagerProps) {
 
 	function copyInviteLink(token: string) {
 		const url = `${window.location.origin}/invite/${token}`;
-		navigator.clipboard.writeText(url);
-		setCopiedToken(token);
-		setTimeout(() => setCopiedToken(null), 2000);
+		try {
+			navigator.clipboard.writeText(url);
+			setCopiedToken(token);
+			toast.success("Información copiada");
+			setTimeout(() => setCopiedToken(null), 2000);
+		} catch (_error) {
+			toast.error("Error al copiar");
+		}
 	}
 
 	return (

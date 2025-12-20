@@ -12,6 +12,7 @@ import {
 	Users,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -99,9 +100,14 @@ export function MembersManagement({
 
 	const handleCopyInvite = () => {
 		if (generatedInvite) {
-			navigator.clipboard.writeText(generatedInvite);
-			setCopied(true);
-			setTimeout(() => setCopied(false), 2000);
+			try {
+				navigator.clipboard.writeText(generatedInvite);
+				setCopied(true);
+				toast.success("Información copiada");
+				setTimeout(() => setCopied(false), 2000);
+			} catch (_error) {
+				toast.error("Error al copiar");
+			}
 		}
 	};
 
