@@ -1,14 +1,30 @@
 import * as d3 from "d3";
-import { feature } from "topojson-client";
 import { writeFileSync } from "fs";
 import { join } from "path";
+import { feature } from "topojson-client";
 import worldData from "../public/countries-110m.json";
 import peruDeptData from "../public/peru_departamental_simple.json";
 
 const LATAM_COUNTRY_IDS = [
-	"032", "068", "076", "152", "170", "188", "192", "214",
-	"218", "222", "320", "340", "484", "558", "591", "600",
-	"604", "858", "862",
+	"032",
+	"068",
+	"076",
+	"152",
+	"170",
+	"188",
+	"192",
+	"214",
+	"218",
+	"222",
+	"320",
+	"340",
+	"484",
+	"558",
+	"591",
+	"600",
+	"604",
+	"858",
+	"862",
 ];
 
 const PERU_DEPARTMENT_NAME_MAP: Record<string, string> = {
@@ -113,7 +129,7 @@ function generateLatamDots(
 function generatePeruDots(
 	peruFeatures: GeoFeature[],
 	dotSpacing = 0.18,
-	borderInset = 0.16,
+	borderInset = 0,
 ) {
 	const dots: Array<{ x: number; y: number; dept: string }> = [];
 	const minLon = -82;
@@ -127,7 +143,10 @@ function generatePeruDots(
 				if (d3.geoContains(deptFeature as any, [lon, lat])) {
 					let isNearBorder = false;
 					for (const otherDept of peruFeatures) {
-						if (otherDept.properties?.NOMBDEP === deptFeature.properties?.NOMBDEP) continue;
+						if (
+							otherDept.properties?.NOMBDEP === deptFeature.properties?.NOMBDEP
+						)
+							continue;
 						if (
 							d3.geoContains(otherDept as any, [lon + borderInset, lat]) ||
 							d3.geoContains(otherDept as any, [lon - borderInset, lat]) ||
@@ -169,7 +188,9 @@ const latamCountries = countries.filter((c: any) =>
 ) as GeoFeature[];
 
 const latamDots = generateLatamDots(latamCountries);
-console.log(`Generated ${latamDots.reduce((acc, c) => acc + c.dots.length, 0)} LATAM dots`);
+console.log(
+	`Generated ${latamDots.reduce((acc, c) => acc + c.dots.length, 0)} LATAM dots`,
+);
 
 console.log("Generating Peru dots...");
 const peruDepartments = feature(
@@ -182,16 +203,10 @@ console.log(`Generated ${peruDots.length} Peru dots`);
 
 const outputPath = join(process.cwd(), "public");
 
-writeFileSync(
-	join(outputPath, "latam-dots.json"),
-	JSON.stringify(latamDots),
-);
+writeFileSync(join(outputPath, "latam-dots.json"), JSON.stringify(latamDots));
 console.log("Saved latam-dots.json");
 
-writeFileSync(
-	join(outputPath, "peru-dots.json"),
-	JSON.stringify(peruDots),
-);
+writeFileSync(join(outputPath, "peru-dots.json"), JSON.stringify(peruDots));
 console.log("Saved peru-dots.json");
 
 console.log("Done!");
