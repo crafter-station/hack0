@@ -88,7 +88,7 @@ function generateDotsForPeru(
 	peruFeatures: GeoFeature[],
 	projection: d3.GeoProjection,
 	dotSpacing = 0.5,
-	borderInset = 0.12,
+	borderInset = 0.05,
 ): Array<{ x: number; y: number; id: string; department: string }> {
 	const dots: Array<{ x: number; y: number; id: string; department: string }> =
 		[];
