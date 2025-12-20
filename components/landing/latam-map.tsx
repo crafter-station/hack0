@@ -176,9 +176,9 @@ function StaticDot({
 			cx={x}
 			cy={y}
 			r={1.5}
-			fill={isHovered ? "#a1a1aa" : "#888888"}
-			opacity={isHovered ? 0.8 : 0.5}
-			style={{ transition: "fill 0.2s, opacity 0.2s" }}
+			className="fill-foreground"
+			opacity={isHovered ? 0.6 : 0.35}
+			style={{ transition: "opacity 0.2s" }}
 		/>
 	);
 }
@@ -199,11 +199,11 @@ function AnimatedDot({
 			cx={x}
 			cy={y}
 			r={1.5}
-			fill={isHovered ? "#a1a1aa" : "#888888"}
-			initial={{ scale: 1, opacity: 0.7 }}
+			className="fill-foreground"
+			initial={{ scale: 1, opacity: 0.5 }}
 			animate={{
 				scale: [1, 1.4, 1],
-				opacity: [0.7, 1, 0.7],
+				opacity: isHovered ? [0.5, 0.8, 0.5] : [0.35, 0.6, 0.35],
 			}}
 			transition={{
 				duration: 2,
@@ -350,9 +350,9 @@ export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
 										<path
 											d={geoPath(country.feature as any) || ""}
 											fill="transparent"
-											stroke="#555"
+											className="stroke-foreground"
 											strokeWidth={1}
-											opacity={0.6}
+											opacity={0.4}
 										/>
 
 										{country.dots.map((dot, index) => {
@@ -401,9 +401,9 @@ export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
 									key={dept.properties?.NOMBDEP || deptIndex}
 									d={peruGeoPath(dept as any) || ""}
 									fill="transparent"
-									stroke="#555"
+									className="stroke-foreground"
 									strokeWidth={1}
-									opacity={0.6}
+									opacity={0.4}
 								/>
 							))}
 
