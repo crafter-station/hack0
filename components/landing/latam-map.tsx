@@ -88,7 +88,7 @@ function generateDotsForPeru(
 	peruFeatures: GeoFeature[],
 	projection: d3.GeoProjection,
 	dotSpacing = 0.5,
-	borderInset = 0.05,
+	borderInset = 0.07,
 ): Array<{ x: number; y: number; id: string; department: string }> {
 	const dots: Array<{ x: number; y: number; id: string; department: string }> =
 		[];
@@ -104,7 +104,10 @@ function generateDotsForPeru(
 				if (d3.geoContains(deptFeature as any, [lon, lat])) {
 					let isNearBorder = false;
 					for (const otherDept of peruFeatures) {
-						if (otherDept.properties?.NOMBDEP === deptFeature.properties?.NOMBDEP) continue;
+						if (
+							otherDept.properties?.NOMBDEP === deptFeature.properties?.NOMBDEP
+						)
+							continue;
 						if (
 							d3.geoContains(otherDept as any, [lon + borderInset, lat]) ||
 							d3.geoContains(otherDept as any, [lon - borderInset, lat]) ||
@@ -405,9 +408,9 @@ export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
 									key={dept.properties?.NOMBDEP || deptIndex}
 									d={peruGeoPath(dept as any) || ""}
 									fill="transparent"
-									stroke="#333"
-									strokeWidth={0.5}
-									opacity={0.3}
+									stroke="#555"
+									strokeWidth={1}
+									opacity={0.6}
 								/>
 							))}
 
