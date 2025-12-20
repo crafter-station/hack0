@@ -1,9 +1,10 @@
 "use client"
 
-import { useEffect, useState, useMemo } from "react"
+import { useMemo } from "react"
 import * as d3 from "d3"
 import { feature } from "topojson-client"
 import { motion } from "framer-motion"
+import worldData from "@/public/countries-110m.json"
 
 interface GeoFeature {
   type: string
@@ -103,28 +104,12 @@ function StaticDot({ x, y }: { x: number; y: number }) {
 }
 
 export function LatamMap() {
-  const [countriesData, setCountriesData] = useState<GeoFeature[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-
   const width = 800
   const height = 900
 
-  useEffect(() => {
-    const loadWorldData = async () => {
-      try {
-        const response = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json")
-        const world: any = await response.json()
-        const countries = feature(world, world.objects.countries).features
-        const latamCountries = countries.filter((c: any) => LATAM_COUNTRY_IDS.includes(c.id))
-        setCountriesData(latamCountries)
-        setIsLoading(false)
-      } catch (error) {
-        console.log("[LatamMap] Error loading world data:", error)
-        setIsLoading(false)
-      }
-    }
-
-    loadWorldData()
+  const countriesData = useMemo(() => {
+    const countries = feature(worldData as any, (worldData as any).objects.countries).features
+    return countries.filter((c: any) => LATAM_COUNTRY_IDS.includes(c.id)) as GeoFeature[]
   }, [])
 
   const projection = useMemo(() => {
@@ -148,10 +133,6 @@ export function LatamMap() {
     }
     return indices
   }, [dots.length])
-
-  if (isLoading) {
-    return <div className="w-full h-full bg-muted/20 animate-pulse rounded-md" />
-  }
 
   return (
     <div className="relative flex items-center justify-center w-full h-full">
