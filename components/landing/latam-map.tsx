@@ -33,7 +33,7 @@ function generateDotsGroupedByCountry(
 	geoFeatures: GeoFeature[],
 	projection: d3.GeoProjection,
 	dotSpacing = 0.8,
-	borderInset = 1.0,
+	borderInset = 2.0,
 ): CountryDots[] {
 	const result: CountryDots[] = [];
 	const minLon = -120;
@@ -88,7 +88,7 @@ function generateDotsForPeru(
 	peruFeatures: GeoFeature[],
 	projection: d3.GeoProjection,
 	dotSpacing = 0.5,
-	borderInset = 0.35,
+	borderInset = 0.2,
 ): Array<{ x: number; y: number; id: string; department: string }> {
 	const dots: Array<{ x: number; y: number; id: string; department: string }> =
 		[];
