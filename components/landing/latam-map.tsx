@@ -249,16 +249,49 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 							transition={{ duration: 0.4 }}
 							onClick={(e) => e.stopPropagation()}
 						>
-							{peruDepartments.map((dept, deptIndex) => (
-								<path
-									key={dept.properties?.NOMBDEP || deptIndex}
-									d={peruGeoPath(dept as any) || ""}
-									fill="transparent"
-									stroke="#444"
-									strokeWidth={1}
-									opacity={0.35}
-								/>
-							))}
+							{peruDepartments.map((dept, deptIndex) => {
+								const deptName = dept.properties?.NOMBDEP || "";
+								const normalizedName = {
+									LIMA: "Lima",
+									AREQUIPA: "Arequipa",
+									CUSCO: "Cusco",
+									"LA LIBERTAD": "La Libertad",
+									LAMBAYEQUE: "Lambayeque",
+									PIURA: "Piura",
+									JUNIN: "Junín",
+									PUNO: "Puno",
+									HUANUCO: "Huánuco",
+									ICA: "Ica",
+									AYACUCHO: "Ayacucho",
+									ANCASH: "Ancash",
+									LORETO: "Loreto",
+									CAJAMARCA: "Cajamarca",
+									"SAN MARTIN": "San Martín",
+									TACNA: "Tacna",
+									UCAYALI: "Ucayali",
+									AMAZONAS: "Amazonas",
+									APURIMAC: "Apurímac",
+									HUANCAVELICA: "Huancavelica",
+									"MADRE DE DIOS": "Madre de Dios",
+									MOQUEGUA: "Moquegua",
+									PASCO: "Pasco",
+									TUMBES: "Tumbes",
+									CALLAO: "Callao",
+								}[deptName] || deptName;
+								const hasEvent = departmentsWithEvents.includes(normalizedName);
+
+								return (
+									<path
+										key={dept.properties?.NOMBDEP || deptIndex}
+										d={peruGeoPath(dept as any) || ""}
+										fill="transparent"
+										stroke={hasEvent ? "#666" : "#444"}
+										strokeWidth={hasEvent ? 1.5 : 1}
+										opacity={hasEvent ? 0.6 : 0.35}
+										style={{ transition: "all 0.2s ease" }}
+									/>
+								);
+							})}
 
 							{peruDotsData.map((dot, index) => {
 								const hasEvent = departmentsWithEvents.includes(dot.dept);
