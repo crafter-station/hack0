@@ -6,14 +6,14 @@ import { useCallback, useMemo, useState } from "react";
 import { feature } from "topojson-client";
 import {
 	LATAM_COUNTRY_IDS,
-	LATAM_COUNTRY_NAMES,
 	LIMA_COORDS,
 	PERU_COUNTRY_ID,
 	PERU_DEPARTMENT_COORDS,
-	PERU_DEPARTMENT_NAME_MAP,
 } from "@/lib/geo/peru-departments";
 import worldData from "@/public/countries-110m.json";
 import peruDeptData from "@/public/peru_departamental_simple.json";
+import latamDotsData from "@/public/latam-dots.json";
+import peruDotsData from "@/public/peru-dots.json";
 
 interface GeoFeature {
 	type: string;
@@ -22,115 +22,8 @@ interface GeoFeature {
 	properties: any;
 }
 
-interface CountryDots {
-	countryId: string;
-	countryName: string;
-	dots: Array<{ x: number; y: number; id: string }>;
-	feature: GeoFeature;
-}
-
-function generateDotsGroupedByCountry(
-	geoFeatures: GeoFeature[],
-	projection: d3.GeoProjection,
-	dotSpacing = 0.8,
-	borderInset = 0.6,
-): CountryDots[] {
-	const result: CountryDots[] = [];
-	const minLon = -120;
-	const maxLon = -30;
-	const minLat = -56;
-	const maxLat = 33;
-
-	let globalIndex = 0;
-	for (const geoFeature of geoFeatures) {
-		const countryId = geoFeature.id || "";
-		const countryName = LATAM_COUNTRY_NAMES[countryId] || countryId;
-		const dots: Array<{ x: number; y: number; id: string }> = [];
-
-		for (let lon = minLon; lon <= maxLon; lon += dotSpacing) {
-			for (let lat = minLat; lat <= maxLat; lat += dotSpacing) {
-				if (d3.geoContains(geoFeature as any, [lon, lat])) {
-					const isNearEdge =
-						!d3.geoContains(geoFeature as any, [lon + borderInset, lat]) ||
-						!d3.geoContains(geoFeature as any, [lon - borderInset, lat]) ||
-						!d3.geoContains(geoFeature as any, [lon, lat + borderInset]) ||
-						!d3.geoContains(geoFeature as any, [lon, lat - borderInset]);
-
-					if (!isNearEdge) {
-						const coords = projection([lon, lat]);
-						if (coords && !isNaN(coords[0]) && !isNaN(coords[1])) {
-							dots.push({
-								x: coords[0],
-								y: coords[1],
-								id: `dot-${globalIndex++}`,
-							});
-						}
-					}
-				}
-			}
-		}
-
-		result.push({ countryId, countryName, dots, feature: geoFeature });
-	}
-
-	return result;
-}
-
-function generateDotsForPeru(
-	peruFeatures: GeoFeature[],
-	projection: d3.GeoProjection,
-	dotSpacing = 0.5,
-	borderInset = 0.12,
-): Array<{ x: number; y: number; id: string; department: string }> {
-	const dots: Array<{ x: number; y: number; id: string; department: string }> =
-		[];
-	const minLon = -82;
-	const maxLon = -68;
-	const minLat = -19;
-	const maxLat = 1;
-
-	let index = 0;
-	for (let lon = minLon; lon <= maxLon; lon += dotSpacing) {
-		for (let lat = minLat; lat <= maxLat; lat += dotSpacing) {
-			for (const deptFeature of peruFeatures) {
-				if (d3.geoContains(deptFeature as any, [lon, lat])) {
-					let isNearBorder = false;
-					for (const otherDept of peruFeatures) {
-						if (
-							otherDept.properties?.NOMBDEP === deptFeature.properties?.NOMBDEP
-						)
-							continue;
-						if (
-							d3.geoContains(otherDept as any, [lon + borderInset, lat]) ||
-							d3.geoContains(otherDept as any, [lon - borderInset, lat]) ||
-							d3.geoContains(otherDept as any, [lon, lat + borderInset]) ||
-							d3.geoContains(otherDept as any, [lon, lat - borderInset])
-						) {
-							isNearBorder = true;
-							break;
-						}
-					}
-
-					if (!isNearBorder) {
-						const coords = projection([lon, lat]);
-						if (coords && !isNaN(coords[0]) && !isNaN(coords[1])) {
-							const deptName = deptFeature.properties?.NOMBDEP || "";
-							dots.push({
-								x: coords[0],
-								y: coords[1],
-								id: `peru-dot-${index++}`,
-								department: PERU_DEPARTMENT_NAME_MAP[deptName] || deptName,
-							});
-						}
-					}
-					break;
-				}
-			}
-		}
-	}
-
-	return dots;
-}
+const WIDTH = 1000;
+const HEIGHT = 1100;
 
 function EventLocationDot({
 	x,
@@ -162,67 +55,11 @@ function EventLocationDot({
 	);
 }
 
-function StaticDot({
-	x,
-	y,
-	isHovered,
-}: {
-	x: number;
-	y: number;
-	isHovered: boolean;
-}) {
-	return (
-		<circle
-			cx={x}
-			cy={y}
-			r={1.5}
-			className="fill-foreground"
-			opacity={isHovered ? 0.6 : 0.35}
-			style={{ transition: "opacity 0.2s" }}
-		/>
-	);
-}
-
-function AnimatedDot({
-	x,
-	y,
-	delay,
-	isHovered,
-}: {
-	x: number;
-	y: number;
-	delay: number;
-	isHovered: boolean;
-}) {
-	return (
-		<motion.circle
-			cx={x}
-			cy={y}
-			r={1.5}
-			className="fill-foreground"
-			initial={{ scale: 1, opacity: 0.5 }}
-			animate={{
-				scale: [1, 1.4, 1],
-				opacity: isHovered ? [0.5, 0.8, 0.5] : [0.35, 0.6, 0.35],
-			}}
-			transition={{
-				duration: 2,
-				repeat: Number.POSITIVE_INFINITY,
-				ease: "easeInOut",
-				delay,
-			}}
-		/>
-	);
-}
-
 interface LatamMapProps {
 	departmentsWithEvents?: string[];
 }
 
 export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
-	const width = 1000;
-	const height = 1100;
-
 	const [hoveredCountryId, setHoveredCountryId] = useState<string | null>(null);
 	const [zoomedCountryId, setZoomedCountryId] = useState<string | null>(null);
 
@@ -248,7 +85,7 @@ export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
 			.geoEquirectangular()
 			.scale(750)
 			.center([-70, -15])
-			.translate([width / 2, height / 2]);
+			.translate([WIDTH / 2, HEIGHT / 2]);
 	}, []);
 
 	const peruProjection = useMemo(() => {
@@ -256,18 +93,8 @@ export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
 			.geoEquirectangular()
 			.scale(3145)
 			.center([-75, -9])
-			.translate([width / 2, height / 2]);
+			.translate([WIDTH / 2, HEIGHT / 2]);
 	}, []);
-
-	const countryDotsData = useMemo(() => {
-		if (countriesData.length === 0) return [];
-		return generateDotsGroupedByCountry(countriesData, projection, 0.8, 0.3);
-	}, [countriesData, projection]);
-
-	const peruDots = useMemo(() => {
-		if (peruDepartments.length === 0) return [];
-		return generateDotsForPeru(peruDepartments, peruProjection, 0.22);
-	}, [peruDepartments, peruProjection]);
 
 	const geoPath = useMemo(() => {
 		return d3.geoPath().projection(projection);
@@ -310,7 +137,7 @@ export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
 	return (
 		<div className="relative flex items-center justify-center w-full h-full">
 			<svg
-				viewBox={`0 0 ${width} ${height}`}
+				viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
 				className="w-full h-full bg-transparent"
 				preserveAspectRatio="xMidYMid meet"
 			>
@@ -318,8 +145,8 @@ export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
 					<rect
 						x={0}
 						y={0}
-						width={width}
-						height={height}
+						width={WIDTH}
+						height={HEIGHT}
 						fill="transparent"
 						onClick={handleBackClick}
 						style={{ cursor: "zoom-out" }}
@@ -335,9 +162,12 @@ export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
 							exit={{ opacity: 0 }}
 							transition={{ duration: 0.4 }}
 						>
-							{countryDotsData.map((country) => {
+							{latamDotsData.map((country) => {
 								const isHovered = hoveredCountryId === country.countryId;
 								const isPeru = country.countryId === PERU_COUNTRY_ID;
+								const countryFeature = countriesData.find(
+									(c) => c.id === country.countryId,
+								);
 
 								return (
 									<g
@@ -347,35 +177,26 @@ export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
 										onClick={() => handleCountryClick(country.countryId)}
 										style={{ cursor: isPeru ? "pointer" : "default" }}
 									>
-										<path
-											d={geoPath(country.feature as any) || ""}
-											fill="transparent"
-											stroke="#444"
-											strokeWidth={1}
-											opacity={0.35}
-										/>
+										{countryFeature && (
+											<path
+												d={geoPath(countryFeature as any) || ""}
+												fill="transparent"
+												stroke="#444"
+												strokeWidth={1}
+												opacity={0.35}
+											/>
+										)}
 
-										{country.dots.map((dot, index) => {
-											if (index % 4 === 0) {
-												return (
-													<AnimatedDot
-														key={dot.id}
-														x={dot.x}
-														y={dot.y}
-														delay={(index % 15) * 0.12}
-														isHovered={isHovered}
-													/>
-												);
-											}
-											return (
-												<StaticDot
-													key={dot.id}
-													x={dot.x}
-													y={dot.y}
-													isHovered={isHovered}
-												/>
-											);
-										})}
+										{country.dots.map((dot, index) => (
+											<circle
+												key={index}
+												cx={dot.x}
+												cy={dot.y}
+												r={1.5}
+												className="fill-foreground"
+												opacity={isHovered ? 0.6 : 0.35}
+											/>
+										))}
 									</g>
 								);
 							})}
@@ -407,25 +228,16 @@ export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
 								/>
 							))}
 
-							{peruDots.map((dot, index) => {
-								const hasEvent = departmentsWithEvents.includes(dot.department);
-								if (index % 3 === 0) {
-									return (
-										<AnimatedDot
-											key={dot.id}
-											x={dot.x}
-											y={dot.y}
-											delay={(index % 20) * 0.1}
-											isHovered={hasEvent}
-										/>
-									);
-								}
+							{peruDotsData.map((dot, index) => {
+								const hasEvent = departmentsWithEvents.includes(dot.dept);
 								return (
-									<StaticDot
-										key={dot.id}
-										x={dot.x}
-										y={dot.y}
-										isHovered={hasEvent}
+									<circle
+										key={index}
+										cx={dot.x}
+										cy={dot.y}
+										r={1.5}
+										className="fill-foreground"
+										opacity={hasEvent ? 0.6 : 0.35}
 									/>
 								);
 							})}
