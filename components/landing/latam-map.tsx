@@ -33,7 +33,7 @@ function generateDotsGroupedByCountry(
 	geoFeatures: GeoFeature[],
 	projection: d3.GeoProjection,
 	dotSpacing = 0.8,
-	borderInset = 2.0,
+	borderInset = 0.6,
 ): CountryDots[] {
 	const result: CountryDots[] = [];
 	const minLon = -120;
@@ -50,21 +50,13 @@ function generateDotsGroupedByCountry(
 		for (let lon = minLon; lon <= maxLon; lon += dotSpacing) {
 			for (let lat = minLat; lat <= maxLat; lat += dotSpacing) {
 				if (d3.geoContains(geoFeature as any, [lon, lat])) {
-					let isNearBorder = false;
-					for (const otherFeature of geoFeatures) {
-						if (otherFeature.id === geoFeature.id) continue;
-						if (
-							d3.geoContains(otherFeature as any, [lon + borderInset, lat]) ||
-							d3.geoContains(otherFeature as any, [lon - borderInset, lat]) ||
-							d3.geoContains(otherFeature as any, [lon, lat + borderInset]) ||
-							d3.geoContains(otherFeature as any, [lon, lat - borderInset])
-						) {
-							isNearBorder = true;
-							break;
-						}
-					}
+					const isNearEdge =
+						!d3.geoContains(geoFeature as any, [lon + borderInset, lat]) ||
+						!d3.geoContains(geoFeature as any, [lon - borderInset, lat]) ||
+						!d3.geoContains(geoFeature as any, [lon, lat + borderInset]) ||
+						!d3.geoContains(geoFeature as any, [lon, lat - borderInset]);
 
-					if (!isNearBorder) {
+					if (!isNearEdge) {
 						const coords = projection([lon, lat]);
 						if (coords && !isNaN(coords[0]) && !isNaN(coords[1])) {
 							dots.push({
