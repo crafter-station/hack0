@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { SearchTrigger } from "@/components/search-command";
 import { isGodMode } from "@/lib/god-mode";
+import { MainNav } from "./main-nav";
 import { MobileNav } from "./mobile-nav";
 import { UserDropdown } from "./user-dropdown";
 
@@ -68,32 +69,7 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 							<span className="text-sm font-semibold tracking-tight">hack0</span>
 							<span className="text-sm text-muted-foreground">.dev</span>
 						</Link>
-						<nav className="hidden md:flex items-center gap-4 text-xs text-muted-foreground">
-							<Link
-								href="/events"
-								className="hover:text-foreground transition-colors"
-							>
-								Eventos
-							</Link>
-							<Link
-								href="/c/discover"
-								className="hover:text-foreground transition-colors"
-							>
-								Comunidades
-							</Link>
-							<Link
-								href="/roadmap"
-								className="hover:text-foreground transition-colors"
-							>
-								Roadmap
-							</Link>
-							<Link
-								href="/feed"
-								className="hover:text-foreground transition-colors"
-							>
-								Feed
-							</Link>
-						</nav>
+						<MainNav />
 					</div>
 					<div className="flex items-center gap-2">
 						<SearchTrigger />
