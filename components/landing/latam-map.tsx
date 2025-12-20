@@ -183,9 +183,9 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 											<path
 												d={geoPath(countryFeature as any) || ""}
 												fill="transparent"
-												stroke="#444"
-												strokeWidth={1}
-												opacity={0.35}
+												stroke={hasEvents ? "#666" : "#444"}
+												strokeWidth={hasEvents ? 1.5 : 1}
+												opacity={hasEvents ? 0.6 : 0.35}
 											/>
 										)}
 
