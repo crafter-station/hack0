@@ -358,8 +358,9 @@ export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
 										<path
 											d={geoPath(country.feature as any) || ""}
 											fill="transparent"
-											stroke="transparent"
-											strokeWidth={0}
+											stroke="#555"
+											strokeWidth={1}
+											opacity={0.6}
 										/>
 
 										{country.dots.map((dot, index) => {
