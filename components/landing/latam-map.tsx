@@ -350,9 +350,9 @@ export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
 										<path
 											d={geoPath(country.feature as any) || ""}
 											fill="transparent"
-											stroke="#555"
+											stroke="#444"
 											strokeWidth={1}
-											opacity={0.5}
+											opacity={0.35}
 										/>
 
 										{country.dots.map((dot, index) => {
@@ -401,9 +401,9 @@ export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
 									key={dept.properties?.NOMBDEP || deptIndex}
 									d={peruGeoPath(dept as any) || ""}
 									fill="transparent"
-									stroke="#555"
+									stroke="#444"
 									strokeWidth={1}
-									opacity={0.5}
+									opacity={0.35}
 								/>
 							))}
 
