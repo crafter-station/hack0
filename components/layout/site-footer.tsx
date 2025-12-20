@@ -64,7 +64,17 @@ export function SiteFooter() {
 
 					<div className="flex items-center justify-between pt-4 border-t border-border/50 text-xs text-muted-foreground">
 						<p>© {new Date().getFullYear()} hack0.dev</p>
-						<p>Hecho con ❤️ en Perú</p>
+						<p>
+							Hecho con &lt;3 en Perú por{" "}
+							<a
+								href="https://www.crafterstation.com/"
+								target="_blank"
+								rel="noopener noreferrer"
+								className="hover:text-foreground transition-colors"
+							>
+								Crafter Station
+							</a>
+						</p>
 					</div>
 				</div>
 			</div>
