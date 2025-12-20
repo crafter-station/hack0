@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
+import { toast } from "sonner";
 import { LumaIcon } from "@/components/icons/luma";
 import { Button } from "@/components/ui/button";
 import {
@@ -359,7 +360,7 @@ function getVerificationStatusBadge(status: string | null) {
 }
 
 export function LumaCalendarsList({
-	calendars,
+	calendars: initialCalendars,
 }: {
 	calendars: LumaCalendar[];
 }) {
@@ -367,11 +368,17 @@ export function LumaCalendarsList({
 	const [isPending, startTransition] = useTransition();
 	const [syncingId, setSyncingId] = useState<string | null>(null);
 	const [verifyingId, setVerifyingId] = useState<string | null>(null);
+	const [calendars, setCalendars] = useState(initialCalendars);
 
 	const handleSync = (calendarId: string) => {
 		setSyncingId(calendarId);
 		startTransition(async () => {
-			await syncLumaCalendar(calendarId, false);
+			const result = await syncLumaCalendar(calendarId, false);
+			if (result.success) {
+				toast.success("Calendario sincronizado");
+			} else {
+				toast.error("Error al sincronizar");
+			}
 			router.refresh();
 			setSyncingId(null);
 		});
@@ -380,16 +387,34 @@ export function LumaCalendarsList({
 	const handleRetryVerification = (calendarId: string) => {
 		setVerifyingId(calendarId);
 		startTransition(async () => {
-			await retryLumaCalendarVerification(calendarId);
+			const result = await retryLumaCalendarVerification(calendarId);
+			if (result.success) {
+				toast.success("Verificación reintentada");
+			} else {
+				toast.error("Error al reintentar verificación");
+			}
 			router.refresh();
 			setVerifyingId(null);
 		});
 	};
 
 	const handleToggle = (calendarId: string, isActive: boolean) => {
+		const originalCalendars = calendars;
+
+		// Optimistic update
+		setCalendars(
+			calendars.map((c) =>
+				c.id === calendarId ? { ...c, isActive } : c
+			)
+		);
+
 		startTransition(async () => {
-			await toggleLumaCalendarActive(calendarId, isActive);
-			router.refresh();
+			const result = await toggleLumaCalendarActive(calendarId, isActive);
+			if (!result.success) {
+				// Rollback on error
+				setCalendars(originalCalendars);
+				toast.error("Error al cambiar estado");
+			}
 		});
 	};
 
@@ -401,9 +426,21 @@ export function LumaCalendarsList({
 		) {
 			return;
 		}
+
+		const originalCalendars = calendars;
+
+		// Optimistic update
+		setCalendars(calendars.filter((c) => c.id !== calendarId));
+
 		startTransition(async () => {
-			await disconnectLumaCalendar(calendarId);
-			router.refresh();
+			const result = await disconnectLumaCalendar(calendarId);
+			if (result.success) {
+				toast.success("Calendario desconectado");
+			} else {
+				// Rollback on error
+				setCalendars(originalCalendars);
+				toast.error("Error al desconectar calendario");
+			}
 		});
 	};
 

@@ -2,6 +2,7 @@
 
 import { Building2, Loader2, Plus, Search, Trash2, X } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
 	Field,
@@ -89,6 +90,7 @@ export function SponsorManager({
 		const result = await removeEventSponsor(sponsorId);
 		if (result.success) {
 			setSponsors(sponsors.filter((s) => s.id !== sponsorId));
+			toast.success("Sponsor eliminado");
 			onUpdate?.();
 		}
 	};

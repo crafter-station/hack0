@@ -70,9 +70,9 @@ export function MembersManagement({
 	communitySlug,
 	communityId,
 	ownerUserId,
-	members,
-	invites,
-	users,
+	members: initialMembers,
+	invites: initialInvites,
+	users: initialUsers,
 	currentUserId,
 	isOwner,
 	isAdmin,
@@ -85,6 +85,9 @@ export function MembersManagement({
 	const [generatedInvite, setGeneratedInvite] = useState<string | null>(null);
 	const [copied, setCopied] = useState(false);
 	const [loading, setLoading] = useState(false);
+	const [members, setMembers] = useState(initialMembers);
+	const [invites, setInvites] = useState(initialInvites);
+	const [users, setUsers] = useState(initialUsers);
 	const isDesktop = useMediaQuery("(min-width: 768px)");
 
 	const handleCreateInvite = async () => {
@@ -114,19 +117,49 @@ export function MembersManagement({
 	const handleRemoveMember = async (memberId: string) => {
 		if (!confirm("¿Estás seguro de remover este miembro?")) return;
 
+		const originalMembers = members;
+		const originalUsers = users;
+		const memberToRemove = members.find((m) => m.id === memberId);
+
+		// Optimistic update
+		setMembers(members.filter((m) => m.id !== memberId));
+		if (memberToRemove) {
+			setUsers(users.filter((u) => u.id !== memberToRemove.userId));
+		}
+
 		setLoading(true);
-		await removeCommunityMember(memberId);
+		const result = await removeCommunityMember(memberId);
 		setLoading(false);
-		window.location.reload();
+
+		if (!result.success) {
+			// Rollback on error
+			setMembers(originalMembers);
+			setUsers(originalUsers);
+			toast.error("Error al remover miembro");
+		} else {
+			toast.success("Miembro eliminado");
+		}
 	};
 
 	const handleRevokeInvite = async (inviteId: string) => {
 		if (!confirm("¿Revocar esta invitación?")) return;
 
+		const originalInvites = invites;
+
+		// Optimistic update
+		setInvites(invites.filter((i) => i.id !== inviteId));
+
 		setLoading(true);
-		await revokeInvite(inviteId);
+		const result = await revokeInvite(inviteId);
 		setLoading(false);
-		window.location.reload();
+
+		if (!result.success) {
+			// Rollback on error
+			setInvites(originalInvites);
+			toast.error("Error al revocar invitación");
+		} else {
+			toast.success("Invitación revocada");
+		}
 	};
 
 	const canManage = isOwner || isAdmin || isGodMode;

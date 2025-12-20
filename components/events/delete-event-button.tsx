@@ -39,6 +39,7 @@ export function DeleteEventButton({
 
 		if (result.success) {
 			setIsOpen(false);
+			toast.success("Evento eliminado");
 			window.location.href = `/c/${communitySlug}`;
 		} else {
 			setError(result.error || "Error al borrar el evento");

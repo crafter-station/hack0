@@ -76,8 +76,21 @@ export function InviteManager({ communityId }: InviteManagerProps) {
 	}
 
 	async function handleDeactivate(inviteId: string) {
-		await deactivateInvite(inviteId);
-		await loadInvites();
+		const originalInvites = invites;
+
+		// Optimistic update - remover invitación inmediatamente
+		setInvites(invites.map(i =>
+			i.id === inviteId ? { ...i, isActive: false } : i
+		));
+
+		toast.success("Eliminado correctamente");
+
+		const result = await deactivateInvite(inviteId);
+		if (!result.success) {
+			// Rollback on error
+			setInvites(originalInvites);
+			toast.error("Error al desactivar invitación");
+		}
 	}
 
 	function copyInviteLink(token: string) {
