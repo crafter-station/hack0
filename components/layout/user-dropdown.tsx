@@ -1,7 +1,7 @@
 "use client";
 
 import { useClerk, useUser } from "@clerk/nextjs";
-import { LogOut, Moon, Sun, User, Zap } from "lucide-react";
+import { Building2, LogOut, Moon, Sun, User, Zap } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import {
@@ -15,9 +15,22 @@ import {
 
 interface UserDropdownProps {
 	isGodMode?: boolean;
+	adminCommunities?: Array<{
+		organization: {
+			id: string;
+			slug: string;
+			name: string;
+			displayName: string | null;
+			logoUrl: string | null;
+		};
+		role: "owner" | "admin";
+	}>;
 }
 
-export function UserDropdown({ isGodMode = false }: UserDropdownProps) {
+export function UserDropdown({
+	isGodMode = false,
+	adminCommunities = [],
+}: UserDropdownProps) {
 	const { user } = useUser();
 	const { signOut } = useClerk();
 	const { theme, setTheme } = useTheme();
@@ -67,6 +80,35 @@ export function UserDropdown({ isGodMode = false }: UserDropdownProps) {
 								<span className="text-xs">Panel Admin</span>
 							</Link>
 						</DropdownMenuItem>
+						<DropdownMenuSeparator />
+					</>
+				)}
+				{adminCommunities && adminCommunities.length > 0 && (
+					<>
+						<DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground font-medium px-2 py-1.5">
+							Mis comunidades
+						</DropdownMenuLabel>
+						{adminCommunities.map(({ organization }) => (
+							<DropdownMenuItem asChild key={organization.id}>
+								<Link
+									href={`/c/${organization.slug}`}
+									className="flex items-center gap-2"
+								>
+									{organization.logoUrl ? (
+										<img
+											src={organization.logoUrl}
+											alt={organization.displayName || organization.name}
+											className="h-4 w-4 rounded object-cover"
+										/>
+									) : (
+										<Building2 className="h-3.5 w-3.5" />
+									)}
+									<span className="text-xs truncate">
+										{organization.displayName || organization.name}
+									</span>
+								</Link>
+							</DropdownMenuItem>
+						))}
 						<DropdownMenuSeparator />
 					</>
 				)}
