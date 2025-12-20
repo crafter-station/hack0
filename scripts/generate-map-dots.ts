@@ -80,7 +80,7 @@ const peruProjection = d3
 function generateLatamDots(
 	geoFeatures: GeoFeature[],
 	dotSpacing = 0.8,
-	borderInset = 0.6,
+	borderInset = 0,
 ) {
 	const result: Array<{
 		countryId: string;
