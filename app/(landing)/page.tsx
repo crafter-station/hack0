@@ -4,19 +4,20 @@ import { FAQSection } from "@/components/landing/faq-section";
 import { HeroSection } from "@/components/landing/hero-section";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { getEvents, getPlatformStats } from "@/lib/actions/events";
+import { getDepartmentsWithEvents, getEvents, getPlatformStats } from "@/lib/actions/events";
 
 export default async function HomePage() {
-	const [stats, eventsResult] = await Promise.all([
+	const [stats, eventsResult, departmentsWithEvents] = await Promise.all([
 		getPlatformStats(),
 		getEvents({ limit: 8, status: ["ongoing", "open", "upcoming"] }),
+		getDepartmentsWithEvents(),
 	]);
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
 			<SiteHeader />
 
-			<HeroSection stats={stats} />
+			<HeroSection stats={stats} departmentsWithEvents={departmentsWithEvents} />
 
 			<EventsPreviewSection events={eventsResult.events} />
 

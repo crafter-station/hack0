@@ -8,13 +8,14 @@ interface HeroSectionProps {
 		totalPrizePool: number;
 		activeEvents: number;
 	};
+	departmentsWithEvents?: string[];
 }
 
-export function HeroSection({ stats }: HeroSectionProps) {
+export function HeroSection({ stats, departmentsWithEvents = [] }: HeroSectionProps) {
 	return (
 		<section className="border-b">
-			<div className="mx-auto max-w-screen-xl px-4 lg:px-8 py-12 md:py-16">
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
+				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-4 items-center">
 					{/* Left side - Content */}
 					<div className="text-center lg:text-left">
 						{stats.activeEvents > 0 && (
@@ -69,8 +70,8 @@ export function HeroSection({ stats }: HeroSectionProps) {
 					</div>
 
 					{/* Right side - Map */}
-					<div className="hidden lg:block h-[400px] xl:h-[450px]">
-						<LatamMap />
+					<div className="hidden lg:block h-[550px] xl:h-[600px]">
+						<LatamMap departmentsWithEvents={departmentsWithEvents} />
 					</div>
 				</div>
 			</div>
