@@ -183,9 +183,10 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 											<path
 												d={geoPath(countryFeature as any) || ""}
 												fill="transparent"
-												stroke={hasEvents ? "#666" : "#444"}
-												strokeWidth={hasEvents ? 1.5 : 1}
-												opacity={hasEvents ? 0.6 : 0.35}
+												stroke={isHovered && hasEvents ? "#888" : hasEvents ? "#666" : "#444"}
+												strokeWidth={isHovered && hasEvents ? 2 : hasEvents ? 1.5 : 1}
+												opacity={isHovered ? 0.8 : hasEvents ? 0.6 : 0.35}
+												style={{ transition: "all 0.2s ease" }}
 											/>
 										)}
 
@@ -196,7 +197,8 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 												cy={dot.y}
 												r={1.5}
 												className="fill-foreground"
-												opacity={isHovered || hasEvents ? 0.6 : 0.35}
+												opacity={isHovered && hasEvents ? 0.85 : isHovered ? 0.6 : hasEvents ? 0.6 : 0.35}
+												style={{ transition: "opacity 0.2s ease" }}
 											/>
 										))}
 									</g>
