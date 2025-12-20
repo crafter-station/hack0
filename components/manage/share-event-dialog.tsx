@@ -2,6 +2,7 @@
 
 import { Check, Copy, Share2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -27,9 +28,14 @@ export function ShareEventDialog({ event, children }: ShareEventDialogProps) {
 		`${process.env.NEXT_PUBLIC_APP_URL || "https://hack0.dev"}/api/og?slug=${event.slug}`;
 
 	function copyToClipboard(text: string, key: string) {
-		navigator.clipboard.writeText(text);
-		setCopied(key);
-		setTimeout(() => setCopied(null), 2000);
+		try {
+			navigator.clipboard.writeText(text);
+			setCopied(key);
+			toast.success("Información copiada");
+			setTimeout(() => setCopied(null), 2000);
+		} catch (_error) {
+			toast.error("Error al copiar");
+		}
 	}
 
 	function shareToSocial(platform: string) {

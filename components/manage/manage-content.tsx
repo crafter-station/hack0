@@ -24,6 +24,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
 import { CohostSelector } from "@/components/events/cohost-selector";
 import { DeleteEventButton } from "@/components/events/delete-event-button";
 import { EditEventForm } from "@/components/events/edit-event-form";
@@ -83,9 +84,14 @@ export function ManageContent({
 
 	if (tab === "overview") {
 		const copyToClipboard = () => {
-			navigator.clipboard.writeText(eventUrl);
-			setCopied(true);
-			setTimeout(() => setCopied(false), 2000);
+			try {
+				navigator.clipboard.writeText(eventUrl);
+				setCopied(true);
+				toast.success("Información copiada");
+				setTimeout(() => setCopied(false), 2000);
+			} catch (_error) {
+				toast.error("Error al copiar");
+			}
 		};
 
 		const now = new Date();
