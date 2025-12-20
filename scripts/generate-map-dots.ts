@@ -113,7 +113,7 @@ function generateLatamDots(
 function generatePeruDots(
 	peruFeatures: GeoFeature[],
 	dotSpacing = 0.18,
-	borderInset = 0.08,
+	borderInset = 0.12,
 ) {
 	const dots: Array<{ x: number; y: number; dept: string }> = [];
 	const minLon = -82;

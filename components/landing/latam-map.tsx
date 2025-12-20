@@ -9,6 +9,7 @@ import {
 	LIMA_COORDS,
 	PERU_COUNTRY_ID,
 	PERU_DEPARTMENT_COORDS,
+	PERU_DEPARTMENT_NAME_MAP,
 } from "@/lib/geo/peru-departments";
 import worldData from "@/public/countries-110m.json";
 import peruDeptData from "@/public/peru_departamental_simple.json";
@@ -251,33 +252,7 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 						>
 							{peruDepartments.map((dept, deptIndex) => {
 								const deptName = dept.properties?.NOMBDEP || "";
-								const normalizedName = {
-									LIMA: "Lima",
-									AREQUIPA: "Arequipa",
-									CUSCO: "Cusco",
-									"LA LIBERTAD": "La Libertad",
-									LAMBAYEQUE: "Lambayeque",
-									PIURA: "Piura",
-									JUNIN: "Junín",
-									PUNO: "Puno",
-									HUANUCO: "Huánuco",
-									ICA: "Ica",
-									AYACUCHO: "Ayacucho",
-									ANCASH: "Ancash",
-									LORETO: "Loreto",
-									CAJAMARCA: "Cajamarca",
-									"SAN MARTIN": "San Martín",
-									TACNA: "Tacna",
-									UCAYALI: "Ucayali",
-									AMAZONAS: "Amazonas",
-									APURIMAC: "Apurímac",
-									HUANCAVELICA: "Huancavelica",
-									"MADRE DE DIOS": "Madre de Dios",
-									MOQUEGUA: "Moquegua",
-									PASCO: "Pasco",
-									TUMBES: "Tumbes",
-									CALLAO: "Callao",
-								}[deptName] || deptName;
+								const normalizedName = PERU_DEPARTMENT_NAME_MAP[deptName] || deptName;
 								const hasEvent = departmentsWithEvents.includes(normalizedName);
 
 								return (
