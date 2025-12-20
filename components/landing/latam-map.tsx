@@ -80,7 +80,7 @@ function generateDotsForPeru(
 	peruFeatures: GeoFeature[],
 	projection: d3.GeoProjection,
 	dotSpacing = 0.5,
-	borderInset = 0.2,
+	borderInset = 0.12,
 ): Array<{ x: number; y: number; id: string; department: string }> {
 	const dots: Array<{ x: number; y: number; id: string; department: string }> =
 		[];
@@ -350,9 +350,9 @@ export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
 										<path
 											d={geoPath(country.feature as any) || ""}
 											fill="transparent"
-											className="stroke-foreground"
+											stroke="#555"
 											strokeWidth={1}
-											opacity={0.4}
+											opacity={0.5}
 										/>
 
 										{country.dots.map((dot, index) => {
@@ -401,9 +401,9 @@ export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
 									key={dept.properties?.NOMBDEP || deptIndex}
 									d={peruGeoPath(dept as any) || ""}
 									fill="transparent"
-									className="stroke-foreground"
+									stroke="#555"
 									strokeWidth={1}
-									opacity={0.4}
+									opacity={0.5}
 								/>
 							))}
 
