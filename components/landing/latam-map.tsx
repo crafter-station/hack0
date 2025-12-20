@@ -190,17 +190,45 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 											/>
 										)}
 
-										{country.dots.map((dot, index) => (
-											<circle
-												key={index}
-												cx={dot.x}
-												cy={dot.y}
-												r={1.5}
-												className="fill-foreground"
-												opacity={isHovered && hasEvents ? 0.85 : isHovered ? 0.6 : hasEvents ? 0.6 : 0.35}
-												style={{ transition: "opacity 0.2s ease" }}
-											/>
-										))}
+										{country.dots.map((dot, index) => {
+											const shouldAnimate = index % 5 === 0;
+											const baseOpacity = isHovered && hasEvents ? 0.85 : isHovered ? 0.6 : hasEvents ? 0.6 : 0.35;
+
+											if (shouldAnimate) {
+												return (
+													<motion.circle
+														key={index}
+														cx={dot.x}
+														cy={dot.y}
+														r={1.5}
+														className="fill-foreground"
+														initial={{ opacity: baseOpacity }}
+														animate={{
+															opacity: [baseOpacity, baseOpacity + 0.3, baseOpacity],
+															scale: [1, 1.3, 1],
+														}}
+														transition={{
+															duration: 2.5,
+															repeat: Infinity,
+															ease: "easeInOut",
+															delay: (index % 20) * 0.1,
+														}}
+													/>
+												);
+											}
+
+											return (
+												<circle
+													key={index}
+													cx={dot.x}
+													cy={dot.y}
+													r={1.5}
+													className="fill-foreground"
+													opacity={baseOpacity}
+													style={{ transition: "opacity 0.2s ease" }}
+												/>
+											);
+										})}
 									</g>
 								);
 							})}
@@ -234,6 +262,32 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 
 							{peruDotsData.map((dot, index) => {
 								const hasEvent = departmentsWithEvents.includes(dot.dept);
+								const shouldAnimate = index % 5 === 0;
+								const baseOpacity = hasEvent ? 0.6 : 0.35;
+
+								if (shouldAnimate) {
+									return (
+										<motion.circle
+											key={index}
+											cx={dot.x}
+											cy={dot.y}
+											r={1.5}
+											className="fill-foreground"
+											initial={{ opacity: baseOpacity }}
+											animate={{
+												opacity: [baseOpacity, baseOpacity + 0.3, baseOpacity],
+												scale: [1, 1.3, 1],
+											}}
+											transition={{
+												duration: 2.5,
+												repeat: Infinity,
+												ease: "easeInOut",
+												delay: (index % 20) * 0.1,
+											}}
+										/>
+									);
+								}
+
 								return (
 									<circle
 										key={index}
@@ -241,7 +295,7 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 										cy={dot.y}
 										r={1.5}
 										className="fill-foreground"
-										opacity={hasEvent ? 0.6 : 0.35}
+										opacity={baseOpacity}
 									/>
 								);
 							})}
