@@ -29,7 +29,7 @@ const LATAM_COUNTRY_IDS = [
 
 const PERU_DEPARTMENT_NAME_MAP: Record<string, string> = {
 	AMAZONAS: "Amazonas",
-	ANCASH: "Áncash",
+	ANCASH: "Ancash",
 	APURIMAC: "Apurímac",
 	AREQUIPA: "Arequipa",
 	AYACUCHO: "Ayacucho",
