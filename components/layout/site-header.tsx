@@ -14,7 +14,7 @@ interface SiteHeaderProps {
 export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 	const { userId } = await auth();
 
-	const [personalOrg, godMode] = await Promise.all([
+	const [personalOrg, godMode, adminCommunities] = await Promise.all([
 		userId
 			? (async () => {
 					const { getOrCreatePersonalOrg } = await import(
@@ -24,6 +24,17 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 				})()
 			: null,
 		isGodMode(),
+		userId
+			? (async () => {
+					const { getAllUserOrganizations } = await import(
+						"@/lib/actions/organizations"
+					);
+					const allOrgs = await getAllUserOrganizations();
+					return allOrgs.filter(
+						(org) => org.role === "owner" || org.role === "admin"
+					);
+				})()
+			: [],
 	]);
 
 	return (
@@ -104,7 +115,7 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 									<span className="hidden sm:inline">Crear evento</span>
 								</Link>
 							)}
-							<UserDropdown isGodMode={godMode} />
+							<UserDropdown isGodMode={godMode} adminCommunities={adminCommunities} />
 						</SignedIn>
 					</div>
 				</div>
