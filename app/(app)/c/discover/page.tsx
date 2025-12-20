@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
-import { BadgeCheck, Search } from "lucide-react";
 import { Suspense } from "react";
-import { CommunityViewToggle } from "@/components/communities/community-view-toggle";
+import { CommunityFilters } from "@/components/communities/community-filters";
+import { CommunityTabToggle } from "@/components/communities/community-tab-toggle";
 import { DiscoverOrganizationCards } from "@/components/communities/discover-organization-cards";
 import { DiscoverOrganizationList } from "@/components/communities/discover-organization-list";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -13,7 +13,6 @@ interface DiscoverPageProps {
 		search?: string;
 		type?: string;
 		verified?: string;
-		order?: string;
 		view?: "cards" | "table";
 	}>;
 }
@@ -32,10 +31,11 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
 		search: params.search,
 		type: params.type,
 		verifiedOnly: params.verified === "true",
-		orderBy: (params.order as "popular" | "recent" | "name") || "popular",
+		orderBy: "popular",
 	});
 
 	const isAuthenticated = !!userId;
+	const viewMode = params.view || "cards";
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
@@ -45,57 +45,22 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
 				<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
 					<div className="flex items-center justify-between gap-2 py-2">
 						<Suspense fallback={<div className="h-7 w-40 animate-pulse bg-muted rounded" />}>
-							<CommunityViewToggle />
+							<CommunityTabToggle />
 						</Suspense>
-						<form className="flex items-center gap-2" action="/c/discover">
-							<input type="hidden" name="view" value={params.view || "cards"} />
-							<div className="relative max-w-[200px]">
-								<Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-								<input
-									type="text"
-									name="search"
-									defaultValue={params.search}
-									placeholder="Buscar..."
-									className="w-full h-7 pl-8 pr-3 rounded-md border bg-background text-xs focus:outline-none focus:ring-1 focus:ring-ring"
-								/>
-							</div>
-							<select
-								name="type"
-								defaultValue={params.type || ""}
-								className="h-7 px-2 rounded-md border bg-background text-xs focus:outline-none focus:ring-1 focus:ring-ring"
-							>
-								<option value="">Tipo</option>
-								<option value="community">Comunidad</option>
-								<option value="university">Universidad</option>
-								<option value="company">Empresa</option>
-								<option value="government">Gobierno</option>
-								<option value="ngo">ONG</option>
-								<option value="accelerator">Aceleradora</option>
-							</select>
-							<label className="flex items-center gap-1.5 h-7 px-2 rounded-md border bg-background text-xs cursor-pointer hover:bg-muted transition-colors">
-								<input
-									type="checkbox"
-									name="verified"
-									value="true"
-									defaultChecked={params.verified === "true"}
-									className="h-3 w-3 rounded"
-								/>
-								<BadgeCheck className="h-3.5 w-3.5 text-emerald-500" />
-								<span className="hidden sm:inline">Verificadas</span>
-							</label>
-							<button
-								type="submit"
-								className="h-7 px-3 rounded-md bg-foreground text-background text-xs font-medium hover:bg-foreground/90 transition-colors"
-							>
-								Filtrar
-							</button>
-						</form>
+						<Suspense fallback={<div className="h-7 w-48 animate-pulse bg-muted rounded" />}>
+							<CommunityFilters
+								defaultSearch={params.search}
+								defaultType={params.type}
+								defaultVerified={params.verified === "true"}
+								defaultView={viewMode}
+							/>
+						</Suspense>
 					</div>
 				</div>
 			</section>
 
 			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-4 flex-1 w-full">
-				{params.view === "table" ? (
+				{viewMode === "table" ? (
 					<DiscoverOrganizationList
 						organizations={communities}
 						isAuthenticated={isAuthenticated}

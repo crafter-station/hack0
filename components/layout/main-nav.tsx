@@ -7,7 +7,6 @@ const navItems = [
 	{ href: "/events", label: "Eventos" },
 	{ href: "/c/discover", label: "Comunidades" },
 	{ href: "/roadmap", label: "Roadmap" },
-	{ href: "/feed", label: "Feed" },
 ];
 
 export function MainNav() {

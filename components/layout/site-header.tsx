@@ -32,7 +32,7 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 					);
 					const allOrgs = await getAllUserOrganizations();
 					return allOrgs.filter(
-						(org) => org.role === "owner" || org.role === "admin"
+						(org) => org.role === "owner" || org.role === "admin",
 					);
 				})()
 			: [],
@@ -40,7 +40,7 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 
 	return (
 		<header className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur-sm">
-			<div className="mx-auto max-w-screen-xl px-4">
+			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
 				<div className="flex h-11 items-center justify-between">
 					<div className="flex items-center gap-3 md:gap-5">
 						<MobileNav />
@@ -65,9 +65,14 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 								</svg>
 							</Link>
 						)}
-						<Link href="/" className="flex items-center">
-							<span className="text-sm font-semibold tracking-tight">hack0</span>
-							<span className="text-sm text-muted-foreground">.dev</span>
+						<Link href="/" className="flex items-center gap-2">
+							<span className="flex items-center">
+								<span className="text-sm font-semibold tracking-tight">hack0</span>
+								<span className="text-sm text-muted-foreground">.dev</span>
+							</span>
+							<span className="font-mono text-[10px] font-medium uppercase tracking-wider text-violet-500 border border-violet-500/30 px-1.5 py-0.5 rounded-sm">
+								beta
+							</span>
 						</Link>
 						<MainNav />
 					</div>
@@ -91,7 +96,10 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 									<span className="hidden sm:inline">Crear evento</span>
 								</Link>
 							)}
-							<UserDropdown isGodMode={godMode} adminCommunities={adminCommunities} />
+							<UserDropdown
+								isGodMode={godMode}
+								adminCommunities={adminCommunities}
+							/>
 						</SignedIn>
 					</div>
 				</div>

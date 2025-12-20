@@ -37,6 +37,7 @@ export const searchParamsParsers = {
 	country: parseAsArrayOf(parseAsString).withDefault([]),
 	department: parseAsArrayOf(parseAsString).withDefault([]),
 	juniorFriendly: parseAsBoolean.withDefault(false),
+	mine: parseAsBoolean.withDefault(false),
 	page: parseAsInteger.withDefault(1),
 	view: parseAsStringLiteral(viewValues).withDefault("cards"),
 };

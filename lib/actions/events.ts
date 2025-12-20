@@ -14,6 +14,7 @@ import {
 } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
+	communityMembers,
 	type Event,
 	type EventSponsor,
 	eventSponsors,
@@ -41,6 +42,7 @@ export interface EventFilters {
 	country?: string[];
 	department?: string[];
 	juniorFriendly?: boolean;
+	mine?: boolean;
 	page?: number;
 	limit?: number;
 }
@@ -78,11 +80,59 @@ export async function getEvents(
 		country,
 		department,
 		juniorFriendly,
+		mine,
 		page = 1,
 		limit = 12,
 	} = filters;
 
 	const conditions: ReturnType<typeof eq>[] = [];
+
+	// If mine=true, filter by user's communities
+	if (mine) {
+		const { userId } = await auth();
+		if (userId) {
+			// Get all community IDs where user is owner, admin, member, or follower
+			const userMemberships = await db
+				.select({ communityId: communityMembers.communityId })
+				.from(communityMembers)
+				.where(eq(communityMembers.userId, userId));
+
+			// Also get communities where user is the owner (via organizations table)
+			const ownedOrgs = await db
+				.select({ id: organizations.id })
+				.from(organizations)
+				.where(eq(organizations.ownerUserId, userId));
+
+			const communityIds = [
+				...new Set([
+					...userMemberships.map((m) => m.communityId),
+					...ownedOrgs.map((o) => o.id),
+				]),
+			];
+
+			if (communityIds.length > 0) {
+				conditions.push(inArray(events.organizationId, communityIds));
+			} else {
+				// No communities = no events
+				return {
+					events: [],
+					total: 0,
+					page,
+					totalPages: 0,
+					hasMore: false,
+				};
+			}
+		} else {
+			// Not logged in = no events
+			return {
+				events: [],
+				total: 0,
+				page,
+				totalPages: 0,
+				hasMore: false,
+			};
+		}
+	}
 
 	// Only show approved events
 	conditions.push(eq(events.isApproved, true));

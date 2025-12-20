@@ -1,10 +1,10 @@
 import type { SearchParams } from "nuqs/server";
 import { Suspense } from "react";
-import { AdvancedFilters } from "@/components/events/advanced-filters";
 import { AllEventsTable } from "@/components/events/all-events-table";
 import { EventsCalendar } from "@/components/events/events-calendar";
 import { EventsCards } from "@/components/events/events-cards";
-import { ViewToggle } from "@/components/events/view-toggle";
+import { EventsTabToggle } from "@/components/events/events-tab-toggle";
+import { EventsToolbar } from "@/components/events/events-toolbar";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { type EventFilters, getEvents } from "@/lib/actions/events";
@@ -63,6 +63,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 		country: params.country,
 		department: params.department,
 		juniorFriendly: params.juniorFriendly,
+		mine: params.mine,
 		page: params.page,
 	};
 
@@ -75,9 +76,11 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 			<section className="sticky top-11 z-40 border-b bg-background/95 backdrop-blur-md">
 				<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
 					<div className="flex items-center justify-between gap-2 py-2">
-						<ViewToggle />
-						<Suspense fallback={<div className="h-7 animate-pulse w-32" />}>
-							<AdvancedFilters />
+						<Suspense fallback={<div className="h-7 w-40 animate-pulse bg-muted rounded" />}>
+							<EventsTabToggle />
+						</Suspense>
+						<Suspense fallback={<div className="h-7 w-48 animate-pulse bg-muted rounded" />}>
+							<EventsToolbar />
 						</Suspense>
 					</div>
 				</div>

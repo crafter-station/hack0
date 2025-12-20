@@ -155,7 +155,7 @@ export function EventsCards({
 				})}
 			</div>
 
-			<LoadMoreButton filters={filters} initialPage={1} hasMore={hasMore} />
+			<LoadMoreButton filters={filters} initialPage={1} hasMore={hasMore} viewMode="cards" />
 		</div>
 	);
 }

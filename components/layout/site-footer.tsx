@@ -27,9 +27,6 @@ export function SiteFooter() {
 									<Link href="/c/discover" className="hover:text-foreground transition-colors">
 										Comunidades
 									</Link>
-									<Link href="/feed" className="hover:text-foreground transition-colors">
-										Feed
-									</Link>
 								</nav>
 							</div>
 

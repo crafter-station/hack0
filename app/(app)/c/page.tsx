@@ -1,27 +1,96 @@
 import { auth } from "@clerk/nextjs/server";
-import { OrganizationSelector } from "@/components/dashboard/organization-selector";
+import { Plus } from "lucide-react";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import { CommunityFilters } from "@/components/communities/community-filters";
+import { CommunityTabToggle } from "@/components/communities/community-tab-toggle";
+import { MyOrganizationCards } from "@/components/communities/my-organization-cards";
+import { MyOrganizationList } from "@/components/communities/my-organization-list";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { getAllUserOrganizations } from "@/lib/actions/organizations";
 
+interface CommunitiesPageProps {
+	searchParams: Promise<{
+		search?: string;
+		role?: string;
+		view?: "cards" | "table";
+	}>;
+}
+
 export const metadata = {
-	title: "Comunidades - hack0",
+	title: "Mis Comunidades | hack0",
 	description: "Administra tus comunidades",
 };
 
-export default async function CommunitiesPage() {
+export default async function CommunitiesPage({ searchParams }: CommunitiesPageProps) {
 	const { userId } = await auth();
 
-	// Get user's organizations if logged in, otherwise show empty state
-	const organizations = userId ? await getAllUserOrganizations() : [];
+	if (!userId) {
+		redirect("/sign-in?redirect_url=/c");
+	}
+
+	const params = await searchParams;
+	const allOrganizations = await getAllUserOrganizations();
+
+	let organizations = allOrganizations;
+
+	if (params.search) {
+		const query = params.search.toLowerCase();
+		organizations = organizations.filter(({ organization }) => {
+			const name = (organization.displayName || organization.name).toLowerCase();
+			const slug = organization.slug.toLowerCase();
+			return name.includes(query) || slug.includes(query);
+		});
+	}
+
+	if (params.role && params.role !== "all") {
+		organizations = organizations.filter(({ role }) => role === params.role);
+	}
+
+	const viewMode = params.view || "cards";
 
 	return (
-		<>
+		<div className="min-h-screen bg-background flex flex-col">
 			<SiteHeader />
-			<main className="min-h-screen py-12 px-4">
-				<OrganizationSelector organizations={organizations} />
+
+			<section className="sticky top-11 z-40 border-b bg-background/95 backdrop-blur-md">
+				<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
+					<div className="flex items-center justify-between gap-2 py-2">
+						<Suspense fallback={<div className="h-7 w-40 animate-pulse bg-muted rounded" />}>
+							<CommunityTabToggle />
+						</Suspense>
+						<div className="flex items-center gap-2">
+							<Suspense fallback={<div className="h-7 w-48 animate-pulse bg-muted rounded" />}>
+								<CommunityFilters
+									defaultSearch={params.search}
+									defaultRole={params.role}
+									defaultView={viewMode}
+									showRoleFilter
+								/>
+							</Suspense>
+							<Link
+								href="/c/new"
+								className="h-7 px-2.5 border border-foreground/20 bg-foreground text-background text-xs font-medium hover:bg-foreground/90 transition-colors inline-flex items-center gap-1.5"
+							>
+								<Plus className="h-3.5 w-3.5" />
+								<span className="hidden sm:inline">Nueva</span>
+							</Link>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-4 flex-1 w-full">
+				{viewMode === "table" ? (
+					<MyOrganizationList organizations={organizations} />
+				) : (
+					<MyOrganizationCards organizations={organizations} />
+				)}
 			</main>
+
 			<SiteFooter />
-		</>
+		</div>
 	);
 }

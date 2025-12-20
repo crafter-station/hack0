@@ -58,7 +58,7 @@ export async function godModeCreateEvent(data: {
 		.returning();
 
 	revalidatePath("/");
-	revalidatePath("/feed");
+	revalidatePath("/events");
 	if (data.organizationId) {
 		const org = await db.query.organizations.findFirst({
 			where: (orgs, { eq }) => eq(orgs.id, data.organizationId!),

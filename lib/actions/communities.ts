@@ -281,7 +281,7 @@ export async function followCommunity(organizationId: string) {
 	});
 
 	revalidatePath(`/c/${org.slug}`);
-	revalidatePath("/feed");
+	revalidatePath("/events");
 	return { success: true };
 }
 
@@ -319,7 +319,7 @@ export async function unfollowCommunity(organizationId: string) {
 	});
 
 	revalidatePath(`/c/${org?.slug}`);
-	revalidatePath("/feed");
+	revalidatePath("/events");
 	return { success: true };
 }
 

@@ -24,11 +24,11 @@ export default async function OnboardingRedirectPage({
 		redirect("/sign-in");
 	}
 
-	// God mode users can go directly to feed (but create personal org first)
+	// God mode users can go directly to events (but create personal org first)
 	const godMode = await isGodMode();
 	if (godMode) {
 		await getOrCreatePersonalOrg();
-		redirect("/feed");
+		redirect("/events");
 	}
 
 	const prefs = await getUserPreferences();
@@ -72,7 +72,7 @@ export default async function OnboardingRedirectPage({
 	});
 
 	if (followedCommunities.length > 0) {
-		redirect("/feed");
+		redirect("/events");
 	}
 
 	redirect("/c");

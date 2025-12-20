@@ -14,7 +14,6 @@ const navItems = [
 	{ href: "/", label: "Inicio" },
 	{ href: "/events", label: "Eventos" },
 	{ href: "/c/discover", label: "Comunidades" },
-	{ href: "/feed", label: "Feed" },
 ];
 
 const secondaryItems = [

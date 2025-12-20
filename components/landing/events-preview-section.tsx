@@ -1,9 +1,9 @@
 import { Calendar, MapPin, Trophy } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import type { EventWithOrg } from "@/lib/actions/events";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import type { EventWithOrg } from "@/lib/actions/events";
 import {
 	formatEventDateRange,
 	getEventStatus,
@@ -40,9 +40,11 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 	}
 
 	return (
-		<section className="py-8 md:py-12">
+		<section className="py-8">
 			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
-				<h2 className="text-lg font-semibold text-center mb-6">¿Qué se viene?</h2>
+				<h2 className="text-lg font-semibold text-center mb-6">
+					¿Qué se viene?
+				</h2>
 
 				<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
 					{events.map((event) => {
@@ -152,7 +154,9 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 									<div className="relative aspect-square w-full overflow-hidden bg-muted/30">
 										<div className="flex h-full w-full flex-col items-center justify-center gap-2 p-4">
 											<div className="h-10 w-10 rounded-full border-2 border-dashed border-muted-foreground/20 flex items-center justify-center">
-												<span className="text-muted-foreground/40 text-xl">+</span>
+												<span className="text-muted-foreground/40 text-xl">
+													+
+												</span>
 											</div>
 											<span className="text-xs text-muted-foreground/60 text-center">
 												¿Tienes un evento?

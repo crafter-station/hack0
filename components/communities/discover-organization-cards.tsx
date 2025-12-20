@@ -77,7 +77,7 @@ function FollowButton({
 		<button
 			onClick={handleClick}
 			disabled={isPending}
-			className={`inline-flex items-center justify-center h-7 px-3 text-[11px] font-medium rounded-md transition-colors w-full ${
+			className={`inline-flex items-center justify-center h-6 px-2.5 text-[11px] font-medium rounded-md transition-colors ${
 				optimisticFollowing
 					? "bg-muted text-muted-foreground hover:bg-muted/80"
 					: "bg-foreground text-background hover:bg-foreground/90"
@@ -111,11 +111,11 @@ export function DiscoverOrganizationCards({
 			{organizations.map((org) => (
 				<div
 					key={org.id}
-					className="group relative flex flex-col rounded-lg border bg-card p-4 transition-colors hover:bg-muted/30"
+					className="group relative flex flex-col rounded-lg border bg-card p-3 transition-colors hover:bg-muted/30"
 				>
 					<Link href={`/c/${org.slug}`} className="absolute inset-0 z-0" />
 
-					<div className="flex items-start gap-3 mb-3">
+					<div className="flex items-start gap-3 mb-2">
 						<div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted">
 							{org.logoUrl ? (
 								<Image
@@ -143,29 +143,30 @@ export function DiscoverOrganizationCards({
 					</div>
 
 					{org.description && (
-						<p className="text-xs text-muted-foreground line-clamp-2 mb-3 flex-1">
+						<p className="text-xs text-muted-foreground line-clamp-2 mb-2 flex-1">
 							{org.description}
 						</p>
 					)}
 
-					<div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-3">
-						{org.type && (
-							<span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted">
-								{ORGANIZER_TYPE_LABELS[org.type] || org.type}
+					<div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+						<div className="flex items-center gap-2">
+							{org.type && (
+								<span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted">
+									{ORGANIZER_TYPE_LABELS[org.type] || org.type}
+								</span>
+							)}
+							<span className="inline-flex items-center gap-1">
+								<Users className="h-3 w-3" />
+								{org.memberCount}
 							</span>
-						)}
-						<span className="inline-flex items-center gap-1">
-							<Users className="h-3 w-3" />
-							{org.memberCount}
-						</span>
-					</div>
-
-					<div className="relative z-10">
-						<FollowButton
-							communityId={org.id}
-							isFollowing={org.isFollowing}
-							isAuthenticated={isAuthenticated}
-						/>
+						</div>
+						<div className="relative z-10">
+							<FollowButton
+								communityId={org.id}
+								isFollowing={org.isFollowing}
+								isAuthenticated={isAuthenticated}
+							/>
+						</div>
 					</div>
 				</div>
 			))}
