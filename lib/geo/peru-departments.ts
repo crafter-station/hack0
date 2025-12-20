@@ -100,3 +100,25 @@ export const LATAM_COUNTRY_IDS = [
 
 export const PERU_COUNTRY_ID = "604"
 export const LIMA_COORDS: [number, number] = [-77.0428, -12.0464]
+
+export const ISO_TO_MAP_ID: Record<string, string> = {
+	AR: "032",
+	BO: "068",
+	BR: "076",
+	CL: "152",
+	CO: "170",
+	CR: "188",
+	CU: "192",
+	DO: "214",
+	EC: "218",
+	SV: "222",
+	GT: "320",
+	HN: "340",
+	MX: "484",
+	NI: "558",
+	PA: "591",
+	PY: "600",
+	PE: "604",
+	UY: "858",
+	VE: "862",
+}

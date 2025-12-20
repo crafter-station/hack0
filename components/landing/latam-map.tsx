@@ -57,9 +57,10 @@ function EventLocationDot({
 
 interface LatamMapProps {
 	departmentsWithEvents?: string[];
+	countriesWithEvents?: string[];
 }
 
-export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
+export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] }: LatamMapProps) {
 	const [hoveredCountryId, setHoveredCountryId] = useState<string | null>(null);
 	const [zoomedCountryId, setZoomedCountryId] = useState<string | null>(null);
 
@@ -165,6 +166,7 @@ export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
 							{latamDotsData.map((country) => {
 								const isHovered = hoveredCountryId === country.countryId;
 								const isPeru = country.countryId === PERU_COUNTRY_ID;
+								const hasEvents = countriesWithEvents.includes(country.countryId);
 								const countryFeature = countriesData.find(
 									(c) => c.id === country.countryId,
 								);
@@ -194,7 +196,7 @@ export function LatamMap({ departmentsWithEvents = [] }: LatamMapProps) {
 												cy={dot.y}
 												r={1.5}
 												className="fill-foreground"
-												opacity={isHovered ? 0.6 : 0.35}
+												opacity={isHovered || hasEvents ? 0.6 : 0.35}
 											/>
 										))}
 									</g>

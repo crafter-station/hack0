@@ -9,9 +9,10 @@ interface HeroSectionProps {
 		activeEvents: number;
 	};
 	departmentsWithEvents?: string[];
+	countriesWithEvents?: string[];
 }
 
-export function HeroSection({ stats, departmentsWithEvents = [] }: HeroSectionProps) {
+export function HeroSection({ stats, departmentsWithEvents = [], countriesWithEvents = [] }: HeroSectionProps) {
 	return (
 		<section className="border-b">
 			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
@@ -71,7 +72,7 @@ export function HeroSection({ stats, departmentsWithEvents = [] }: HeroSectionPr
 
 					{/* Right side - Map */}
 					<div className="hidden lg:block h-[550px] xl:h-[600px]">
-						<LatamMap departmentsWithEvents={departmentsWithEvents} />
+						<LatamMap departmentsWithEvents={departmentsWithEvents} countriesWithEvents={countriesWithEvents} />
 					</div>
 				</div>
 			</div>

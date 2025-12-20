@@ -782,3 +782,19 @@ export async function getDepartmentsWithEvents(): Promise<string[]> {
 		);
 	return result.map((r) => r.department).filter(Boolean) as string[];
 }
+
+export async function getCountriesWithEvents(): Promise<string[]> {
+	const { ISO_TO_MAP_ID } = await import("@/lib/geo/peru-departments");
+	const result = await db
+		.selectDistinct({ country: events.country })
+		.from(events)
+		.where(
+			and(
+				eq(events.isApproved, true),
+				sql`${events.country} IS NOT NULL`,
+			),
+		);
+	return result
+		.map((r) => r.country ? ISO_TO_MAP_ID[r.country] : null)
+		.filter(Boolean) as string[];
+}
