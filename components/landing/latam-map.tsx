@@ -2,6 +2,7 @@
 
 import * as d3 from "d3";
 import { AnimatePresence, motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { feature } from "topojson-client";
 import {
@@ -62,7 +63,9 @@ interface LatamMapProps {
 }
 
 export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] }: LatamMapProps) {
+	const router = useRouter();
 	const [hoveredCountryId, setHoveredCountryId] = useState<string | null>(null);
+	const [hoveredDepartment, setHoveredDepartment] = useState<string | null>(null);
 	const [zoomedCountryId, setZoomedCountryId] = useState<string | null>(null);
 
 	const countriesData = useMemo(() => {
@@ -254,24 +257,33 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 								const deptName = dept.properties?.NOMBDEP || "";
 								const normalizedName = PERU_DEPARTMENT_NAME_MAP[deptName] || deptName;
 								const hasEvent = departmentsWithEvents.includes(normalizedName);
+								const isHovered = hoveredDepartment === normalizedName;
 
 								return (
 									<path
 										key={dept.properties?.NOMBDEP || deptIndex}
 										d={peruGeoPath(dept as any) || ""}
 										fill="transparent"
-										stroke={hasEvent ? "#666" : "#444"}
-										strokeWidth={hasEvent ? 1.5 : 1}
-										opacity={hasEvent ? 0.6 : 0.35}
-										style={{ transition: "all 0.2s ease" }}
+										stroke={isHovered && hasEvent ? "#888" : hasEvent ? "#666" : "#444"}
+										strokeWidth={isHovered && hasEvent ? 2 : hasEvent ? 1.5 : 1}
+										opacity={isHovered ? 0.8 : hasEvent ? 0.6 : 0.35}
+										style={{ cursor: hasEvent ? "pointer" : "default", transition: "all 0.2s ease" }}
+										onMouseEnter={() => setHoveredDepartment(normalizedName)}
+										onMouseLeave={() => setHoveredDepartment(null)}
+										onClick={() => {
+											if (hasEvent) {
+												router.push(`/events?department=${encodeURIComponent(normalizedName)}`);
+											}
+										}}
 									/>
 								);
 							})}
 
 							{peruDotsData.map((dot, index) => {
 								const hasEvent = departmentsWithEvents.includes(dot.dept);
+								const isHovered = hoveredDepartment === dot.dept;
 								const shouldAnimate = index % 5 === 0;
-								const baseOpacity = hasEvent ? 0.6 : 0.35;
+								const baseOpacity = isHovered && hasEvent ? 0.85 : isHovered ? 0.6 : hasEvent ? 0.6 : 0.35;
 
 								if (shouldAnimate) {
 									return (
@@ -281,6 +293,7 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 											cy={dot.y}
 											r={1.5}
 											className="fill-foreground"
+											style={{ pointerEvents: "none" }}
 											initial={{ opacity: baseOpacity }}
 											animate={{
 												opacity: [baseOpacity, baseOpacity + 0.3, baseOpacity],
@@ -304,6 +317,7 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 										r={1.5}
 										className="fill-foreground"
 										opacity={baseOpacity}
+										style={{ pointerEvents: "none", transition: "opacity 0.2s ease" }}
 									/>
 								);
 							})}
