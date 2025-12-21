@@ -113,19 +113,6 @@ export const eventSyncStatusEnum = pgEnum("event_sync_status", [
 	"unknown", // Never checked
 ]);
 
-export const hostMatchSourceEnum = pgEnum("host_match_source", [
-	"manual", // Admin manually assigned
-	"domain", // Matched via email domain
-	"name", // Fuzzy matched via name
-	"claim", // User claimed and verified
-	"unknown", // No match found
-]);
-
-export const hostClaimStatusEnum = pgEnum("host_claim_status", [
-	"pending",
-	"verified",
-	"rejected",
-]);
 
 // Events table (hackathons, conferences, workshops, etc.)
 export const events = pgTable("events", {
@@ -883,25 +870,6 @@ export const lumaEventMappings = pgTable("luma_event_mappings", {
 export type LumaEventMapping = typeof lumaEventMappings.$inferSelect;
 export type NewLumaEventMapping = typeof lumaEventMappings.$inferInsert;
 
-// ============================================
-// ORGANIZATION DOMAINS - For email domain matching
-// ============================================
-
-export const organizationDomains = pgTable("organization_domains", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	organizationId: uuid("organization_id")
-		.references(() => organizations.id, { onDelete: "cascade" })
-		.notNull(),
-	domain: varchar("domain", { length: 255 }).notNull(),
-	isVerified: boolean("is_verified").default(false),
-	createdAt: timestamp("created_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-});
-
-export type OrganizationDomain = typeof organizationDomains.$inferSelect;
-export type NewOrganizationDomain = typeof organizationDomains.$inferInsert;
 
 // ============================================
 // EVENT HOSTS - All Luma hosts per event (not just first)
@@ -934,7 +902,7 @@ export type EventHost = typeof eventHosts.$inferSelect;
 export type NewEventHost = typeof eventHosts.$inferInsert;
 
 // ============================================
-// LUMA HOST MAPPINGS - Map Luma hosts to organizations with confidence
+// LUMA HOST MAPPINGS - Map Luma hosts to organizations/users
 // ============================================
 
 export const lumaHostMappings = pgTable("luma_host_mappings", {
@@ -942,16 +910,16 @@ export const lumaHostMappings = pgTable("luma_host_mappings", {
 	lumaHostApiId: varchar("luma_host_api_id", { length: 255 }).unique().notNull(),
 	lumaHostName: varchar("luma_host_name", { length: 255 }),
 	lumaHostEmail: varchar("luma_host_email", { length: 255 }),
+	lumaHostAvatarUrl: varchar("luma_host_avatar_url", { length: 500 }),
 	clerkUserId: varchar("clerk_user_id", { length: 255 }),
 	organizationId: uuid("organization_id").references(() => organizations.id),
-	matchSource: hostMatchSourceEnum("match_source").default("unknown"),
-	confidence: integer("confidence").default(0),
 	isVerified: boolean("is_verified").default(false),
+	verificationToken: varchar("verification_token", { length: 255 }),
+	verificationEmail: varchar("verification_email", { length: 255 }),
 	lastSeenAt: timestamp("last_seen_at", {
 		mode: "date",
 		withTimezone: true,
 	}).defaultNow(),
-	notes: text("notes"),
 	createdAt: timestamp("created_at", {
 		mode: "date",
 		withTimezone: true,
@@ -965,35 +933,6 @@ export const lumaHostMappings = pgTable("luma_host_mappings", {
 export type LumaHostMapping = typeof lumaHostMappings.$inferSelect;
 export type NewLumaHostMapping = typeof lumaHostMappings.$inferInsert;
 
-// ============================================
-// HOST CLAIMS - Self-service org claim by hosts
-// ============================================
-
-export const hostClaimVerificationMethodEnum = pgEnum(
-	"host_claim_verification_method",
-	["email", "dns", "manual", "invite"],
-);
-
-export const hostClaims = pgTable("host_claims", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	lumaHostApiId: varchar("luma_host_api_id", { length: 255 }).notNull(),
-	organizationId: uuid("organization_id").references(() => organizations.id),
-	claimedByUserId: varchar("claimed_by_user_id", { length: 255 }),
-	invitedByUserId: varchar("invited_by_user_id", { length: 255 }),
-	clerkInvitationId: varchar("clerk_invitation_id", { length: 255 }),
-	verificationMethod: hostClaimVerificationMethodEnum("verification_method"),
-	verificationToken: varchar("verification_token", { length: 255 }),
-	verificationEmail: varchar("verification_email", { length: 255 }),
-	verifiedAt: timestamp("verified_at", { mode: "date", withTimezone: true }),
-	status: hostClaimStatusEnum("status").default("pending"),
-	createdAt: timestamp("created_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-});
-
-export type HostClaim = typeof hostClaims.$inferSelect;
-export type NewHostClaim = typeof hostClaims.$inferInsert;
 
 // ============================================
 // MULTI-SOURCE SCRAPING - Scheduled scraping system
@@ -1188,9 +1127,7 @@ export const organizationsRelations = relations(organizations, ({ many }) => ({
 	invites: many(communityInvites),
 	sponsorships: many(eventSponsors),
 	hostingEvents: many(eventHostOrganizations),
-	domains: many(organizationDomains),
 	hostMappings: many(lumaHostMappings),
-	hostClaims: many(hostClaims),
 }));
 
 export const communityMembersRelations = relations(
@@ -1262,15 +1199,6 @@ export const eventHostOrganizationsRelations = relations(
 	}),
 );
 
-export const organizationDomainsRelations = relations(
-	organizationDomains,
-	({ one }) => ({
-		organization: one(organizations, {
-			fields: [organizationDomains.organizationId],
-			references: [organizations.id],
-		}),
-	}),
-);
 
 export const eventHostsRelations = relations(eventHosts, ({ one }) => ({
 	event: one(events, {
@@ -1289,9 +1217,3 @@ export const lumaHostMappingsRelations = relations(
 	}),
 );
 
-export const hostClaimsRelations = relations(hostClaims, ({ one }) => ({
-	organization: one(organizations, {
-		fields: [hostClaims.organizationId],
-		references: [organizations.id],
-	}),
-}));

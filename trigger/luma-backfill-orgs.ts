@@ -58,8 +58,9 @@ export const lumaBackfillOrgsTask = schedules.task({
 				}));
 
 				const resolution = await resolveOrganization(lumaHostsData);
+				await upsertHostMappings(lumaHostsData);
 
-				if (resolution.organizationId && resolution.confidence >= 70) {
+				if (resolution.organizationId && resolution.isVerified) {
 					await db
 						.update(events)
 						.set({ organizationId: resolution.organizationId })
@@ -73,8 +74,6 @@ export const lumaBackfillOrgsTask = schedules.task({
 								eq(eventHosts.lumaHostApiId, resolution.primaryHost.api_id),
 							);
 					}
-
-					await upsertHostMappings(lumaHostsData, resolution);
 
 					result.eventsResolved++;
 				} else {

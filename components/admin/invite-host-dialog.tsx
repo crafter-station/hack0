@@ -92,7 +92,7 @@ export function InviteHostDialog({
 							onChange={(e) => setEmail(e.target.value)}
 						/>
 						<p className="text-xs text-muted-foreground">
-							El host recibirá una invitación para crear su cuenta en Hack0.
+							El host recibirá un email para vincular su perfil con Hack0.
 						</p>
 					</div>
 				</div>

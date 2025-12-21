@@ -1,8 +1,7 @@
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
 	lumaHostMappings,
-	organizationDomains,
 	eventHosts,
 	type NewEventHost,
 	type NewLumaHostMapping,
@@ -12,8 +11,7 @@ import type { LumaEventHost } from "./types";
 export interface HostResolutionResult {
 	organizationId: string | null;
 	primaryHost: LumaEventHost | null;
-	confidence: number;
-	matchSource: "manual" | "domain" | "name" | "claim" | "unknown";
+	isVerified: boolean;
 }
 
 export async function resolveOrganization(
@@ -23,56 +21,20 @@ export async function resolveOrganization(
 		return {
 			organizationId: null,
 			primaryHost: null,
-			confidence: 0,
-			matchSource: "unknown",
+			isVerified: false,
 		};
-	}
-
-	for (const host of hosts) {
-		const mapping = await db.query.lumaHostMappings.findFirst({
-			where: and(
-				eq(lumaHostMappings.lumaHostApiId, host.api_id),
-				eq(lumaHostMappings.isVerified, true),
-			),
-		});
-		if (mapping?.organizationId) {
-			return {
-				organizationId: mapping.organizationId,
-				primaryHost: host,
-				confidence: 100,
-				matchSource: "manual",
-			};
-		}
-	}
-
-	for (const host of hosts) {
-		if (!host.email) continue;
-		const domain = host.email.split("@")[1];
-		if (!domain) continue;
-
-		const orgDomain = await db.query.organizationDomains.findFirst({
-			where: eq(organizationDomains.domain, domain.toLowerCase()),
-		});
-		if (orgDomain?.organizationId) {
-			return {
-				organizationId: orgDomain.organizationId,
-				primaryHost: host,
-				confidence: 85,
-				matchSource: "domain",
-			};
-		}
 	}
 
 	for (const host of hosts) {
 		const mapping = await db.query.lumaHostMappings.findFirst({
 			where: eq(lumaHostMappings.lumaHostApiId, host.api_id),
 		});
-		if (mapping?.organizationId) {
+
+		if (mapping?.isVerified && mapping.organizationId) {
 			return {
 				organizationId: mapping.organizationId,
 				primaryHost: host,
-				confidence: mapping.confidence ?? 50,
-				matchSource: (mapping.matchSource as HostResolutionResult["matchSource"]) ?? "unknown",
+				isVerified: true,
 			};
 		}
 	}
@@ -80,8 +42,7 @@ export async function resolveOrganization(
 	return {
 		organizationId: null,
 		primaryHost: hosts[0] || null,
-		confidence: 0,
-		matchSource: "unknown",
+		isVerified: false,
 	};
 }
 
@@ -120,7 +81,6 @@ export async function saveEventHosts(
 
 export async function upsertHostMappings(
 	hosts: LumaEventHost[],
-	resolution: HostResolutionResult,
 ): Promise<void> {
 	if (!hosts || hosts.length === 0) return;
 
@@ -136,17 +96,15 @@ export async function upsertHostMappings(
 					lastSeenAt: new Date(),
 					lumaHostName: host.name,
 					lumaHostEmail: host.email,
+					lumaHostAvatarUrl: host.avatar_url,
 				})
 				.where(eq(lumaHostMappings.id, existingMapping.id));
 		} else {
-			const isResolvedHost = host.api_id === resolution.primaryHost?.api_id;
 			const newMapping: NewLumaHostMapping = {
 				lumaHostApiId: host.api_id,
 				lumaHostName: host.name,
 				lumaHostEmail: host.email,
-				organizationId: isResolvedHost ? resolution.organizationId : null,
-				matchSource: isResolvedHost ? resolution.matchSource : "unknown",
-				confidence: isResolvedHost ? resolution.confidence : 0,
+				lumaHostAvatarUrl: host.avatar_url,
 				isVerified: false,
 				lastSeenAt: new Date(),
 			};

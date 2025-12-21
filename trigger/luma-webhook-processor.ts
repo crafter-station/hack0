@@ -123,7 +123,7 @@ async function processEventCreatedOrUpdated(lumaEvent: LumaEvent) {
 					hosts,
 					resolution.primaryHost?.api_id,
 				);
-				await upsertHostMappings(hosts, resolution);
+				await upsertHostMappings(hosts);
 			}
 
 			return { updated: true, eventId: existingMapping.eventId };
@@ -173,7 +173,7 @@ async function processEventCreatedOrUpdated(lumaEvent: LumaEvent) {
 
 	if (hosts.length > 0) {
 		await saveEventHosts(newEvent.id, hosts, resolution.primaryHost?.api_id);
-		await upsertHostMappings(hosts, resolution);
+		await upsertHostMappings(hosts);
 	}
 
 	return { created: true, eventId: newEvent.id };
