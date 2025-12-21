@@ -492,7 +492,7 @@ export default async function EventPage({ params }: EventPageProps) {
 										</span>
 									))}
 
-								{hackathon.lumaSlug && (
+								{hasLumaHosts && (
 									<span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
 										<LumaIcon className="h-3 w-3" />
 										Luma
