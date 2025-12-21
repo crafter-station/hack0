@@ -1,5 +1,6 @@
-import { ArrowRight, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 import Link from "next/link";
+import { LumaIcon } from "@/components/icons/luma";
 import { LatamMap } from "./latam-map";
 
 interface HeroSectionProps {
@@ -60,13 +61,15 @@ export function HeroSection({ stats, departmentsWithEvents = [], countriesWithEv
 								<Calendar className="h-4 w-4" />
 								Explorar eventos
 							</Link>
-							<Link
-								href="/onboarding"
-								className="inline-flex h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+							<a
+								href="https://lu.ma/hack0"
+								target="_blank"
+								rel="noopener noreferrer"
+								className="inline-flex h-11 items-center gap-2 rounded-lg border border-border px-5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
 							>
-								Publicar mis eventos
-								<ArrowRight className="h-4 w-4" />
-							</Link>
+								<LumaIcon className="h-4 w-4" />
+								Subir evento
+							</a>
 						</div>
 					</div>
 
