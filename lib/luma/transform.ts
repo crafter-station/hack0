@@ -99,6 +99,21 @@ function cleanDescription(description?: string): string | undefined {
 		.substring(0, 5000);
 }
 
+function extractLumaSlugFromUrl(url: string): string | undefined {
+	try {
+		const urlObj = new URL(url);
+		if (urlObj.hostname === "lu.ma") {
+			const pathParts = urlObj.pathname.split("/").filter(Boolean);
+			if (pathParts.length > 0) {
+				return pathParts[0];
+			}
+		}
+	} catch {
+		return undefined;
+	}
+	return undefined;
+}
+
 export function transformLumaEvent(
 	lumaEvent: LumaEvent,
 	options?: {
@@ -110,6 +125,7 @@ export function transformLumaEvent(
 	const baseSlug = slugify(name);
 	const timestamp = Date.now().toString(36);
 	const slug = `${baseSlug}-luma-${timestamp}`;
+	const lumaSlug = lumaEvent.slug || extractLumaSlugFromUrl(lumaEvent.url);
 
 	const startDate = new Date(lumaEvent.start_at);
 	const endDate = lumaEvent.end_at ? new Date(lumaEvent.end_at) : undefined;
@@ -136,7 +152,7 @@ export function transformLumaEvent(
 		websiteUrl: lumaEvent.url,
 		registrationUrl: lumaEvent.registration_url || lumaEvent.url,
 		eventImageUrl: lumaEvent.cover_url,
-		lumaSlug: lumaEvent.slug,
+		lumaSlug,
 		status: determineEventStatus(startDate, endDate),
 		isFeatured: false,
 		isApproved: true,
