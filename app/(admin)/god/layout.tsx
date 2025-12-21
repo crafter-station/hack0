@@ -19,14 +19,10 @@ export default async function GodLayout({ children }: GodLayoutProps) {
 	}
 
 	const tabs = [
-		{ id: "eventos", label: "Eventos", href: "/god/eventos" },
-		{ id: "pendientes", label: "Sin Org", href: "/god/pendientes" },
-		{ id: "victorias", label: "Victorias", href: "/god/victorias" },
-		{
-			id: "organizaciones",
-			label: "Organizaciones",
-			href: "/god/organizaciones",
-		},
+		{ id: "events", label: "Events", href: "/god/events" },
+		{ id: "pending", label: "Pending", href: "/god/pending" },
+		{ id: "wins", label: "Wins", href: "/god/wins" },
+		{ id: "organizations", label: "Organizations", href: "/god/organizations" },
 	];
 
 	return (
