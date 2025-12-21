@@ -16,7 +16,12 @@ import { createUniqueSlug } from "@/lib/slug-utils";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function initiateHostClaim(lumaHostApiId: string) {
+export type ClaimType = "personal" | "community";
+
+export async function initiateHostClaim(
+	lumaHostApiId: string,
+	claimType: ClaimType,
+) {
 	const { userId } = await auth();
 	if (!userId) {
 		return { success: false, error: "No autenticado" };
@@ -28,6 +33,16 @@ export async function initiateHostClaim(lumaHostApiId: string) {
 
 	if (!userEmail) {
 		return { success: false, error: "No tienes email verificado en tu cuenta" };
+	}
+
+	if (claimType === "personal") {
+		const hasPersonalOrg = !!(user.publicMetadata as { lumaHostId?: string })?.lumaHostId;
+		if (hasPersonalOrg) {
+			return {
+				success: false,
+				error: "Ya tienes un perfil personal. Usa 'comunidad' para reclamar este host.",
+			};
+		}
 	}
 
 	const existingMapping = await db.query.lumaHostMappings.findFirst({
@@ -51,6 +66,7 @@ export async function initiateHostClaim(lumaHostApiId: string) {
 			.set({
 				verificationToken: token,
 				verificationEmail: userEmail,
+				pendingClaimType: claimType,
 				updatedAt: new Date(),
 			})
 			.where(eq(lumaHostMappings.id, existingMapping.id));
@@ -66,9 +82,12 @@ export async function initiateHostClaim(lumaHostApiId: string) {
 			lumaHostAvatarUrl: hostInfo?.avatarUrl,
 			verificationToken: token,
 			verificationEmail: userEmail,
+			pendingClaimType: claimType,
 			isVerified: false,
 		});
 	}
+
+	const claimTypeLabel = claimType === "personal" ? "personal" : "de comunidad";
 
 	await resend.emails.send({
 		from: "Hack0 <noreply@hack0.dev>",
@@ -77,7 +96,7 @@ export async function initiateHostClaim(lumaHostApiId: string) {
 		html: `
 			<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
 				<h1 style="font-size: 24px; color: #111;">Verifica tu perfil de host</h1>
-				<p>Haz clic en el botón para confirmar que eres el host de eventos en Luma:</p>
+				<p>Haz clic en el botón para confirmar tu perfil ${claimTypeLabel} en Hack0:</p>
 				<a href="${verifyUrl}" style="display: inline-block; background: #111; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 16px 0;">
 					Verificar perfil
 				</a>
@@ -119,14 +138,40 @@ export async function verifyHostClaim(token: string) {
 	const hostName = hostInfo?.name || mapping.lumaHostName || "Host";
 	const hostAvatar = hostInfo?.avatarUrl || mapping.lumaHostAvatarUrl;
 
-	let personalOrg = await db.query.organizations.findFirst({
-		where: and(
-			eq(organizations.ownerUserId, userId),
-			eq(organizations.isPersonalOrg, true),
-		),
-	});
+	const isPersonalClaim = mapping.pendingClaimType === "personal";
 
-	if (!personalOrg) {
+	let org: typeof organizations.$inferSelect | null = null;
+
+	if (isPersonalClaim) {
+		org = await db.query.organizations.findFirst({
+			where: and(
+				eq(organizations.ownerUserId, userId),
+				eq(organizations.isPersonalOrg, true),
+			),
+		});
+
+		if (!org) {
+			const slug = await createUniqueSlug(hostName);
+			const [newOrg] = await db
+				.insert(organizations)
+				.values({
+					name: hostName,
+					displayName: hostName,
+					slug,
+					logoUrl: hostAvatar,
+					ownerUserId: userId,
+					isPersonalOrg: true,
+					isVerified: true,
+				})
+				.returning();
+			org = newOrg;
+		} else if (hostAvatar && !org.logoUrl) {
+			await db
+				.update(organizations)
+				.set({ logoUrl: hostAvatar })
+				.where(eq(organizations.id, org.id));
+		}
+	} else {
 		const slug = await createUniqueSlug(hostName);
 		const [newOrg] = await db
 			.insert(organizations)
@@ -136,16 +181,11 @@ export async function verifyHostClaim(token: string) {
 				slug,
 				logoUrl: hostAvatar,
 				ownerUserId: userId,
-				isPersonalOrg: true,
+				isPersonalOrg: false,
 				isVerified: true,
 			})
 			.returning();
-		personalOrg = newOrg;
-	} else if (hostAvatar && !personalOrg.logoUrl) {
-		await db
-			.update(organizations)
-			.set({ logoUrl: hostAvatar })
-			.where(eq(organizations.id, personalOrg.id));
+		org = newOrg;
 	}
 
 	const hostEventIds = await db.query.eventHosts.findMany({
@@ -156,7 +196,7 @@ export async function verifyHostClaim(token: string) {
 	if (hostEventIds.length > 0) {
 		await db
 			.update(events)
-			.set({ organizationId: personalOrg.id })
+			.set({ organizationId: org.id })
 			.where(
 				and(
 					inArray(events.id, hostEventIds.map((e) => e.eventId)),
@@ -169,34 +209,43 @@ export async function verifyHostClaim(token: string) {
 		.update(lumaHostMappings)
 		.set({
 			clerkUserId: userId,
-			organizationId: personalOrg.id,
+			organizationId: org.id,
 			isVerified: true,
 			verificationToken: null,
+			pendingClaimType: null,
 			updatedAt: new Date(),
 		})
 		.where(eq(lumaHostMappings.id, mapping.id));
 
-	await clerk.users.updateUserMetadata(userId, {
-		publicMetadata: {
-			...((user.publicMetadata as Record<string, unknown>) || {}),
-			lumaHostId: mapping.lumaHostApiId,
-			isLumaHost: true,
-			personalOrgId: personalOrg.id,
-			personalOrgSlug: personalOrg.slug,
-		},
-	});
+	if (isPersonalClaim) {
+		await clerk.users.updateUserMetadata(userId, {
+			publicMetadata: {
+				...((user.publicMetadata as Record<string, unknown>) || {}),
+				lumaHostId: mapping.lumaHostApiId,
+				isLumaHost: true,
+				personalOrgId: org.id,
+				personalOrgSlug: org.slug,
+			},
+		});
+	}
 
 	revalidatePath("/");
-	revalidatePath(`/c/${personalOrg.slug}`);
+	revalidatePath(`/c/${org.slug}`);
 
 	return {
 		success: true,
-		message: "Perfil verificado exitosamente",
-		organizationSlug: personalOrg.slug,
+		message: isPersonalClaim
+			? "Perfil personal verificado exitosamente"
+			: "Comunidad creada exitosamente",
+		organizationSlug: org.slug,
 	};
 }
 
-export async function inviteHost(lumaHostApiId: string, email: string) {
+export async function inviteHost(
+	lumaHostApiId: string,
+	email: string,
+	claimType: ClaimType = "community",
+) {
 	const { userId } = await auth();
 	if (!userId) {
 		return { success: false, error: "No autenticado" };
@@ -224,6 +273,7 @@ export async function inviteHost(lumaHostApiId: string, email: string) {
 			.set({
 				verificationToken: token,
 				verificationEmail: email,
+				pendingClaimType: claimType,
 				updatedAt: new Date(),
 			})
 			.where(eq(lumaHostMappings.id, existingMapping.id));
@@ -235,6 +285,7 @@ export async function inviteHost(lumaHostApiId: string, email: string) {
 			lumaHostAvatarUrl: hostInfo?.avatarUrl,
 			verificationToken: token,
 			verificationEmail: email,
+			pendingClaimType: claimType,
 			isVerified: false,
 		});
 	}

@@ -905,6 +905,11 @@ export type NewEventHost = typeof eventHosts.$inferInsert;
 // LUMA HOST MAPPINGS - Map Luma hosts to organizations/users
 // ============================================
 
+export const hostClaimTypeEnum = pgEnum("host_claim_type", [
+	"personal",
+	"community",
+]);
+
 export const lumaHostMappings = pgTable("luma_host_mappings", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	lumaHostApiId: varchar("luma_host_api_id", { length: 255 }).unique().notNull(),
@@ -916,6 +921,7 @@ export const lumaHostMappings = pgTable("luma_host_mappings", {
 	isVerified: boolean("is_verified").default(false),
 	verificationToken: varchar("verification_token", { length: 255 }),
 	verificationEmail: varchar("verification_email", { length: 255 }),
+	pendingClaimType: hostClaimTypeEnum("pending_claim_type"),
 	lastSeenAt: timestamp("last_seen_at", {
 		mode: "date",
 		withTimezone: true,
