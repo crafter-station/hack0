@@ -70,14 +70,25 @@ async function CommunityEvents({ slug }: { slug: string }) {
 				)
 			: eq(events.organizationId, community.id);
 
-	const communityEvents = await db.query.events.findMany({
-		where: whereCondition,
-		limit: 50,
-		orderBy: [desc(events.isFeatured), asc(statusPriority), asc(dateSortOrder)],
-		with: {
-			organization: true,
-		},
-	});
+	const results = await db
+		.select({
+			event: events,
+			organization: organizations,
+		})
+		.from(events)
+		.leftJoin(organizations, eq(events.organizationId, organizations.id))
+		.where(whereCondition)
+		.orderBy(
+			desc(events.isFeatured),
+			asc(statusPriority),
+			asc(dateSortOrder),
+		)
+		.limit(50);
+
+	const communityEvents = results.map((r) => ({
+		...r.event,
+		organization: r.organization,
+	}));
 
 	return (
 		<EventList
