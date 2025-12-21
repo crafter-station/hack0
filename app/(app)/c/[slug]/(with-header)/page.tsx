@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { EventList } from "@/components/events/event-list";
 import { db } from "@/lib/db";
-import { events, eventHostOrganizations, organizations } from "@/lib/db/schema";
+import { events, eventHostOrganizations, eventHosts, lumaHostMappings, organizations } from "@/lib/db/schema";
 
 interface CommunityPageProps {
 	params: Promise<{ slug: string }>;
@@ -23,6 +23,24 @@ async function CommunityEvents({ slug }: { slug: string }) {
 		.where(eq(eventHostOrganizations.organizationId, community.id));
 
 	const coHostedEventIds = coHostedEvents.map((e) => e.eventId);
+
+	const lumaHostIds = await db
+		.select({ lumaHostApiId: lumaHostMappings.lumaHostApiId })
+		.from(lumaHostMappings)
+		.where(eq(lumaHostMappings.organizationId, community.id));
+
+	const lumaHostApiIds = lumaHostIds.map((h) => h.lumaHostApiId);
+
+	let lumaHostedEventIds: string[] = [];
+	if (lumaHostApiIds.length > 0) {
+		const lumaHostedEvents = await db
+			.select({ eventId: eventHosts.eventId })
+			.from(eventHosts)
+			.where(inArray(eventHosts.lumaHostApiId, lumaHostApiIds));
+		lumaHostedEventIds = lumaHostedEvents.map((e) => e.eventId);
+	}
+
+	const allRelatedEventIds = [...new Set([...coHostedEventIds, ...lumaHostedEventIds])];
 
 	// Status priority: 1=ongoing, 2=open, 3=upcoming, 4=ended
 	const statusPriority = sql<number>`
@@ -45,10 +63,10 @@ async function CommunityEvents({ slug }: { slug: string }) {
 	`;
 
 	const whereCondition =
-		coHostedEventIds.length > 0
+		allRelatedEventIds.length > 0
 			? or(
 					eq(events.organizationId, community.id),
-					inArray(events.id, coHostedEventIds),
+					inArray(events.id, allRelatedEventIds),
 				)
 			: eq(events.organizationId, community.id);
 
