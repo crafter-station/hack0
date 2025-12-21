@@ -75,8 +75,7 @@ function ClaimContent({
 			<Alert variant="destructive" className="border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400 [&>svg]:text-amber-600">
 				<AlertTriangle className="h-4 w-4" />
 				<AlertDescription className="text-sm">
-					<strong>Importante:</strong> Solo puedes reclamar <strong>un único perfil de host</strong>.
-					Esta acción es permanente y no se puede deshacer.
+					<span className="font-semibold">Importante:</span> Solo puedes reclamar un único perfil de host. Esta acción es permanente y no se puede deshacer.
 				</AlertDescription>
 			</Alert>
 
@@ -90,7 +89,7 @@ function ClaimContent({
 function AlreadyClaimedContent() {
 	return (
 		<div className="py-4">
-			<Alert variant="destructive" className="border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400 [&>svg]:text-amber-600">
+			<Alert className="border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400 [&>svg]:text-amber-600">
 				<AlertTriangle className="h-4 w-4" />
 				<AlertDescription className="text-sm">
 					Ya tienes un perfil de host vinculado a tu cuenta. Solo puedes reclamar un único perfil.
