@@ -21,6 +21,7 @@ export type ClaimType = "personal" | "community";
 export async function initiateHostClaim(
 	lumaHostApiId: string,
 	claimType: ClaimType,
+	existingOrgId?: string,
 ) {
 	const { userId } = await auth();
 	if (!userId) {
@@ -67,6 +68,7 @@ export async function initiateHostClaim(
 				verificationToken: token,
 				verificationEmail: userEmail,
 				pendingClaimType: claimType,
+				organizationId: existingOrgId || null,
 				updatedAt: new Date(),
 			})
 			.where(eq(lumaHostMappings.id, existingMapping.id));
@@ -83,6 +85,7 @@ export async function initiateHostClaim(
 			verificationToken: token,
 			verificationEmail: userEmail,
 			pendingClaimType: claimType,
+			organizationId: existingOrgId || null,
 			isVerified: false,
 		});
 	}
@@ -139,6 +142,7 @@ export async function verifyHostClaim(token: string) {
 	const hostAvatar = hostInfo?.avatarUrl || mapping.lumaHostAvatarUrl;
 
 	const isPersonalClaim = mapping.pendingClaimType === "personal";
+	const hasExistingOrg = !!mapping.organizationId;
 
 	let org: typeof organizations.$inferSelect | null = null;
 
@@ -170,6 +174,14 @@ export async function verifyHostClaim(token: string) {
 				.update(organizations)
 				.set({ logoUrl: hostAvatar })
 				.where(eq(organizations.id, org.id));
+		}
+	} else if (hasExistingOrg) {
+		org = await db.query.organizations.findFirst({
+			where: eq(organizations.id, mapping.organizationId!),
+		});
+
+		if (!org) {
+			return { success: false, error: "Comunidad no encontrada" };
 		}
 	} else {
 		const slug = await createUniqueSlug(hostName);
@@ -236,7 +248,9 @@ export async function verifyHostClaim(token: string) {
 		success: true,
 		message: isPersonalClaim
 			? "Perfil personal verificado exitosamente"
-			: "Comunidad creada exitosamente",
+			: hasExistingOrg
+				? "Host vinculado a comunidad exitosamente"
+				: "Comunidad creada exitosamente",
 		organizationSlug: org.slug,
 	};
 }
@@ -312,6 +326,27 @@ export async function inviteHost(
 	revalidatePath("/god/pending");
 
 	return { success: true, message: `Invitación enviada a ${email}` };
+}
+
+export async function getUserCommunities() {
+	const { userId } = await auth();
+	if (!userId) return [];
+
+	const userOrgs = await db.query.organizations.findMany({
+		where: and(
+			eq(organizations.ownerUserId, userId),
+			eq(organizations.isPersonalOrg, false),
+		),
+		columns: {
+			id: true,
+			name: true,
+			slug: true,
+			logoUrl: true,
+		},
+		orderBy: (orgs, { asc }) => [asc(orgs.name)],
+	});
+
+	return userOrgs;
 }
 
 export async function getUnclaimedHosts() {

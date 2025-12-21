@@ -1,7 +1,7 @@
 "use client";
 
-import { Building2, Info, User, UserCheck } from "lucide-react";
-import { useState, useTransition } from "react";
+import { Building2, Info, Plus, User, UserCheck } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -28,7 +28,18 @@ import {
 } from "@/components/ui/drawer";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { initiateHostClaim, type ClaimType } from "@/lib/actions/host-claims";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
+	initiateHostClaim,
+	getUserCommunities,
+	type ClaimType,
+} from "@/lib/actions/host-claims";
 
 interface ClaimHostButtonProps {
 	lumaHostApiId: string;
@@ -37,18 +48,33 @@ interface ClaimHostButtonProps {
 	userHasPersonalOrg?: boolean;
 }
 
+type ClaimOption = "personal" | "new_community" | "existing_community";
+
+interface Community {
+	id: string;
+	name: string;
+	slug: string;
+	logoUrl: string | null;
+}
+
 function ClaimContent({
 	hostName,
 	hostAvatarUrl,
-	claimType,
-	onClaimTypeChange,
+	claimOption,
+	onClaimOptionChange,
 	userHasPersonalOrg,
+	communities,
+	selectedOrgId,
+	onSelectedOrgChange,
 }: {
 	hostName: string;
 	hostAvatarUrl?: string | null;
-	claimType: ClaimType;
-	onClaimTypeChange: (type: ClaimType) => void;
+	claimOption: ClaimOption;
+	onClaimOptionChange: (option: ClaimOption) => void;
 	userHasPersonalOrg?: boolean;
+	communities: Community[];
+	selectedOrgId: string | null;
+	onSelectedOrgChange: (orgId: string) => void;
 }) {
 	return (
 		<div className="space-y-4">
@@ -66,14 +92,14 @@ function ClaimContent({
 			<div className="space-y-3">
 				<Label className="text-sm font-medium">¿Cómo quieres reclamar este perfil?</Label>
 				<RadioGroup
-					value={claimType}
-					onValueChange={(v) => onClaimTypeChange(v as ClaimType)}
+					value={claimOption}
+					onValueChange={(v) => onClaimOptionChange(v as ClaimOption)}
 					className="space-y-2"
 				>
 					<label
 						htmlFor="personal"
 						className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-							claimType === "personal"
+							claimOption === "personal"
 								? "border-primary bg-primary/5"
 								: "hover:bg-muted/50"
 						} ${userHasPersonalOrg ? "opacity-50 cursor-not-allowed" : ""}`}
@@ -98,35 +124,85 @@ function ClaimContent({
 					</label>
 
 					<label
-						htmlFor="community"
+						htmlFor="new_community"
 						className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-							claimType === "community"
+							claimOption === "new_community"
 								? "border-primary bg-primary/5"
 								: "hover:bg-muted/50"
 						}`}
 					>
-						<RadioGroupItem value="community" id="community" className="mt-0.5" />
+						<RadioGroupItem value="new_community" id="new_community" className="mt-0.5" />
 						<div className="flex-1">
 							<div className="flex items-center gap-2">
-								<Building2 className="h-4 w-4" />
-								<span className="font-medium text-sm">Comunidad</span>
+								<Plus className="h-4 w-4" />
+								<span className="font-medium text-sm">Nueva comunidad</span>
 							</div>
 							<p className="text-xs text-muted-foreground mt-1">
-								Es una comunidad/organización que administro (sin límite)
+								Crear una nueva comunidad con este nombre
 							</p>
 						</div>
 					</label>
+
+					{communities.length > 0 && (
+						<label
+							htmlFor="existing_community"
+							className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+								claimOption === "existing_community"
+									? "border-primary bg-primary/5"
+									: "hover:bg-muted/50"
+							}`}
+						>
+							<RadioGroupItem value="existing_community" id="existing_community" className="mt-0.5" />
+							<div className="flex-1">
+								<div className="flex items-center gap-2">
+									<Building2 className="h-4 w-4" />
+									<span className="font-medium text-sm">Comunidad existente</span>
+								</div>
+								<p className="text-xs text-muted-foreground mt-1">
+									Asociar a una comunidad que ya administro
+								</p>
+							</div>
+						</label>
+					)}
 				</RadioGroup>
+
+				{claimOption === "existing_community" && communities.length > 0 && (
+					<Select value={selectedOrgId || ""} onValueChange={onSelectedOrgChange}>
+						<SelectTrigger className="w-full">
+							<SelectValue placeholder="Selecciona una comunidad" />
+						</SelectTrigger>
+						<SelectContent>
+							{communities.map((community) => (
+								<SelectItem key={community.id} value={community.id}>
+									<div className="flex items-center gap-2">
+										<Avatar className="h-5 w-5">
+											<AvatarImage src={community.logoUrl || undefined} />
+											<AvatarFallback className="text-xs">
+												{community.name.charAt(0)}
+											</AvatarFallback>
+										</Avatar>
+										{community.name}
+									</div>
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				)}
 			</div>
 
 			<Alert>
 				<Info className="h-4 w-4" />
 				<AlertDescription className="text-sm">
-					{claimType === "personal" ? (
+					{claimOption === "personal" ? (
 						<ul className="space-y-1 list-disc list-inside text-muted-foreground">
 							<li>Se creará tu perfil personal en Hack0</li>
 							<li>Los eventos de este host se vincularán a ti</li>
 							<li>Aparecerás como organizador verificado</li>
+						</ul>
+					) : claimOption === "existing_community" ? (
+						<ul className="space-y-1 list-disc list-inside text-muted-foreground">
+							<li>Los eventos de este host se vincularán a la comunidad</li>
+							<li>No se creará una nueva comunidad</li>
 						</ul>
 					) : (
 						<ul className="space-y-1 list-disc list-inside text-muted-foreground">
@@ -149,14 +225,30 @@ export function ClaimHostButton({
 }: ClaimHostButtonProps) {
 	const [open, setOpen] = useState(false);
 	const [isPending, startTransition] = useTransition();
-	const [claimType, setClaimType] = useState<ClaimType>(
-		userHasPersonalOrg ? "community" : "personal"
+	const [claimOption, setClaimOption] = useState<ClaimOption>(
+		userHasPersonalOrg ? "new_community" : "personal"
 	);
+	const [communities, setCommunities] = useState<Community[]>([]);
+	const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
 	const isDesktop = useMediaQuery("(min-width: 768px)");
 
+	useEffect(() => {
+		if (open) {
+			getUserCommunities().then(setCommunities);
+		}
+	}, [open]);
+
 	const handleClaim = () => {
+		if (claimOption === "existing_community" && !selectedOrgId) {
+			toast.error("Selecciona una comunidad");
+			return;
+		}
+
 		startTransition(async () => {
-			const result = await initiateHostClaim(lumaHostApiId, claimType);
+			const claimType: ClaimType = claimOption === "personal" ? "personal" : "community";
+			const existingOrgId = claimOption === "existing_community" ? selectedOrgId! : undefined;
+
+			const result = await initiateHostClaim(lumaHostApiId, claimType, existingOrgId);
 			if (result.success) {
 				toast.success(result.message || "Email de verificación enviado", {
 					description: "Revisa tu correo para confirmar",
@@ -175,9 +267,12 @@ export function ClaimHostButton({
 		</Button>
 	);
 
-	const buttonLabel = claimType === "personal"
-		? "Reclamar como personal"
-		: "Reclamar como comunidad";
+	const buttonLabel =
+		claimOption === "personal"
+			? "Reclamar como personal"
+			: claimOption === "existing_community"
+				? "Vincular a comunidad"
+				: "Crear comunidad";
 
 	if (isDesktop) {
 		return (
@@ -196,9 +291,12 @@ export function ClaimHostButton({
 					<ClaimContent
 						hostName={hostName}
 						hostAvatarUrl={hostAvatarUrl}
-						claimType={claimType}
-						onClaimTypeChange={setClaimType}
+						claimOption={claimOption}
+						onClaimOptionChange={setClaimOption}
 						userHasPersonalOrg={userHasPersonalOrg}
+						communities={communities}
+						selectedOrgId={selectedOrgId}
+						onSelectedOrgChange={setSelectedOrgId}
 					/>
 
 					<DialogFooter className="gap-2 sm:gap-0">
@@ -231,9 +329,12 @@ export function ClaimHostButton({
 					<ClaimContent
 						hostName={hostName}
 						hostAvatarUrl={hostAvatarUrl}
-						claimType={claimType}
-						onClaimTypeChange={setClaimType}
+						claimOption={claimOption}
+						onClaimOptionChange={setClaimOption}
 						userHasPersonalOrg={userHasPersonalOrg}
+						communities={communities}
+						selectedOrgId={selectedOrgId}
+						onSelectedOrgChange={setSelectedOrgId}
 					/>
 				</div>
 
