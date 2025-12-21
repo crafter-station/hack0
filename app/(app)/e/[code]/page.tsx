@@ -871,9 +871,18 @@ export default async function EventPage({ params }: EventPageProps) {
 												</Avatar>
 												<div className="flex-1 min-w-0">
 													<div className="flex items-center gap-2">
-														<p className="text-sm font-medium truncate">
-															{host.name}
-														</p>
+														{host.isClaimed && host.organizationSlug ? (
+															<Link
+																href={`/c/${host.organizationSlug}`}
+																className="text-sm font-medium truncate hover:underline"
+															>
+																{host.name}
+															</Link>
+														) : (
+															<p className="text-sm font-medium truncate">
+																{host.name}
+															</p>
+														)}
 														{host.isClaimed && (
 															<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
 														)}

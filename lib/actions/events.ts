@@ -801,6 +801,7 @@ export async function getEventSponsors(
 export interface EventHostWithClaimStatus extends EventHost {
 	isClaimed: boolean;
 	claimedByCurrentUser: boolean;
+	organizationSlug?: string | null;
 }
 
 export async function getEventLumaHosts(
@@ -819,10 +820,20 @@ export async function getEventLumaHosts(
 			where: eq(lumaHostMappings.lumaHostApiId, host.lumaHostApiId),
 		});
 
+		let organizationSlug: string | null = null;
+		if (mapping?.organizationId) {
+			const org = await db.query.organizations.findFirst({
+				where: eq(organizations.id, mapping.organizationId),
+				columns: { slug: true },
+			});
+			organizationSlug = org?.slug || null;
+		}
+
 		hostsWithStatus.push({
 			...host,
 			isClaimed: !!mapping?.clerkUserId,
 			claimedByCurrentUser: mapping?.clerkUserId === currentUserId,
+			organizationSlug,
 		});
 	}
 
