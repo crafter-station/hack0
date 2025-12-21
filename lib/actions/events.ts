@@ -21,6 +21,7 @@ import {
 	eventHosts,
 	eventSponsors,
 	events,
+	lumaHostMappings,
 	type NewEvent,
 	type NewEventSponsor,
 	type Organization,
@@ -797,12 +798,35 @@ export async function getEventSponsors(
 	return results;
 }
 
-export async function getEventLumaHosts(eventId: string): Promise<EventHost[]> {
+export interface EventHostWithClaimStatus extends EventHost {
+	isClaimed: boolean;
+	claimedByCurrentUser: boolean;
+}
+
+export async function getEventLumaHosts(
+	eventId: string,
+	currentUserId?: string | null,
+): Promise<EventHostWithClaimStatus[]> {
 	const results = await db.query.eventHosts.findMany({
 		where: eq(eventHosts.eventId, eventId),
 		orderBy: (hosts, { desc }) => [desc(hosts.isPrimary)],
 	});
-	return results;
+
+	const hostsWithStatus: EventHostWithClaimStatus[] = [];
+
+	for (const host of results) {
+		const mapping = await db.query.lumaHostMappings.findFirst({
+			where: eq(lumaHostMappings.lumaHostApiId, host.lumaHostApiId),
+		});
+
+		hostsWithStatus.push({
+			...host,
+			isClaimed: !!mapping?.clerkUserId,
+			claimedByCurrentUser: mapping?.clerkUserId === currentUserId,
+		});
+	}
+
+	return hostsWithStatus;
 }
 
 export interface AddEventSponsorInput {

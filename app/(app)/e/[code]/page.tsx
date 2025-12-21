@@ -18,6 +18,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
+import { ClaimHostButton } from "@/components/events/claim-host-button";
 import { EventCountdown } from "@/components/events/event-countdown";
 import { ManageEventButton } from "@/components/events/manage-event-button";
 import { WinnerSection } from "@/components/events/winner-section";
@@ -156,7 +157,7 @@ export default async function EventPage({ params }: EventPageProps) {
 		getChildEvents(hackathon.id),
 		getEventSponsors(hackathon.id),
 		getEventCohost(hackathon.id),
-		getEventLumaHosts(hackathon.id),
+		getEventLumaHosts(hackathon.id, userId),
 	]);
 
 	const hasChildEvents = childEvents.length > 0;
@@ -866,15 +867,26 @@ export default async function EventPage({ params }: EventPageProps) {
 													</AvatarFallback>
 												</Avatar>
 												<div className="flex-1 min-w-0">
-													<p className="text-sm font-medium truncate">
-														{host.name}
-													</p>
+													<div className="flex items-center gap-2">
+														<p className="text-sm font-medium truncate">
+															{host.name}
+														</p>
+														{host.isClaimed && (
+															<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+														)}
+													</div>
 													{host.isPrimary && (
 														<span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
 															Principal
 														</span>
 													)}
 												</div>
+												{userId && !host.isClaimed && (
+													<ClaimHostButton
+														lumaHostApiId={host.lumaHostApiId}
+														hostName={host.name || "Host"}
+													/>
+												)}
 											</div>
 										))}
 									</div>

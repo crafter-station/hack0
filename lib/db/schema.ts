@@ -942,6 +942,7 @@ export const lumaHostMappings = pgTable("luma_host_mappings", {
 	lumaHostApiId: varchar("luma_host_api_id", { length: 255 }).unique().notNull(),
 	lumaHostName: varchar("luma_host_name", { length: 255 }),
 	lumaHostEmail: varchar("luma_host_email", { length: 255 }),
+	clerkUserId: varchar("clerk_user_id", { length: 255 }),
 	organizationId: uuid("organization_id").references(() => organizations.id),
 	matchSource: hostMatchSourceEnum("match_source").default("unknown"),
 	confidence: integer("confidence").default(0),
