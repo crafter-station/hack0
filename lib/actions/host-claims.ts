@@ -93,7 +93,7 @@ export async function initiateHostClaim(
 	const claimTypeLabel = claimType === "personal" ? "personal" : "de comunidad";
 
 	const { data, error } = await resend.emails.send({
-		from: "Hack0 <noreply@hack0.dev>",
+		from: "Hack0 <noreply@updates.hack0.dev>",
 		to: userEmail,
 		subject: "Verifica tu perfil de host en Hack0",
 		html: `
@@ -311,7 +311,7 @@ export async function inviteHost(
 	}
 
 	await resend.emails.send({
-		from: "Hack0 <noreply@hack0.dev>",
+		from: "Hack0 <noreply@updates.hack0.dev>",
 		to: email,
 		subject: `Te invitamos a vincular tu perfil de ${hostName} en Hack0`,
 		html: `
