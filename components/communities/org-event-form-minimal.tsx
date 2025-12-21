@@ -571,7 +571,7 @@ export function OrgEventFormMinimal({
 									variant="outline"
 									role="combobox"
 									aria-expanded={typeSelectorOpen}
-									className="w-full justify-between h-auto py-2"
+									className={`w-full justify-between h-auto py-2 ${isImporting ? "input-shimmer" : ""}`}
 									disabled={isImporting}
 								>
 									<div className="flex items-center gap-2">
