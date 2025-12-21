@@ -10,6 +10,7 @@ import { EventsTabToggle } from "@/components/events/events-tab-toggle";
 import { EventsToolbar } from "@/components/events/events-toolbar";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { Button } from "@/components/ui/button";
 import { type EventFilters, getEvents } from "@/lib/actions/events";
 import { loadSearchParams } from "@/lib/search-params";
 
@@ -97,13 +98,12 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 								<EventsToolbar />
 							</Suspense>
 							{personalOrg && (
-								<Link
-									href={`/c/${personalOrg.slug}/events/new`}
-									className="inline-flex items-center gap-1.5 h-7 px-2.5 text-xs font-medium border border-border rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-								>
-									<CalendarPlus className="h-3.5 w-3.5" />
-									<span className="hidden sm:inline">Crear</span>
-								</Link>
+								<Button variant="secondary" size="sm" asChild>
+									<Link href={`/c/${personalOrg.slug}/events/new`}>
+										<CalendarPlus className="h-3.5 w-3.5" />
+										<span className="hidden sm:inline">Crear</span>
+									</Link>
+								</Button>
 							)}
 						</div>
 					</div>

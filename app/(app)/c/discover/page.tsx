@@ -8,6 +8,7 @@ import { DiscoverOrganizationCards } from "@/components/communities/discover-org
 import { DiscoverOrganizationList } from "@/components/communities/discover-organization-list";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { Button } from "@/components/ui/button";
 import { getPublicCommunities } from "@/lib/actions/communities";
 
 interface DiscoverPageProps {
@@ -58,13 +59,12 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
 									defaultView={viewMode}
 								/>
 							</Suspense>
-							<Link
-								href="/c/new"
-								className="inline-flex items-center gap-1.5 h-7 px-2.5 text-xs font-medium border border-border rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-							>
-								<Plus className="h-3.5 w-3.5" />
-								<span className="hidden sm:inline">Nueva</span>
-							</Link>
+							<Button variant="secondary" size="sm" asChild>
+								<Link href="/c/new">
+									<Plus className="h-3.5 w-3.5" />
+									<span className="hidden sm:inline">Nueva</span>
+								</Link>
+							</Button>
 						</div>
 					</div>
 				</div>
