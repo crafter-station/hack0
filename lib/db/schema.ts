@@ -157,6 +157,11 @@ export const events = pgTable("events", {
 	city: varchar("city", { length: 100 }),
 	venue: varchar("venue", { length: 255 }), // Exact venue name
 	timezone: varchar("timezone", { length: 50 }),
+	geoLatitude: varchar("geo_latitude", { length: 50 }),
+	geoLongitude: varchar("geo_longitude", { length: 50 }),
+
+	// Virtual meeting
+	meetingUrl: varchar("meeting_url", { length: 500 }),
 
 	// Classification
 	skillLevel: skillLevelEnum("skill_level").default("all"),
@@ -190,6 +195,7 @@ export const events = pgTable("events", {
 
 	// Luma Aggregation - Ownership & Sync
 	ownership: eventOwnershipEnum("ownership").default("created"),
+	lumaSlug: varchar("luma_slug", { length: 255 }),
 	sourceLumaCalendarId: varchar("source_luma_calendar_id", { length: 255 }),
 	sourceLumaEventId: varchar("source_luma_event_id", { length: 255 }),
 	sourceContentHash: varchar("source_content_hash", { length: 64 }),
