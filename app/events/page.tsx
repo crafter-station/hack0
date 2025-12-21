@@ -98,7 +98,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 								<EventsToolbar />
 							</Suspense>
 							{personalOrg && (
-								<Button variant="secondary" size="sm" asChild>
+								<Button variant="secondary" size="sm" className="h-7" asChild>
 									<Link href={`/c/${personalOrg.slug}/events/new`}>
 										<CalendarPlus className="h-3.5 w-3.5" />
 										<span className="hidden sm:inline">Crear</span>

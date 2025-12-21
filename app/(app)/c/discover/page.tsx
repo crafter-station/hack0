@@ -59,7 +59,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
 									defaultView={viewMode}
 								/>
 							</Suspense>
-							<Button variant="secondary" size="sm" asChild>
+							<Button variant="secondary" size="sm" className="h-7" asChild>
 								<Link href="/c/new">
 									<Plus className="h-3.5 w-3.5" />
 									<span className="hidden sm:inline">Nueva</span>
