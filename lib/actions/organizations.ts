@@ -344,29 +344,8 @@ export async function getOrCreatePersonalOrg() {
 
 		return org;
 	} catch (error) {
-		console.error("Error creating personal org, using fallback:", error);
-
-		// Fallback: create org with userId-based slug if Clerk API fails
-		// Don't include @ - Next.js interprets @ as route groups
-		const fallbackSlug = `user-${userId.slice(-8)}`;
-
-		const [org] = await db
-			.insert(organizations)
-			.values({
-				slug: fallbackSlug,
-				name: "Mi Perfil",
-				displayName: null,
-				type: "community",
-				ownerUserId: userId,
-				isPersonalOrg: true,
-				isPublic: false,
-			})
-			.returning();
-
-		revalidatePath(`/c/${org.slug}`);
-		revalidatePath("/c");
-
-		return org;
+		console.error("Error creating personal org:", error);
+		throw new Error("No se pudo crear tu perfil personal. Intenta de nuevo.");
 	}
 }
 
