@@ -1,9 +1,11 @@
+import Firecrawl from "@mendable/firecrawl-js";
 import { metadata, task } from "@trigger.dev/sdk/v3";
 import { eq } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { db } from "@/lib/db";
 import { events, lumaCalendars, lumaEventMappings } from "@/lib/db/schema";
 import { getGlobalLumaClient } from "@/lib/luma/client";
+import type { LumaExtractedData } from "@/lib/scraper/luma-schema";
 import {
 	resolveOrganization,
 	saveEventHosts,
@@ -218,20 +220,74 @@ async function processEventCreatedOrUpdated(
 	return { created: true, eventId: newEvent.id };
 }
 
+async function scrapeEventWithFirecrawl(
+	eventUrl: string,
+): Promise<LumaExtractedData | null> {
+	try {
+		const firecrawl = new Firecrawl({
+			apiKey: process.env.FIRECRAWL_API_KEY!,
+		});
+
+		const result = await firecrawl.scrape(eventUrl, {
+			formats: [
+				"markdown",
+				"html",
+				{
+					type: "json",
+					prompt: `Extract event information from this Luma event page. Return a JSON object with:
+- name (string, event title)
+- description (string, formatted in MARKDOWN)
+- startDate (ISO 8601 string)
+- endDate (ISO 8601 string)
+- location (object with venue, city, country, isVirtual boolean)
+- organizerName (string)
+- registrationUrl (string)
+- eventType (string: hackathon, conference, workshop, meetup, etc.)`,
+				},
+			],
+		});
+
+		if (!result.json) {
+			return null;
+		}
+
+		const extracted = result.json as LumaExtractedData;
+
+		if (result.html) {
+			const lumaImageRegex = /https:\/\/images\.lumacdn\.com\/[^\s"'<>]+/g;
+			const matches = result.html.match(lumaImageRegex);
+			if (matches && matches.length > 0) {
+				extracted.imageUrl = matches[0];
+			}
+		}
+
+		return extracted;
+	} catch (error) {
+		console.warn(`[Webhook] Firecrawl scraping failed for ${eventUrl}:`, error);
+		return null;
+	}
+}
+
 async function fetchFullEventData(
 	eventApiId: string,
 	webhookData: WebhookEventData,
-): Promise<LumaEvent> {
+): Promise<{ lumaEvent: LumaEvent; scrapedData?: LumaExtractedData }> {
+	let lumaEvent: LumaEvent;
+	let scrapedData: LumaExtractedData | undefined;
+
 	try {
 		const client = getGlobalLumaClient();
-		const fullEvent = await client.getEvent(eventApiId);
-		return fullEvent;
-	} catch (error) {
-		console.warn(
-			`[Webhook] Failed to fetch full event data for ${eventApiId}, using webhook data:`,
-			error,
-		);
-		return {
+		lumaEvent = await client.getEvent(eventApiId);
+
+		if (!lumaEvent.description && !lumaEvent.location) {
+			metadata.set("fallback", "firecrawl");
+			scrapedData = (await scrapeEventWithFirecrawl(webhookData.url)) ?? undefined;
+		}
+	} catch {
+		metadata.set("fallback", "firecrawl");
+		scrapedData = (await scrapeEventWithFirecrawl(webhookData.url)) ?? undefined;
+
+		lumaEvent = {
 			api_id: webhookData.api_id,
 			name: webhookData.name,
 			url: webhookData.url,
@@ -251,6 +307,8 @@ async function fetchFullEventData(
 			updated_at: new Date().toISOString(),
 		};
 	}
+
+	return { lumaEvent, scrapedData };
 }
 
 export const lumaWebhookProcessorTask = task({
@@ -273,12 +331,31 @@ export const lumaWebhookProcessorTask = task({
 				metadata.set("webhookEventId", data.api_id);
 				metadata.set("webhookEventName", data.name);
 
-				const lumaEvent = await fetchFullEventData(data.api_id, data);
+				const { lumaEvent, scrapedData } = await fetchFullEventData(
+					data.api_id,
+					data,
+				);
+
+				if (scrapedData) {
+					if (scrapedData.description && !lumaEvent.description) {
+						lumaEvent.description_md = scrapedData.description;
+					}
+					if (scrapedData.location && !lumaEvent.location) {
+						lumaEvent.location = {
+							type: scrapedData.location.isVirtual ? "online" : "offline",
+							city: scrapedData.location.city,
+							country: scrapedData.location.country,
+							place_name: scrapedData.location.venue,
+						};
+					}
+					metadata.set("scrapedDescription", !!scrapedData.description);
+					metadata.set("scrapedLocation", !!scrapedData.location);
+				}
 
 				metadata.set("lumaEventId", lumaEvent.api_id);
 				metadata.set("eventName", lumaEvent.name);
 				metadata.set("calendarApiId", lumaEvent.calendar_api_id);
-				metadata.set("hasDescription", !!lumaEvent.description);
+				metadata.set("hasDescription", !!lumaEvent.description || !!lumaEvent.description_md);
 				metadata.set("hasLocation", !!lumaEvent.location);
 
 				const result = await processEventCreatedOrUpdated(lumaEvent, true);
