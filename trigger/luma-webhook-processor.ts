@@ -102,6 +102,15 @@ async function processEventCreatedOrUpdated(lumaEvent: LumaEvent) {
 		});
 		updates.lastSourceCheckAt = new Date();
 
+		if (updates.eventImageUrl && updates.eventImageUrl !== existingEvent.eventImageUrl) {
+			const uploadedUrl = await uploadEventImage(updates.eventImageUrl);
+			if (uploadedUrl) {
+				updates.eventImageUrl = uploadedUrl;
+			} else {
+				delete updates.eventImageUrl;
+			}
+		}
+
 		if (Object.keys(updates).length > 1) {
 			await db
 				.update(events)
