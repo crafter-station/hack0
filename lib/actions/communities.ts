@@ -520,13 +520,24 @@ export async function getPublicCommunities(
 		isFollowing: userMemberships.has(c.id),
 	}));
 
-	if (orderBy === "popular") {
-		result.sort((a, b) => b.memberCount - a.memberCount);
-	} else if (orderBy === "recent") {
-		result.sort((a, b) => b.id.localeCompare(a.id));
-	} else if (orderBy === "name") {
-		result.sort((a, b) => a.name.localeCompare(b.name));
-	}
+	result.sort((a, b) => {
+		const aVerified = a.isVerified ? 1 : 0;
+		const bVerified = b.isVerified ? 1 : 0;
+		if (bVerified !== aVerified) {
+			return bVerified - aVerified;
+		}
+
+		if (orderBy === "popular") {
+			return b.memberCount - a.memberCount;
+		}
+		if (orderBy === "recent") {
+			return b.id.localeCompare(a.id);
+		}
+		if (orderBy === "name") {
+			return a.name.localeCompare(b.name);
+		}
+		return 0;
+	});
 
 	return result;
 }
