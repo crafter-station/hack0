@@ -28,6 +28,7 @@ import { getEventCohost } from "@/lib/actions/cohost-invites";
 import {
 	getChildEvents,
 	getEventByShortCode,
+	getEventLumaHosts,
 	getEventSponsors,
 } from "@/lib/actions/events";
 import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
@@ -151,10 +152,11 @@ export default async function EventPage({ params }: EventPageProps) {
 		notFound();
 	}
 
-	const [childEvents, eventSponsors, cohosts] = await Promise.all([
+	const [childEvents, eventSponsors, cohosts, lumaHosts] = await Promise.all([
 		getChildEvents(hackathon.id),
 		getEventSponsors(hackathon.id),
 		getEventCohost(hackathon.id),
+		getEventLumaHosts(hackathon.id),
 	]);
 
 	const hasChildEvents = childEvents.length > 0;
@@ -163,6 +165,7 @@ export default async function EventPage({ params }: EventPageProps) {
 		(c) => c.status === "approved" && !c.isPrimary,
 	);
 	const hasCohosts = approvedCohosts.length > 0;
+	const hasLumaHosts = lumaHosts.length > 0;
 
 	const status = getEventStatus(hackathon);
 	const isEnded = status.status === "ended";
@@ -842,6 +845,38 @@ export default async function EventPage({ params }: EventPageProps) {
 												))}
 											</div>
 										)}
+									</div>
+								</div>
+							)}
+
+							{!community && hasLumaHosts && (
+								<div className="rounded-lg border bg-card">
+									<div className="px-5 py-4 border-b">
+										<h3 className="text-sm font-semibold">
+											Hosts ({lumaHosts.length})
+										</h3>
+									</div>
+									<div className="p-5 space-y-3">
+										{lumaHosts.map((host) => (
+											<div key={host.id} className="flex items-center gap-3">
+												<Avatar className="h-10 w-10 border">
+													<AvatarImage src={host.avatarUrl || undefined} />
+													<AvatarFallback className="text-sm font-medium">
+														{getInitials(host.name || "?")}
+													</AvatarFallback>
+												</Avatar>
+												<div className="flex-1 min-w-0">
+													<p className="text-sm font-medium truncate">
+														{host.name}
+													</p>
+													{host.isPrimary && (
+														<span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+															Principal
+														</span>
+													)}
+												</div>
+											</div>
+										))}
 									</div>
 								</div>
 							)}

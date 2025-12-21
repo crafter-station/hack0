@@ -28,6 +28,7 @@ interface PendingEvent {
 	id: string;
 	name: string;
 	slug: string;
+	shortCode: string | null;
 	startDate: Date | null;
 	createdAt: Date | null;
 	eventImageUrl: string | null;
@@ -100,7 +101,7 @@ function EventRow({
 
 			<div className="flex-1 min-w-0">
 				<Link
-					href={`/e/${event.slug}`}
+					href={event.shortCode ? `/e/${event.shortCode}` : `/events/${event.slug}`}
 					className="font-medium hover:underline truncate block"
 				>
 					{event.name}

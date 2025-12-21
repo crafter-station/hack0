@@ -195,7 +195,7 @@ async function scrapeEventWithFirecrawl(
 					type: "json",
 					prompt: `Extract event information from this Luma event page. Return a JSON object with:
 - name (string, event title)
-- description (string, formatted in MARKDOWN)
+- description (string, formatted in MARKDOWN with ## headers, bullet points with -, and **bold** for key info. Structure it with sections like: ## Sobre el evento, ## ¿Qué incluye?, ## Requisitos, ## Premios, etc. as appropriate. Preserve all original content and formatting.)
 - startDate (ISO 8601 string)
 - endDate (ISO 8601 string)
 - location (object with venue, city, country, isVirtual boolean)

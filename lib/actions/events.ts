@@ -16,7 +16,9 @@ import { db } from "@/lib/db";
 import {
 	communityMembers,
 	type Event,
+	type EventHost,
 	type EventSponsor,
+	eventHosts,
 	eventSponsors,
 	events,
 	type NewEvent,
@@ -792,6 +794,14 @@ export async function getEventSponsors(
 			asc(eventSponsors.orderIndex),
 		);
 
+	return results;
+}
+
+export async function getEventLumaHosts(eventId: string): Promise<EventHost[]> {
+	const results = await db.query.eventHosts.findMany({
+		where: eq(eventHosts.eventId, eventId),
+		orderBy: (hosts, { desc }) => [desc(hosts.isPrimary)],
+	});
 	return results;
 }
 
