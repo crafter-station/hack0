@@ -24,6 +24,7 @@ import { EventCountdown } from "@/components/events/event-countdown";
 import { ManageEventButton } from "@/components/events/manage-event-button";
 import { WinnerSection } from "@/components/events/winner-section";
 import { CalendarIcon } from "@/components/icons/calendar";
+import { LumaIcon } from "@/components/icons/luma";
 import { TrophyIcon } from "@/components/icons/trophy";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getEventCohost } from "@/lib/actions/cohost-invites";
@@ -490,6 +491,13 @@ export default async function EventPage({ params }: EventPageProps) {
 											{getDomainLabel(domain)}
 										</span>
 									))}
+
+								{hackathon.lumaSlug && (
+									<span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+										<LumaIcon className="h-3 w-3" />
+										Luma
+									</span>
+								)}
 							</div>
 						</div>
 					</div>
