@@ -853,7 +853,7 @@ export default async function EventPage({ params }: EventPageProps) {
 								</div>
 							)}
 
-							{!community && hasLumaHosts && (
+							{hasLumaHosts && (
 								<div className="rounded-lg border bg-card">
 									<div className="px-5 py-4 border-b">
 										<h3 className="text-sm font-semibold">

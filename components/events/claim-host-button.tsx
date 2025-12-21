@@ -38,6 +38,7 @@ import {
 import {
 	initiateHostClaim,
 	getUserCommunities,
+	checkUserHasPersonalOrg,
 	type ClaimType,
 } from "@/lib/actions/host-claims";
 
@@ -225,6 +226,7 @@ export function ClaimHostButton({
 }: ClaimHostButtonProps) {
 	const [open, setOpen] = useState(false);
 	const [isPending, startTransition] = useTransition();
+	const [hasPersonalOrg, setHasPersonalOrg] = useState(userHasPersonalOrg ?? false);
 	const [claimOption, setClaimOption] = useState<ClaimOption>(
 		userHasPersonalOrg ? "new_community" : "personal"
 	);
@@ -235,6 +237,12 @@ export function ClaimHostButton({
 	useEffect(() => {
 		if (open) {
 			getUserCommunities().then(setCommunities);
+			checkUserHasPersonalOrg().then((has) => {
+				setHasPersonalOrg(has);
+				if (has && claimOption === "personal") {
+					setClaimOption("new_community");
+				}
+			});
 		}
 	}, [open]);
 
@@ -293,7 +301,7 @@ export function ClaimHostButton({
 						hostAvatarUrl={hostAvatarUrl}
 						claimOption={claimOption}
 						onClaimOptionChange={setClaimOption}
-						userHasPersonalOrg={userHasPersonalOrg}
+						userHasPersonalOrg={hasPersonalOrg}
 						communities={communities}
 						selectedOrgId={selectedOrgId}
 						onSelectedOrgChange={setSelectedOrgId}
@@ -331,7 +339,7 @@ export function ClaimHostButton({
 						hostAvatarUrl={hostAvatarUrl}
 						claimOption={claimOption}
 						onClaimOptionChange={setClaimOption}
-						userHasPersonalOrg={userHasPersonalOrg}
+						userHasPersonalOrg={hasPersonalOrg}
 						communities={communities}
 						selectedOrgId={selectedOrgId}
 						onSelectedOrgChange={setSelectedOrgId}

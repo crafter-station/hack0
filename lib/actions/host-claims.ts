@@ -1,7 +1,7 @@
 "use server";
 
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
 import { Resend } from "resend";
@@ -349,6 +349,15 @@ export async function getUserCommunities() {
 	return userOrgs;
 }
 
+export async function checkUserHasPersonalOrg(): Promise<boolean> {
+	const { userId } = await auth();
+	if (!userId) return false;
+
+	const clerk = await clerkClient();
+	const user = await clerk.users.getUser(userId);
+	return !!(user.publicMetadata as { lumaHostId?: string })?.lumaHostId;
+}
+
 export async function claimEvent(eventId: string, organizationId: string) {
 	const { userId } = await auth();
 	if (!userId) {
@@ -437,4 +446,23 @@ export async function getUnclaimedHosts() {
 	}
 
 	return result.sort((a, b) => b.eventCount - a.eventCount);
+}
+
+export async function getPendingHostVerifications() {
+	const pendingMappings = await db.query.lumaHostMappings.findMany({
+		where: and(
+			isNotNull(lumaHostMappings.verificationToken),
+			isNull(lumaHostMappings.clerkUserId),
+		),
+	});
+
+	return pendingMappings.map((mapping) => ({
+		id: mapping.id,
+		lumaHostApiId: mapping.lumaHostApiId,
+		hostName: mapping.lumaHostName,
+		hostAvatarUrl: mapping.lumaHostAvatarUrl,
+		verificationEmail: mapping.verificationEmail,
+		claimType: mapping.pendingClaimType,
+		createdAt: mapping.createdAt,
+	}));
 }
