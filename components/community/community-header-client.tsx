@@ -25,6 +25,7 @@ interface CommunityHeaderClientProps {
 	userRole: "owner" | "admin" | "member" | "follower" | null;
 	isAuthenticated: boolean;
 	tabs: Tab[];
+	hasLumaIntegration?: boolean;
 }
 
 const iconMap = {
@@ -40,6 +41,7 @@ export function CommunityHeaderClient({
 	userRole,
 	isAuthenticated,
 	tabs,
+	hasLumaIntegration = false,
 }: CommunityHeaderClientProps) {
 	const pathname = usePathname();
 
@@ -94,6 +96,7 @@ export function CommunityHeaderClient({
 						communityName={community.displayName || community.name}
 						userRole={userRole}
 						isAuthenticated={isAuthenticated}
+						hasLumaIntegration={hasLumaIntegration}
 					/>
 				</div>
 

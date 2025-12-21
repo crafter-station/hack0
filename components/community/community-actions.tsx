@@ -4,7 +4,16 @@ import { Shield, UserMinus, UserPlus, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { LumaCalendarConnect } from "@/components/communities/luma-calendar-connect";
+import { LumaIcon } from "@/components/icons/luma";
 import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -21,6 +30,7 @@ interface CommunityActionsProps {
 	communityName: string;
 	userRole: "owner" | "admin" | "member" | "follower" | null;
 	isAuthenticated: boolean;
+	hasLumaIntegration?: boolean;
 }
 
 export function CommunityActions({
@@ -29,6 +39,7 @@ export function CommunityActions({
 	communityName,
 	userRole,
 	isAuthenticated,
+	hasLumaIntegration = false,
 }: CommunityActionsProps) {
 	const router = useRouter();
 	const [dialogOpen, setDialogOpen] = useState(false);
@@ -93,14 +104,39 @@ export function CommunityActions({
 
 	if (userRole === "owner" || userRole === "admin") {
 		return (
-			<Button
-				size="sm"
-				className="gap-1.5 h-7 text-xs"
-				onClick={() => router.push(`/c/${communitySlug}/events/new`)}
-			>
-				<UserPlus className="h-3.5 w-3.5" />
-				Nuevo evento
-			</Button>
+			<div className="flex items-center gap-2">
+				{!hasLumaIntegration && (
+					<Dialog>
+						<DialogTrigger asChild>
+							<Button
+								variant="outline"
+								size="sm"
+								className="gap-1.5 h-7 text-xs"
+							>
+								<LumaIcon className="h-3 w-3" />
+								Conectar Luma
+							</Button>
+						</DialogTrigger>
+						<DialogContent className="max-w-md">
+							<DialogHeader>
+								<DialogTitle className="flex items-center gap-2">
+									<LumaIcon className="h-4 w-4" />
+									Conectar Luma
+								</DialogTitle>
+							</DialogHeader>
+							<LumaCalendarConnect organizationId={communityId} />
+						</DialogContent>
+					</Dialog>
+				)}
+				<Button
+					size="sm"
+					className="gap-1.5 h-7 text-xs"
+					onClick={() => router.push(`/c/${communitySlug}/events/new`)}
+				>
+					<UserPlus className="h-3.5 w-3.5" />
+					Nuevo evento
+				</Button>
+			</div>
 		);
 	}
 

@@ -10,6 +10,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { isAdmin } from "@/lib/actions/claims";
 import { getUserCommunityRole } from "@/lib/actions/community-members";
+import { getOrgLumaCalendars } from "@/lib/actions/luma-calendars";
 import type { Organization } from "@/lib/db/schema";
 import { CommunityActions } from "./community-actions";
 
@@ -30,6 +31,8 @@ export async function CommunityHeader({
 	const isAdminUser = await isAdmin();
 	const canManage = isOwner || userRole === "admin" || isAdminUser;
 	const isAuthenticated = !!userId;
+	const lumaCalendars = canManage ? await getOrgLumaCalendars(community.id) : [];
+	const hasLumaIntegration = lumaCalendars.length > 0;
 
 	const tabs = [
 		{ id: "events" as const, label: "Eventos", icon: Calendar, requiresAdmin: false },
@@ -79,6 +82,7 @@ export async function CommunityHeader({
 						communityName={community.displayName || community.name}
 						userRole={userRole}
 						isAuthenticated={isAuthenticated}
+						hasLumaIntegration={hasLumaIntegration}
 					/>
 				</div>
 
