@@ -23,6 +23,7 @@ export default async function GodLayout({ children }: GodLayoutProps) {
 		{ id: "pending", label: "Pending", href: "/god/pending" },
 		{ id: "wins", label: "Wins", href: "/god/wins" },
 		{ id: "organizations", label: "Organizations", href: "/god/organizations" },
+		{ id: "hosts", label: "Hosts", href: "/god/hosts" },
 	];
 
 	return (
