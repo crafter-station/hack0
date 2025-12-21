@@ -18,7 +18,7 @@ import {
 	transformLumaEvent,
 } from "@/lib/luma/transform";
 import type { LumaEvent, LumaWebhookEventType } from "@/lib/luma/types";
-import { createUniqueSlug } from "@/lib/slug-utils";
+import { createUniqueSlug, ensureUniqueShortCode } from "@/lib/slug-utils";
 
 interface WebhookEventData {
 	api_id: string;
@@ -158,7 +158,9 @@ async function processEventCreatedOrUpdated(lumaEvent: LumaEvent) {
 	}
 
 	const slug = await createUniqueSlug(eventData.name);
+	const shortCode = await ensureUniqueShortCode();
 	eventData.slug = slug;
+	eventData.shortCode = shortCode;
 
 	const [newEvent] = await db.insert(events).values(eventData).returning();
 
