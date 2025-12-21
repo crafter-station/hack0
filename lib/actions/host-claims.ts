@@ -349,6 +349,51 @@ export async function getUserCommunities() {
 	return userOrgs;
 }
 
+export async function claimEvent(eventId: string, organizationId: string) {
+	const { userId } = await auth();
+	if (!userId) {
+		return { success: false, error: "No autenticado" };
+	}
+
+	const org = await db.query.organizations.findFirst({
+		where: and(
+			eq(organizations.id, organizationId),
+			eq(organizations.ownerUserId, userId),
+		),
+	});
+
+	if (!org) {
+		return { success: false, error: "No tienes permisos para esta comunidad" };
+	}
+
+	const event = await db.query.events.findFirst({
+		where: eq(events.id, eventId),
+	});
+
+	if (!event) {
+		return { success: false, error: "Evento no encontrado" };
+	}
+
+	if (event.organizationId) {
+		return { success: false, error: "Este evento ya tiene una comunidad asignada" };
+	}
+
+	await db
+		.update(events)
+		.set({ organizationId: org.id })
+		.where(eq(events.id, eventId));
+
+	revalidatePath("/");
+	revalidatePath(`/e/${event.shortCode}`);
+	revalidatePath(`/c/${org.slug}`);
+
+	return {
+		success: true,
+		message: `Evento vinculado a ${org.name}`,
+		organizationSlug: org.slug,
+	};
+}
+
 export async function getUnclaimedHosts() {
 	const hosts = await db.query.eventHosts.findMany({
 		columns: {

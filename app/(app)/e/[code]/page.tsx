@@ -18,6 +18,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
+import { ClaimEventButton } from "@/components/events/claim-event-button";
 import { ClaimHostButton } from "@/components/events/claim-host-button";
 import { EventCountdown } from "@/components/events/event-countdown";
 import { ManageEventButton } from "@/components/events/manage-event-button";
@@ -893,6 +894,23 @@ export default async function EventPage({ params }: EventPageProps) {
 												)}
 											</div>
 										))}
+									</div>
+								</div>
+							)}
+
+							{!community && userId && (
+								<div className="rounded-lg border bg-card">
+									<div className="px-5 py-4 border-b">
+										<h3 className="text-sm font-semibold">¿Es tu evento?</h3>
+									</div>
+									<div className="p-5 space-y-3">
+										<p className="text-sm text-muted-foreground">
+											Si organizas este evento, puedes vincularlo a una de tus comunidades.
+										</p>
+										<ClaimEventButton
+											eventId={hackathon.id}
+											eventName={hackathon.name}
+										/>
 									</div>
 								</div>
 							)}
