@@ -92,7 +92,7 @@ export async function initiateHostClaim(
 
 	const claimTypeLabel = claimType === "personal" ? "personal" : "de comunidad";
 
-	await resend.emails.send({
+	const { data, error } = await resend.emails.send({
 		from: "Hack0 <noreply@hack0.dev>",
 		to: userEmail,
 		subject: "Verifica tu perfil de host en Hack0",
@@ -110,6 +110,12 @@ export async function initiateHostClaim(
 		`,
 	});
 
+	if (error) {
+		console.error("Error sending verification email:", error);
+		return { success: false, error: `Error enviando email: ${error.message}` };
+	}
+
+	console.log("Verification email sent:", data?.id);
 	return { success: true, message: "Email de verificación enviado" };
 }
 
