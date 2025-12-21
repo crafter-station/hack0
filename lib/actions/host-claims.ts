@@ -4,8 +4,8 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
-import { Resend } from "resend";
 import { db } from "@/lib/db";
+import { EMAIL_FROM, resend } from "@/lib/email/resend";
 import {
 	eventHosts,
 	events,
@@ -13,8 +13,6 @@ import {
 	organizations,
 } from "@/lib/db/schema";
 import { createUniqueSlug } from "@/lib/slug-utils";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export type ClaimType = "personal" | "community";
 
@@ -93,7 +91,7 @@ export async function initiateHostClaim(
 	const claimTypeLabel = claimType === "personal" ? "personal" : "de comunidad";
 
 	const { data, error } = await resend.emails.send({
-		from: "Hack0 <noreply@updates.hack0.dev>",
+		from: EMAIL_FROM,
 		to: userEmail,
 		subject: "Verifica tu perfil de host en Hack0",
 		html: `
@@ -311,7 +309,7 @@ export async function inviteHost(
 	}
 
 	await resend.emails.send({
-		from: "Hack0 <noreply@updates.hack0.dev>",
+		from: EMAIL_FROM,
 		to: email,
 		subject: `Te invitamos a vincular tu perfil de ${hostName} en Hack0`,
 		html: `

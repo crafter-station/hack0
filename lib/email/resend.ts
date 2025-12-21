@@ -6,4 +6,4 @@ if (!process.env.RESEND_API_KEY) {
 
 export const resend = new Resend(process.env.RESEND_API_KEY);
 
-export const EMAIL_FROM = "hack0.dev <noreply@crafterstation.com>";
+export const EMAIL_FROM = "Hack0 <noreply@updates.hack0.dev>";
