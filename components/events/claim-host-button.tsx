@@ -38,13 +38,9 @@ interface ClaimHostButtonProps {
 function ClaimContent({
 	hostName,
 	hostAvatarUrl,
-	isPending,
-	onClaim,
 }: {
 	hostName: string;
 	hostAvatarUrl?: string | null;
-	isPending: boolean;
-	onClaim: () => void;
 }) {
 	return (
 		<div className="space-y-4">
@@ -72,16 +68,12 @@ function ClaimContent({
 				</AlertDescription>
 			</Alert>
 
-			<Alert variant="destructive" className="border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400 [&>svg]:text-amber-600">
+			<Alert className="border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400 [&>svg]:text-amber-600">
 				<AlertTriangle className="h-4 w-4" />
 				<AlertDescription className="text-sm">
 					<span className="font-semibold">Importante:</span> Solo puedes reclamar un único perfil de host. Esta acción es permanente y no se puede deshacer.
 				</AlertDescription>
 			</Alert>
-
-			<Button onClick={onClaim} disabled={isPending} className="w-full">
-				{isPending ? "Enviando..." : "Sí, soy yo — Verificar"}
-			</Button>
 		</div>
 	);
 }
@@ -162,15 +154,18 @@ export function ClaimHostButton({
 						<ClaimContent
 							hostName={hostName}
 							hostAvatarUrl={hostAvatarUrl}
-							isPending={isPending}
-							onClaim={handleClaim}
 						/>
 					)}
 
-					<DialogFooter>
+					<DialogFooter className="gap-2 sm:gap-0">
 						<Button variant="outline" onClick={() => setOpen(false)}>
 							{userHasClaimedHost ? "Entendido" : "Cancelar"}
 						</Button>
+						{!userHasClaimedHost && (
+							<Button onClick={handleClaim} disabled={isPending}>
+								{isPending ? "Enviando..." : "Sí, soy yo — Verificar"}
+							</Button>
+						)}
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
@@ -202,15 +197,18 @@ export function ClaimHostButton({
 						<ClaimContent
 							hostName={hostName}
 							hostAvatarUrl={hostAvatarUrl}
-							isPending={isPending}
-							onClaim={handleClaim}
 						/>
 					)}
 				</div>
 
-				<DrawerFooter>
+				<DrawerFooter className="flex-col gap-2">
+					{!userHasClaimedHost && (
+						<Button onClick={handleClaim} disabled={isPending} className="w-full">
+							{isPending ? "Enviando..." : "Sí, soy yo — Verificar"}
+						</Button>
+					)}
 					<DrawerClose asChild>
-						<Button variant="outline">
+						<Button variant="outline" className="w-full">
 							{userHasClaimedHost ? "Entendido" : "Cancelar"}
 						</Button>
 					</DrawerClose>
