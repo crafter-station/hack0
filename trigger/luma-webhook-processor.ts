@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { db } from "@/lib/db";
 import { events, lumaCalendars, lumaEventMappings } from "@/lib/db/schema";
+import { getGlobalLumaClient } from "@/lib/luma/client";
 import {
 	resolveOrganization,
 	saveEventHosts,
@@ -17,12 +18,33 @@ import {
 import type { LumaEvent, LumaWebhookEventType } from "@/lib/luma/types";
 import { createUniqueSlug } from "@/lib/slug-utils";
 
+interface WebhookEventData {
+	api_id: string;
+	url: string;
+	name: string;
+	hosts: Array<{
+		id: string;
+		name: string;
+		avatar_url?: string;
+	}>;
+	start_at: string;
+	end_at?: string;
+	timezone: string;
+	cover_url?: string;
+	platform: string;
+	calendar: {
+		id: string;
+		url: string;
+		name: string;
+		slug?: string;
+		is_personal: boolean;
+		avatar_url?: string;
+	};
+}
+
 interface WebhookPayload {
 	event_type: LumaWebhookEventType;
-	data: {
-		event?: LumaEvent;
-		calendar_api_id?: string;
-	};
+	data: WebhookEventData;
 }
 
 async function uploadEventImage(imageUrl: string): Promise<string | null> {
@@ -44,12 +66,43 @@ async function findCalendarByApiId(calendarApiId: string) {
 	});
 }
 
-async function processEventCreatedOrUpdated(lumaEvent: LumaEvent) {
+async function findOrCreateHack0Calendar() {
+	const hack0CalendarApiId = process.env.HACK0_LUMA_CALENDAR_API_ID;
+	if (!hack0CalendarApiId) return null;
+
+	const existing = await db.query.lumaCalendars.findFirst({
+		where: eq(lumaCalendars.lumaCalendarApiId, hack0CalendarApiId),
+	});
+
+	if (existing) return existing;
+
+	const [newCalendar] = await db
+		.insert(lumaCalendars)
+		.values({
+			lumaCalendarApiId: hack0CalendarApiId,
+			name: "hack0",
+			isConnected: true,
+			lastSyncedAt: new Date(),
+		})
+		.returning();
+
+	return newCalendar;
+}
+
+async function processEventCreatedOrUpdated(
+	lumaEvent: LumaEvent,
+	isFromWebhook = false,
+) {
 	if (lumaEvent.status !== "published" || lumaEvent.visibility !== "public") {
 		return { skipped: true, reason: "Event not published or not public" };
 	}
 
-	const calendar = await findCalendarByApiId(lumaEvent.calendar_api_id);
+	let calendar = await findCalendarByApiId(lumaEvent.calendar_api_id);
+
+	if (!calendar && isFromWebhook) {
+		calendar = await findOrCreateHack0Calendar();
+	}
+
 	if (!calendar) {
 		return { skipped: true, reason: "Calendar not found for this event" };
 	}
@@ -165,6 +218,41 @@ async function processEventCreatedOrUpdated(lumaEvent: LumaEvent) {
 	return { created: true, eventId: newEvent.id };
 }
 
+async function fetchFullEventData(
+	eventApiId: string,
+	webhookData: WebhookEventData,
+): Promise<LumaEvent> {
+	try {
+		const client = getGlobalLumaClient();
+		const fullEvent = await client.getEvent(eventApiId);
+		return fullEvent;
+	} catch (error) {
+		console.warn(
+			`[Webhook] Failed to fetch full event data for ${eventApiId}, using webhook data:`,
+			error,
+		);
+		return {
+			api_id: webhookData.api_id,
+			name: webhookData.name,
+			url: webhookData.url,
+			start_at: webhookData.start_at,
+			end_at: webhookData.end_at,
+			timezone: webhookData.timezone,
+			cover_url: webhookData.cover_url,
+			calendar_api_id: webhookData.calendar.id,
+			hosts: webhookData.hosts.map((h) => ({
+				api_id: h.id,
+				name: h.name,
+				avatar_url: h.avatar_url,
+			})),
+			visibility: "public",
+			status: "published",
+			created_at: new Date().toISOString(),
+			updated_at: new Date().toISOString(),
+		};
+	}
+}
+
 export const lumaWebhookProcessorTask = task({
 	id: "luma-webhook-processor",
 	maxDuration: 120,
@@ -177,16 +265,23 @@ export const lumaWebhookProcessorTask = task({
 			case "event.created":
 			case "event.updated":
 			case "calendar.event.added": {
-				if (!data.event) {
+				if (!data.api_id) {
 					metadata.set("error", "No event data in payload");
 					return { success: false, error: "No event data" };
 				}
 
-				metadata.set("lumaEventId", data.event.api_id);
-				metadata.set("eventName", data.event.name);
-				metadata.set("calendarApiId", data.event.calendar_api_id);
+				metadata.set("webhookEventId", data.api_id);
+				metadata.set("webhookEventName", data.name);
 
-				const result = await processEventCreatedOrUpdated(data.event);
+				const lumaEvent = await fetchFullEventData(data.api_id, data);
+
+				metadata.set("lumaEventId", lumaEvent.api_id);
+				metadata.set("eventName", lumaEvent.name);
+				metadata.set("calendarApiId", lumaEvent.calendar_api_id);
+				metadata.set("hasDescription", !!lumaEvent.description);
+				metadata.set("hasLocation", !!lumaEvent.location);
+
+				const result = await processEventCreatedOrUpdated(lumaEvent, true);
 
 				if ("skipped" in result) {
 					metadata.set("result", "skipped");
