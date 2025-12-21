@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, CalendarPlus, ChevronDown, Plus } from "lucide-react";
+import { Building2, CalendarPlus, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { ButtonGroup } from "@/components/ui/button-group";
 import {
@@ -18,11 +18,11 @@ export function CreateButtonGroup({ personalOrgSlug }: CreateButtonGroupProps) {
 	return (
 		<ButtonGroup>
 			<Link
-				href={`/c/${personalOrgSlug}/new`}
+				href={`/c/${personalOrgSlug}/events/new`}
 				className="inline-flex h-7 items-center gap-1.5 bg-foreground px-2.5 text-xs font-medium text-background transition-colors hover:bg-foreground/90 rounded-l-md"
 			>
-				<Plus className="h-3 w-3" />
-				<span className="hidden sm:inline">Crear</span>
+				<CalendarPlus className="h-3 w-3" />
+				<span className="hidden sm:inline">Crear evento</span>
 			</Link>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
@@ -34,15 +34,6 @@ export function CreateButtonGroup({ personalOrgSlug }: CreateButtonGroupProps) {
 					</button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" className="w-48">
-					<DropdownMenuItem asChild>
-						<Link
-							href={`/c/${personalOrgSlug}/events/new`}
-							className="flex items-center gap-2"
-						>
-							<CalendarPlus className="h-4 w-4" />
-							Evento
-						</Link>
-					</DropdownMenuItem>
 					<DropdownMenuItem asChild>
 						<Link href="/c/new" className="flex items-center gap-2">
 							<Building2 className="h-4 w-4" />
