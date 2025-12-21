@@ -93,7 +93,8 @@ function cleanDescription(description?: string): string | undefined {
 
 	return description
 		.replace(/<[^>]*>/g, "")
-		.replace(/\s+/g, " ")
+		.replace(/[ \t]+/g, " ")
+		.replace(/\n{3,}/g, "\n\n")
 		.trim()
 		.substring(0, 5000);
 }
