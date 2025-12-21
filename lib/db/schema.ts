@@ -860,52 +860,12 @@ export const syncFrequencyEnum = pgEnum("sync_frequency", [
 	"manual",
 ]);
 
-export const lumaVerificationStatusEnum = pgEnum("luma_verification_status", [
-	"pending",
-	"verified",
-	"failed",
-]);
-
-export const lumaCalendars = pgTable("luma_calendars", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	organizationId: uuid("organization_id")
-		.references(() => organizations.id)
-		.notNull(),
-	lumaCalendarApiId: varchar("luma_calendar_api_id", { length: 255 }),
-	lumaCalendarSlug: varchar("luma_calendar_slug", { length: 255 }).notNull(),
-	name: varchar("name", { length: 255 }),
-	verificationStatus: lumaVerificationStatusEnum("verification_status").default(
-		"pending",
-	),
-	webhookId: varchar("webhook_id", { length: 255 }),
-	lastVerificationAttempt: timestamp("last_verification_attempt", {
-		mode: "date",
-		withTimezone: true,
-	}),
-	verificationAttempts: integer("verification_attempts").default(0),
-	isActive: boolean("is_active").default(true),
-	syncFrequency: syncFrequencyEnum("sync_frequency").default("daily"),
-	lastSyncAt: timestamp("last_sync_at", { mode: "date", withTimezone: true }),
-	createdAt: timestamp("created_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-	updatedAt: timestamp("updated_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-});
-
-export type LumaCalendar = typeof lumaCalendars.$inferSelect;
-export type NewLumaCalendar = typeof lumaCalendars.$inferInsert;
-
 export const lumaEventMappings = pgTable("luma_event_mappings", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	lumaEventId: varchar("luma_event_id", { length: 255 }).notNull().unique(),
 	eventId: uuid("event_id")
 		.references(() => events.id)
 		.notNull(),
-	lumaCalendarId: uuid("luma_calendar_id").references(() => lumaCalendars.id),
 	lastSyncedAt: timestamp("last_synced_at", {
 		mode: "date",
 		withTimezone: true,

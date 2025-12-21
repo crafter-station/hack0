@@ -1,12 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { CheckCircle2 } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
-import {
-	LumaCalendarConnect,
-	LumaCalendarsList,
-} from "@/components/communities/luma-calendar-connect";
 import { OrgSettingsForm } from "@/components/communities/org-settings-form";
-import { getOrgLumaCalendars } from "@/lib/actions/luma-calendars";
 import {
 	canManageOrganization,
 	getOrganizationBySlug,
@@ -38,8 +33,6 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
 		redirect(`/c/${slug}`);
 	}
 
-	const lumaCalendars = await getOrgLumaCalendars(org.id);
-
 	return (
 		<div className="max-w-2xl mx-auto py-8 space-y-8">
 			{org.isVerified && (
@@ -50,12 +43,6 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
 			)}
 
 			<OrgSettingsForm organization={org} />
-
-			<div className="space-y-4">
-				<h2 className="text-base font-medium">Integraciones</h2>
-				<LumaCalendarsList calendars={lumaCalendars} />
-				<LumaCalendarConnect organizationId={org.id} />
-			</div>
 		</div>
 	);
 }

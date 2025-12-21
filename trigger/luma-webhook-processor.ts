@@ -3,7 +3,7 @@ import { metadata, task } from "@trigger.dev/sdk/v3";
 import { eq } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { db } from "@/lib/db";
-import { events, lumaCalendars, lumaEventMappings } from "@/lib/db/schema";
+import { events, lumaEventMappings } from "@/lib/db/schema";
 import { getGlobalLumaClient } from "@/lib/luma/client";
 import type { LumaExtractedData } from "@/lib/scraper/luma-schema";
 import {
@@ -62,25 +62,9 @@ async function uploadEventImage(imageUrl: string): Promise<string | null> {
 	}
 }
 
-async function findCalendarByApiId(calendarApiId: string) {
-	return db.query.lumaCalendars.findFirst({
-		where: eq(lumaCalendars.lumaCalendarApiId, calendarApiId),
-	});
-}
-
-
-async function processEventCreatedOrUpdated(
-	lumaEvent: LumaEvent,
-	isFromWebhook = false,
-) {
+async function processEventCreatedOrUpdated(lumaEvent: LumaEvent) {
 	if (lumaEvent.status !== "published" || lumaEvent.visibility !== "public") {
 		return { skipped: true, reason: "Event not published or not public" };
-	}
-
-	const calendar = await findCalendarByApiId(lumaEvent.calendar_api_id);
-
-	if (!calendar && !isFromWebhook) {
-		return { skipped: true, reason: "Calendar not found for this event" };
 	}
 
 	const hosts = lumaEvent.hosts || [];
@@ -149,7 +133,7 @@ async function processEventCreatedOrUpdated(
 	}
 
 	const resolution = await resolveOrganization(hosts);
-	const organizationId = resolution.organizationId || calendar?.organizationId;
+	const organizationId = resolution.organizationId;
 
 	const eventData = transformLumaEvent(lumaEvent, { organizationId });
 
@@ -181,7 +165,6 @@ async function processEventCreatedOrUpdated(
 	await db.insert(lumaEventMappings).values({
 		lumaEventId: lumaEvent.api_id,
 		eventId: newEvent.id,
-		lumaCalendarId: calendar?.id,
 		lastSyncedAt: new Date(),
 		lumaUpdatedAt: new Date(lumaEvent.updated_at),
 	});
@@ -332,7 +315,7 @@ export const lumaWebhookProcessorTask = task({
 				metadata.set("hasDescription", !!lumaEvent.description || !!lumaEvent.description_md);
 				metadata.set("hasLocation", !!lumaEvent.location);
 
-				const result = await processEventCreatedOrUpdated(lumaEvent, true);
+				const result = await processEventCreatedOrUpdated(lumaEvent);
 
 				if ("skipped" in result) {
 					metadata.set("result", "skipped");
