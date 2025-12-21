@@ -34,15 +34,6 @@ export async function initiateHostClaim(
 		return { success: false, error: "No tienes email verificado en tu cuenta" };
 	}
 
-	if (claimType === "personal") {
-		const hasPersonalOrg = !!(user.publicMetadata as { lumaHostId?: string })?.lumaHostId;
-		if (hasPersonalOrg) {
-			return {
-				success: false,
-				error: "Ya tienes un perfil personal. Usa 'comunidad' para reclamar este host.",
-			};
-		}
-	}
 
 	const existingMapping = await db.query.lumaHostMappings.findFirst({
 		where: eq(lumaHostMappings.lumaHostApiId, lumaHostApiId),
@@ -357,9 +348,14 @@ export async function checkUserHasPersonalOrg(): Promise<boolean> {
 	const { userId } = await auth();
 	if (!userId) return false;
 
-	const clerk = await clerkClient();
-	const user = await clerk.users.getUser(userId);
-	return !!(user.publicMetadata as { lumaHostId?: string })?.lumaHostId;
+	const existingPersonalOrg = await db.query.organizations.findFirst({
+		where: and(
+			eq(organizations.ownerUserId, userId),
+			eq(organizations.isPersonalOrg, true),
+		),
+	});
+
+	return !!existingPersonalOrg;
 }
 
 export async function claimEvent(eventId: string, organizationId: string) {
