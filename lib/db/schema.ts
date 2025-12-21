@@ -6,6 +6,7 @@ import {
 	pgTable,
 	text,
 	timestamp,
+	uniqueIndex,
 	uuid,
 	varchar,
 } from "drizzle-orm/pg-core";
@@ -881,22 +882,26 @@ export const eventHostRoleEnum = pgEnum("event_host_role", [
 	"speaker",
 ]);
 
-export const eventHosts = pgTable("event_hosts", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	eventId: uuid("event_id")
-		.references(() => events.id, { onDelete: "cascade" })
-		.notNull(),
-	lumaHostApiId: varchar("luma_host_api_id", { length: 255 }).notNull(),
-	name: varchar("name", { length: 255 }),
-	email: varchar("email", { length: 255 }),
-	avatarUrl: varchar("avatar_url", { length: 500 }),
-	role: eventHostRoleEnum("role").default("host"),
-	isPrimary: boolean("is_primary").default(false),
-	createdAt: timestamp("created_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-});
+export const eventHosts = pgTable(
+	"event_hosts",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		eventId: uuid("event_id")
+			.references(() => events.id, { onDelete: "cascade" })
+			.notNull(),
+		lumaHostApiId: varchar("luma_host_api_id", { length: 255 }).notNull(),
+		name: varchar("name", { length: 255 }),
+		email: varchar("email", { length: 255 }),
+		avatarUrl: varchar("avatar_url", { length: 500 }),
+		role: eventHostRoleEnum("role").default("host"),
+		isPrimary: boolean("is_primary").default(false),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+	},
+	(table) => [uniqueIndex("event_host_unique_idx").on(table.eventId, table.lumaHostApiId)],
+);
 
 export type EventHost = typeof eventHosts.$inferSelect;
 export type NewEventHost = typeof eventHosts.$inferInsert;
