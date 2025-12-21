@@ -301,6 +301,22 @@ export class LumaClient {
 			body: JSON.stringify({ webhook_api_id: webhookApiId }),
 		});
 	}
+
+	async addEventToCalendar(params: {
+		event_api_id?: string;
+		event_url?: string;
+	}): Promise<{ success: boolean; error?: string }> {
+		try {
+			await this.request("/v1/calendar/add-event", {
+				method: "POST",
+				body: JSON.stringify(params),
+			});
+			return { success: true };
+		} catch (error) {
+			const message = error instanceof Error ? error.message : "Unknown error";
+			return { success: false, error: message };
+		}
+	}
 }
 
 export function createLumaClient(apiKey: string): LumaClient {

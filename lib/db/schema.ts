@@ -97,6 +97,36 @@ export const formatPreferenceEnum = pgEnum("format_preference", [
 	"any", // Sin preferencia
 ]);
 
+// ============================================
+// LUMA AGGREGATION ENUMS
+// ============================================
+
+export const eventOwnershipEnum = pgEnum("event_ownership", [
+	"created", // Hack0 created this event (source of truth)
+	"referenced", // External event, Hack0 just indexes
+]);
+
+export const eventSyncStatusEnum = pgEnum("event_sync_status", [
+	"synced", // In sync with source
+	"drifted", // Source has changed
+	"source_deleted", // Source event no longer exists
+	"unknown", // Never checked
+]);
+
+export const hostMatchSourceEnum = pgEnum("host_match_source", [
+	"manual", // Admin manually assigned
+	"domain", // Matched via email domain
+	"name", // Fuzzy matched via name
+	"claim", // User claimed and verified
+	"unknown", // No match found
+]);
+
+export const hostClaimStatusEnum = pgEnum("host_claim_status", [
+	"pending",
+	"verified",
+	"rejected",
+]);
+
 // Events table (hackathons, conferences, workshops, etc.)
 export const events = pgTable("events", {
 	id: uuid("id").primaryKey().defaultRandom(),
@@ -157,6 +187,17 @@ export const events = pgTable("events", {
 	// Organizer verification (legacy - for claimed events)
 	isOrganizerVerified: boolean("is_organizer_verified").default(false),
 	verifiedOrganizerId: varchar("verified_organizer_id", { length: 255 }), // Clerk user ID
+
+	// Luma Aggregation - Ownership & Sync
+	ownership: eventOwnershipEnum("ownership").default("created"),
+	sourceLumaCalendarId: varchar("source_luma_calendar_id", { length: 255 }),
+	sourceLumaEventId: varchar("source_luma_event_id", { length: 255 }),
+	sourceContentHash: varchar("source_content_hash", { length: 64 }),
+	lastSourceCheckAt: timestamp("last_source_check_at", {
+		mode: "date",
+		withTimezone: true,
+	}),
+	syncStatus: eventSyncStatusEnum("sync_status").default("synced"),
 
 	// Timestamps
 	createdAt: timestamp("created_at", {
@@ -877,6 +918,117 @@ export type LumaEventMapping = typeof lumaEventMappings.$inferSelect;
 export type NewLumaEventMapping = typeof lumaEventMappings.$inferInsert;
 
 // ============================================
+// ORGANIZATION DOMAINS - For email domain matching
+// ============================================
+
+export const organizationDomains = pgTable("organization_domains", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	organizationId: uuid("organization_id")
+		.references(() => organizations.id, { onDelete: "cascade" })
+		.notNull(),
+	domain: varchar("domain", { length: 255 }).notNull(),
+	isVerified: boolean("is_verified").default(false),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+});
+
+export type OrganizationDomain = typeof organizationDomains.$inferSelect;
+export type NewOrganizationDomain = typeof organizationDomains.$inferInsert;
+
+// ============================================
+// EVENT HOSTS - All Luma hosts per event (not just first)
+// ============================================
+
+export const eventHostRoleEnum = pgEnum("event_host_role", [
+	"host",
+	"co-host",
+	"speaker",
+]);
+
+export const eventHosts = pgTable("event_hosts", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	eventId: uuid("event_id")
+		.references(() => events.id, { onDelete: "cascade" })
+		.notNull(),
+	lumaHostApiId: varchar("luma_host_api_id", { length: 255 }).notNull(),
+	name: varchar("name", { length: 255 }),
+	email: varchar("email", { length: 255 }),
+	avatarUrl: varchar("avatar_url", { length: 500 }),
+	role: eventHostRoleEnum("role").default("host"),
+	isPrimary: boolean("is_primary").default(false),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+});
+
+export type EventHost = typeof eventHosts.$inferSelect;
+export type NewEventHost = typeof eventHosts.$inferInsert;
+
+// ============================================
+// LUMA HOST MAPPINGS - Map Luma hosts to organizations with confidence
+// ============================================
+
+export const lumaHostMappings = pgTable("luma_host_mappings", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	lumaHostApiId: varchar("luma_host_api_id", { length: 255 }).unique().notNull(),
+	lumaHostName: varchar("luma_host_name", { length: 255 }),
+	lumaHostEmail: varchar("luma_host_email", { length: 255 }),
+	organizationId: uuid("organization_id").references(() => organizations.id),
+	matchSource: hostMatchSourceEnum("match_source").default("unknown"),
+	confidence: integer("confidence").default(0),
+	isVerified: boolean("is_verified").default(false),
+	lastSeenAt: timestamp("last_seen_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	notes: text("notes"),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	updatedAt: timestamp("updated_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+});
+
+export type LumaHostMapping = typeof lumaHostMappings.$inferSelect;
+export type NewLumaHostMapping = typeof lumaHostMappings.$inferInsert;
+
+// ============================================
+// HOST CLAIMS - Self-service org claim by hosts
+// ============================================
+
+export const hostClaimVerificationMethodEnum = pgEnum(
+	"host_claim_verification_method",
+	["email", "dns", "manual"],
+);
+
+export const hostClaims = pgTable("host_claims", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	lumaHostApiId: varchar("luma_host_api_id", { length: 255 }).notNull(),
+	organizationId: uuid("organization_id")
+		.references(() => organizations.id)
+		.notNull(),
+	claimedByUserId: varchar("claimed_by_user_id", { length: 255 }).notNull(),
+	verificationMethod: hostClaimVerificationMethodEnum("verification_method"),
+	verificationToken: varchar("verification_token", { length: 255 }),
+	verificationEmail: varchar("verification_email", { length: 255 }),
+	verifiedAt: timestamp("verified_at", { mode: "date", withTimezone: true }),
+	status: hostClaimStatusEnum("status").default("pending"),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+});
+
+export type HostClaim = typeof hostClaims.$inferSelect;
+export type NewHostClaim = typeof hostClaims.$inferInsert;
+
+// ============================================
 // MULTI-SOURCE SCRAPING - Scheduled scraping system
 // ============================================
 
@@ -1060,6 +1212,7 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
 	sponsors: many(eventSponsors),
 	organizers: many(eventOrganizers),
 	hostOrganizations: many(eventHostOrganizations),
+	lumaHosts: many(eventHosts),
 }));
 
 export const organizationsRelations = relations(organizations, ({ many }) => ({
@@ -1068,6 +1221,9 @@ export const organizationsRelations = relations(organizations, ({ many }) => ({
 	invites: many(communityInvites),
 	sponsorships: many(eventSponsors),
 	hostingEvents: many(eventHostOrganizations),
+	domains: many(organizationDomains),
+	hostMappings: many(lumaHostMappings),
+	hostClaims: many(hostClaims),
 }));
 
 export const communityMembersRelations = relations(
@@ -1138,3 +1294,37 @@ export const eventHostOrganizationsRelations = relations(
 		}),
 	}),
 );
+
+export const organizationDomainsRelations = relations(
+	organizationDomains,
+	({ one }) => ({
+		organization: one(organizations, {
+			fields: [organizationDomains.organizationId],
+			references: [organizations.id],
+		}),
+	}),
+);
+
+export const eventHostsRelations = relations(eventHosts, ({ one }) => ({
+	event: one(events, {
+		fields: [eventHosts.eventId],
+		references: [events.id],
+	}),
+}));
+
+export const lumaHostMappingsRelations = relations(
+	lumaHostMappings,
+	({ one }) => ({
+		organization: one(organizations, {
+			fields: [lumaHostMappings.organizationId],
+			references: [organizations.id],
+		}),
+	}),
+);
+
+export const hostClaimsRelations = relations(hostClaims, ({ one }) => ({
+	organization: one(organizations, {
+		fields: [hostClaims.organizationId],
+		references: [organizations.id],
+	}),
+}));

@@ -5,6 +5,12 @@ import { db } from "@/lib/db";
 import { events, lumaCalendars, lumaEventMappings } from "@/lib/db/schema";
 import { getGlobalLumaClient, type LumaEvent } from "@/lib/luma";
 import {
+	resolveOrganization,
+	saveEventHosts,
+	upsertHostMappings,
+	computeContentHash,
+} from "@/lib/luma/host-resolver";
+import {
 	mergeEventUpdates,
 	shouldUpdateEvent,
 	transformLumaEvent,
@@ -36,9 +42,12 @@ async function uploadEventImage(imageUrl: string): Promise<string | null> {
 async function syncSingleEvent(
 	lumaEvent: LumaEvent,
 	calendarId: string,
-	organizationId: string,
+	fallbackOrganizationId: string,
+	isOwnedCalendar: boolean,
 ): Promise<{ created: boolean; updated: boolean; error?: string }> {
 	try {
+		const hosts = lumaEvent.hosts || [];
+
 		const existingMapping = await db.query.lumaEventMappings.findFirst({
 			where: eq(lumaEventMappings.lumaEventId, lumaEvent.api_id),
 		});
@@ -63,6 +72,14 @@ async function syncSingleEvent(
 			}
 
 			const updates = mergeEventUpdates(existingEvent, lumaEvent);
+			updates.sourceContentHash = computeContentHash({
+				name: lumaEvent.name,
+				description: lumaEvent.description_md || lumaEvent.description,
+				startDate: lumaEvent.start_at ? new Date(lumaEvent.start_at) : null,
+				endDate: lumaEvent.end_at ? new Date(lumaEvent.end_at) : null,
+				venue: lumaEvent.location?.place_name,
+			});
+			updates.lastSourceCheckAt = new Date();
 
 			if (Object.keys(updates).length > 1) {
 				await db
@@ -78,13 +95,39 @@ async function syncSingleEvent(
 					})
 					.where(eq(lumaEventMappings.id, existingMapping.id));
 
+				if (hosts.length > 0) {
+					const resolution = await resolveOrganization(hosts);
+					await saveEventHosts(
+						existingMapping.eventId!,
+						hosts,
+						resolution.primaryHost?.api_id,
+					);
+					await upsertHostMappings(hosts, resolution);
+				}
+
 				return { created: false, updated: true };
 			}
 
 			return { created: false, updated: false };
 		}
 
+		const resolution = await resolveOrganization(hosts);
+		const organizationId = resolution.organizationId || fallbackOrganizationId;
+
 		const eventData = transformLumaEvent(lumaEvent, { organizationId });
+
+		eventData.ownership = isOwnedCalendar ? "created" : "referenced";
+		eventData.sourceLumaCalendarId = lumaEvent.calendar_api_id;
+		eventData.sourceLumaEventId = lumaEvent.api_id;
+		eventData.sourceContentHash = computeContentHash({
+			name: lumaEvent.name,
+			description: lumaEvent.description_md || lumaEvent.description,
+			startDate: lumaEvent.start_at ? new Date(lumaEvent.start_at) : null,
+			endDate: lumaEvent.end_at ? new Date(lumaEvent.end_at) : null,
+			venue: lumaEvent.location?.place_name,
+		});
+		eventData.lastSourceCheckAt = new Date();
+		eventData.syncStatus = "synced";
 
 		if (lumaEvent.cover_url) {
 			const uploadedUrl = await uploadEventImage(lumaEvent.cover_url);
@@ -105,6 +148,11 @@ async function syncSingleEvent(
 			lastSyncedAt: new Date(),
 			lumaUpdatedAt: new Date(lumaEvent.updated_at),
 		});
+
+		if (hosts.length > 0) {
+			await saveEventHosts(newEvent.id, hosts, resolution.primaryHost?.api_id);
+			await upsertHostMappings(hosts, resolution);
+		}
 
 		return { created: true, updated: false };
 	} catch (error) {
@@ -145,6 +193,11 @@ export const lumaCalendarSyncTask = task({
 
 		const client = getGlobalLumaClient();
 
+		const hack0CalendarApiId = process.env.HACK0_LUMA_CALENDAR_API_ID;
+		const isOwnedCalendar =
+			!!hack0CalendarApiId &&
+			calendar.lumaCalendarApiId === hack0CalendarApiId;
+
 		const syncOptions: { after?: Date } = {};
 		if (!forceFullSync && calendar.lastSyncAt) {
 			syncOptions.after = calendar.lastSyncAt;
@@ -183,6 +236,7 @@ export const lumaCalendarSyncTask = task({
 				lumaEvent,
 				calendarId,
 				calendar.organizationId,
+				isOwnedCalendar,
 			);
 
 			if (syncResult.error) {
