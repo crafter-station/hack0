@@ -971,16 +971,16 @@ export type NewLumaHostMapping = typeof lumaHostMappings.$inferInsert;
 
 export const hostClaimVerificationMethodEnum = pgEnum(
 	"host_claim_verification_method",
-	["email", "dns", "manual"],
+	["email", "dns", "manual", "invite"],
 );
 
 export const hostClaims = pgTable("host_claims", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	lumaHostApiId: varchar("luma_host_api_id", { length: 255 }).notNull(),
-	organizationId: uuid("organization_id")
-		.references(() => organizations.id)
-		.notNull(),
-	claimedByUserId: varchar("claimed_by_user_id", { length: 255 }).notNull(),
+	organizationId: uuid("organization_id").references(() => organizations.id),
+	claimedByUserId: varchar("claimed_by_user_id", { length: 255 }),
+	invitedByUserId: varchar("invited_by_user_id", { length: 255 }),
+	clerkInvitationId: varchar("clerk_invitation_id", { length: 255 }),
 	verificationMethod: hostClaimVerificationMethodEnum("verification_method"),
 	verificationToken: varchar("verification_token", { length: 255 }),
 	verificationEmail: varchar("verification_email", { length: 255 }),

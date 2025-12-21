@@ -11,7 +11,9 @@ export async function GET(request: NextRequest) {
 
 	const result = await verifyHostClaim(token);
 
-	if (result.success) {
+	if (result.success && result.organizationSlug) {
+		redirect(`/c/${result.organizationSlug}?host_verified=true`);
+	} else if (result.success) {
 		redirect("/profile?host_verified=true");
 	} else {
 		redirect(`/profile?error=${encodeURIComponent(result.error || "unknown")}`);
