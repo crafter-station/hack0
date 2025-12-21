@@ -101,6 +101,7 @@ export const formatPreferenceEnum = pgEnum("format_preference", [
 export const events = pgTable("events", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	slug: varchar("slug", { length: 255 }).unique().notNull(),
+	shortCode: varchar("short_code", { length: 10 }).unique(),
 	name: varchar("name", { length: 255 }).notNull(),
 	description: text("description"),
 

@@ -27,7 +27,7 @@ import {
 import { notifySubscribersOfNewEvent } from "@/lib/email/notify-subscribers";
 import { type EventCategory, getCategoryById } from "@/lib/event-categories";
 import { isGodMode } from "@/lib/god-mode";
-import { createUniqueSlug } from "@/lib/slug-utils";
+import { createUniqueSlug, ensureUniqueShortCode } from "@/lib/slug-utils";
 import { getUserCommunityRole } from "./community-members";
 
 export interface EventFilters {
@@ -348,6 +348,47 @@ export async function getEventBySlug(
 	return event;
 }
 
+export async function getEventByShortCode(
+	code: string,
+	includePending: boolean = false,
+): Promise<(Event & { organization: Organization | null }) | null> {
+	const whereConditions = includePending
+		? eq(events.shortCode, code)
+		: and(eq(events.shortCode, code), eq(events.isApproved, true));
+
+	const results = await db
+		.select({
+			event: events,
+			organization: organizations,
+		})
+		.from(events)
+		.leftJoin(organizations, eq(events.organizationId, organizations.id))
+		.where(whereConditions)
+		.limit(1);
+
+	if (!results[0]) return null;
+
+	const { event, organization } = results[0];
+
+	if (event?.parentEventId) {
+		const [parent] = await db
+			.select({ eventImageUrl: events.eventImageUrl })
+			.from(events)
+			.where(eq(events.id, event.parentEventId))
+			.limit(1);
+
+		if (parent) {
+			return {
+				...event,
+				eventImageUrl: event.eventImageUrl || parent.eventImageUrl,
+				organization,
+			};
+		}
+	}
+
+	return { ...event, organization };
+}
+
 export async function getFeaturedEvents(limit: number = 6): Promise<Event[]> {
 	const results = await db
 		.select()
@@ -482,8 +523,8 @@ export async function createEvent(
 			}
 		}
 
-		// Generate unique slug using centralized utility
 		const slug = await createUniqueSlug(input.name);
+		const shortCode = await ensureUniqueShortCode();
 
 		let isApproved = false;
 		let approvalStatus: "pending" | "approved" = "pending";
@@ -503,6 +544,7 @@ export async function createEvent(
 
 		const eventData: NewEvent = {
 			slug,
+			shortCode,
 			name: input.name,
 			description: input.description,
 			websiteUrl: input.websiteUrl || input.registrationUrl,

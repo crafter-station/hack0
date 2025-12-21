@@ -97,9 +97,7 @@ export function EventRowWithChildren({
 			? "lg:grid-cols-[1fr_140px_100px_100px_100px]"
 			: "lg:grid-cols-[1fr_140px_100px_100px]";
 
-	const eventUrl = event.organization?.slug
-		? `/c/${event.organization.slug}/events/${event.slug}`
-		: `/${event.slug}`;
+	const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
 
 	return (
 		<div>
@@ -400,9 +398,7 @@ function ChildEventRow({
 	const isOngoing = status.status === "ongoing";
 	const isOpen = status.status === "open";
 
-	const childEventUrl = event.organization?.slug
-		? `/c/${event.organization.slug}/events/${event.slug}`
-		: `/${event.slug}`;
+	const childEventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
 
 	return (
 		<Link

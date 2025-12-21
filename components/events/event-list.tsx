@@ -183,9 +183,7 @@ export function EventList({
 								: null;
 							const endDate = event.endDate ? new Date(event.endDate) : null;
 
-							const eventUrl = event.organization?.slug
-								? `/c/${event.organization.slug}/events/${event.slug}`
-								: `/${event.slug}`;
+							const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
 
 							return (
 								<tr

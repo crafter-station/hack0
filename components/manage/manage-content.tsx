@@ -80,7 +80,7 @@ export function ManageContent({
 	const deadline = event.registrationDeadline
 		? new Date(event.registrationDeadline)
 		: null;
-	const eventUrl = `https://hack0.dev/c/${slug}/events/${eventSlug}`;
+	const eventUrl = `https://hack0.dev/e/${event.shortCode}`;
 
 	if (tab === "overview") {
 		const copyToClipboard = () => {

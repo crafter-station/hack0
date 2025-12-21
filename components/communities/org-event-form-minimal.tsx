@@ -52,7 +52,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { createEvent } from "@/lib/actions/events";
 import { startLumaImport } from "@/lib/actions/import";
 import type { Organization } from "@/lib/db/schema";
-import { EVENT_TYPE_OPTIONS, SKILL_LEVEL_OPTIONS } from "@/lib/event-utils";
+import {
+	EVENT_TYPE_LIST,
+	getEventTypeConfig,
+	hasEventOptions,
+} from "@/lib/event-type-config";
+import { SKILL_LEVEL_OPTIONS } from "@/lib/event-utils";
 import type { ExtractedEventData } from "@/lib/schemas/event-extraction";
 import { AIExtractModal } from "./ai-extract-modal";
 
@@ -133,6 +138,7 @@ export function OrgEventFormMinimal({
 	} | null>(null);
 	const [isPending, startTransition] = useTransition();
 	const [orgSelectorOpen, setOrgSelectorOpen] = useState(false);
+	const [typeSelectorOpen, setTypeSelectorOpen] = useState(false);
 
 	const creatableOrgs = useMemo(() => {
 		const orgs: Array<{ organization: Organization; role: string }> = [];
@@ -184,8 +190,8 @@ export function OrgEventFormMinimal({
 
 		setLoading(false);
 
-		if (result.success && result.event) {
-			router.push(`/c/${communitySlug}/events/${result.event.slug}`);
+		if (result.success && result.event?.shortCode) {
+			router.push(`/e/${result.event.shortCode}`);
 		} else {
 			setError(result.error || "Error al crear el evento");
 		}
@@ -554,6 +560,82 @@ export function OrgEventFormMinimal({
 						</div>
 					)}
 
+					{/* Event Type Selector */}
+					<div>
+						<Label className="text-xs text-muted-foreground mb-2 block">
+							Tipo de evento
+						</Label>
+						<Popover open={typeSelectorOpen} onOpenChange={setTypeSelectorOpen}>
+							<PopoverTrigger asChild>
+								<Button
+									variant="outline"
+									role="combobox"
+									aria-expanded={typeSelectorOpen}
+									className="w-full justify-between h-auto py-2"
+									disabled={isImporting}
+								>
+									<div className="flex items-center gap-2">
+										{(() => {
+											const config = getEventTypeConfig(eventType);
+											const Icon = config.icon;
+											return (
+												<>
+													<div className="h-6 w-6 rounded-md bg-muted flex items-center justify-center">
+														<Icon className="h-3.5 w-3.5 text-muted-foreground" />
+													</div>
+													<span className="truncate">{config.label}</span>
+												</>
+											);
+										})()}
+									</div>
+									<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent
+								className="w-[--radix-popover-trigger-width] p-0"
+								align="start"
+							>
+								<Command>
+									<CommandInput placeholder="Buscar tipo..." />
+									<CommandList>
+										<CommandEmpty>No se encontró</CommandEmpty>
+										<CommandGroup>
+											{EVENT_TYPE_LIST.map((type) => {
+												const Icon = type.icon;
+												return (
+													<CommandItem
+														key={type.value}
+														value={type.value}
+														onSelect={(value) => {
+															setEventType(value);
+															setTypeSelectorOpen(false);
+														}}
+														className="flex items-center gap-2 py-2"
+													>
+														<div className="h-6 w-6 rounded-md bg-muted flex items-center justify-center">
+															<Icon className="h-3.5 w-3.5 text-muted-foreground" />
+														</div>
+														<div className="flex-1 min-w-0">
+															<div className="truncate font-medium">
+																{type.label}
+															</div>
+															<div className="text-xs text-muted-foreground truncate">
+																{type.description}
+															</div>
+														</div>
+														{type.value === eventType && (
+															<Check className="h-4 w-4 shrink-0" />
+														)}
+													</CommandItem>
+												);
+											})}
+										</CommandGroup>
+									</CommandList>
+								</Command>
+							</PopoverContent>
+						</Popover>
+					</div>
+
 					{/* Image Upload */}
 					<div
 						className={`w-full aspect-square md:h-72 overflow-hidden bg-muted border border-border rounded-lg ${isImporting ? "input-shimmer" : ""}`}
@@ -814,120 +896,118 @@ export function OrgEventFormMinimal({
 						</ResponsiveModalContent>
 					</ResponsiveModal>
 
-					{/* Event Options Button */}
-					<ResponsiveModal open={optionsOpen} onOpenChange={setOptionsOpen}>
-						<ResponsiveModalTrigger asChild>
-							<button
-								type="button"
-								className={`w-full border border-border rounded-lg p-3 text-left flex items-start gap-2 hover:bg-muted/50 transition-colors ${isImporting ? "input-shimmer" : ""}`}
-								disabled={isImporting}
-							>
-								<div className="h-4 w-4 text-muted-foreground mt-0.5">
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										viewBox="0 0 16 16"
-										fill="currentColor"
-									>
-										<path d="M8 3.5a.5.5 0 0 1 .5.5v3.5H12a.5.5 0 0 1 0 1H8.5V12a.5.5 0 0 1-1 0V8.5H4a.5.5 0 0 1 0-1h3.5V4a.5.5 0 0 1 .5-.5z" />
-									</svg>
-								</div>
-								<div className="flex-1">
-									<div className="text-xs text-muted-foreground mb-1">
-										Event Options
-									</div>
-									<div className="text-sm">
-										{EVENT_TYPE_OPTIONS.find((opt) => opt.value === eventType)
-											?.label || "Hackathon"}{" "}
-										•{" "}
-										{SKILL_LEVEL_OPTIONS.find((opt) => opt.value === skillLevel)
-											?.label || "Todos"}
-										{prizePool &&
-											` • ${prizeCurrency === "PEN" ? "S/" : "$"}${prizePool}`}
-									</div>
-								</div>
-							</button>
-						</ResponsiveModalTrigger>
-						<ResponsiveModalContent className="max-w-2xl">
-							<ResponsiveModalHeader>
-								<ResponsiveModalTitle>Opciones del evento</ResponsiveModalTitle>
-							</ResponsiveModalHeader>
-							<div className="p-4 space-y-4">
-								<div className="grid grid-cols-2 gap-4">
-									{/* Type */}
-									<div>
-										<Label className="text-sm mb-2 block">Tipo de evento</Label>
-										<SearchableSelect
-											options={EVENT_TYPE_OPTIONS}
-											value={eventType}
-											onValueChange={setEventType}
-											placeholder="Seleccionar tipo"
-											searchPlaceholder="Buscar tipo..."
-											emptyMessage="No se encontró"
-											className="h-9"
-										/>
-									</div>
-
-									{/* Skill Level */}
-									<div>
-										<Label className="text-sm mb-2 block">Nivel</Label>
-										<SearchableSelect
-											options={SKILL_LEVEL_OPTIONS}
-											value={skillLevel}
-											onValueChange={setSkillLevel}
-											placeholder="Seleccionar nivel"
-											searchPlaceholder="Buscar nivel..."
-											emptyMessage="No se encontró"
-											className="h-9"
-										/>
-									</div>
-								</div>
-
-								{/* Prize */}
-								{(eventType === "hackathon" ||
-									eventType === "competition" ||
-									eventType === "olympiad") && (
-									<div>
-										<Label className="text-sm mb-2 flex items-center gap-1.5">
-											<DollarSign className="h-4 w-4" />
-											Premio
-										</Label>
-										<div className="flex gap-2">
-											<SearchableSelect
-												options={[
-													{
-														value: "USD",
-														label: "USD",
-														description: "Dólares",
-													},
-													{ value: "PEN", label: "PEN", description: "Soles" },
-												]}
-												value={prizeCurrency}
-												onValueChange={(val) =>
-													setPrizeCurrency(val as "USD" | "PEN")
+					{/* Event Options Button - Only show if type has options */}
+					{hasEventOptions(eventType) && (
+						<ResponsiveModal open={optionsOpen} onOpenChange={setOptionsOpen}>
+							<ResponsiveModalTrigger asChild>
+								<button
+									type="button"
+									className={`w-full border border-border rounded-lg p-3 text-left flex items-start gap-2 hover:bg-muted/50 transition-colors ${isImporting ? "input-shimmer" : ""}`}
+									disabled={isImporting}
+								>
+									<DollarSign className="h-4 w-4 text-muted-foreground mt-0.5" />
+									<div className="flex-1">
+										<div className="text-xs text-muted-foreground mb-1">
+											Opciones adicionales
+										</div>
+										<div className="text-sm">
+											{(() => {
+												const config = getEventTypeConfig(eventType);
+												const parts: string[] = [];
+												if (config.showSkillLevel) {
+													parts.push(
+														SKILL_LEVEL_OPTIONS.find(
+															(opt) => opt.value === skillLevel,
+														)?.label || "Todos los niveles",
+													);
 												}
-												placeholder="USD"
-												searchPlaceholder="Buscar..."
-												emptyMessage="No se encontró"
-												className="h-9 w-24"
-											/>
-											<Input
-												type="number"
-												value={prizePool}
-												onChange={(e) => setPrizePool(e.target.value)}
-												placeholder="0"
-												className="flex-1 h-9"
-											/>
+												if (config.showPrize && prizePool) {
+													parts.push(
+														`${prizeCurrency === "PEN" ? "S/" : "$"}${prizePool}`,
+													);
+												} else if (config.showPrize) {
+													parts.push("Sin premio definido");
+												}
+												return parts.join(" • ") || "Configurar";
+											})()}
 										</div>
 									</div>
-								)}
-							</div>
-							<ResponsiveModalFooter>
-								<ResponsiveModalClose asChild>
-									<Button>Guardar</Button>
-								</ResponsiveModalClose>
-							</ResponsiveModalFooter>
-						</ResponsiveModalContent>
-					</ResponsiveModal>
+								</button>
+							</ResponsiveModalTrigger>
+							<ResponsiveModalContent className="max-w-lg">
+								<ResponsiveModalHeader>
+									<ResponsiveModalTitle>
+										Opciones adicionales
+									</ResponsiveModalTitle>
+								</ResponsiveModalHeader>
+								<div className="p-4 space-y-4">
+									{/* Skill Level - only for training types */}
+									{getEventTypeConfig(eventType).showSkillLevel && (
+										<div>
+											<Label className="text-sm mb-2 block">
+												Nivel de habilidad
+											</Label>
+											<SearchableSelect
+												options={SKILL_LEVEL_OPTIONS}
+												value={skillLevel}
+												onValueChange={setSkillLevel}
+												placeholder="Seleccionar nivel"
+												searchPlaceholder="Buscar nivel..."
+												emptyMessage="No se encontró"
+												className="h-9"
+											/>
+										</div>
+									)}
+
+									{/* Prize - only for competition types */}
+									{getEventTypeConfig(eventType).showPrize && (
+										<div>
+											<Label className="text-sm mb-2 flex items-center gap-1.5">
+												<DollarSign className="h-4 w-4" />
+												Premio
+											</Label>
+											<div className="flex gap-2">
+												<SearchableSelect
+													options={[
+														{
+															value: "USD",
+															label: "USD",
+															description: "Dólares",
+														},
+														{
+															value: "PEN",
+															label: "PEN",
+															description: "Soles",
+														},
+													]}
+													value={prizeCurrency}
+													onValueChange={(val) =>
+														setPrizeCurrency(val as "USD" | "PEN")
+													}
+													placeholder="USD"
+													searchPlaceholder="Buscar..."
+													emptyMessage="No se encontró"
+													className="h-9 w-24"
+												/>
+												<Input
+													type="number"
+													value={prizePool}
+													onChange={(e) => setPrizePool(e.target.value)}
+													placeholder="0"
+													className="flex-1 h-9"
+												/>
+											</div>
+										</div>
+									)}
+								</div>
+								<ResponsiveModalFooter>
+									<ResponsiveModalClose asChild>
+										<Button>Guardar</Button>
+									</ResponsiveModalClose>
+								</ResponsiveModalFooter>
+							</ResponsiveModalContent>
+						</ResponsiveModal>
+					)}
 
 					{/* Links Button */}
 					<ResponsiveModal open={linksOpen} onOpenChange={setLinksOpen}>

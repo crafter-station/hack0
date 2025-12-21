@@ -235,9 +235,7 @@ export function GlobalSearch() {
 				{ongoingEvents.length > 0 && (
 					<CommandGroup heading="En curso">
 						{ongoingEvents.slice(0, 3).map((event) => {
-							const eventUrl = event.organization?.slug
-								? `/c/${event.organization.slug}/events/${event.slug}`
-								: `/${event.slug}`;
+							const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
 							return (
 								<CommandItem
 									key={event.id}
@@ -274,9 +272,7 @@ export function GlobalSearch() {
 				{upcomingEvents.length > 0 && (
 					<CommandGroup heading="Próximos eventos">
 						{upcomingEvents.slice(0, 5).map((event) => {
-							const eventUrl = event.organization?.slug
-								? `/c/${event.organization.slug}/events/${event.slug}`
-								: `/${event.slug}`;
+							const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
 							return (
 								<CommandItem
 									key={event.id}

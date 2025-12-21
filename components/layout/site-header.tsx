@@ -1,9 +1,9 @@
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
-import { Plus } from "lucide-react";
 import Link from "next/link";
 import { SearchTrigger } from "@/components/search-command";
 import { isGodMode } from "@/lib/god-mode";
+import { CreateButtonGroup } from "./create-button-group";
 import { MainNav } from "./main-nav";
 import { MobileNav } from "./mobile-nav";
 import { UserDropdown } from "./user-dropdown";
@@ -88,13 +88,7 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 						</SignedOut>
 						<SignedIn>
 							{personalOrg && (
-								<Link
-									href={`/c/${personalOrg.slug}/events/new`}
-									className="inline-flex h-7 items-center gap-1.5 bg-foreground px-2.5 text-xs font-medium text-background transition-colors hover:bg-foreground/90"
-								>
-									<Plus className="h-3 w-3" />
-									<span className="hidden sm:inline">Crear evento</span>
-								</Link>
+								<CreateButtonGroup personalOrgSlug={personalOrg.slug} />
 							)}
 							<UserDropdown
 								isGodMode={godMode}

@@ -22,10 +22,10 @@ interface ShareEventDialogProps {
 export function ShareEventDialog({ event, children }: ShareEventDialogProps) {
 	const [copied, setCopied] = useState<string | null>(null);
 
-	const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://hack0.dev"}/events/${event.slug}`;
+	const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://hack0.dev"}/e/${event.shortCode}`;
 	const ogImageUrl =
 		event.eventImageUrl ||
-		`${process.env.NEXT_PUBLIC_APP_URL || "https://hack0.dev"}/api/og?slug=${event.slug}`;
+		`${process.env.NEXT_PUBLIC_APP_URL || "https://hack0.dev"}/api/og?code=${event.shortCode}`;
 
 	function copyToClipboard(text: string, key: string) {
 		try {

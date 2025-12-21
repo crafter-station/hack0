@@ -62,9 +62,7 @@ export function EventsCards({
 					const isEnded = status.status === "ended";
 					const prize = formatPrize(event.prizePool, event.prizeCurrency);
 
-					const eventUrl = event.organization?.slug
-						? `/c/${event.organization.slug}/events/${event.slug}`
-						: `/${event.slug}`;
+					const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
 
 					return (
 						<Link key={event.id} href={eventUrl}>

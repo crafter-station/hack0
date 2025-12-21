@@ -180,8 +180,8 @@ export async function inviteCohost(input: InviteCohostInput) {
 		})
 		.returning();
 
-	const acceptUrl = `${process.env.NEXT_PUBLIC_APP_URL}/c/${event.organization.slug}/events/${event.slug}/cohost-invite/${inviteToken}`;
-	const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/c/${event.organization.slug}/events/${event.slug}`;
+	const acceptUrl = `${process.env.NEXT_PUBLIC_APP_URL}/e/${event.shortCode}/cohost-invite/${inviteToken}`;
+	const eventUrl = `${process.env.NEXT_PUBLIC_APP_URL}/e/${event.shortCode}`;
 
 	if (isEmail && targetUserId) {
 		try {
@@ -207,8 +207,8 @@ export async function inviteCohost(input: InviteCohostInput) {
 		}
 	}
 
-	revalidatePath(`/c/${event.organization.slug}/manage/events/${event.slug}`);
-	revalidatePath(`/c/${event.organization.slug}/events/${event.slug}`);
+	revalidatePath(`/e/${event.shortCode}`);
+	revalidatePath(`/e/${event.shortCode}/manage`);
 
 	return {
 		success: true,
@@ -263,14 +263,15 @@ export async function acceptCohostInvite(inviteToken: string) {
 	});
 
 	if (eventOrg) {
-		revalidatePath(`/c/${eventOrg.slug}/events/${invite.event.slug}`);
-		revalidatePath(`/c/${eventOrg.slug}/manage/events/${invite.event.slug}`);
+		revalidatePath(`/e/${invite.event.shortCode}`);
+		revalidatePath(`/e/${invite.event.shortCode}/manage`);
 	}
 
 	return {
 		success: true,
 		message: `Ahora eres co-organizador de ${invite.event.name}`,
 		eventSlug: invite.event.slug,
+		eventShortCode: invite.event.shortCode,
 	};
 }
 
@@ -317,7 +318,7 @@ export async function rejectCohostInvite(inviteToken: string) {
 	});
 
 	if (eventOrg) {
-		revalidatePath(`/c/${eventOrg.slug}/events/${invite.event.slug}`);
+		revalidatePath(`/e/${invite.event.shortCode}`);
 	}
 
 	return {
@@ -371,12 +372,8 @@ export async function removeCohostInvite(inviteId: string) {
 		.where(eq(eventHostOrganizations.id, inviteId));
 
 	if (invite.event.organization) {
-		revalidatePath(
-			`/c/${invite.event.organization.slug}/events/${invite.event.slug}`,
-		);
-		revalidatePath(
-			`/c/${invite.event.organization.slug}/manage/events/${invite.event.slug}`,
-		);
+		revalidatePath(`/e/${invite.event.shortCode}`);
+		revalidatePath(`/e/${invite.event.shortCode}/manage`);
 	}
 
 	return { success: true, message: "Invitación eliminada" };

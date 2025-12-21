@@ -8,12 +8,11 @@ import type { Event } from "@/lib/db/schema";
 
 interface ManageEventButtonProps {
 	event: Event;
-	communitySlug: string;
+	communitySlug?: string | null;
 }
 
 export function ManageEventButton({
 	event,
-	communitySlug,
 }: ManageEventButtonProps) {
 	const [canManage, setCanManage] = useState(false);
 	const [loading, setLoading] = useState(true);
@@ -25,12 +24,12 @@ export function ManageEventButton({
 		});
 	}, [event.id]);
 
-	if (loading || !canManage) {
+	if (loading || !canManage || !event.shortCode) {
 		return null;
 	}
 
 	return (
-		<Link href={`/c/${communitySlug}/events/${event.slug}/manage`}>
+		<Link href={`/e/${event.shortCode}/manage`}>
 			<button className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-border bg-background/90 backdrop-blur-sm px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted">
 				<Settings className="h-3.5 w-3.5" />
 				<span className="hidden sm:inline">Gestionar evento</span>

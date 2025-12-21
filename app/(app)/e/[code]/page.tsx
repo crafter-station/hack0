@@ -27,10 +27,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getEventCohost } from "@/lib/actions/cohost-invites";
 import {
 	getChildEvents,
-	getEventBySlug,
+	getEventByShortCode,
 	getEventSponsors,
 } from "@/lib/actions/events";
-import { getOrganizationBySlug } from "@/lib/actions/organizations";
 import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
 import {
 	formatEventDate,
@@ -52,7 +51,7 @@ import { isGodMode } from "@/lib/god-mode";
 import remarkGfm from "remark-gfm";
 
 interface EventPageProps {
-	params: Promise<{ slug: string; eventSlug: string }>;
+	params: Promise<{ code: string }>;
 }
 
 function stripMarkdown(text: string): string {
@@ -80,23 +79,24 @@ function getInitials(name: string): string {
 export async function generateMetadata({
 	params,
 }: EventPageProps): Promise<Metadata> {
-	const { slug, eventSlug } = await params;
-	const hackathon = await getEventBySlug(eventSlug, true);
+	const { code } = await params;
+	const result = await getEventByShortCode(code, true);
 
-	if (!hackathon) {
+	if (!result) {
 		return {
 			title: "Evento no encontrado",
 		};
 	}
 
-	const _community = await getOrganizationBySlug(slug);
+	const hackathon = result;
+	const community = result.organization;
 
 	const title = `${hackathon.name} - ${getEventTypeLabel(hackathon.eventType)} en Perú`;
 	const description = hackathon.description
 		? stripMarkdown(hackathon.description).slice(0, 160)
 		: `${getEventTypeLabel(hackathon.eventType)} ${hackathon.format === "virtual" ? "virtual" : `en ${hackathon.city || "Perú"}`}. ${hackathon.prizePool ? `Premio: ${hackathon.prizeCurrency === "PEN" ? "S/" : "$"}${hackathon.prizePool.toLocaleString()}` : ""}`;
 
-	const ogImageUrl = `https://hack0.dev/api/og?slug=${hackathon.slug}`;
+	const ogImageUrl = `https://hack0.dev/api/og?code=${code}`;
 
 	return {
 		title,
@@ -114,7 +114,7 @@ export async function generateMetadata({
 			title,
 			description,
 			type: "website",
-			url: `https://hack0.dev/c/${slug}/events/${hackathon.slug}`,
+			url: `https://hack0.dev/e/${code}`,
 			images: [
 				{ url: ogImageUrl, width: 1200, height: 630, alt: hackathon.name },
 			],
@@ -126,28 +126,25 @@ export async function generateMetadata({
 			images: [ogImageUrl],
 		},
 		alternates: {
-			canonical: `https://hack0.dev/c/${slug}/events/${hackathon.slug}`,
+			canonical: `https://hack0.dev/e/${code}`,
 		},
 	};
 }
 
 export default async function EventPage({ params }: EventPageProps) {
-	const { slug, eventSlug } = await params;
+	const { code } = await params;
 	const { userId } = await auth();
-	const hackathon = await getEventBySlug(eventSlug, true);
+	const result = await getEventByShortCode(code, true);
 
-	if (!hackathon) {
+	if (!result) {
 		notFound();
 	}
 
-	const community = await getOrganizationBySlug(slug);
-
-	if (!community || hackathon.organizationId !== community.id) {
-		notFound();
-	}
+	const hackathon = result;
+	const community = result.organization;
 
 	const godMode = await isGodMode();
-	const isOwner = userId && community.ownerUserId === userId;
+	const isOwner = userId && community?.ownerUserId === userId;
 	const canViewPending = godMode || isOwner;
 
 	if (!hackathon.isApproved && !canViewPending) {
@@ -197,17 +194,21 @@ export default async function EventPage({ params }: EventPageProps) {
 				name: "Inicio",
 				item: "https://hack0.dev",
 			},
+			...(community
+				? [
+						{
+							"@type": "ListItem",
+							position: 2,
+							name: community.displayName || community.name,
+							item: `https://hack0.dev/c/${community.slug}`,
+						},
+					]
+				: []),
 			{
 				"@type": "ListItem",
-				position: 2,
-				name: community.displayName || community.name,
-				item: `https://hack0.dev/c/${slug}`,
-			},
-			{
-				"@type": "ListItem",
-				position: 3,
+				position: community ? 3 : 2,
 				name: hackathon.name,
-				item: `https://hack0.dev/c/${slug}/events/${hackathon.slug}`,
+				item: `https://hack0.dev/e/${code}`,
 			},
 		],
 	};
@@ -231,39 +232,39 @@ export default async function EventPage({ params }: EventPageProps) {
 		location:
 			hackathon.format === "virtual"
 				? {
-					"@type": "VirtualLocation",
-					url: hackathon.websiteUrl || hackathon.registrationUrl,
-				}
+						"@type": "VirtualLocation",
+						url: hackathon.websiteUrl || hackathon.registrationUrl,
+					}
 				: {
-					"@type": "Place",
-					name: hackathon.venue || hackathon.city || "Perú",
-					address: {
-						"@type": "PostalAddress",
-						addressLocality: hackathon.city,
-						addressRegion: hackathon.department,
-						addressCountry: "PE",
+						"@type": "Place",
+						name: hackathon.venue || hackathon.city || "Perú",
+						address: {
+							"@type": "PostalAddress",
+							addressLocality: hackathon.city,
+							addressRegion: hackathon.department,
+							addressCountry: "PE",
+						},
 					},
-				},
 		image: hackathon.eventImageUrl,
-		url: `https://hack0.dev/c/${slug}/events/${hackathon.slug}`,
+		url: `https://hack0.dev/e/${code}`,
 		organizer: community
 			? {
-				"@type": "Organization",
-				name: community.displayName || community.name,
-				url: community.websiteUrl,
-			}
+					"@type": "Organization",
+					name: community.displayName || community.name,
+					url: community.websiteUrl,
+				}
 			: undefined,
 		offers:
 			hackathon.prizePool && hackathon.prizePool > 0
 				? {
-					"@type": "Offer",
-					price: "0",
-					priceCurrency: "USD",
-					availability: isEnded
-						? "https://schema.org/SoldOut"
-						: "https://schema.org/InStock",
-					url: hackathon.registrationUrl,
-				}
+						"@type": "Offer",
+						price: "0",
+						priceCurrency: "USD",
+						availability: isEnded
+							? "https://schema.org/SoldOut"
+							: "https://schema.org/InStock",
+						url: hackathon.registrationUrl,
+					}
 				: undefined,
 	};
 
@@ -299,7 +300,7 @@ export default async function EventPage({ params }: EventPageProps) {
 						/>
 					)}
 					<div className="absolute top-3 right-3">
-						<ManageEventButton event={hackathon} communitySlug={slug} />
+						<ManageEventButton event={hackathon} communitySlug={community?.slug} />
 					</div>
 				</div>
 
@@ -333,7 +334,7 @@ export default async function EventPage({ params }: EventPageProps) {
 									{hackathon.name}
 								</h1>
 								<div className="hidden md:block">
-									<ManageEventButton event={hackathon} communitySlug={slug} />
+									<ManageEventButton event={hackathon} communitySlug={community?.slug} />
 								</div>
 							</div>
 
@@ -587,7 +588,7 @@ export default async function EventPage({ params }: EventPageProps) {
 											return (
 												<Link
 													key={child.id}
-													href={`/c/${slug}/events/${child.slug}`}
+													href={`/e/${child.shortCode}`}
 													className="group block rounded-xl border p-4 transition-colors hover:bg-muted/50"
 												>
 													<div className="flex items-start gap-4">
@@ -758,7 +759,7 @@ export default async function EventPage({ params }: EventPageProps) {
 												<div className="flex-1 min-w-0">
 													<div className="flex items-center gap-2 flex-wrap">
 														<Link
-															href={`/c/${slug}`}
+															href={`/c/${community.slug}`}
 															className="text-sm font-medium hover:underline underline-offset-2 truncate"
 														>
 															{community.displayName || community.name}
@@ -780,7 +781,7 @@ export default async function EventPage({ params }: EventPageProps) {
 												</div>
 											</div>
 											<Link
-												href={`/c/${slug}`}
+												href={`/c/${community.slug}`}
 												className="flex w-full h-9 items-center justify-center gap-2 rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
 											>
 												<Building2 className="h-4 w-4" />

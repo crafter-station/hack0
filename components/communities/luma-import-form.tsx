@@ -343,9 +343,9 @@ export function LumaImportForm({
 		});
 	};
 
-	const handleSuccess = (eventSlug: string, isVerified: boolean) => {
-		if (isVerified) {
-			router.push(`/c/${communitySlug}/events/${eventSlug}`);
+	const handleSuccess = (eventShortCode: string, isVerified: boolean) => {
+		if (isVerified && eventShortCode) {
+			router.push(`/e/${eventShortCode}`);
 		} else {
 			router.push(`/c/${communitySlug}`);
 		}

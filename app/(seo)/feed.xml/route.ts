@@ -48,7 +48,9 @@ export async function GET() {
 	}));
 
 	for (const event of activeEvents) {
-		const eventUrl = `${SITE_URL}/${event.slug}`;
+		const eventUrl = event.shortCode
+			? `${SITE_URL}/e/${event.shortCode}`
+			: `${SITE_URL}/${event.slug}`;
 
 		// Truncate description to 500 chars
 		const description = event.description

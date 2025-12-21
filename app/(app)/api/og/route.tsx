@@ -17,9 +17,10 @@ export async function GET(request: NextRequest) {
 	try {
 		const { searchParams } = new URL(request.url);
 		const slug = searchParams.get("slug");
+		const code = searchParams.get("code");
 
-		if (!slug) {
-			return new Response("Missing slug parameter", { status: 400 });
+		if (!slug && !code) {
+			return new Response("Missing slug or code parameter", { status: 400 });
 		}
 
 		const results = await db
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
 			})
 			.from(events)
 			.leftJoin(organizations, eq(events.organizationId, organizations.id))
-			.where(eq(events.slug, slug))
+			.where(code ? eq(events.shortCode, code) : eq(events.slug, slug!))
 			.limit(1);
 
 		if (!results[0]) {

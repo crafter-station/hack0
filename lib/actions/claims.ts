@@ -196,6 +196,7 @@ export async function getAllWinnerClaims() {
 			createdAt: winnerClaims.createdAt,
 			eventName: events.name,
 			eventSlug: events.slug,
+			eventShortCode: events.shortCode,
 			organizationSlug: organizations.slug,
 		})
 		.from(winnerClaims)

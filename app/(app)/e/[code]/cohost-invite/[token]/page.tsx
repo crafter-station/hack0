@@ -16,7 +16,7 @@ import { eventHostOrganizations } from "@/lib/db/schema";
 import { formatEventDateRange } from "@/lib/event-utils";
 
 interface CohostInvitePageProps {
-	params: Promise<{ slug: string; eventSlug: string; token: string }>;
+	params: Promise<{ code: string; token: string }>;
 	searchParams: Promise<{ error?: string }>;
 }
 
@@ -70,7 +70,7 @@ async function CohostInviteContent({ token }: { token: string }) {
 						</p>
 					</div>
 					<Button asChild>
-						<a href={`/events/${invite.event.slug}`}>Ver evento</a>
+						<a href={`/e/${invite.event.shortCode}`}>Ver evento</a>
 					</Button>
 				</div>
 			</div>
@@ -119,14 +119,14 @@ async function CohostInviteContent({ token }: { token: string }) {
 					<div className="space-y-3">
 						<Button asChild className="w-full">
 							<a
-								href={`/sign-in?redirect_url=${encodeURIComponent(`/events/${invite.event.slug}/cohost-invite/${token}`)}`}
+								href={`/sign-in?redirect_url=${encodeURIComponent(`/e/${invite.event.shortCode}/cohost-invite/${token}`)}`}
 							>
 								Iniciar sesión
 							</a>
 						</Button>
 						<Button asChild variant="outline" className="w-full">
 							<a
-								href={`/sign-up?redirect_url=${encodeURIComponent(`/events/${invite.event.slug}/cohost-invite/${token}`)}`}
+								href={`/sign-up?redirect_url=${encodeURIComponent(`/e/${invite.event.shortCode}/cohost-invite/${token}`)}`}
 							>
 								Crear cuenta
 							</a>
@@ -219,11 +219,13 @@ async function CohostInviteContent({ token }: { token: string }) {
 								"use server";
 								const result = await acceptCohostInvite(token);
 
-								if (result.success && result.eventSlug) {
-									redirect(`/events/${result.eventSlug}?accepted=true`);
+								if (result.success && result.eventShortCode) {
+									redirect(`/e/${result.eventShortCode}?accepted=true`);
+								} else if (result.success && result.eventSlug) {
+									redirect(`/e/${invite.event.shortCode}?accepted=true`);
 								} else {
 									redirect(
-										`/events/${invite.event.slug}/cohost-invite/${token}?error=${encodeURIComponent(result.error || "Error desconocido")}`,
+										`/e/${invite.event.shortCode}/cohost-invite/${token}?error=${encodeURIComponent(result.error || "Error desconocido")}`,
 									);
 								}
 							}}
@@ -240,7 +242,7 @@ async function CohostInviteContent({ token }: { token: string }) {
 									redirect(`/?rejected=true`);
 								} else {
 									redirect(
-										`/events/${invite.event.slug}/cohost-invite/${token}?error=${encodeURIComponent(result.error || "Error desconocido")}`,
+										`/e/${invite.event.shortCode}/cohost-invite/${token}?error=${encodeURIComponent(result.error || "Error desconocido")}`,
 									);
 								}
 							}}
@@ -286,7 +288,7 @@ export default async function CohostInvitePage({
 	params,
 	searchParams,
 }: CohostInvitePageProps) {
-	const { token } = await params;
+	const { code, token } = await params;
 	const { error } = await searchParams;
 
 	if (error) {
@@ -308,7 +310,7 @@ export default async function CohostInvitePage({
 								</p>
 							</div>
 							<Button asChild>
-								<a href={`/events/cohost-invite/${token}`}>Intentar de nuevo</a>
+								<a href={`/e/${code}/cohost-invite/${token}`}>Intentar de nuevo</a>
 							</Button>
 						</div>
 					</div>
