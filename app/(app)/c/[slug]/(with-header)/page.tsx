@@ -42,25 +42,23 @@ async function CommunityEvents({ slug }: { slug: string }) {
 
 	const allRelatedEventIds = [...new Set([...coHostedEventIds, ...lumaHostedEventIds])];
 
-	// Status priority: 1=ongoing, 2=open, 3=upcoming, 4=ended
 	const statusPriority = sql<number>`
-		CASE
-			WHEN ${events.endDate} IS NOT NULL AND ${events.endDate} < NOW() THEN 4
-			WHEN ${events.startDate} IS NOT NULL AND ${events.startDate} <= NOW()
-				 AND (${events.endDate} IS NULL OR ${events.endDate} > NOW()) THEN 1
-			WHEN ${events.registrationDeadline} IS NOT NULL AND ${events.registrationDeadline} > NOW() THEN 2
-			ELSE 3
-		END
-	`;
+    CASE
+      WHEN ${events.endDate} IS NOT NULL AND ${events.endDate} < NOW() THEN 4
+      WHEN ${events.startDate} IS NOT NULL AND ${events.startDate} <= NOW()
+           AND (${events.endDate} IS NULL OR ${events.endDate} > NOW()) THEN 1
+      WHEN ${events.registrationDeadline} IS NOT NULL AND ${events.registrationDeadline} > NOW() THEN 2
+      ELSE 3
+    END
+  `;
 
-	// Date sorting: ended events by most recent first, active events by soonest first
 	const dateSortOrder = sql`
-		CASE
-			WHEN ${events.endDate} IS NOT NULL AND ${events.endDate} < NOW()
-				THEN -EXTRACT(EPOCH FROM ${events.endDate})
-			ELSE EXTRACT(EPOCH FROM COALESCE(${events.startDate}, '9999-12-31'))
-		END
-	`;
+    CASE
+      WHEN ${events.endDate} IS NOT NULL AND ${events.endDate} < NOW()
+        THEN -EXTRACT(EPOCH FROM ${events.endDate})
+      ELSE EXTRACT(EPOCH FROM COALESCE(${events.startDate}, '9999-12-31'))
+    END
+  `;
 
 	const whereCondition =
 		allRelatedEventIds.length > 0
