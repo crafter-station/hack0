@@ -14,7 +14,7 @@ export default async function NewCommunityPage() {
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
 			<SiteHeader />
-			<main className="flex-1 w-full py-4 md:py-6">
+			<main className="flex-1 w-full py-4 md:py-6 min-h-[calc(100vh-4rem)]">
 				<CommunityFormMinimal />
 			</main>
 			<SiteFooter />

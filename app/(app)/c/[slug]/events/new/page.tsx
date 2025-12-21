@@ -40,7 +40,7 @@ export default async function NewEventPage({ params }: NewEventPageProps) {
 	const allOrganizations = await getAllUserOrganizations();
 
 	return (
-		<main className="flex-1 w-full py-4 md:py-6">
+		<main className="flex-1 w-full py-4 md:py-6 min-h-[calc(100vh-4rem)]">
 			<OrgEventFormMinimal
 				communityId={org.id}
 				communityName={org.displayName || org.name}
