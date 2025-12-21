@@ -71,7 +71,7 @@ export default async function CommunitiesPage({ searchParams }: CommunitiesPageP
 									showRoleFilter
 								/>
 							</Suspense>
-							<Button variant="secondary" size="sm" className="h-7" asChild>
+							<Button variant="secondary" size="sm" className="h-7 text-xs" asChild>
 								<Link href="/c/new">
 									<Plus className="h-3.5 w-3.5" />
 									<span className="hidden sm:inline">Nueva</span>
