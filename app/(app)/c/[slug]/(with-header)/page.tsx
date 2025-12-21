@@ -45,8 +45,9 @@ async function CommunityEvents({ slug }: { slug: string }) {
 	const statusPriority = sql<number>`
     CASE
       WHEN ${events.endDate} IS NOT NULL AND ${events.endDate} < NOW() THEN 4
+      WHEN ${events.endDate} IS NULL AND ${events.startDate} IS NOT NULL AND ${events.startDate} < CURRENT_DATE THEN 4
       WHEN ${events.startDate} IS NOT NULL AND ${events.startDate} <= NOW()
-           AND (${events.endDate} IS NULL OR ${events.endDate} > NOW()) THEN 1
+           AND ${events.endDate} IS NOT NULL AND ${events.endDate} > NOW() THEN 1
       WHEN ${events.registrationDeadline} IS NOT NULL AND ${events.registrationDeadline} > NOW() THEN 2
       ELSE 3
     END
