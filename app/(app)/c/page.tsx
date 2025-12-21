@@ -72,7 +72,7 @@ export default async function CommunitiesPage({ searchParams }: CommunitiesPageP
 							</Suspense>
 							<Link
 								href="/c/new"
-								className="h-7 px-2.5 border border-foreground/20 bg-foreground text-background text-xs font-medium hover:bg-foreground/90 transition-colors inline-flex items-center gap-1.5"
+								className="inline-flex items-center gap-1.5 h-7 px-2.5 text-xs font-medium border border-border rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
 							>
 								<Plus className="h-3.5 w-3.5" />
 								<span className="hidden sm:inline">Nueva</span>

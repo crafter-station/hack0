@@ -1,3 +1,6 @@
+import { auth } from "@clerk/nextjs/server";
+import { CalendarPlus } from "lucide-react";
+import Link from "next/link";
 import type { SearchParams } from "nuqs/server";
 import { Suspense } from "react";
 import { AllEventsTable } from "@/components/events/all-events-table";
@@ -49,7 +52,17 @@ async function EventsContent({
 }
 
 export default async function EventsPage({ searchParams }: EventsPageProps) {
+	const { userId } = await auth();
 	const params = await loadSearchParams(searchParams);
+
+	const personalOrg = userId
+		? await (async () => {
+				const { getOrCreatePersonalOrg } = await import(
+					"@/lib/actions/organizations"
+				);
+				return await getOrCreatePersonalOrg();
+			})()
+		: null;
 
 	const filters: EventFilters = {
 		category: params.category,
@@ -79,9 +92,20 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 						<Suspense fallback={<div className="h-7 w-40 animate-pulse bg-muted rounded" />}>
 							<EventsTabToggle />
 						</Suspense>
-						<Suspense fallback={<div className="h-7 w-48 animate-pulse bg-muted rounded" />}>
-							<EventsToolbar />
-						</Suspense>
+						<div className="flex items-center gap-2">
+							<Suspense fallback={<div className="h-7 w-48 animate-pulse bg-muted rounded" />}>
+								<EventsToolbar />
+							</Suspense>
+							{personalOrg && (
+								<Link
+									href={`/c/${personalOrg.slug}/events/new`}
+									className="inline-flex items-center gap-1.5 h-7 px-2.5 text-xs font-medium border border-border rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+								>
+									<CalendarPlus className="h-3.5 w-3.5" />
+									<span className="hidden sm:inline">Crear</span>
+								</Link>
+							)}
+						</div>
 					</div>
 				</div>
 			</section>

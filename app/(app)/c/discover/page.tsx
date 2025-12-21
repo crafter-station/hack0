@@ -1,4 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
+import { Plus } from "lucide-react";
+import Link from "next/link";
 import { Suspense } from "react";
 import { CommunityFilters } from "@/components/communities/community-filters";
 import { CommunityTabToggle } from "@/components/communities/community-tab-toggle";
@@ -47,14 +49,23 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
 						<Suspense fallback={<div className="h-7 w-40 animate-pulse bg-muted rounded" />}>
 							<CommunityTabToggle />
 						</Suspense>
-						<Suspense fallback={<div className="h-7 w-48 animate-pulse bg-muted rounded" />}>
-							<CommunityFilters
-								defaultSearch={params.search}
-								defaultType={params.type}
-								defaultVerified={params.verified === "true"}
-								defaultView={viewMode}
-							/>
-						</Suspense>
+						<div className="flex items-center gap-2">
+							<Suspense fallback={<div className="h-7 w-48 animate-pulse bg-muted rounded" />}>
+								<CommunityFilters
+									defaultSearch={params.search}
+									defaultType={params.type}
+									defaultVerified={params.verified === "true"}
+									defaultView={viewMode}
+								/>
+							</Suspense>
+							<Link
+								href="/c/new"
+								className="inline-flex items-center gap-1.5 h-7 px-2.5 text-xs font-medium border border-border rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+							>
+								<Plus className="h-3.5 w-3.5" />
+								<span className="hidden sm:inline">Nueva</span>
+							</Link>
+						</div>
 					</div>
 				</div>
 			</section>
