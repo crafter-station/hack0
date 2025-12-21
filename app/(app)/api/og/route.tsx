@@ -2,6 +2,7 @@
 import { ImageResponse } from "@takumi-rs/image-response";
 import { eq } from "drizzle-orm";
 import type { NextRequest } from "next/server";
+import sharp from "sharp";
 import { EventOGTemplate } from "@/components/og/event-template";
 import { db } from "@/lib/db";
 import { events, organizations } from "@/lib/db/schema";
@@ -75,7 +76,7 @@ export async function GET(request: NextRequest) {
 
 		const isJuniorFriendly = event.skillLevel === "beginner" || event.skillLevel === "all";
 
-		return new ImageResponse(
+		const pngResponse = new ImageResponse(
 			<EventOGTemplate
 				eventName={event.name}
 				organizerName={
@@ -95,6 +96,18 @@ export async function GET(request: NextRequest) {
 				format: "png",
 			},
 		);
+
+		const pngBuffer = await pngResponse.arrayBuffer();
+		const jpegBuffer = await sharp(Buffer.from(pngBuffer))
+			.jpeg({ quality: 72, progressive: true })
+			.toBuffer();
+
+		return new Response(jpegBuffer, {
+			headers: {
+				"Content-Type": "image/jpeg",
+				"Cache-Control": "public, max-age=86400, s-maxage=86400",
+			},
+		});
 	} catch (error) {
 		console.error("OG Image generation error:", error);
 		return new Response("Failed to generate image", { status: 500 });

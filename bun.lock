@@ -80,6 +80,7 @@
         "react-resizable-panels": "^3.0.6",
         "recharts": "2.15.4",
         "resend": "^6.5.2",
+        "sharp": "^0.34.5",
         "sonner": "^2.0.7",
         "streamdown": "^1.6.10",
         "tailwind-merge": "^3.4.0",
