@@ -3,7 +3,12 @@ import { metadata, task } from "@trigger.dev/sdk/v3";
 import { eq } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { db } from "@/lib/db";
-import { events, lumaCalendars, lumaEventMappings } from "@/lib/db/schema";
+import {
+	events,
+	lumaCalendars,
+	lumaEventMappings,
+	organizations,
+} from "@/lib/db/schema";
 import { getGlobalLumaClient } from "@/lib/luma/client";
 import type { LumaExtractedData } from "@/lib/scraper/luma-schema";
 import {
@@ -78,13 +83,25 @@ async function findOrCreateHack0Calendar() {
 
 	if (existing) return existing;
 
+	const hack0Org = await db.query.organizations.findFirst({
+		where: eq(organizations.slug, "hack0"),
+	});
+
+	if (!hack0Org) {
+		console.warn("[Webhook] hack0 organization not found, cannot create calendar");
+		return null;
+	}
+
 	const [newCalendar] = await db
 		.insert(lumaCalendars)
 		.values({
+			organizationId: hack0Org.id,
 			lumaCalendarApiId: hack0CalendarApiId,
+			lumaCalendarSlug: "hack0",
 			name: "hack0",
-			isConnected: true,
-			lastSyncedAt: new Date(),
+			verificationStatus: "verified",
+			isActive: true,
+			lastSyncAt: new Date(),
 		})
 		.returning();
 
