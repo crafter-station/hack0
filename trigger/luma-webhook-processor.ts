@@ -124,9 +124,33 @@ async function processEventCreatedOrUpdated(lumaEvent: LumaEvent) {
 					resolution.primaryHost?.api_id,
 				);
 				await upsertHostMappings(hosts);
+
+				if (!existingEvent.organizationId && resolution.organizationId) {
+					await db
+						.update(events)
+						.set({ organizationId: resolution.organizationId })
+						.where(eq(events.id, existingMapping.eventId));
+				}
 			}
 
 			return { updated: true, eventId: existingMapping.eventId };
+		}
+
+		if (!existingEvent.organizationId && hosts.length > 0) {
+			const resolution = await resolveOrganization(hosts);
+			if (resolution.organizationId) {
+				await db
+					.update(events)
+					.set({ organizationId: resolution.organizationId })
+					.where(eq(events.id, existingMapping.eventId));
+				await saveEventHosts(
+					existingMapping.eventId,
+					hosts,
+					resolution.primaryHost?.api_id,
+				);
+				await upsertHostMappings(hosts);
+				return { updated: true, eventId: existingMapping.eventId, reason: "Organization linked" };
+			}
 		}
 
 		return { skipped: true, reason: "No changes detected" };
