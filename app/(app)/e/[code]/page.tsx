@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import {
 	AlertCircle,
 	ArrowUpRight,
@@ -135,7 +135,9 @@ export async function generateMetadata({
 
 export default async function EventPage({ params }: EventPageProps) {
 	const { code } = await params;
-	const { userId } = await auth();
+	const user = await currentUser();
+	const userId = user?.id;
+	const userHasClaimedHost = !!(user?.publicMetadata as { lumaHostId?: string })?.lumaHostId;
 	const result = await getEventByShortCode(code, true);
 
 	if (!result) {
@@ -885,6 +887,8 @@ export default async function EventPage({ params }: EventPageProps) {
 													<ClaimHostButton
 														lumaHostApiId={host.lumaHostApiId}
 														hostName={host.name || "Host"}
+														hostAvatarUrl={host.avatarUrl}
+														userHasClaimedHost={userHasClaimedHost}
 													/>
 												)}
 											</div>

@@ -376,6 +376,38 @@ export async function checkUserIsHost(lumaHostApiId: string) {
 	return !!mapping?.isVerified;
 }
 
+export async function getUserClaimedHost(userId: string) {
+	const mapping = await db.query.lumaHostMappings.findFirst({
+		where: and(
+			eq(lumaHostMappings.clerkUserId, userId),
+			eq(lumaHostMappings.isVerified, true),
+		),
+	});
+
+	if (!mapping) return null;
+
+	const hostInfo = await db.query.eventHosts.findFirst({
+		where: eq(eventHosts.lumaHostApiId, mapping.lumaHostApiId),
+	});
+
+	return {
+		lumaHostApiId: mapping.lumaHostApiId,
+		name: hostInfo?.name || mapping.lumaHostName || "Host",
+		avatarUrl: hostInfo?.avatarUrl,
+	};
+}
+
+export async function checkUserHasClaimedAnyHost() {
+	const { userId } = await auth();
+	if (!userId) return { hasClaimed: false, claimedHost: null };
+
+	const claimedHost = await getUserClaimedHost(userId);
+	return {
+		hasClaimed: !!claimedHost,
+		claimedHost,
+	};
+}
+
 export async function inviteHost(lumaHostApiId: string, email: string) {
 	const { userId } = await auth();
 	if (!userId) {
