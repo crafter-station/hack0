@@ -79,7 +79,7 @@ export async function assignOrganizationToEvent(
 				.where(eq(lumaHostMappings.lumaHostApiId, host.lumaHostApiId));
 		}
 
-		revalidatePath("/god/pendientes");
+		revalidatePath("/god/pending");
 		return { success: true };
 	} catch (error) {
 		return {
