@@ -102,7 +102,7 @@ function cleanDescription(description?: string): string | undefined {
 function extractLumaSlugFromUrl(url: string): string | undefined {
 	try {
 		const urlObj = new URL(url);
-		if (urlObj.hostname === "lu.ma") {
+		if (urlObj.hostname === "lu.ma" || urlObj.hostname === "luma.com") {
 			const pathParts = urlObj.pathname.split("/").filter(Boolean);
 			if (pathParts.length > 0) {
 				return pathParts[0];
