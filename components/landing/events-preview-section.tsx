@@ -57,7 +57,7 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 						return (
 							<Link key={event.id} href={eventUrl}>
 								<Card
-									className={`group h-full overflow-hidden p-0 transition-all hover:shadow-md hover:border-foreground/20 ${isEnded ? "opacity-60" : ""}`}
+									className={`group h-full overflow-hidden p-0 gap-0 transition-all hover:shadow-md hover:border-foreground/20 ${isEnded ? "opacity-60" : ""}`}
 								>
 									<div className="relative aspect-square w-full overflow-hidden">
 										{event.eventImageUrl ? (
@@ -148,7 +148,7 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 					{events.length < 4 &&
 						Array.from({ length: 4 - events.length }).map((_, i) => (
 							<Link key={`placeholder-${i}`} href="/onboarding">
-								<Card className="group h-full overflow-hidden p-0 border-dashed hover:border-foreground/20 transition-all">
+								<Card className="group h-full overflow-hidden p-0 gap-0 border-dashed hover:border-foreground/20 transition-all">
 									<div className="relative aspect-square w-full overflow-hidden bg-muted/30">
 										<div className="flex h-full w-full flex-col items-center justify-center gap-2 p-4">
 											<div className="h-10 w-10 rounded-full border-2 border-dashed border-muted-foreground/20 flex items-center justify-center">
