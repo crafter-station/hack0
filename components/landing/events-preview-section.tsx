@@ -145,8 +145,11 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 							</Link>
 						);
 					})}
-					{events.length < 8 &&
-						Array.from({ length: 8 - Math.min(events.length, 8) }).map((_, i) => (
+					{(() => {
+						const eventCount = Math.min(events.length, 8);
+						const targetCount = eventCount <= 4 ? 4 : 8;
+						const placeholderCount = targetCount - eventCount;
+						return placeholderCount > 0 && Array.from({ length: placeholderCount }).map((_, i) => (
 							<Link key={`placeholder-${i}`} href="/onboarding">
 								<Card className="group h-full overflow-hidden p-0 gap-0 border-dashed hover:border-foreground/20 transition-all">
 									<div className="relative aspect-square w-full overflow-hidden bg-muted/30 border-b">
@@ -176,7 +179,8 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 									</CardContent>
 								</Card>
 							</Link>
-						))}
+						));
+					})()}
 				</div>
 
 				<div className="mt-8 text-center">
