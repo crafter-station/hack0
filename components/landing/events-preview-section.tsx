@@ -105,12 +105,12 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 											</div>
 										)}
 									</div>
-									<CardContent className="p-3 space-y-2">
+									<CardContent className="px-3 py-2 space-y-1">
 										<div>
 											<h3 className="font-medium text-sm line-clamp-2 group-hover:text-foreground transition-colors">
 												{event.name}
 											</h3>
-											<p className="text-xs text-muted-foreground mt-0.5">
+											<p className="text-xs text-muted-foreground">
 												{event.organization?.displayName ||
 													event.organization?.name ||
 													getEventTypeLabel(event.eventType)}
@@ -161,12 +161,12 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 											</span>
 										</div>
 									</div>
-									<CardContent className="p-3 space-y-2">
+									<CardContent className="px-3 py-2 space-y-1">
 										<div>
 											<h3 className="font-medium text-sm text-muted-foreground/60 group-hover:text-muted-foreground transition-colors">
 												Publica tu evento
 											</h3>
-											<p className="text-xs text-muted-foreground/40 mt-0.5">
+											<p className="text-xs text-muted-foreground/40">
 												Es gratis y toma 2 minutos
 											</p>
 										</div>
