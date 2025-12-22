@@ -7,10 +7,10 @@ const f = createUploadthing();
 export const ourFileRouter = {
 	// Image uploader for logos, banners, etc.
 	imageUploader: f({
-		image: {
-			maxFileSize: "4MB",
-			maxFileCount: 1,
-		},
+		"image/jpeg": { maxFileSize: "4MB", maxFileCount: 1 },
+		"image/png": { maxFileSize: "4MB", maxFileCount: 1 },
+		"image/webp": { maxFileSize: "4MB", maxFileCount: 1 },
+		"image/gif": { maxFileSize: "4MB", maxFileCount: 1 },
 	})
 		.middleware(async () => {
 			const { userId } = await auth();
@@ -28,10 +28,10 @@ export const ourFileRouter = {
 
 	// Banner uploader with larger size for event banners
 	bannerUploader: f({
-		image: {
-			maxFileSize: "8MB",
-			maxFileCount: 1,
-		},
+		"image/jpeg": { maxFileSize: "8MB", maxFileCount: 1 },
+		"image/png": { maxFileSize: "8MB", maxFileCount: 1 },
+		"image/webp": { maxFileSize: "8MB", maxFileCount: 1 },
+		"image/gif": { maxFileSize: "8MB", maxFileCount: 1 },
 	})
 		.middleware(async () => {
 			const { userId } = await auth();

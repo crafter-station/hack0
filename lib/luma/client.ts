@@ -231,21 +231,29 @@ export class LumaClient {
 			}
 
 			const imageBlob = await imageResponse.blob();
-			const { upload_url, file_url } = await this.createImageUploadUrl(
-				imageBlob.type || "image/jpeg",
-			);
+			const contentType = imageBlob.type || "image/jpeg";
+
+			const supportedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+			if (!supportedTypes.includes(contentType)) {
+				console.error(`Luma does not support image type: ${contentType}. Supported: ${supportedTypes.join(", ")}`);
+				return null;
+			}
+
+			const { upload_url, file_url } = await this.createImageUploadUrl(contentType);
 
 			const uploadResponse = await fetch(upload_url, {
 				method: "PUT",
 				body: imageBlob,
-				headers: { "Content-Type": imageBlob.type || "image/jpeg" },
+				headers: { "Content-Type": contentType },
 			});
 
 			if (!uploadResponse.ok) {
-				console.error("Failed to upload image to Luma CDN");
+				const errorText = await uploadResponse.text();
+				console.error("Failed to upload image to Luma CDN:", uploadResponse.status, errorText);
 				return null;
 			}
 
+			console.log("Successfully uploaded image to Luma CDN:", file_url);
 			return file_url;
 		} catch (error) {
 			console.error("Error uploading cover image to Luma:", error);
