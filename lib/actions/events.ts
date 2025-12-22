@@ -653,6 +653,13 @@ export async function createEvent(
 					})
 					.where(eq(events.id, createdEvent.id));
 
+				await db.insert(lumaEventMappings).values({
+					lumaEventId: lumaEvent.api_id,
+					eventId: createdEvent.id,
+					lastSyncedAt: new Date(),
+					lumaUpdatedAt: new Date(fullLumaEvent.updated_at || new Date().toISOString()),
+				});
+
 				createdEvent.sourceLumaEventId = lumaEvent.api_id;
 				createdEvent.lumaSlug = lumaSlug ?? null;
 			} catch (lumaError) {
