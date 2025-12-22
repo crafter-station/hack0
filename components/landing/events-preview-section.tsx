@@ -47,7 +47,7 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 				</h2>
 
 				<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-					{events.map((event) => {
+					{events.slice(0, 8).map((event) => {
 						const status = getEventStatus(event);
 						const isEnded = status.status === "ended";
 						const prize = formatPrize(event.prizePool, event.prizeCurrency);
@@ -105,7 +105,7 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 											</div>
 										)}
 									</div>
-									<CardContent className="px-3 py-2 space-y-1">
+									<CardContent className="p-3 space-y-1">
 										<div>
 											<h3 className="font-medium text-sm line-clamp-2 group-hover:text-foreground transition-colors">
 												{event.name}
@@ -145,8 +145,8 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 							</Link>
 						);
 					})}
-					{events.length < 4 &&
-						Array.from({ length: 4 - events.length }).map((_, i) => (
+					{events.length < 8 &&
+						Array.from({ length: 8 - Math.min(events.length, 8) }).map((_, i) => (
 							<Link key={`placeholder-${i}`} href="/onboarding">
 								<Card className="group h-full overflow-hidden p-0 gap-0 border-dashed hover:border-foreground/20 transition-all">
 									<div className="relative aspect-square w-full overflow-hidden bg-muted/30 border-b">
@@ -161,7 +161,7 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 											</span>
 										</div>
 									</div>
-									<CardContent className="px-3 py-2 space-y-1">
+									<CardContent className="p-3 space-y-1">
 										<div>
 											<h3 className="font-medium text-sm text-muted-foreground/60 group-hover:text-muted-foreground transition-colors">
 												Publica tu evento
