@@ -1092,31 +1092,6 @@ export const userEventAttendance = pgTable("user_event_attendance", {
 export type UserEventAttendance = typeof userEventAttendance.$inferSelect;
 export type NewUserEventAttendance = typeof userEventAttendance.$inferInsert;
 
-export const sharePlatformEnum = pgEnum("share_platform", [
-	"twitter",
-	"linkedin",
-	"facebook",
-	"whatsapp",
-	"instagram",
-	"copy",
-]);
-
-export const shareAnalytics = pgTable("share_analytics", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	eventId: uuid("event_id")
-		.references(() => events.id)
-		.notNull(),
-	userId: varchar("user_id", { length: 255 }),
-	platform: sharePlatformEnum("platform").notNull(),
-	sharedAt: timestamp("shared_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-});
-
-export type ShareAnalytic = typeof shareAnalytics.$inferSelect;
-export type NewShareAnalytic = typeof shareAnalytics.$inferInsert;
-
 // ============================================
 // RELATIONS
 // ============================================

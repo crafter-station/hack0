@@ -244,12 +244,19 @@ export const lumaImportTask = task({
 				metadata.set("step", "adding_to_hack0_calendar");
 				try {
 					const lumaClient = getGlobalLumaClient();
-					const addResult = await lumaClient.addEventToCalendar({
-						event_url: lumaUrl,
-					});
-					metadata.set("addedToHack0Calendar", addResult.success);
-					if (addResult.error) {
-						metadata.set("addToCalendarError", addResult.error);
+					const lumaSlug = lumaUrl.split("/").pop();
+					if (lumaSlug) {
+						const lumaEvent = await lumaClient.getEventBySlug(lumaSlug);
+						const addResult = await lumaClient.addEventToCalendar({
+							event_api_id: lumaEvent.api_id,
+						});
+						metadata.set("addedToHack0Calendar", addResult.success);
+						if (addResult.error) {
+							metadata.set("addToCalendarError", addResult.error);
+						}
+					} else {
+						metadata.set("addedToHack0Calendar", false);
+						metadata.set("addToCalendarError", "Could not extract slug from Luma URL");
 					}
 				} catch (addError) {
 					metadata.set("addedToHack0Calendar", false);

@@ -48,6 +48,7 @@ import {
 	ResponsiveModalTrigger,
 } from "@/components/ui/responsive-modal";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { createEvent } from "@/lib/actions/events";
 import { startLumaImport } from "@/lib/actions/import";
@@ -139,6 +140,8 @@ export function OrgEventFormMinimal({
 	const [isPending, startTransition] = useTransition();
 	const [orgSelectorOpen, setOrgSelectorOpen] = useState(false);
 	const [typeSelectorOpen, setTypeSelectorOpen] = useState(false);
+	const [publishToLuma, setPublishToLuma] = useState(true);
+	const [importedFromLuma, setImportedFromLuma] = useState<string | null>(null);
 
 	const creatableOrgs = useMemo(() => {
 		const orgs: Array<{ organization: Organization; role: string }> = [];
@@ -176,7 +179,7 @@ export function OrgEventFormMinimal({
 			department: department || undefined,
 			city: city || undefined,
 			venue: venue || undefined,
-			timezone: "America/Lima", // Siempre Lima
+			timezone: "America/Lima",
 			prizePool: prizePool ? parseInt(prizePool, 10) : undefined,
 			prizeCurrency,
 			websiteUrl: websiteUrl || undefined,
@@ -186,6 +189,7 @@ export function OrgEventFormMinimal({
 			skillLevel,
 			organizationId: communityId,
 			country: "PE",
+			publishToLuma,
 		});
 
 		setLoading(false);
@@ -241,7 +245,9 @@ export function OrgEventFormMinimal({
 				setRegistrationUrl(metadata.registrationUrl);
 			if (metadata.eventImageUrl) setEventImageUrl(metadata.eventImageUrl);
 
-			// Clear import state
+			setImportedFromLuma(lumaUrl);
+			setPublishToLuma(false);
+
 			setIsImporting(false);
 			setImportState(null);
 			setLumaUrl("");
@@ -1094,6 +1100,52 @@ export function OrgEventFormMinimal({
 							</ResponsiveModalFooter>
 						</ResponsiveModalContent>
 					</ResponsiveModal>
+
+					{/* Luma Integration */}
+					{importedFromLuma ? (
+						<div className="flex items-center justify-between py-3 px-3 border border-border rounded-lg bg-muted/30">
+							<div className="flex items-center gap-3">
+								<LumaIcon className="h-5 w-5" />
+								<div>
+									<div className="text-sm font-medium flex items-center gap-1.5">
+										Vinculado a Luma
+									</div>
+									<div className="text-xs text-muted-foreground truncate max-w-[180px]">
+										{importedFromLuma.replace("https://", "")}
+									</div>
+								</div>
+							</div>
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="text-xs text-muted-foreground hover:text-foreground"
+								onClick={() => {
+									setImportedFromLuma(null);
+									setPublishToLuma(true);
+								}}
+							>
+								Desvincular
+							</Button>
+						</div>
+					) : (
+						<div className="flex items-center justify-between py-3 px-3 border border-border rounded-lg">
+							<div className="flex items-center gap-3">
+								<LumaIcon className="h-5 w-5" />
+								<div>
+									<div className="text-sm font-medium">Publicar en Luma</div>
+									<div className="text-xs text-muted-foreground">
+										Se creará también en lu.ma/hack0
+									</div>
+								</div>
+							</div>
+							<Switch
+								checked={publishToLuma}
+								onCheckedChange={setPublishToLuma}
+								disabled={isImporting}
+							/>
+						</div>
+					)}
 
 					{/* Submit */}
 					<Button
