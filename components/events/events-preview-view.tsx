@@ -57,12 +57,10 @@ function EventListItem({
 	event,
 	isHovered,
 	onHover,
-	onLeave,
 }: {
 	event: EventWithOrg;
 	isHovered: boolean;
 	onHover: () => void;
-	onLeave: () => void;
 }) {
 	const itemRef = useRef<HTMLDivElement>(null);
 	const status = getEventStatus(event);
@@ -98,7 +96,6 @@ function EventListItem({
 				${isEnded ? "opacity-50" : ""}
 			`}
 			onMouseEnter={onHover}
-			onMouseLeave={onLeave}
 		>
 			<div className="flex gap-3">
 				<div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
@@ -514,7 +511,7 @@ export function EventsPreviewView({ events, total }: EventsPreviewViewProps) {
 				<div className="px-4 py-3 border-b bg-muted/30">
 					<h3 className="font-semibold text-sm">{events.length} eventos</h3>
 					<p className="text-xs text-muted-foreground">
-						↑↓ para navegar • Enter para abrir
+						↑↓ navegar • Enter abrir • Esc limpiar
 					</p>
 				</div>
 				<ScrollArea className="h-[calc(100%-60px)]" ref={listRef}>
@@ -525,7 +522,6 @@ export function EventsPreviewView({ events, total }: EventsPreviewViewProps) {
 								event={event}
 								isHovered={hoveredEventId === event.id}
 								onHover={() => handleEventHover(event.id)}
-								onLeave={() => handleEventHover(null)}
 							/>
 						))}
 					</div>
