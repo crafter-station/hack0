@@ -32,6 +32,13 @@ const POPULAR_TYPES = [
 	"ngo",
 ] as const;
 
+const COOKIE_NAME = "hack0-communities-view";
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
+
+function saveViewPreference(view: "cards" | "table") {
+	document.cookie = `${COOKIE_NAME}=${view}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
+}
+
 interface CommunityFiltersProps {
 	defaultSearch?: string;
 	defaultType?: string;
@@ -88,6 +95,7 @@ export function CommunityFilters({
 
 	const handleViewChange = (value: "cards" | "table") => {
 		if (!value) return;
+		saveViewPreference(value);
 		updateUrl({ view: value });
 	};
 

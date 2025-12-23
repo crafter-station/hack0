@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { LayoutGrid, List, Plus } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -6,19 +7,22 @@ import { CommunityActiveFilters } from "@/components/communities/community-activ
 import { CommunityCategoryTabs } from "@/components/communities/community-category-tabs";
 import { CommunitySidebarFilters } from "@/components/communities/community-sidebar-filters";
 import { CommunityTabToggle } from "@/components/communities/community-tab-toggle";
-import { DiscoverOrganizationCards } from "@/components/communities/discover-organization-cards";
-import { DiscoverOrganizationList } from "@/components/communities/discover-organization-list";
+import { InfiniteCommunitiesGrid } from "@/components/communities/infinite-communities-grid";
+import { InfiniteCommunitiesList } from "@/components/communities/infinite-communities-list";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { db } from "@/lib/db";
+import { communityMembers, organizations } from "@/lib/db/schema";
 import {
-	getPublicCommunities,
 	getTagCounts,
 	getUniqueCountries,
 	getUniqueDepartments,
 	getUniqueTags,
 } from "@/lib/actions/communities";
+import { getCommunitiesViewPreference } from "@/lib/view-preferences";
+import type { CommunitiesResponse } from "@/hooks/use-communities";
 
 interface DiscoverPageProps {
 	searchParams: Promise<{
@@ -41,40 +45,139 @@ export const metadata = {
 		"Descubre comunidades de tecnología, hackathons y eventos en Perú. Únete a la comunidad tech más activa.",
 };
 
+const INITIAL_LIMIT = 12;
+
+async function getInitialCommunities(
+	params: {
+		search?: string;
+		type?: string;
+		types?: string;
+		countries?: string;
+		sizes?: string;
+		verification?: string;
+		tags?: string;
+		verified?: string;
+	},
+	userId: string | null
+): Promise<CommunitiesResponse> {
+	const search = params.search;
+	const type = params.type;
+	const typesArray = params.types?.split(",").filter(Boolean) || [];
+	const verifiedOnly = params.verified === "true";
+
+	const conditions = [
+		eq(organizations.isPublic, true),
+		eq(organizations.isPersonalOrg, false),
+	];
+
+	if (search) {
+		conditions.push(
+			or(
+				ilike(organizations.name, `%${search}%`),
+				ilike(organizations.displayName, `%${search}%`),
+				ilike(organizations.description, `%${search}%`)
+			)!
+		);
+	}
+
+	if (type) {
+		conditions.push(eq(organizations.type, type));
+	}
+
+	if (typesArray.length > 0) {
+		conditions.push(
+			or(...typesArray.map((t) => eq(organizations.type, t)))!
+		);
+	}
+
+	if (verifiedOnly) {
+		conditions.push(eq(organizations.isVerified, true));
+	}
+
+	const [{ total }] = await db
+		.select({ total: count() })
+		.from(organizations)
+		.where(and(...conditions));
+
+	const memberCountSubquery = db
+		.select({
+			communityId: communityMembers.communityId,
+			memberCount: count().as("member_count"),
+		})
+		.from(communityMembers)
+		.groupBy(communityMembers.communityId)
+		.as("member_counts");
+
+	const communities = await db
+		.select({
+			id: organizations.id,
+			slug: organizations.slug,
+			name: organizations.name,
+			displayName: organizations.displayName,
+			description: organizations.description,
+			type: organizations.type,
+			logoUrl: organizations.logoUrl,
+			isVerified: organizations.isVerified,
+			memberCount: sql<number>`COALESCE(${memberCountSubquery.memberCount}, 0)`.as("member_count"),
+		})
+		.from(organizations)
+		.leftJoin(memberCountSubquery, eq(organizations.id, memberCountSubquery.communityId))
+		.where(and(...conditions))
+		.orderBy(desc(sql`COALESCE(${memberCountSubquery.memberCount}, 0)`))
+		.limit(INITIAL_LIMIT)
+		.offset(0);
+
+	let userMemberships: Set<string> = new Set();
+	if (userId) {
+		const memberships = await db.query.communityMembers.findMany({
+			where: eq(communityMembers.userId, userId),
+			columns: { communityId: true },
+		});
+		userMemberships = new Set(memberships.map((m) => m.communityId));
+	}
+
+	const result = communities.map((c) => ({
+		id: c.id,
+		slug: c.slug,
+		name: c.name,
+		displayName: c.displayName,
+		description: c.description,
+		type: c.type,
+		logoUrl: c.logoUrl,
+		isVerified: c.isVerified,
+		memberCount: Number(c.memberCount),
+		isFollowing: userMemberships.has(c.id),
+	}));
+
+	return {
+		communities: result,
+		total,
+		limit: INITIAL_LIMIT,
+		offset: 0,
+		hasMore: INITIAL_LIMIT < total,
+	};
+}
+
 export default async function DiscoverPage({
 	searchParams,
 }: DiscoverPageProps) {
 	const { userId } = await auth();
 	const params = await searchParams;
 
-	// Parse multi-value params
 	const countriesArray = params.countries?.split(",").filter(Boolean) || [];
 	const typesArray = params.types?.split(",").filter(Boolean) || [];
 	const sizesArray = params.sizes?.split(",").filter(Boolean) || [];
-	const verificationArray =
-		params.verification?.split(",").filter(Boolean) || [];
+	const verificationArray = params.verification?.split(",").filter(Boolean) || [];
 	const tagsArray = params.tags?.split(",").filter(Boolean) || [];
 
 	const [
-		communities,
+		initialData,
 		_departments,
 		availableCountries,
 		availableTags,
 		tagData,
 	] = await Promise.all([
-		getPublicCommunities({
-			search: params.search,
-			type: params.type,
-			types: typesArray.length > 0 ? typesArray : undefined,
-			department: params.department,
-			countries: countriesArray.length > 0 ? countriesArray : undefined,
-			sizes: sizesArray.length > 0 ? sizesArray : undefined,
-			verification:
-				verificationArray.length > 0 ? verificationArray : undefined,
-			tags: tagsArray.length > 0 ? tagsArray : undefined,
-			verifiedOnly: params.verified === "true",
-			orderBy: "popular",
-		}),
+		getInitialCommunities(params, userId),
 		getUniqueDepartments(),
 		getUniqueCountries(),
 		getUniqueTags(),
@@ -82,7 +185,12 @@ export default async function DiscoverPage({
 	]);
 
 	const isAuthenticated = !!userId;
-	const viewMode = params.view || "cards";
+
+	// Use URL param if explicitly set, otherwise use saved preference
+	const hasExplicitView = "view" in params;
+	const savedPreference = await getCommunitiesViewPreference();
+	const viewMode = hasExplicitView && params.view ? params.view : savedPreference;
+
 	const activeTag = tagsArray.length === 1 ? tagsArray[0] : "todas";
 
 	return (
@@ -115,7 +223,6 @@ export default async function DiscoverPage({
 
 			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-4 flex-1 w-full">
 				<div className="flex gap-6">
-					{/* Sidebar filters */}
 					<Suspense
 						fallback={
 							<div className="hidden lg:block w-[220px] h-96 animate-pulse bg-muted rounded" />
@@ -133,9 +240,7 @@ export default async function DiscoverPage({
 						/>
 					</Suspense>
 
-					{/* Main content */}
 					<div className="flex-1 min-w-0">
-						{/* Category tabs */}
 						<div className="flex items-center justify-between mb-4">
 							<Suspense
 								fallback={
@@ -150,22 +255,68 @@ export default async function DiscoverPage({
 							</Suspense>
 						</div>
 
-						{/* Active filters */}
 						<Suspense fallback={null}>
-							<CommunityActiveFilters totalResults={communities.length} />
+							<CommunityActiveFilters totalResults={initialData.total} />
 						</Suspense>
 
-						{/* Results */}
 						{viewMode === "table" ? (
-							<DiscoverOrganizationList
-								organizations={communities}
-								isAuthenticated={isAuthenticated}
-							/>
+							<Suspense
+								fallback={
+									<div className="text-xs animate-pulse">
+										<div className="space-y-3">
+											{Array.from({ length: 12 }).map((_, i) => (
+												<div key={i} className="flex items-center gap-4 py-2 border-b border-border/50">
+													<div className="h-6 w-6 rounded-full bg-muted" />
+													<div className="flex-1 space-y-1">
+														<div className="h-3 w-32 rounded bg-muted" />
+														<div className="h-2 w-20 rounded bg-muted" />
+													</div>
+													<div className="h-7 w-16 rounded bg-muted" />
+												</div>
+											))}
+										</div>
+									</div>
+								}
+							>
+								<InfiniteCommunitiesList
+									initialData={initialData}
+									isAuthenticated={isAuthenticated}
+								/>
+							</Suspense>
 						) : (
-							<DiscoverOrganizationCards
-								organizations={communities}
-								isAuthenticated={isAuthenticated}
-							/>
+							<Suspense
+								fallback={
+									<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+										{Array.from({ length: 12 }).map((_, i) => (
+											<div
+												key={i}
+												className="flex flex-col border bg-card p-3 animate-pulse"
+											>
+												<div className="flex items-start gap-3 mb-2">
+													<div className="h-10 w-10 rounded-full bg-muted" />
+													<div className="flex-1 space-y-2">
+														<div className="h-4 w-3/4 rounded bg-muted" />
+														<div className="h-3 w-1/2 rounded bg-muted" />
+													</div>
+												</div>
+												<div className="space-y-2 mb-2">
+													<div className="h-3 w-full rounded bg-muted" />
+													<div className="h-3 w-2/3 rounded bg-muted" />
+												</div>
+												<div className="flex items-center justify-between">
+													<div className="h-5 w-20 rounded bg-muted" />
+													<div className="h-6 w-16 rounded bg-muted" />
+												</div>
+											</div>
+										))}
+									</div>
+								}
+							>
+								<InfiniteCommunitiesGrid
+									initialData={initialData}
+									isAuthenticated={isAuthenticated}
+								/>
+							</Suspense>
 						)}
 					</div>
 				</div>

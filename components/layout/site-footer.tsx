@@ -1,4 +1,4 @@
-import { Github } from "lucide-react";
+import { Github, Heart } from "lucide-react";
 import Link from "next/link";
 
 export function SiteFooter() {
@@ -64,8 +64,10 @@ export function SiteFooter() {
 
 					<div className="flex items-center justify-between pt-4 border-t border-border/50 text-xs text-muted-foreground">
 						<p>© {new Date().getFullYear()} hack0.dev</p>
-						<p>
-							Hecho con &lt;3 en Perú por{" "}
+						<p className="inline-flex items-center gap-1">
+							Hecho con{" "}
+							<Heart className="h-3 w-3 fill-red-500 text-red-500 animate-pulse" />
+							{" "}en Perú por{" "}
 							<a
 								href="https://www.crafterstation.com/"
 								target="_blank"
