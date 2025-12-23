@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { AllEventsTable } from "@/components/events/all-events-table";
 import { EventsCalendar } from "@/components/events/events-calendar";
 import { EventsCards } from "@/components/events/events-cards";
+import { EventsMapView } from "@/components/events/events-map-view";
 import { EventsTabToggle } from "@/components/events/events-tab-toggle";
 import { EventsToolbar } from "@/components/events/events-toolbar";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -19,12 +20,23 @@ async function EventsContent({
 	viewMode,
 }: {
 	filters: EventFilters;
-	viewMode: "table" | "cards" | "calendar";
+	viewMode: "table" | "cards" | "calendar" | "map";
 }) {
 	const result = await getEvents(filters);
 
 	if (viewMode === "calendar") {
 		return <EventsCalendar events={result.events} />;
+	}
+
+	if (viewMode === "map") {
+		return (
+			<EventsMapView
+				events={result.events}
+				total={result.total}
+				hasMore={result.hasMore}
+				filters={filters}
+			/>
+		);
 	}
 
 	if (viewMode === "cards") {

@@ -4,6 +4,7 @@ import {
 	Calendar,
 	LayoutGrid,
 	List,
+	Map,
 	Search,
 	SlidersHorizontal,
 	Sparkles,
@@ -121,7 +122,7 @@ export function EventsToolbar() {
 		});
 	};
 
-	const handleViewChange = (value: "table" | "cards" | "calendar") => {
+	const handleViewChange = (value: "table" | "cards" | "calendar" | "map") => {
 		if (!value) return;
 		setFilters({ view: value });
 	};
@@ -143,6 +144,9 @@ export function EventsToolbar() {
 					</ToggleGroupItem>
 					<ToggleGroupItem value="calendar" aria-label="Calendario" className="h-7 px-2">
 						<Calendar className="h-3.5 w-3.5" />
+					</ToggleGroupItem>
+					<ToggleGroupItem value="map" aria-label="Mapa" className="h-7 px-2">
+						<Map className="h-3.5 w-3.5" />
 					</ToggleGroupItem>
 				</ToggleGroup>
 			</ButtonGroup>

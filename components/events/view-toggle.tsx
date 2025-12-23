@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, LayoutGrid, List } from "lucide-react";
+import { Calendar, LayoutGrid, List, Map } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
@@ -10,9 +10,9 @@ export function ViewToggle() {
 	const searchParams = useSearchParams();
 
 	const currentView =
-		(searchParams.get("view") as "table" | "cards" | "calendar") || "cards";
+		(searchParams.get("view") as "table" | "cards" | "calendar" | "map") || "cards";
 
-	const handleValueChange = (value: "table" | "cards" | "calendar") => {
+	const handleValueChange = (value: "table" | "cards" | "calendar" | "map") => {
 		if (!value) return;
 
 		const params = new URLSearchParams(searchParams.toString());
@@ -50,6 +50,14 @@ export function ViewToggle() {
 			>
 				<Calendar className="h-3.5 w-3.5" />
 				<span className="text-xs">Calendario</span>
+			</ToggleGroupItem>
+			<ToggleGroupItem
+				value="map"
+				aria-label="Vista de mapa"
+				className="h-7 px-2.5 gap-1.5"
+			>
+				<Map className="h-3.5 w-3.5" />
+				<span className="text-xs">Mapa</span>
 			</ToggleGroupItem>
 		</ToggleGroup>
 	);
