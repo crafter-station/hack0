@@ -238,7 +238,7 @@ async function AnalyticsContent({ slug }: { slug: string }) {
 								>
 									<div className="min-w-0 flex-1">
 										<Link
-											href={`/c/${slug}/events/${event.slug}`}
+											href={`/e/${event.shortCode}`}
 											className="font-medium hover:underline truncate block"
 										>
 											{event.name}
@@ -260,14 +260,14 @@ async function AnalyticsContent({ slug }: { slug: string }) {
 									</div>
 									<div className="flex items-center gap-2">
 										<Link
-											href={`/c/${slug}/events/${event.slug}/manage`}
+											href={`/e/${event.shortCode}/manage`}
 											className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-muted"
 											title="Gestionar evento"
 										>
 											<Edit3 className="h-4 w-4" />
 										</Link>
 										<Link
-											href={`/c/${slug}/events/${event.slug}`}
+											href={`/e/${event.shortCode}`}
 											className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border transition-colors hover:bg-muted"
 											title="Ver evento"
 										>

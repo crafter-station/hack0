@@ -153,11 +153,31 @@ export interface LumaWebhooksListResponse {
 }
 
 export interface LumaWebhookPayload {
-	event_type: LumaWebhookEventType;
+	type: LumaWebhookEventType;
 	data: {
+		api_id: string;
+		url: string;
+		name: string;
+		hosts: Array<{
+			id: string;
+			name: string;
+			avatar_url?: string;
+		}>;
+		start_at: string;
+		end_at?: string;
+		timezone: string;
+		cover_url?: string;
+		platform: string;
+		calendar: {
+			id: string;
+			url: string;
+			name: string;
+			slug?: string;
+			is_personal: boolean;
+			avatar_url?: string;
+		};
 		event?: LumaEvent;
 		guest?: LumaGuest;
 		calendar_api_id?: string;
 	};
-	timestamp: string;
 }

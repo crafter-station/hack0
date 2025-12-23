@@ -381,9 +381,9 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 														height: "20px",
 													}}
 													onClick={() =>
-														span.event.organization?.slug &&
+														span.event.shortCode &&
 														window.open(
-															`/c/${span.event.organization.slug}/events/${span.event.slug}`,
+															`/e/${span.event.shortCode}`,
 															"_blank"
 														)
 													}
@@ -441,9 +441,9 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 																		${isPast ? "opacity-50" : ""}
 																	`}
 																	onClick={() =>
-																		event.organization?.slug &&
+																		event.shortCode &&
 																		window.open(
-																			`/c/${event.organization.slug}/events/${event.slug}`,
+																			`/e/${event.shortCode}`,
 																			"_blank"
 																		)
 																	}

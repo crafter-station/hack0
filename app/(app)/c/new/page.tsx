@@ -1,10 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { OnboardingForm } from "@/components/communities/onboarding-form";
+import { CommunityFormMinimal } from "@/components/communities/community-form-minimal";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 
-export default async function OnboardingPage() {
+export default async function NewCommunityPage() {
 	const { userId } = await auth();
 
 	if (!userId) {
@@ -13,32 +13,10 @@ export default async function OnboardingPage() {
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
-			<SiteHeader showBackButton />
-
-			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-12 flex-1 w-full">
-				<div className="grid lg:grid-cols-[1fr_2fr] gap-12">
-					{/* Sidebar */}
-					<div className="lg:sticky lg:top-28 lg:self-start space-y-4">
-						<h1 className="text-2xl font-semibold tracking-tight">
-							Configura tu comunidad
-						</h1>
-						<p className="text-muted-foreground">
-							Crea tu perfil de comunidad para empezar a publicar eventos en
-							hack0.
-						</p>
-						<div className="text-sm text-muted-foreground space-y-2 pt-4 border-t">
-							<p>Solo toma 2 minutos.</p>
-							<p>Podrás editar estos datos después.</p>
-						</div>
-					</div>
-
-					{/* Form */}
-					<div>
-						<OnboardingForm />
-					</div>
-				</div>
+			<SiteHeader />
+			<main className="flex-1 w-full py-4 md:py-6 min-h-[calc(100vh-4rem)]">
+				<CommunityFormMinimal />
 			</main>
-
 			<SiteFooter />
 		</div>
 	);

@@ -11,6 +11,7 @@ import {
 	isLumaUrl,
 	normalizeLumaUrl,
 } from "@/lib/scraper/luma-schema";
+import { ensureUniqueShortCode } from "@/lib/slug-utils";
 import type { lumaImportTask } from "@/trigger/luma-import";
 import { getUserCommunityRole } from "./community-members";
 
@@ -208,11 +209,13 @@ export async function createEventFromExtracted(
 	const country = data.country || inferCountryFromCity(data.city);
 
 	const slug = await generateUniqueSlug(generateSlug(data.name));
+	const shortCode = await ensureUniqueShortCode();
 
 	const [newEvent] = await db
 		.insert(events)
 		.values({
 			slug,
+			shortCode,
 			name: data.name,
 			description: data.description || null,
 			eventType: eventType as

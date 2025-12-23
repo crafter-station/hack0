@@ -102,8 +102,8 @@ export function GodModeEventForm({ organizations }: GodModeEventFormProps) {
 				isApproved: true,
 			});
 
-			if (result.success) {
-				router.push(`/events/${result.event.slug}`);
+			if (result.success && result.event?.shortCode) {
+				router.push(`/e/${result.event.shortCode}`);
 				router.refresh();
 			}
 		} catch (err) {

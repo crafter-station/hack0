@@ -432,7 +432,8 @@ export async function requestAdminUpgrade(
 
 	return {
 		success: true,
-		message: "Tu solicitud ha sido enviada. El owner de la comunidad la revisará pronto.",
+		message:
+			"Tu solicitud ha sido enviada. El owner de la comunidad la revisará pronto.",
 	};
 }
 
@@ -443,9 +444,22 @@ export async function requestAdminUpgrade(
 export interface PublicCommunityFilters {
 	search?: string;
 	type?: string;
+	types?: string[];
+	department?: string;
+	countries?: string[];
+	sizes?: string[];
+	verification?: string[];
+	tags?: string[];
 	verifiedOnly?: boolean;
 	orderBy?: "popular" | "recent" | "name";
 }
+
+// Size filter definitions
+const SIZE_FILTER_RANGES: Record<string, { min?: number; max?: number }> = {
+	small: { max: 100 },
+	medium: { min: 100, max: 1000 },
+	large: { min: 1000 },
+};
 
 export interface PublicCommunity {
 	id: string;
@@ -458,13 +472,29 @@ export interface PublicCommunity {
 	isVerified: boolean | null;
 	memberCount: number;
 	isFollowing: boolean;
+	email: string | null;
+	country: string | null;
+	department: string | null;
+	websiteUrl: string | null;
+	tags: string[] | null;
 }
 
 export async function getPublicCommunities(
 	filters: PublicCommunityFilters = {},
 ): Promise<PublicCommunity[]> {
 	const { userId } = await auth();
-	const { search, type, verifiedOnly, orderBy = "popular" } = filters;
+	const {
+		search,
+		type,
+		types,
+		department,
+		countries,
+		sizes,
+		verification,
+		tags,
+		verifiedOnly,
+		orderBy = "popular",
+	} = filters;
 
 	const allCommunities = await db.query.organizations.findMany({
 		where: and(
@@ -490,12 +520,56 @@ export async function getPublicCommunities(
 		);
 	}
 
+	// Single type filter (legacy)
 	if (type) {
 		filtered = filtered.filter((c) => c.type === type);
 	}
 
+	// Multiple types filter
+	if (types && types.length > 0) {
+		filtered = filtered.filter((c) => c.type && types.includes(c.type));
+	}
+
+	if (department) {
+		filtered = filtered.filter((c) => c.department === department);
+	}
+
+	// Countries filter
+	if (countries && countries.length > 0) {
+		filtered = filtered.filter(
+			(c) => c.country && countries.includes(c.country),
+		);
+	}
+
 	if (verifiedOnly) {
 		filtered = filtered.filter((c) => c.isVerified);
+	}
+
+	// Verification filter (can be both verified and unverified selected)
+	if (verification && verification.length > 0) {
+		filtered = filtered.filter((c) => {
+			if (
+				verification.includes("verified") &&
+				verification.includes("unverified")
+			) {
+				return true; // Both selected, show all
+			}
+			if (verification.includes("verified")) {
+				return c.isVerified === true;
+			}
+			if (verification.includes("unverified")) {
+				return c.isVerified !== true;
+			}
+			return true;
+		});
+	}
+
+	// Tags filter (community must have at least one matching tag)
+	if (tags && tags.length > 0) {
+		filtered = filtered.filter((c) => {
+			if (!c.tags || c.tags.length === 0) return false;
+			return tags.some((tag) => c.tags?.includes(tag));
+		});
 	}
 
 	let userMemberships: Set<string> = new Set();
@@ -507,7 +581,7 @@ export async function getPublicCommunities(
 		userMemberships = new Set(memberships.map((m) => m.communityId));
 	}
 
-	const result: PublicCommunity[] = filtered.map((c) => ({
+	let result: PublicCommunity[] = filtered.map((c) => ({
 		id: c.id,
 		slug: c.slug,
 		name: c.name,
@@ -518,15 +592,110 @@ export async function getPublicCommunities(
 		isVerified: c.isVerified,
 		memberCount: c.members.length,
 		isFollowing: userMemberships.has(c.id),
+		email: c.email,
+		country: c.country,
+		department: c.department,
+		websiteUrl: c.websiteUrl,
+		tags: c.tags,
 	}));
 
-	if (orderBy === "popular") {
-		result.sort((a, b) => b.memberCount - a.memberCount);
-	} else if (orderBy === "recent") {
-		result.sort((a, b) => b.id.localeCompare(a.id));
-	} else if (orderBy === "name") {
-		result.sort((a, b) => a.name.localeCompare(b.name));
+	// Size filter (applied after memberCount is calculated)
+	if (sizes && sizes.length > 0) {
+		result = result.filter((c) => {
+			return sizes.some((sizeId) => {
+				const range = SIZE_FILTER_RANGES[sizeId];
+				if (!range) return false;
+				const meetsMin = range.min === undefined || c.memberCount >= range.min;
+				const meetsMax = range.max === undefined || c.memberCount < range.max;
+				return meetsMin && meetsMax;
+			});
+		});
 	}
 
+	result.sort((a, b) => {
+		const aVerified = a.isVerified ? 1 : 0;
+		const bVerified = b.isVerified ? 1 : 0;
+		if (bVerified !== aVerified) {
+			return bVerified - aVerified;
+		}
+
+		if (orderBy === "popular") {
+			return b.memberCount - a.memberCount;
+		}
+		if (orderBy === "recent") {
+			return b.id.localeCompare(a.id);
+		}
+		if (orderBy === "name") {
+			return a.name.localeCompare(b.name);
+		}
+		return 0;
+	});
+
 	return result;
+}
+
+export async function getUniqueDepartments(): Promise<string[]> {
+	const orgs = await db.query.organizations.findMany({
+		where: and(
+			eq(organizations.isPublic, true),
+			eq(organizations.isPersonalOrg, false),
+		),
+		columns: { department: true },
+	});
+
+	const departments = [
+		...new Set(orgs.map((o) => o.department).filter(Boolean)),
+	] as string[];
+	return departments.sort();
+}
+
+export async function getUniqueCountries(): Promise<string[]> {
+	const orgs = await db.query.organizations.findMany({
+		where: and(
+			eq(organizations.isPublic, true),
+			eq(organizations.isPersonalOrg, false),
+		),
+		columns: { country: true },
+	});
+
+	const countries = [
+		...new Set(orgs.map((o) => o.country).filter(Boolean)),
+	] as string[];
+	return countries.sort();
+}
+
+export async function getUniqueTags(): Promise<string[]> {
+	const orgs = await db.query.organizations.findMany({
+		where: and(
+			eq(organizations.isPublic, true),
+			eq(organizations.isPersonalOrg, false),
+		),
+		columns: { tags: true },
+	});
+
+	const allTags = orgs.flatMap((o) => o.tags || []).filter(Boolean);
+
+	return [...new Set(allTags)].sort();
+}
+
+export async function getTagCounts(): Promise<{
+	counts: Record<string, number>;
+	total: number;
+}> {
+	const orgs = await db.query.organizations.findMany({
+		where: and(
+			eq(organizations.isPublic, true),
+			eq(organizations.isPersonalOrg, false),
+		),
+		columns: { tags: true },
+	});
+
+	const counts: Record<string, number> = {};
+	for (const org of orgs) {
+		for (const tag of org.tags || []) {
+			counts[tag] = (counts[tag] || 0) + 1;
+		}
+	}
+
+	return { counts, total: orgs.length };
 }

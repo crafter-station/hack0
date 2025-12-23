@@ -1,7 +1,10 @@
-import { and, eq, ne } from "drizzle-orm";
+import { and, eq, isNull, ne } from "drizzle-orm";
+import { customAlphabet } from "nanoid";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { events } from "@/lib/db/schema";
+
+const nanoid = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 6);
 
 /**
  * Generates a URL-safe slug from a string
@@ -165,3 +168,28 @@ export const isSlugUnique = async (slug: string, existingId?: string) => {
 
 	return existing.length === 0;
 };
+
+export function generateShortCode(): string {
+	return nanoid();
+}
+
+export async function ensureUniqueShortCode(): Promise<string> {
+	let code = nanoid();
+	let isUnique = false;
+
+	while (!isUnique) {
+		const existing = await db
+			.select({ id: events.id })
+			.from(events)
+			.where(eq(events.shortCode, code))
+			.limit(1);
+
+		if (existing.length === 0) {
+			isUnique = true;
+		} else {
+			code = nanoid();
+		}
+	}
+
+	return code;
+}

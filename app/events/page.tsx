@@ -1,3 +1,6 @@
+import { auth } from "@clerk/nextjs/server";
+import { CalendarPlus } from "lucide-react";
+import Link from "next/link";
 import type { SearchParams } from "nuqs/server";
 import { Suspense } from "react";
 import { AllEventsTable } from "@/components/events/all-events-table";
@@ -9,6 +12,7 @@ import { EventsTabToggle } from "@/components/events/events-tab-toggle";
 import { EventsToolbar } from "@/components/events/events-toolbar";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { Button } from "@/components/ui/button";
 import { type EventFilters, getEvents } from "@/lib/actions/events";
 import { loadSearchParams } from "@/lib/search-params";
 import { getEventsViewPreference } from "@/lib/view-preferences";
@@ -72,8 +76,18 @@ async function EventsContent({
 }
 
 export default async function EventsPage({ searchParams }: EventsPageProps) {
+	const { userId } = await auth();
 	const rawParams = await searchParams;
 	const params = await loadSearchParams(searchParams);
+
+	const personalOrg = userId
+		? await (async () => {
+				const { getOrCreatePersonalOrg } = await import(
+					"@/lib/actions/organizations"
+				);
+				return await getOrCreatePersonalOrg();
+			})()
+		: null;
 
 	const filters: EventFilters = {
 		category: params.category,
@@ -106,9 +120,19 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 						<Suspense fallback={<div className="h-7 w-40 animate-pulse bg-muted rounded" />}>
 							<EventsTabToggle />
 						</Suspense>
-						<Suspense fallback={<div className="h-7 w-48 animate-pulse bg-muted rounded" />}>
-							<EventsToolbar />
-						</Suspense>
+						<div className="flex items-center gap-2">
+							<Suspense fallback={<div className="h-7 w-48 animate-pulse bg-muted rounded" />}>
+								<EventsToolbar />
+							</Suspense>
+							{personalOrg && (
+								<Button variant="secondary" size="sm" className="h-7 text-xs" asChild>
+									<Link href={`/c/${personalOrg.slug}/events/new`}>
+										<CalendarPlus className="h-3.5 w-3.5" />
+										<span className="hidden sm:inline">Crear</span>
+									</Link>
+								</Button>
+							)}
+						</div>
 					</div>
 				</div>
 			</section>

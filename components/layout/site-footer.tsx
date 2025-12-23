@@ -67,7 +67,15 @@ export function SiteFooter() {
 						<p className="inline-flex items-center gap-1">
 							Hecho con{" "}
 							<Heart className="h-3 w-3 fill-red-500 text-red-500 animate-pulse" />
-							{" "}en Perú
+							{" "}en Perú por{" "}
+							<a
+								href="https://www.crafterstation.com/"
+								target="_blank"
+								rel="noopener noreferrer"
+								className="hover:text-foreground transition-colors"
+							>
+								Crafter Station
+							</a>
 						</p>
 					</div>
 				</div>

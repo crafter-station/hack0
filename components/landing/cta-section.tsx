@@ -1,5 +1,6 @@
 import { ArrowRight, Plus } from "lucide-react";
 import Link from "next/link";
+import { LumaIcon } from "@/components/icons/luma";
 
 export function CTASection() {
 	return (
@@ -27,6 +28,21 @@ export function CTASection() {
 						Ver ejemplos
 						<ArrowRight className="h-4 w-4" />
 					</Link>
+				</div>
+
+				<div className="mt-10 pt-8 border-t border-dashed">
+					<p className="text-sm text-muted-foreground">
+						¿Ya usas Luma? Sube tu evento a nuestro calendario comunitario
+					</p>
+					<a
+						href="https://lu.ma/hack0"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-background px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted mt-3"
+					>
+						<LumaIcon className="h-4 w-4" />
+						Subir evento a lu.ma/hack0
+					</a>
 				</div>
 			</div>
 		</section>

@@ -1,6 +1,14 @@
 "use client";
 
-import { BadgeCheck, LayoutGrid, List, Search, SlidersHorizontal, X } from "lucide-react";
+import {
+	BadgeCheck,
+	LayoutGrid,
+	List,
+	MapPin,
+	Search,
+	SlidersHorizontal,
+	X,
+} from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -14,11 +22,14 @@ import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
 
 const POPULAR_TYPES = [
 	"community",
+	"startup",
+	"investor",
+	"consulting",
+	"law_firm",
+	"coworking",
 	"university",
 	"company",
-	"government",
 	"ngo",
-	"startup",
 ] as const;
 
 const COOKIE_NAME = "hack0-communities-view";
@@ -31,19 +42,23 @@ function saveViewPreference(view: "cards" | "table") {
 interface CommunityFiltersProps {
 	defaultSearch?: string;
 	defaultType?: string;
+	defaultDepartment?: string;
 	defaultVerified?: boolean;
 	defaultView?: "cards" | "table";
 	showRoleFilter?: boolean;
 	defaultRole?: string;
+	departments?: string[];
 }
 
 export function CommunityFilters({
 	defaultSearch = "",
 	defaultType = "",
+	defaultDepartment = "",
 	defaultVerified = false,
 	defaultView = "cards",
 	showRoleFilter = false,
 	defaultRole = "all",
+	departments = [],
 }: CommunityFiltersProps) {
 	const router = useRouter();
 	const pathname = usePathname();
@@ -52,13 +67,19 @@ export function CommunityFilters({
 	const [open, setOpen] = useState(false);
 	const [search, setSearch] = useState(defaultSearch);
 	const [selectedType, setSelectedType] = useState(defaultType);
+	const [selectedDepartment, setSelectedDepartment] =
+		useState(defaultDepartment);
 	const [verified, setVerified] = useState(defaultVerified);
 	const [role, setRole] = useState(defaultRole);
 
-	const currentView = (searchParams.get("view") as "cards" | "table") || defaultView;
+	const currentView =
+		(searchParams.get("view") as "cards" | "table") || defaultView;
 
 	const activeFiltersCount =
-		(selectedType ? 1 : 0) + (verified ? 1 : 0) + (role !== "all" ? 1 : 0);
+		(selectedType ? 1 : 0) +
+		(selectedDepartment ? 1 : 0) +
+		(verified ? 1 : 0) +
+		(role !== "all" ? 1 : 0);
 
 	const updateUrl = (updates: Record<string, string | boolean>) => {
 		const params = new URLSearchParams(searchParams.toString());
@@ -80,12 +101,19 @@ export function CommunityFilters({
 
 	const handleSearch = (e: React.FormEvent) => {
 		e.preventDefault();
-		updateUrl({ search, type: selectedType, verified, role });
+		updateUrl({
+			search,
+			type: selectedType,
+			department: selectedDepartment,
+			verified,
+			role,
+		});
 	};
 
 	const clearAllFilters = () => {
 		setSearch("");
 		setSelectedType("");
+		setSelectedDepartment("");
 		setVerified(false);
 		setRole("all");
 		router.push(pathname);
@@ -100,10 +128,18 @@ export function CommunityFilters({
 					onValueChange={handleViewChange}
 					className="h-7"
 				>
-					<ToggleGroupItem value="cards" aria-label="Tarjetas" className="h-7 px-2">
+					<ToggleGroupItem
+						value="cards"
+						aria-label="Tarjetas"
+						className="h-7 px-2"
+					>
 						<LayoutGrid className="h-3.5 w-3.5" />
 					</ToggleGroupItem>
-					<ToggleGroupItem value="table" aria-label="Lista" className="h-7 px-2">
+					<ToggleGroupItem
+						value="table"
+						aria-label="Lista"
+						className="h-7 px-2"
+					>
 						<List className="h-3.5 w-3.5" />
 					</ToggleGroupItem>
 				</ToggleGroup>
@@ -156,10 +192,7 @@ export function CommunityFilters({
 						)}
 					</button>
 				</PopoverTrigger>
-				<PopoverContent
-					align="end"
-					className="w-72 p-0 border-border/50"
-				>
+				<PopoverContent align="end" className="w-72 p-0 border-border/50">
 					<div className="px-3 py-2 border-b border-border/50 bg-muted/20">
 						<div className="flex items-center justify-between">
 							<h4 className="font-medium text-xs">Filtros</h4>
@@ -194,7 +227,15 @@ export function CommunityFilters({
 													: "border-border/50 text-muted-foreground hover:text-foreground"
 											}`}
 										>
-											{r === "all" ? "Todos" : r === "owner" ? "Owner" : r === "admin" ? "Admin" : r === "member" ? "Miembro" : "Seguidor"}
+											{r === "all"
+												? "Todos"
+												: r === "owner"
+													? "Owner"
+													: r === "admin"
+														? "Admin"
+														: r === "member"
+															? "Miembro"
+															: "Seguidor"}
 										</button>
 									))}
 								</div>
@@ -225,6 +266,34 @@ export function CommunityFilters({
 								))}
 							</div>
 						</div>
+
+						{departments.length > 0 && (
+							<div className="space-y-1.5">
+								<label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+									Ubicación
+								</label>
+								<div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto">
+									{departments.map((dept) => (
+										<button
+											key={dept}
+											onClick={() => {
+												const newDept = selectedDepartment === dept ? "" : dept;
+												setSelectedDepartment(newDept);
+												updateUrl({ department: newDept });
+											}}
+											className={`border px-2 py-1 text-[10px] font-medium transition-colors ${
+												selectedDepartment === dept
+													? "border-foreground/20 bg-foreground text-background"
+													: "border-border/50 text-muted-foreground hover:text-foreground"
+											}`}
+										>
+											<MapPin className="h-2.5 w-2.5 inline mr-1" />
+											{dept}
+										</button>
+									))}
+								</div>
+							</div>
+						)}
 
 						<div className="space-y-1.5">
 							<label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">

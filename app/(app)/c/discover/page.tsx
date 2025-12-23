@@ -1,14 +1,26 @@
 import { auth } from "@clerk/nextjs/server";
 import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { LayoutGrid, List, Plus } from "lucide-react";
+import Link from "next/link";
 import { Suspense } from "react";
-import { CommunityFilters } from "@/components/communities/community-filters";
+import { CommunityActiveFilters } from "@/components/communities/community-active-filters";
+import { CommunityCategoryTabs } from "@/components/communities/community-category-tabs";
+import { CommunitySidebarFilters } from "@/components/communities/community-sidebar-filters";
 import { CommunityTabToggle } from "@/components/communities/community-tab-toggle";
 import { InfiniteCommunitiesGrid } from "@/components/communities/infinite-communities-grid";
 import { InfiniteCommunitiesList } from "@/components/communities/infinite-communities-list";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { db } from "@/lib/db";
 import { communityMembers, organizations } from "@/lib/db/schema";
+import {
+	getTagCounts,
+	getUniqueCountries,
+	getUniqueDepartments,
+	getUniqueTags,
+} from "@/lib/actions/communities";
 import { getCommunitiesViewPreference } from "@/lib/view-preferences";
 import type { CommunitiesResponse } from "@/hooks/use-communities";
 
@@ -16,6 +28,12 @@ interface DiscoverPageProps {
 	searchParams: Promise<{
 		search?: string;
 		type?: string;
+		types?: string;
+		department?: string;
+		countries?: string;
+		sizes?: string;
+		verification?: string;
+		tags?: string;
 		verified?: string;
 		view?: "cards" | "table";
 	}>;
@@ -33,12 +51,18 @@ async function getInitialCommunities(
 	params: {
 		search?: string;
 		type?: string;
+		types?: string;
+		countries?: string;
+		sizes?: string;
+		verification?: string;
+		tags?: string;
 		verified?: string;
 	},
 	userId: string | null
 ): Promise<CommunitiesResponse> {
 	const search = params.search;
 	const type = params.type;
+	const typesArray = params.types?.split(",").filter(Boolean) || [];
 	const verifiedOnly = params.verified === "true";
 
 	const conditions = [
@@ -58,6 +82,12 @@ async function getInitialCommunities(
 
 	if (type) {
 		conditions.push(eq(organizations.type, type));
+	}
+
+	if (typesArray.length > 0) {
+		conditions.push(
+			or(...typesArray.map((t) => eq(organizations.type, t)))!
+		);
 	}
 
 	if (verifiedOnly) {
@@ -128,17 +158,40 @@ async function getInitialCommunities(
 	};
 }
 
-export default async function DiscoverPage({ searchParams }: DiscoverPageProps) {
+export default async function DiscoverPage({
+	searchParams,
+}: DiscoverPageProps) {
 	const { userId } = await auth();
 	const params = await searchParams;
 
-	const initialData = await getInitialCommunities(params, userId);
+	const countriesArray = params.countries?.split(",").filter(Boolean) || [];
+	const typesArray = params.types?.split(",").filter(Boolean) || [];
+	const sizesArray = params.sizes?.split(",").filter(Boolean) || [];
+	const verificationArray = params.verification?.split(",").filter(Boolean) || [];
+	const tagsArray = params.tags?.split(",").filter(Boolean) || [];
+
+	const [
+		initialData,
+		_departments,
+		availableCountries,
+		availableTags,
+		tagData,
+	] = await Promise.all([
+		getInitialCommunities(params, userId),
+		getUniqueDepartments(),
+		getUniqueCountries(),
+		getUniqueTags(),
+		getTagCounts(),
+	]);
+
 	const isAuthenticated = !!userId;
-	
+
 	// Use URL param if explicitly set, otherwise use saved preference
 	const hasExplicitView = "view" in params;
 	const savedPreference = await getCommunitiesViewPreference();
 	const viewMode = hasExplicitView && params.view ? params.view : savedPreference;
+
+	const activeTag = tagsArray.length === 1 ? tagsArray[0] : "todas";
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
@@ -147,84 +200,175 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
 			<section className="sticky top-11 z-40 border-b bg-background/95 backdrop-blur-md">
 				<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
 					<div className="flex items-center justify-between gap-2 py-2">
-						<Suspense fallback={<div className="h-7 w-40 animate-pulse bg-muted rounded" />}>
+						<Suspense
+							fallback={
+								<div className="h-7 w-40 animate-pulse bg-muted rounded" />
+							}
+						>
 							<CommunityTabToggle />
 						</Suspense>
-						<Suspense fallback={<div className="h-7 w-48 animate-pulse bg-muted rounded" />}>
-							<CommunityFilters
-								defaultSearch={params.search}
-								defaultType={params.type}
-								defaultVerified={params.verified === "true"}
-								defaultView={viewMode}
-							/>
-						</Suspense>
+						<div className="flex items-center gap-2">
+							<ViewToggle currentView={viewMode} searchParams={params} />
+							<Link
+								href="/c/new"
+								className="inline-flex h-7 items-center gap-1.5 bg-foreground text-background px-3 text-xs font-medium hover:bg-foreground/90 transition-colors"
+							>
+								<Plus className="h-3.5 w-3.5" />
+								<span className="hidden sm:inline">Crear</span>
+							</Link>
+						</div>
 					</div>
 				</div>
 			</section>
 
 			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-4 flex-1 w-full">
-				{viewMode === "table" ? (
+				<div className="flex gap-6">
 					<Suspense
 						fallback={
-							<div className="text-xs animate-pulse">
-								<div className="space-y-3">
-									{Array.from({ length: 12 }).map((_, i) => (
-										<div key={i} className="flex items-center gap-4 py-2 border-b border-border/50">
-											<div className="h-6 w-6 rounded-full bg-muted" />
-											<div className="flex-1 space-y-1">
-												<div className="h-3 w-32 rounded bg-muted" />
-												<div className="h-2 w-20 rounded bg-muted" />
-											</div>
-											<div className="h-7 w-16 rounded bg-muted" />
-										</div>
-									))}
-								</div>
-							</div>
+							<div className="hidden lg:block w-[220px] h-96 animate-pulse bg-muted rounded" />
 						}
 					>
-						<InfiniteCommunitiesList
-							initialData={initialData}
-							isAuthenticated={isAuthenticated}
+						<CommunitySidebarFilters
+							defaultSearch={params.search}
+							defaultCountries={countriesArray}
+							defaultTypes={typesArray}
+							defaultSizes={sizesArray}
+							defaultVerification={verificationArray}
+							defaultTags={tagsArray}
+							availableCountries={availableCountries}
+							availableTags={availableTags}
 						/>
 					</Suspense>
-				) : (
-					<Suspense
-						fallback={
-							<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-								{Array.from({ length: 12 }).map((_, i) => (
-									<div
-										key={i}
-										className="flex flex-col border bg-card p-3 animate-pulse"
-									>
-										<div className="flex items-start gap-3 mb-2">
-											<div className="h-10 w-10 rounded-full bg-muted" />
-											<div className="flex-1 space-y-2">
-												<div className="h-4 w-3/4 rounded bg-muted" />
-												<div className="h-3 w-1/2 rounded bg-muted" />
-											</div>
-										</div>
-										<div className="space-y-2 mb-2">
-											<div className="h-3 w-full rounded bg-muted" />
-											<div className="h-3 w-2/3 rounded bg-muted" />
-										</div>
-										<div className="flex items-center justify-between">
-											<div className="h-5 w-20 rounded bg-muted" />
-											<div className="h-6 w-16 rounded bg-muted" />
+
+					<div className="flex-1 min-w-0">
+						<div className="flex items-center justify-between mb-4">
+							<Suspense
+								fallback={
+									<div className="h-7 w-64 animate-pulse bg-muted rounded" />
+								}
+							>
+								<CommunityCategoryTabs
+									activeTab={activeTag}
+									tagCounts={tagData.counts}
+									totalCount={tagData.total}
+								/>
+							</Suspense>
+						</div>
+
+						<Suspense fallback={null}>
+							<CommunityActiveFilters totalResults={initialData.total} />
+						</Suspense>
+
+						{viewMode === "table" ? (
+							<Suspense
+								fallback={
+									<div className="text-xs animate-pulse">
+										<div className="space-y-3">
+											{Array.from({ length: 12 }).map((_, i) => (
+												<div key={i} className="flex items-center gap-4 py-2 border-b border-border/50">
+													<div className="h-6 w-6 rounded-full bg-muted" />
+													<div className="flex-1 space-y-1">
+														<div className="h-3 w-32 rounded bg-muted" />
+														<div className="h-2 w-20 rounded bg-muted" />
+													</div>
+													<div className="h-7 w-16 rounded bg-muted" />
+												</div>
+											))}
 										</div>
 									</div>
-								))}
-							</div>
-						}
-					>
-						<InfiniteCommunitiesGrid
-							initialData={initialData}
-							isAuthenticated={isAuthenticated}
-						/>
-					</Suspense>
-				)}
+								}
+							>
+								<InfiniteCommunitiesList
+									initialData={initialData}
+									isAuthenticated={isAuthenticated}
+								/>
+							</Suspense>
+						) : (
+							<Suspense
+								fallback={
+									<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+										{Array.from({ length: 12 }).map((_, i) => (
+											<div
+												key={i}
+												className="flex flex-col border bg-card p-3 animate-pulse"
+											>
+												<div className="flex items-start gap-3 mb-2">
+													<div className="h-10 w-10 rounded-full bg-muted" />
+													<div className="flex-1 space-y-2">
+														<div className="h-4 w-3/4 rounded bg-muted" />
+														<div className="h-3 w-1/2 rounded bg-muted" />
+													</div>
+												</div>
+												<div className="space-y-2 mb-2">
+													<div className="h-3 w-full rounded bg-muted" />
+													<div className="h-3 w-2/3 rounded bg-muted" />
+												</div>
+												<div className="flex items-center justify-between">
+													<div className="h-5 w-20 rounded bg-muted" />
+													<div className="h-6 w-16 rounded bg-muted" />
+												</div>
+											</div>
+										))}
+									</div>
+								}
+							>
+								<InfiniteCommunitiesGrid
+									initialData={initialData}
+									isAuthenticated={isAuthenticated}
+								/>
+							</Suspense>
+						)}
+					</div>
+				</div>
 			</main>
 
 			<SiteFooter />
 		</div>
+	);
+}
+
+function ViewToggle({
+	currentView,
+	searchParams,
+}: {
+	currentView: "cards" | "table";
+	searchParams: Record<string, string | undefined>;
+}) {
+	const createViewUrl = (view: string) => {
+		const params = new URLSearchParams();
+		for (const [key, value] of Object.entries(searchParams)) {
+			if (value && key !== "view") {
+				params.set(key, value);
+			}
+		}
+		params.set("view", view);
+		return `?${params.toString()}`;
+	};
+
+	return (
+		<ButtonGroup>
+			<ToggleGroup type="single" value={currentView} className="h-7">
+				<ToggleGroupItem
+					value="cards"
+					aria-label="Tarjetas"
+					className="h-7 px-2"
+					asChild
+				>
+					<Link href={createViewUrl("cards")}>
+						<LayoutGrid className="h-3.5 w-3.5" />
+					</Link>
+				</ToggleGroupItem>
+				<ToggleGroupItem
+					value="table"
+					aria-label="Lista"
+					className="h-7 px-2"
+					asChild
+				>
+					<Link href={createViewUrl("table")}>
+						<List className="h-3.5 w-3.5" />
+					</Link>
+				</ToggleGroupItem>
+			</ToggleGroup>
+		</ButtonGroup>
 	);
 }

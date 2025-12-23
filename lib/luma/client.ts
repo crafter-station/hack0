@@ -75,12 +75,17 @@ export class LumaClient {
 		});
 
 		if (!response.ok) {
-			const errorData = (await response
-				.json()
-				.catch(() => ({}))) as LumaApiErrorResponse;
+			const errorText = await response.text();
+			console.error("Luma API error response:", errorText);
+			let errorData: LumaApiErrorResponse = { error: { code: "UNKNOWN_ERROR", message: `HTTP ${response.status}` } };
+			try {
+				errorData = JSON.parse(errorText) as LumaApiErrorResponse;
+			} catch {
+				// Keep default error
+			}
 			throw new LumaApiError(
 				errorData.error?.code || "UNKNOWN_ERROR",
-				errorData.error?.message || `HTTP ${response.status}`,
+				errorData.error?.message || `HTTP ${response.status}: ${errorText}`,
 				response.status,
 			);
 		}
@@ -88,8 +93,8 @@ export class LumaClient {
 		return response.json() as Promise<T>;
 	}
 
-	async getEvent(eventApiId: string): Promise<LumaEvent> {
-		const params = new URLSearchParams({ event_api_id: eventApiId });
+	async getEvent(eventId: string): Promise<LumaEvent> {
+		const params = new URLSearchParams({ id: eventId });
 		const response = await this.request<LumaEventResponse>(
 			`/v1/event/get?${params}`,
 		);
@@ -205,24 +210,82 @@ export class LumaClient {
 		return allGuests;
 	}
 
+	async createImageUploadUrl(
+		contentType?: string,
+	): Promise<{ upload_url: string; file_url: string }> {
+		return this.request("/v1/images/create-upload-url", {
+			method: "POST",
+			body: JSON.stringify({
+				purpose: "event-cover",
+				content_type: contentType || "image/jpeg",
+			}),
+		});
+	}
+
+	async uploadCoverImage(imageUrl: string): Promise<string | null> {
+		try {
+			const imageResponse = await fetch(imageUrl);
+			if (!imageResponse.ok) {
+				console.error("Failed to fetch image from URL:", imageUrl);
+				return null;
+			}
+
+			const imageBlob = await imageResponse.blob();
+			const contentType = imageBlob.type || "image/jpeg";
+
+			const supportedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+			if (!supportedTypes.includes(contentType)) {
+				console.error(`Luma does not support image type: ${contentType}. Supported: ${supportedTypes.join(", ")}`);
+				return null;
+			}
+
+			const { upload_url, file_url } = await this.createImageUploadUrl(contentType);
+
+			const uploadResponse = await fetch(upload_url, {
+				method: "PUT",
+				body: imageBlob,
+				headers: { "Content-Type": contentType },
+			});
+
+			if (!uploadResponse.ok) {
+				const errorText = await uploadResponse.text();
+				console.error("Failed to upload image to Luma CDN:", uploadResponse.status, errorText);
+				return null;
+			}
+
+			console.log("Successfully uploaded image to Luma CDN:", file_url);
+			return file_url;
+		} catch (error) {
+			console.error("Error uploading cover image to Luma:", error);
+			return null;
+		}
+	}
+
 	async createEvent(data: {
 		name: string;
 		start_at: string;
-		end_at?: string;
 		timezone: string;
-		description?: string;
+		end_at?: string;
+		description_md?: string;
 		cover_url?: string;
-		location?: {
-			type: "online" | "offline";
+		geo_address_json?: {
 			address?: string;
-			link?: string;
+			city?: string;
+			region?: string;
+			country?: string;
 		};
-	}): Promise<LumaEvent> {
-		const response = await this.request<LumaEventResponse>("/v1/event/create", {
-			method: "POST",
-			body: JSON.stringify(data),
-		});
-		return response.event;
+		meeting_url?: string;
+		visibility?: "public" | "members-only" | "private";
+		max_capacity?: number | null;
+	}): Promise<{ api_id: string }> {
+		const response = await this.request<{ api_id: string }>(
+			"/v1/event/create",
+			{
+				method: "POST",
+				body: JSON.stringify(data),
+			},
+		);
+		return response;
 	}
 
 	async updateEvent(
@@ -300,6 +363,24 @@ export class LumaClient {
 			method: "POST",
 			body: JSON.stringify({ webhook_api_id: webhookApiId }),
 		});
+	}
+
+	async addEventToCalendar(params: {
+		event_api_id: string;
+	}): Promise<{ success: boolean; error?: string }> {
+		try {
+			await this.request("/v1/calendar/add-event", {
+				method: "POST",
+				body: JSON.stringify({
+					platform: "luma",
+					event_api_id: params.event_api_id,
+				}),
+			});
+			return { success: true };
+		} catch (error) {
+			const message = error instanceof Error ? error.message : "Unknown error";
+			return { success: false, error: message };
+		}
 	}
 }
 

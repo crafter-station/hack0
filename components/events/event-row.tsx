@@ -55,9 +55,7 @@ export function EventRow({ event, categoryConfig }: EventRowProps) {
 			? "lg:grid-cols-[1fr_200px_120px_120px_130px]" // With skill level column
 			: "lg:grid-cols-[1fr_200px_120px_130px]"; // Minimal
 
-	const eventUrl = event.organization?.slug
-		? `/c/${event.organization.slug}/events/${event.slug}`
-		: `/${event.slug}`;
+	const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
 
 	return (
 		<Link

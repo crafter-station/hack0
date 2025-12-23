@@ -4,6 +4,8 @@ import { eq } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { db } from "@/lib/db";
 import { events, importJobs } from "@/lib/db/schema";
+import { getGlobalLumaClient } from "@/lib/luma";
+import { computeContentHash } from "@/lib/luma/host-resolver";
 import {
 	inferCountryFromCity,
 	inferEventType,
@@ -87,22 +89,18 @@ export const lumaImportTask = task({
 
 			const extracted = result.json as LumaExtractedData;
 
-			// Extraer imagen del HTML directamente buscando URLs de Luma CDN
 			let imageUrl: string | undefined;
 
-			// Buscar en el HTML por imágenes de lumacdn.com
 			if (result.html) {
 				const lumaImageRegex = /https:\/\/images\.lumacdn\.com\/[^\s"'<>]+/g;
 				const matches = result.html.match(lumaImageRegex);
 
 				if (matches && matches.length > 0) {
-					// Tomar la primera imagen encontrada (usualmente es la cover)
 					imageUrl = matches[0];
 					console.log("Found Luma CDN image:", imageUrl);
 				}
 			}
 
-			// Fallback: intentar usar la que el LLM extrajo si es válida
 			if (!imageUrl && extracted.imageUrl) {
 				const llmImage = extracted.imageUrl;
 				if (
@@ -152,7 +150,6 @@ export const lumaImportTask = task({
 
 			metadata.set("step", "completed");
 
-			// Usar el eventType extraído por el LLM, o hacer fallback a inferencia
 			const eventType =
 				extracted.eventType ||
 				inferEventType(extracted.name, extracted.description);
@@ -176,6 +173,19 @@ export const lumaImportTask = task({
 				metadata.set("step", "publishing");
 
 				const slug = await createUniqueSlug(extracted.name);
+
+				const startDate = extracted.startDate
+					? new Date(extracted.startDate)
+					: null;
+				const endDate = extracted.endDate ? new Date(extracted.endDate) : null;
+
+				const sourceContentHash = computeContentHash({
+					name: extracted.name,
+					description: extracted.description,
+					startDate,
+					endDate,
+					venue: extracted.location?.venue,
+				});
 
 				const [newEvent] = await db
 					.insert(events)
@@ -202,10 +212,8 @@ export const lumaImportTask = task({
 							| "incubator"
 							| "fellowship"
 							| "call_for_papers",
-						startDate: extracted.startDate
-							? new Date(extracted.startDate)
-							: null,
-						endDate: extracted.endDate ? new Date(extracted.endDate) : null,
+						startDate,
+						endDate,
 						format: extracted.location?.isVirtual ? "virtual" : "in-person",
 						country,
 						city: extracted.location?.city || null,
@@ -217,6 +225,10 @@ export const lumaImportTask = task({
 						isApproved: isVerified,
 						approvalStatus: isVerified ? "approved" : "pending",
 						status: "upcoming",
+						ownership: "referenced",
+						sourceContentHash,
+						lastSourceCheckAt: new Date(),
+						syncStatus: "synced",
 					})
 					.returning();
 
@@ -228,6 +240,32 @@ export const lumaImportTask = task({
 				metadata.set("eventId", newEvent.id);
 				metadata.set("eventSlug", newEvent.slug);
 				metadata.set("isVerified", isVerified);
+
+				metadata.set("step", "adding_to_hack0_calendar");
+				try {
+					const lumaClient = getGlobalLumaClient();
+					const lumaSlug = lumaUrl.split("/").pop();
+					if (lumaSlug) {
+						const lumaEvent = await lumaClient.getEventBySlug(lumaSlug);
+						const addResult = await lumaClient.addEventToCalendar({
+							event_api_id: lumaEvent.api_id,
+						});
+						metadata.set("addedToHack0Calendar", addResult.success);
+						if (addResult.error) {
+							metadata.set("addToCalendarError", addResult.error);
+						}
+					} else {
+						metadata.set("addedToHack0Calendar", false);
+						metadata.set("addToCalendarError", "Could not extract slug from Luma URL");
+					}
+				} catch (addError) {
+					metadata.set("addedToHack0Calendar", false);
+					metadata.set(
+						"addToCalendarError",
+						addError instanceof Error ? addError.message : "Unknown error",
+					);
+				}
+
 				metadata.set("step", "published");
 
 				return {

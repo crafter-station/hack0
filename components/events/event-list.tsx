@@ -50,7 +50,7 @@ export function EventList({
 	hasMore = false,
 	filters = {},
 }: EventListProps) {
-	const [sortField, setSortField] = useState<SortField>("date");
+	const [sortField, setSortField] = useState<SortField>("status");
 	const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
 	const categoryConfig = getCategoryById(filters.category || "all");
@@ -183,9 +183,7 @@ export function EventList({
 								: null;
 							const endDate = event.endDate ? new Date(event.endDate) : null;
 
-							const eventUrl = event.organization?.slug
-								? `/c/${event.organization.slug}/events/${event.slug}`
-								: `/${event.slug}`;
+							const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
 
 							return (
 								<tr

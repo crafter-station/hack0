@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import {
 	AlertCircle,
 	ArrowUpRight,
@@ -18,19 +18,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
+import { ClaimEventButton } from "@/components/events/claim-event-button";
+import { ClaimHostButton } from "@/components/events/claim-host-button";
 import { EventCountdown } from "@/components/events/event-countdown";
 import { ManageEventButton } from "@/components/events/manage-event-button";
 import { WinnerSection } from "@/components/events/winner-section";
 import { CalendarIcon } from "@/components/icons/calendar";
+import { LumaIcon } from "@/components/icons/luma";
 import { TrophyIcon } from "@/components/icons/trophy";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getEventCohost } from "@/lib/actions/cohost-invites";
 import {
 	getChildEvents,
-	getEventBySlug,
+	getEventByShortCode,
+	getEventLumaHosts,
 	getEventSponsors,
 } from "@/lib/actions/events";
-import { getOrganizationBySlug } from "@/lib/actions/organizations";
 import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
 import {
 	formatEventDate,
@@ -52,7 +55,7 @@ import { isGodMode } from "@/lib/god-mode";
 import remarkGfm from "remark-gfm";
 
 interface EventPageProps {
-	params: Promise<{ slug: string; eventSlug: string }>;
+	params: Promise<{ code: string }>;
 }
 
 function stripMarkdown(text: string): string {
@@ -80,23 +83,24 @@ function getInitials(name: string): string {
 export async function generateMetadata({
 	params,
 }: EventPageProps): Promise<Metadata> {
-	const { slug, eventSlug } = await params;
-	const hackathon = await getEventBySlug(eventSlug, true);
+	const { code } = await params;
+	const result = await getEventByShortCode(code, true);
 
-	if (!hackathon) {
+	if (!result) {
 		return {
 			title: "Evento no encontrado",
 		};
 	}
 
-	const _community = await getOrganizationBySlug(slug);
+	const hackathon = result;
+	const community = result.organization;
 
 	const title = `${hackathon.name} - ${getEventTypeLabel(hackathon.eventType)} en Perú`;
 	const description = hackathon.description
 		? stripMarkdown(hackathon.description).slice(0, 160)
 		: `${getEventTypeLabel(hackathon.eventType)} ${hackathon.format === "virtual" ? "virtual" : `en ${hackathon.city || "Perú"}`}. ${hackathon.prizePool ? `Premio: ${hackathon.prizeCurrency === "PEN" ? "S/" : "$"}${hackathon.prizePool.toLocaleString()}` : ""}`;
 
-	const ogImageUrl = `https://hack0.dev/api/og?slug=${hackathon.slug}`;
+	const ogImageUrl = `https://hack0.dev/api/og?code=${code}`;
 
 	return {
 		title,
@@ -114,7 +118,7 @@ export async function generateMetadata({
 			title,
 			description,
 			type: "website",
-			url: `https://hack0.dev/c/${slug}/events/${hackathon.slug}`,
+			url: `https://hack0.dev/e/${code}`,
 			images: [
 				{ url: ogImageUrl, width: 1200, height: 630, alt: hackathon.name },
 			],
@@ -126,38 +130,38 @@ export async function generateMetadata({
 			images: [ogImageUrl],
 		},
 		alternates: {
-			canonical: `https://hack0.dev/c/${slug}/events/${hackathon.slug}`,
+			canonical: `https://hack0.dev/e/${code}`,
 		},
 	};
 }
 
 export default async function EventPage({ params }: EventPageProps) {
-	const { slug, eventSlug } = await params;
-	const { userId } = await auth();
-	const hackathon = await getEventBySlug(eventSlug, true);
+	const { code } = await params;
+	const user = await currentUser();
+	const userId = user?.id;
+	const userHasPersonalOrg = !!(user?.publicMetadata as { lumaHostId?: string })?.lumaHostId;
+	const result = await getEventByShortCode(code, true);
 
-	if (!hackathon) {
+	if (!result) {
 		notFound();
 	}
 
-	const community = await getOrganizationBySlug(slug);
-
-	if (!community || hackathon.organizationId !== community.id) {
-		notFound();
-	}
+	const hackathon = result;
+	const community = result.organization;
 
 	const godMode = await isGodMode();
-	const isOwner = userId && community.ownerUserId === userId;
+	const isOwner = userId && community?.ownerUserId === userId;
 	const canViewPending = godMode || isOwner;
 
 	if (!hackathon.isApproved && !canViewPending) {
 		notFound();
 	}
 
-	const [childEvents, eventSponsors, cohosts] = await Promise.all([
+	const [childEvents, eventSponsors, cohosts, lumaHosts] = await Promise.all([
 		getChildEvents(hackathon.id),
 		getEventSponsors(hackathon.id),
 		getEventCohost(hackathon.id),
+		getEventLumaHosts(hackathon.id, userId),
 	]);
 
 	const hasChildEvents = childEvents.length > 0;
@@ -166,6 +170,7 @@ export default async function EventPage({ params }: EventPageProps) {
 		(c) => c.status === "approved" && !c.isPrimary,
 	);
 	const hasCohosts = approvedCohosts.length > 0;
+	const hasLumaHosts = lumaHosts.length > 0;
 
 	const status = getEventStatus(hackathon);
 	const isEnded = status.status === "ended";
@@ -197,17 +202,21 @@ export default async function EventPage({ params }: EventPageProps) {
 				name: "Inicio",
 				item: "https://hack0.dev",
 			},
+			...(community
+				? [
+						{
+							"@type": "ListItem",
+							position: 2,
+							name: community.displayName || community.name,
+							item: `https://hack0.dev/c/${community.slug}`,
+						},
+					]
+				: []),
 			{
 				"@type": "ListItem",
-				position: 2,
-				name: community.displayName || community.name,
-				item: `https://hack0.dev/c/${slug}`,
-			},
-			{
-				"@type": "ListItem",
-				position: 3,
+				position: community ? 3 : 2,
 				name: hackathon.name,
-				item: `https://hack0.dev/c/${slug}/events/${hackathon.slug}`,
+				item: `https://hack0.dev/e/${code}`,
 			},
 		],
 	};
@@ -231,39 +240,39 @@ export default async function EventPage({ params }: EventPageProps) {
 		location:
 			hackathon.format === "virtual"
 				? {
-					"@type": "VirtualLocation",
-					url: hackathon.websiteUrl || hackathon.registrationUrl,
-				}
+						"@type": "VirtualLocation",
+						url: hackathon.websiteUrl || hackathon.registrationUrl,
+					}
 				: {
-					"@type": "Place",
-					name: hackathon.venue || hackathon.city || "Perú",
-					address: {
-						"@type": "PostalAddress",
-						addressLocality: hackathon.city,
-						addressRegion: hackathon.department,
-						addressCountry: "PE",
+						"@type": "Place",
+						name: hackathon.venue || hackathon.city || "Perú",
+						address: {
+							"@type": "PostalAddress",
+							addressLocality: hackathon.city,
+							addressRegion: hackathon.department,
+							addressCountry: "PE",
+						},
 					},
-				},
 		image: hackathon.eventImageUrl,
-		url: `https://hack0.dev/c/${slug}/events/${hackathon.slug}`,
+		url: `https://hack0.dev/e/${code}`,
 		organizer: community
 			? {
-				"@type": "Organization",
-				name: community.displayName || community.name,
-				url: community.websiteUrl,
-			}
+					"@type": "Organization",
+					name: community.displayName || community.name,
+					url: community.websiteUrl,
+				}
 			: undefined,
 		offers:
 			hackathon.prizePool && hackathon.prizePool > 0
 				? {
-					"@type": "Offer",
-					price: "0",
-					priceCurrency: "USD",
-					availability: isEnded
-						? "https://schema.org/SoldOut"
-						: "https://schema.org/InStock",
-					url: hackathon.registrationUrl,
-				}
+						"@type": "Offer",
+						price: "0",
+						priceCurrency: "USD",
+						availability: isEnded
+							? "https://schema.org/SoldOut"
+							: "https://schema.org/InStock",
+						url: hackathon.registrationUrl,
+					}
 				: undefined,
 	};
 
@@ -299,7 +308,7 @@ export default async function EventPage({ params }: EventPageProps) {
 						/>
 					)}
 					<div className="absolute top-3 right-3">
-						<ManageEventButton event={hackathon} communitySlug={slug} />
+						<ManageEventButton event={hackathon} communitySlug={community?.slug} />
 					</div>
 				</div>
 
@@ -333,7 +342,7 @@ export default async function EventPage({ params }: EventPageProps) {
 									{hackathon.name}
 								</h1>
 								<div className="hidden md:block">
-									<ManageEventButton event={hackathon} communitySlug={slug} />
+									<ManageEventButton event={hackathon} communitySlug={community?.slug} />
 								</div>
 							</div>
 
@@ -482,6 +491,13 @@ export default async function EventPage({ params }: EventPageProps) {
 											{getDomainLabel(domain)}
 										</span>
 									))}
+
+								{(hasLumaHosts || hackathon.lumaSlug || hackathon.sourceLumaEventId) && (
+									<span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+										<LumaIcon className="h-3 w-3" />
+										Luma
+									</span>
+								)}
 							</div>
 						</div>
 					</div>
@@ -587,7 +603,7 @@ export default async function EventPage({ params }: EventPageProps) {
 											return (
 												<Link
 													key={child.id}
-													href={`/c/${slug}/events/${child.slug}`}
+													href={`/e/${child.shortCode}`}
 													className="group block rounded-xl border p-4 transition-colors hover:bg-muted/50"
 												>
 													<div className="flex items-start gap-4">
@@ -758,7 +774,7 @@ export default async function EventPage({ params }: EventPageProps) {
 												<div className="flex-1 min-w-0">
 													<div className="flex items-center gap-2 flex-wrap">
 														<Link
-															href={`/c/${slug}`}
+															href={`/c/${community.slug}`}
 															className="text-sm font-medium hover:underline underline-offset-2 truncate"
 														>
 															{community.displayName || community.name}
@@ -780,7 +796,7 @@ export default async function EventPage({ params }: EventPageProps) {
 												</div>
 											</div>
 											<Link
-												href={`/c/${slug}`}
+												href={`/c/${community.slug}`}
 												className="flex w-full h-9 items-center justify-center gap-2 rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
 											>
 												<Building2 className="h-4 w-4" />
@@ -841,6 +857,77 @@ export default async function EventPage({ params }: EventPageProps) {
 												))}
 											</div>
 										)}
+									</div>
+								</div>
+							)}
+
+							{hasLumaHosts && (
+								<div className="rounded-lg border bg-card">
+									<div className="px-5 py-4 border-b">
+										<h3 className="text-sm font-semibold">
+											Hosts ({lumaHosts.length})
+										</h3>
+									</div>
+									<div className="p-5 space-y-3">
+										{lumaHosts.map((host) => (
+											<div key={host.id} className="flex items-center gap-3">
+												<Avatar className="h-10 w-10 border">
+													<AvatarImage src={host.avatarUrl || undefined} />
+													<AvatarFallback className="text-sm font-medium">
+														{getInitials(host.name || "?")}
+													</AvatarFallback>
+												</Avatar>
+												<div className="flex-1 min-w-0">
+													<div className="flex items-center gap-2">
+														{host.isClaimed && host.organizationSlug ? (
+															<Link
+																href={`/c/${host.organizationSlug}`}
+																className="text-sm font-medium truncate hover:underline"
+															>
+																{host.name}
+															</Link>
+														) : (
+															<p className="text-sm font-medium truncate">
+																{host.name}
+															</p>
+														)}
+														{host.isClaimed && (
+															<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+														)}
+													</div>
+													{host.isPrimary && (
+														<span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+															Principal
+														</span>
+													)}
+												</div>
+												{userId && !host.isClaimed && (
+													<ClaimHostButton
+														lumaHostApiId={host.lumaHostApiId}
+														hostName={host.name || "Host"}
+														hostAvatarUrl={host.avatarUrl}
+														userHasPersonalOrg={userHasPersonalOrg}
+													/>
+												)}
+											</div>
+										))}
+									</div>
+								</div>
+							)}
+
+							{!community && userId && (
+								<div className="rounded-lg border bg-card">
+									<div className="px-5 py-4 border-b">
+										<h3 className="text-sm font-semibold">¿Es tu evento?</h3>
+									</div>
+									<div className="p-5 space-y-3">
+										<p className="text-sm text-muted-foreground">
+											Si organizas este evento, puedes vincularlo a una de tus comunidades.
+										</p>
+										<ClaimEventButton
+											eventId={hackathon.id}
+											eventName={hackathon.name}
+										/>
 									</div>
 								</div>
 							)}

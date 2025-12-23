@@ -26,6 +26,7 @@ interface WinnerClaim {
 	createdAt: Date | null;
 	eventName: string | null;
 	eventSlug: string | null;
+	eventShortCode: string | null;
 	organizationSlug: string | null;
 }
 
@@ -136,11 +137,7 @@ function ClaimRow({ claim }: { claim: WinnerClaim }) {
 						{/* Event link */}
 						<div className="flex items-center gap-2 mb-1">
 							<Link
-								href={
-									claim.organizationSlug
-										? `/c/${claim.organizationSlug}/events/${claim.eventSlug}`
-										: `/${claim.eventSlug}`
-								}
+								href={claim.eventShortCode ? `/e/${claim.eventShortCode}` : `/${claim.eventSlug}`}
 								className="font-medium hover:underline truncate"
 							>
 								{claim.eventName}

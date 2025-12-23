@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { EventList } from "@/components/events/event-list";
 import { db } from "@/lib/db";
-import { events, eventHostOrganizations, organizations } from "@/lib/db/schema";
+import { events, eventHostOrganizations, eventHosts, lumaHostMappings, organizations } from "@/lib/db/schema";
 
 interface CommunityPageProps {
 	params: Promise<{ slug: string }>;
@@ -24,42 +24,70 @@ async function CommunityEvents({ slug }: { slug: string }) {
 
 	const coHostedEventIds = coHostedEvents.map((e) => e.eventId);
 
-	// Status priority: 1=ongoing, 2=open, 3=upcoming, 4=ended
-	const statusPriority = sql<number>`
-		CASE
-			WHEN ${events.endDate} IS NOT NULL AND ${events.endDate} < NOW() THEN 4
-			WHEN ${events.startDate} IS NOT NULL AND ${events.startDate} <= NOW()
-				 AND (${events.endDate} IS NULL OR ${events.endDate} > NOW()) THEN 1
-			WHEN ${events.registrationDeadline} IS NOT NULL AND ${events.registrationDeadline} > NOW() THEN 2
-			ELSE 3
-		END
-	`;
+	const lumaHostIds = await db
+		.select({ lumaHostApiId: lumaHostMappings.lumaHostApiId })
+		.from(lumaHostMappings)
+		.where(eq(lumaHostMappings.organizationId, community.id));
 
-	// Date sorting: ended events by most recent first, active events by soonest first
+	const lumaHostApiIds = lumaHostIds.map((h) => h.lumaHostApiId);
+
+	let lumaHostedEventIds: string[] = [];
+	if (lumaHostApiIds.length > 0) {
+		const lumaHostedEvents = await db
+			.select({ eventId: eventHosts.eventId })
+			.from(eventHosts)
+			.where(inArray(eventHosts.lumaHostApiId, lumaHostApiIds));
+		lumaHostedEventIds = lumaHostedEvents.map((e) => e.eventId);
+	}
+
+	const allRelatedEventIds = [...new Set([...coHostedEventIds, ...lumaHostedEventIds])];
+
+	const statusPriority = sql<number>`
+    CASE
+      WHEN ${events.endDate} IS NOT NULL AND ${events.endDate} < NOW() THEN 4
+      WHEN ${events.endDate} IS NULL AND ${events.startDate} IS NOT NULL AND ${events.startDate} < CURRENT_DATE THEN 4
+      WHEN ${events.startDate} IS NOT NULL AND ${events.startDate} <= NOW()
+           AND ${events.endDate} IS NOT NULL AND ${events.endDate} > NOW() THEN 1
+      WHEN ${events.registrationDeadline} IS NOT NULL AND ${events.registrationDeadline} > NOW() THEN 2
+      ELSE 3
+    END
+  `;
+
 	const dateSortOrder = sql`
-		CASE
-			WHEN ${events.endDate} IS NOT NULL AND ${events.endDate} < NOW()
-				THEN -EXTRACT(EPOCH FROM ${events.endDate})
-			ELSE EXTRACT(EPOCH FROM COALESCE(${events.startDate}, '9999-12-31'))
-		END
-	`;
+    CASE
+      WHEN ${events.endDate} IS NOT NULL AND ${events.endDate} < NOW()
+        THEN -EXTRACT(EPOCH FROM ${events.endDate})
+      ELSE EXTRACT(EPOCH FROM COALESCE(${events.startDate}, '9999-12-31'))
+    END
+  `;
 
 	const whereCondition =
-		coHostedEventIds.length > 0
+		allRelatedEventIds.length > 0
 			? or(
 					eq(events.organizationId, community.id),
-					inArray(events.id, coHostedEventIds),
+					inArray(events.id, allRelatedEventIds),
 				)
 			: eq(events.organizationId, community.id);
 
-	const communityEvents = await db.query.events.findMany({
-		where: whereCondition,
-		limit: 50,
-		orderBy: [desc(events.isFeatured), asc(statusPriority), asc(dateSortOrder)],
-		with: {
-			organization: true,
-		},
-	});
+	const results = await db
+		.select({
+			event: events,
+			organization: organizations,
+		})
+		.from(events)
+		.leftJoin(organizations, eq(events.organizationId, organizations.id))
+		.where(whereCondition)
+		.orderBy(
+			desc(events.isFeatured),
+			asc(statusPriority),
+			asc(dateSortOrder),
+		)
+		.limit(50);
+
+	const communityEvents = results.map((r) => ({
+		...r.event,
+		organization: r.organization,
+	}));
 
 	return (
 		<EventList

@@ -103,6 +103,47 @@ export async function canManageEventBySlug(slug: string): Promise<boolean> {
 	return organizer.role === "lead" || organizer.role === "organizer";
 }
 
+export async function canManageEventByShortCode(code: string): Promise<boolean> {
+	const godMode = await isGodMode();
+	if (godMode) return true;
+
+	const { userId } = await auth();
+	if (!userId) return false;
+
+	const event = await db.query.events.findFirst({
+		where: eq(events.shortCode, code),
+	});
+
+	if (!event || !event.organizationId) {
+		return false;
+	}
+
+	const membership = await db.query.communityMembers.findFirst({
+		where: and(
+			eq(communityMembers.communityId, event.organizationId),
+			eq(communityMembers.userId, userId),
+		),
+	});
+
+	if (
+		membership &&
+		(membership.role === "owner" || membership.role === "admin")
+	) {
+		return true;
+	}
+
+	const organizer = await db.query.eventOrganizers.findFirst({
+		where: and(
+			eq(eventOrganizers.eventId, event.id),
+			eq(eventOrganizers.userId, userId),
+		),
+	});
+
+	if (!organizer) return false;
+
+	return organizer.role === "lead" || organizer.role === "organizer";
+}
+
 // ============================================
 // VIEW ANALYTICS PERMISSION
 // ============================================

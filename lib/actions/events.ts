@@ -16,18 +16,30 @@ import { db } from "@/lib/db";
 import {
 	communityMembers,
 	type Event,
+	type EventHost,
 	type EventSponsor,
+	eventHostOrganizations,
+	eventHosts,
+	eventOrganizers,
+	eventShareAssets,
 	eventSponsors,
 	events,
+	importJobs,
+	lumaEventMappings,
+	lumaHostMappings,
 	type NewEvent,
 	type NewEventSponsor,
+	notificationLogs,
 	type Organization,
 	organizations,
+	userEventAttendance,
+	winnerClaims,
 } from "@/lib/db/schema";
 import { notifySubscribersOfNewEvent } from "@/lib/email/notify-subscribers";
 import { type EventCategory, getCategoryById } from "@/lib/event-categories";
 import { isGodMode } from "@/lib/god-mode";
-import { createUniqueSlug } from "@/lib/slug-utils";
+import { getGlobalLumaClient } from "@/lib/luma/client";
+import { createUniqueSlug, ensureUniqueShortCode } from "@/lib/slug-utils";
 import { getUserCommunityRole } from "./community-members";
 
 export interface EventFilters {
@@ -348,6 +360,47 @@ export async function getEventBySlug(
 	return event;
 }
 
+export async function getEventByShortCode(
+	code: string,
+	includePending: boolean = false,
+): Promise<(Event & { organization: Organization | null }) | null> {
+	const whereConditions = includePending
+		? eq(events.shortCode, code)
+		: and(eq(events.shortCode, code), eq(events.isApproved, true));
+
+	const results = await db
+		.select({
+			event: events,
+			organization: organizations,
+		})
+		.from(events)
+		.leftJoin(organizations, eq(events.organizationId, organizations.id))
+		.where(whereConditions)
+		.limit(1);
+
+	if (!results[0]) return null;
+
+	const { event, organization } = results[0];
+
+	if (event?.parentEventId) {
+		const [parent] = await db
+			.select({ eventImageUrl: events.eventImageUrl })
+			.from(events)
+			.where(eq(events.id, event.parentEventId))
+			.limit(1);
+
+		if (parent) {
+			return {
+				...event,
+				eventImageUrl: event.eventImageUrl || parent.eventImageUrl,
+				organization,
+			};
+		}
+	}
+
+	return { ...event, organization };
+}
+
 export async function getFeaturedEvents(limit: number = 6): Promise<Event[]> {
 	const results = await db
 		.select()
@@ -449,6 +502,7 @@ export interface CreateEventInput {
 	registrationUrl?: string;
 	organizationId: string;
 	eventImageUrl?: string;
+	publishToLuma?: boolean;
 }
 
 export interface CreateEventResult {
@@ -482,8 +536,8 @@ export async function createEvent(
 			}
 		}
 
-		// Generate unique slug using centralized utility
 		const slug = await createUniqueSlug(input.name);
+		const shortCode = await ensureUniqueShortCode();
 
 		let isApproved = false;
 		let approvalStatus: "pending" | "approved" = "pending";
@@ -503,9 +557,10 @@ export async function createEvent(
 
 		const eventData: NewEvent = {
 			slug,
+			shortCode,
 			name: input.name,
 			description: input.description,
-			websiteUrl: input.websiteUrl || input.registrationUrl,
+			websiteUrl: input.websiteUrl || input.registrationUrl || `https://hack0.dev/e/${shortCode}`,
 			registrationUrl: input.registrationUrl || input.websiteUrl,
 			eventType: (input.eventType as any) || "hackathon",
 			format: (input.format as any) || "virtual",
@@ -536,11 +591,87 @@ export async function createEvent(
 			return { success: false, error: "Error al crear el evento" };
 		}
 
-		if (isApproved) {
-			await notifySubscribersOfNewEvent({ eventId: result[0].id });
+		const createdEvent = result[0];
+
+		if (input.publishToLuma && input.startDate) {
+			try {
+				const lumaClient = getGlobalLumaClient();
+
+				let coverUrl: string | undefined;
+				if (input.eventImageUrl) {
+					const uploadedUrl = await lumaClient.uploadCoverImage(
+						input.eventImageUrl,
+					);
+					if (uploadedUrl) {
+						coverUrl = uploadedUrl;
+					}
+				}
+
+				const lumaPayload: Parameters<typeof lumaClient.createEvent>[0] = {
+					name: input.name,
+					start_at: new Date(input.startDate).toISOString(),
+					timezone: input.timezone || "America/Lima",
+				};
+
+				if (input.endDate) {
+					lumaPayload.end_at = new Date(input.endDate).toISOString();
+				}
+				if (input.description) {
+					lumaPayload.description_md = input.description;
+				}
+				if (coverUrl) {
+					lumaPayload.cover_url = coverUrl;
+				}
+				if (input.format === "virtual" && input.registrationUrl) {
+					lumaPayload.meeting_url = input.registrationUrl;
+				}
+
+				console.log("Luma createEvent payload:", JSON.stringify(lumaPayload, null, 2));
+
+				const lumaEvent = await lumaClient.createEvent(lumaPayload);
+
+				if (!lumaEvent?.api_id) {
+					console.error("Luma event response missing api_id:", lumaEvent);
+					throw new Error("Luma event missing api_id");
+				}
+
+				const fullLumaEvent = await lumaClient.getEvent(lumaEvent.api_id);
+
+				await lumaClient.addEventToCalendar({
+					event_api_id: lumaEvent.api_id,
+				});
+
+				const lumaSlug = fullLumaEvent.url?.split("/").pop();
+
+				await db
+					.update(events)
+					.set({
+						sourceLumaEventId: lumaEvent.api_id,
+						lumaSlug,
+						ownership: "created",
+						syncStatus: "synced",
+					})
+					.where(eq(events.id, createdEvent.id));
+
+				await db.insert(lumaEventMappings).values({
+					lumaEventId: lumaEvent.api_id,
+					eventId: createdEvent.id,
+					lastSyncedAt: new Date(),
+					lumaUpdatedAt: new Date(fullLumaEvent.updated_at || new Date().toISOString()),
+				});
+
+				createdEvent.sourceLumaEventId = lumaEvent.api_id;
+				createdEvent.lumaSlug = lumaSlug ?? null;
+			} catch (lumaError) {
+				console.error("Luma sync failed:", lumaError);
+			}
 		}
 
-		return { success: true, event: result[0] };
+		if (isApproved) {
+			await notifySubscribersOfNewEvent({ eventId: createdEvent.id });
+		}
+
+		return { success: true, event: createdEvent };
 	} catch (error) {
 		console.error("Error creating event:", error);
 		return { success: false, error: "Error al crear el evento" };
@@ -614,7 +745,26 @@ export async function deleteEvent(
 			};
 		}
 
+		await db
+			.delete(notificationLogs)
+			.where(eq(notificationLogs.eventId, eventId));
+		await db.delete(winnerClaims).where(eq(winnerClaims.eventId, eventId));
 		await db.delete(eventSponsors).where(eq(eventSponsors.eventId, eventId));
+		await db.delete(eventOrganizers).where(eq(eventOrganizers.eventId, eventId));
+		await db
+			.delete(eventHostOrganizations)
+			.where(eq(eventHostOrganizations.eventId, eventId));
+		await db.delete(importJobs).where(eq(importJobs.eventId, eventId));
+		await db
+			.delete(lumaEventMappings)
+			.where(eq(lumaEventMappings.eventId, eventId));
+		await db
+			.delete(eventShareAssets)
+			.where(eq(eventShareAssets.eventId, eventId));
+		await db
+			.delete(userEventAttendance)
+			.where(eq(userEventAttendance.eventId, eventId));
+		await db.delete(eventHosts).where(eq(eventHosts.eventId, eventId));
 
 		await db.delete(events).where(eq(events.id, eventId));
 
@@ -751,6 +901,48 @@ export async function getEventSponsors(
 		);
 
 	return results;
+}
+
+export interface EventHostWithClaimStatus extends EventHost {
+	isClaimed: boolean;
+	claimedByCurrentUser: boolean;
+	organizationSlug?: string | null;
+}
+
+export async function getEventLumaHosts(
+	eventId: string,
+	currentUserId?: string | null,
+): Promise<EventHostWithClaimStatus[]> {
+	const results = await db.query.eventHosts.findMany({
+		where: eq(eventHosts.eventId, eventId),
+		orderBy: (hosts, { desc }) => [desc(hosts.isPrimary)],
+	});
+
+	const hostsWithStatus: EventHostWithClaimStatus[] = [];
+
+	for (const host of results) {
+		const mapping = await db.query.lumaHostMappings.findFirst({
+			where: eq(lumaHostMappings.lumaHostApiId, host.lumaHostApiId),
+		});
+
+		let organizationSlug: string | null = null;
+		if (mapping?.organizationId) {
+			const org = await db.query.organizations.findFirst({
+				where: eq(organizations.id, mapping.organizationId),
+				columns: { slug: true },
+			});
+			organizationSlug = org?.slug || null;
+		}
+
+		hostsWithStatus.push({
+			...host,
+			isClaimed: !!mapping?.clerkUserId,
+			claimedByCurrentUser: mapping?.clerkUserId === currentUserId,
+			organizationSlug,
+		});
+	}
+
+	return hostsWithStatus;
 }
 
 export interface AddEventSponsorInput {

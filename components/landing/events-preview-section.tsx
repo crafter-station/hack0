@@ -47,21 +47,19 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 				</h2>
 
 				<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-					{events.map((event) => {
+					{events.slice(0, 8).map((event) => {
 						const status = getEventStatus(event);
 						const isEnded = status.status === "ended";
 						const prize = formatPrize(event.prizePool, event.prizeCurrency);
 
-						const eventUrl = event.organization?.slug
-							? `/c/${event.organization.slug}/events/${event.slug}`
-							: `/${event.slug}`;
+						const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
 
 						return (
 							<Link key={event.id} href={eventUrl}>
 								<Card
-									className={`group h-full overflow-hidden p-0 transition-all hover:shadow-md hover:border-foreground/20 ${isEnded ? "opacity-60" : ""}`}
+									className={`group h-full overflow-hidden p-0 gap-0 transition-all hover:shadow-md hover:border-foreground/20 ${isEnded ? "opacity-60" : ""}`}
 								>
-									<div className="relative aspect-square w-full overflow-hidden">
+									<div className="relative aspect-square w-full overflow-hidden border-b">
 										{event.eventImageUrl ? (
 											<Image
 												src={event.eventImageUrl}
@@ -107,12 +105,12 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 											</div>
 										)}
 									</div>
-									<CardContent className="p-3 space-y-2">
+									<CardContent className="p-3 space-y-1">
 										<div>
 											<h3 className="font-medium text-sm line-clamp-2 group-hover:text-foreground transition-colors">
 												{event.name}
 											</h3>
-											<p className="text-xs text-muted-foreground mt-0.5">
+											<p className="text-xs text-muted-foreground">
 												{event.organization?.displayName ||
 													event.organization?.name ||
 													getEventTypeLabel(event.eventType)}
@@ -147,11 +145,14 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 							</Link>
 						);
 					})}
-					{events.length < 4 &&
-						Array.from({ length: 4 - events.length }).map((_, i) => (
+					{(() => {
+						const eventCount = Math.min(events.length, 8);
+						const targetCount = eventCount <= 4 ? 4 : 8;
+						const placeholderCount = targetCount - eventCount;
+						return placeholderCount > 0 && Array.from({ length: placeholderCount }).map((_, i) => (
 							<Link key={`placeholder-${i}`} href="/onboarding">
-								<Card className="group h-full overflow-hidden p-0 border-dashed hover:border-foreground/20 transition-all">
-									<div className="relative aspect-square w-full overflow-hidden bg-muted/30">
+								<Card className="group h-full overflow-hidden p-0 gap-0 border-dashed hover:border-foreground/20 transition-all">
+									<div className="relative aspect-square w-full overflow-hidden bg-muted/30 border-b">
 										<div className="flex h-full w-full flex-col items-center justify-center gap-2 p-4">
 											<div className="h-10 w-10 rounded-full border-2 border-dashed border-muted-foreground/20 flex items-center justify-center">
 												<span className="text-muted-foreground/40 text-xl">
@@ -163,12 +164,12 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 											</span>
 										</div>
 									</div>
-									<CardContent className="p-3 space-y-2">
+									<CardContent className="p-3 space-y-1">
 										<div>
 											<h3 className="font-medium text-sm text-muted-foreground/60 group-hover:text-muted-foreground transition-colors">
 												Publica tu evento
 											</h3>
-											<p className="text-xs text-muted-foreground/40 mt-0.5">
+											<p className="text-xs text-muted-foreground/40">
 												Es gratis y toma 2 minutos
 											</p>
 										</div>
@@ -178,7 +179,8 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 									</CardContent>
 								</Card>
 							</Link>
-						))}
+						));
+					})()}
 				</div>
 
 				<div className="mt-8 text-center">

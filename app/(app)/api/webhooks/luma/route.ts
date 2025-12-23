@@ -5,25 +5,29 @@ import type { lumaWebhookProcessorTask } from "@/trigger/luma-webhook-processor"
 
 export async function POST(request: Request) {
 	try {
-		const body = (await request.json()) as LumaWebhookPayload;
+		const rawBody = await request.text();
+		console.log("[Luma Webhook] Raw payload:", rawBody);
 
-		if (!body.event_type) {
+		const body = JSON.parse(rawBody) as LumaWebhookPayload;
+
+		if (!body.type) {
+			console.error("[Luma Webhook] Missing type. Keys:", Object.keys(body));
 			return NextResponse.json(
-				{ error: "Invalid webhook payload: missing event_type" },
+				{ error: "Invalid webhook payload: missing type" },
 				{ status: 400 },
 			);
 		}
 
-		console.log(`[Luma Webhook] Received: ${body.event_type}`, {
-			eventId: body.data?.event?.api_id,
-			eventName: body.data?.event?.name,
-			calendarId: body.data?.calendar_api_id,
+		console.log(`[Luma Webhook] Received: ${body.type}`, {
+			eventId: body.data?.api_id,
+			eventName: body.data?.name,
+			calendarId: body.data?.calendar?.id,
 		});
 
 		await tasks.trigger<typeof lumaWebhookProcessorTask>(
 			"luma-webhook-processor",
 			{
-				event_type: body.event_type,
+				event_type: body.type,
 				data: body.data,
 			},
 		);

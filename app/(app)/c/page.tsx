@@ -9,6 +9,7 @@ import { MyOrganizationCards } from "@/components/communities/my-organization-ca
 import { MyOrganizationList } from "@/components/communities/my-organization-list";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { Button } from "@/components/ui/button";
 import { getAllUserOrganizations } from "@/lib/actions/organizations";
 import { getCommunitiesViewPreference } from "@/lib/view-preferences";
 
@@ -74,13 +75,12 @@ export default async function CommunitiesPage({ searchParams }: CommunitiesPageP
 									showRoleFilter
 								/>
 							</Suspense>
-							<Link
-								href="/c/new"
-								className="h-7 px-2.5 border border-foreground/20 bg-foreground text-background text-xs font-medium hover:bg-foreground/90 transition-colors inline-flex items-center gap-1.5"
-							>
-								<Plus className="h-3.5 w-3.5" />
-								<span className="hidden sm:inline">Nueva</span>
-							</Link>
+							<Button variant="secondary" size="sm" className="h-7 text-xs" asChild>
+								<Link href="/c/new">
+									<Plus className="h-3.5 w-3.5" />
+									<span className="hidden sm:inline">Nueva</span>
+								</Link>
+							</Button>
 						</div>
 					</div>
 				</div>

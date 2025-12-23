@@ -17,14 +17,12 @@ import {
 } from "@/lib/actions/analytics";
 import { getEventWinnerClaims } from "@/lib/actions/claims";
 import { getEventCohost } from "@/lib/actions/cohost-invites";
-import { getEventBySlug, getEventSponsors } from "@/lib/actions/events";
-import { getOrganizationBySlug } from "@/lib/actions/organizations";
-import { canManageEventBySlug } from "@/lib/actions/permissions";
+import { getEventByShortCode, getEventSponsors } from "@/lib/actions/events";
+import { canManageEventByShortCode } from "@/lib/actions/permissions";
 
 interface ManageEventPageProps {
 	params: Promise<{
-		slug: string;
-		eventSlug: string;
+		code: string;
 	}>;
 	searchParams: Promise<{
 		tab?: string;
@@ -32,18 +30,18 @@ interface ManageEventPageProps {
 }
 
 async function EventManageHero({
-	slug,
-	eventSlug,
+	code,
 	currentTab,
 }: {
-	slug: string;
-	eventSlug: string;
+	code: string;
 	currentTab: string;
 }) {
-	const event = await getEventBySlug(eventSlug);
-	const community = await getOrganizationBySlug(slug);
+	const result = await getEventByShortCode(code);
 
-	if (!event || !community) return null;
+	if (!result) return null;
+
+	const event = result;
+	const community = result.organization;
 
 	const isHackathon =
 		event.eventType === "hackathon" ||
@@ -65,7 +63,6 @@ async function EventManageHero({
 			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
 				<div className="flex items-center justify-between gap-4 py-4">
 					<div className="flex items-center gap-3 min-w-0">
-						{/* Event logo */}
 						{event.eventImageUrl ? (
 							<div className="relative h-10 w-10 shrink-0 rounded-md overflow-hidden border border-border">
 								<Image
@@ -85,13 +82,15 @@ async function EventManageHero({
 							<h1 className="text-lg font-semibold tracking-tight truncate">
 								{event.name}
 							</h1>
-							<p className="text-xs text-muted-foreground truncate">
-								{community.displayName || community.name}
-							</p>
+							{community && (
+								<p className="text-xs text-muted-foreground truncate">
+									{community.displayName || community.name}
+								</p>
+							)}
 						</div>
 					</div>
 
-					<Link href={`/c/${slug}/events/${eventSlug}`} target="_blank">
+					<Link href={`/e/${code}`} target="_blank">
 						<Button variant="outline" size="sm" className="gap-2">
 							<Calendar className="h-4 w-4" />
 							<span className="hidden sm:inline">Ver página</span>
@@ -106,7 +105,7 @@ async function EventManageHero({
 						return (
 							<Link
 								key={tab.id}
-								href={`/c/${slug}/events/${eventSlug}/manage?tab=${tab.id}`}
+								href={`/e/${code}/manage?tab=${tab.id}`}
 								className={`inline-flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
 									isActive
 										? "border-foreground text-foreground"
@@ -128,24 +127,25 @@ export default async function ManageEventPage({
 	params,
 	searchParams,
 }: ManageEventPageProps) {
-	const { slug, eventSlug } = await params;
+	const { code } = await params;
 	const { tab = "overview" } = await searchParams;
 
-	const hasPermission = await canManageEventBySlug(eventSlug);
+	const hasPermission = await canManageEventByShortCode(code);
 
 	if (!hasPermission) {
-		redirect(`/c/${slug}/events/${eventSlug}`);
+		redirect(`/e/${code}`);
 	}
 
-	const event = await getEventBySlug(eventSlug);
+	const result = await getEventByShortCode(code);
 
-	if (!event) {
+	if (!result) {
 		redirect("/");
 	}
 
-	const community = await getOrganizationBySlug(slug);
+	const event = result;
+	const community = result.organization;
 
-	if (!community || event.organizationId !== community.id) {
+	if (!community) {
 		redirect("/");
 	}
 
@@ -163,14 +163,14 @@ export default async function ManageEventPage({
 
 	return (
 		<>
-			<EventManageHero slug={slug} eventSlug={eventSlug} currentTab={tab} />
+			<EventManageHero code={code} currentTab={tab} />
 
 			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-8 flex-1 w-full">
 				<ManageContent
 					event={event}
 					community={community}
-					slug={slug}
-					eventSlug={eventSlug}
+					slug={community.slug}
+					eventSlug={event.slug}
 					tab={tab}
 					sponsors={sponsors}
 					cohosts={cohosts}
