@@ -150,7 +150,7 @@ export function CommunitySidebarFilters({
 									className={`w-4 h-4 border flex items-center justify-center transition-colors ${
 										defaultCountries.includes(country.code)
 											? "bg-foreground border-foreground"
-											: "border-border/50 bg-transparent"
+											: "border-muted-foreground/60 bg-transparent"
 									}`}
 									onClick={() =>
 										toggleFilter("countries", country.code, defaultCountries)
@@ -188,7 +188,7 @@ export function CommunitySidebarFilters({
 									className={`w-4 h-4 border flex items-center justify-center transition-colors ${
 										defaultTypes.includes(type)
 											? "bg-foreground border-foreground"
-											: "border-border/50 bg-transparent"
+											: "border-muted-foreground/60 bg-transparent"
 									}`}
 									onClick={() => toggleFilter("types", type, defaultTypes)}
 								>
@@ -222,7 +222,7 @@ export function CommunitySidebarFilters({
 									className={`w-4 h-4 border flex items-center justify-center transition-colors ${
 										defaultSizes.includes(size.id)
 											? "bg-foreground border-foreground"
-											: "border-border/50 bg-transparent"
+											: "border-muted-foreground/60 bg-transparent"
 									}`}
 									onClick={() => toggleFilter("sizes", size.id, defaultSizes)}
 								>
@@ -256,7 +256,7 @@ export function CommunitySidebarFilters({
 									className={`w-4 h-4 border flex items-center justify-center transition-colors ${
 										defaultVerification.includes(item.id)
 											? "bg-foreground border-foreground"
-											: "border-border/50 bg-transparent"
+											: "border-muted-foreground/60 bg-transparent"
 									}`}
 									onClick={() =>
 										toggleFilter("verification", item.id, defaultVerification)
