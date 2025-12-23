@@ -14,8 +14,10 @@ import { ButtonGroup } from "@/components/ui/button-group";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
 	getPublicCommunities,
+	getTagCounts,
 	getUniqueCountries,
 	getUniqueDepartments,
+	getUniqueTags,
 } from "@/lib/actions/communities";
 
 interface DiscoverPageProps {
@@ -27,7 +29,7 @@ interface DiscoverPageProps {
 		countries?: string;
 		sizes?: string;
 		verification?: string;
-		category?: string;
+		tags?: string;
 		verified?: string;
 		view?: "cards" | "table";
 	}>;
@@ -51,8 +53,15 @@ export default async function DiscoverPage({
 	const sizesArray = params.sizes?.split(",").filter(Boolean) || [];
 	const verificationArray =
 		params.verification?.split(",").filter(Boolean) || [];
+	const tagsArray = params.tags?.split(",").filter(Boolean) || [];
 
-	const [communities, _departments, availableCountries] = await Promise.all([
+	const [
+		communities,
+		_departments,
+		availableCountries,
+		availableTags,
+		tagData,
+	] = await Promise.all([
 		getPublicCommunities({
 			search: params.search,
 			type: params.type,
@@ -62,17 +71,19 @@ export default async function DiscoverPage({
 			sizes: sizesArray.length > 0 ? sizesArray : undefined,
 			verification:
 				verificationArray.length > 0 ? verificationArray : undefined,
-			category: params.category,
+			tags: tagsArray.length > 0 ? tagsArray : undefined,
 			verifiedOnly: params.verified === "true",
 			orderBy: "popular",
 		}),
 		getUniqueDepartments(),
 		getUniqueCountries(),
+		getUniqueTags(),
+		getTagCounts(),
 	]);
 
 	const isAuthenticated = !!userId;
 	const viewMode = params.view || "cards";
-	const activeCategory = params.category || "todas";
+	const activeTag = tagsArray.length === 1 ? tagsArray[0] : "todas";
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
@@ -116,7 +127,9 @@ export default async function DiscoverPage({
 							defaultTypes={typesArray}
 							defaultSizes={sizesArray}
 							defaultVerification={verificationArray}
+							defaultTags={tagsArray}
 							availableCountries={availableCountries}
+							availableTags={availableTags}
 						/>
 					</Suspense>
 
@@ -129,7 +142,11 @@ export default async function DiscoverPage({
 									<div className="h-7 w-64 animate-pulse bg-muted rounded" />
 								}
 							>
-								<CommunityCategoryTabs activeTab={activeCategory} />
+								<CommunityCategoryTabs
+									activeTab={activeTag}
+									tagCounts={tagData.counts}
+									totalCount={tagData.total}
+								/>
 							</Suspense>
 						</div>
 

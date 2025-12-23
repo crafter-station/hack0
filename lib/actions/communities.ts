@@ -449,19 +449,10 @@ export interface PublicCommunityFilters {
 	countries?: string[];
 	sizes?: string[];
 	verification?: string[];
-	category?: string;
+	tags?: string[];
 	verifiedOnly?: boolean;
 	orderBy?: "popular" | "recent" | "name";
 }
-
-// Category to types mapping
-const CATEGORY_TYPE_MAP: Record<string, string[]> = {
-	desarrollo: ["community", "startup", "company"],
-	diseno: ["community", "coworking"],
-	"data-ia": ["community", "university", "company"],
-	negocios: ["startup", "investor", "consulting", "law_firm", "coworking"],
-	comunidad: ["community", "ngo", "student_org"],
-};
 
 // Size filter definitions
 const SIZE_FILTER_RANGES: Record<string, { min?: number; max?: number }> = {
@@ -485,6 +476,7 @@ export interface PublicCommunity {
 	country: string | null;
 	department: string | null;
 	websiteUrl: string | null;
+	tags: string[] | null;
 }
 
 export async function getPublicCommunities(
@@ -499,7 +491,7 @@ export async function getPublicCommunities(
 		countries,
 		sizes,
 		verification,
-		category,
+		tags,
 		verifiedOnly,
 		orderBy = "popular",
 	} = filters;
@@ -538,19 +530,15 @@ export async function getPublicCommunities(
 		filtered = filtered.filter((c) => c.type && types.includes(c.type));
 	}
 
-	// Category filter (maps to types)
-	if (category && CATEGORY_TYPE_MAP[category]) {
-		const categoryTypes = CATEGORY_TYPE_MAP[category];
-		filtered = filtered.filter((c) => c.type && categoryTypes.includes(c.type));
-	}
-
 	if (department) {
 		filtered = filtered.filter((c) => c.department === department);
 	}
 
 	// Countries filter
 	if (countries && countries.length > 0) {
-		filtered = filtered.filter((c) => c.country && countries.includes(c.country));
+		filtered = filtered.filter(
+			(c) => c.country && countries.includes(c.country),
+		);
 	}
 
 	if (verifiedOnly) {
@@ -560,7 +548,10 @@ export async function getPublicCommunities(
 	// Verification filter (can be both verified and unverified selected)
 	if (verification && verification.length > 0) {
 		filtered = filtered.filter((c) => {
-			if (verification.includes("verified") && verification.includes("unverified")) {
+			if (
+				verification.includes("verified") &&
+				verification.includes("unverified")
+			) {
 				return true; // Both selected, show all
 			}
 			if (verification.includes("verified")) {
@@ -570,6 +561,14 @@ export async function getPublicCommunities(
 				return c.isVerified !== true;
 			}
 			return true;
+		});
+	}
+
+	// Tags filter (community must have at least one matching tag)
+	if (tags && tags.length > 0) {
+		filtered = filtered.filter((c) => {
+			if (!c.tags || c.tags.length === 0) return false;
+			return tags.some((tag) => c.tags?.includes(tag));
 		});
 	}
 
@@ -597,6 +596,7 @@ export async function getPublicCommunities(
 		country: c.country,
 		department: c.department,
 		websiteUrl: c.websiteUrl,
+		tags: c.tags,
 	}));
 
 	// Size filter (applied after memberCount is calculated)
@@ -662,4 +662,40 @@ export async function getUniqueCountries(): Promise<string[]> {
 		...new Set(orgs.map((o) => o.country).filter(Boolean)),
 	] as string[];
 	return countries.sort();
+}
+
+export async function getUniqueTags(): Promise<string[]> {
+	const orgs = await db.query.organizations.findMany({
+		where: and(
+			eq(organizations.isPublic, true),
+			eq(organizations.isPersonalOrg, false),
+		),
+		columns: { tags: true },
+	});
+
+	const allTags = orgs.flatMap((o) => o.tags || []).filter(Boolean);
+
+	return [...new Set(allTags)].sort();
+}
+
+export async function getTagCounts(): Promise<{
+	counts: Record<string, number>;
+	total: number;
+}> {
+	const orgs = await db.query.organizations.findMany({
+		where: and(
+			eq(organizations.isPublic, true),
+			eq(organizations.isPersonalOrg, false),
+		),
+		columns: { tags: true },
+	});
+
+	const counts: Record<string, number> = {};
+	for (const org of orgs) {
+		for (const tag of org.tags || []) {
+			counts[tag] = (counts[tag] || 0) + 1;
+		}
+	}
+
+	return { counts, total: orgs.length };
 }

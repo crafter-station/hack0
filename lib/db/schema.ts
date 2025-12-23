@@ -422,6 +422,119 @@ export const ORGANIZER_TYPE_LABELS: Record<string, string> = {
 	coworking: "Coworking",
 };
 
+export const COMMUNITY_TAG_AREAS = [
+	"development",
+	"design",
+	"data-ai",
+	"web3",
+	"mobile",
+	"cybersecurity",
+	"product",
+] as const;
+
+export const COMMUNITY_TAG_SECTORS = [
+	"fintech",
+	"healthtech",
+	"edtech",
+	"agritech",
+	"legaltech",
+	"govtech",
+	"proptech",
+	"climatetech",
+] as const;
+
+export const COMMUNITY_TAG_VALUES = [
+	"open-source",
+	"social-impact",
+	"sustainability",
+	"diversity-inclusion",
+] as const;
+
+export const COMMUNITY_TAG_ACTIVITIES = [
+	"education",
+	"networking",
+	"incubation",
+	"acceleration",
+	"investment",
+	"coworking",
+	"events",
+	"mentorship",
+] as const;
+
+export const COMMUNITY_TAG_STAGES = [
+	"students",
+	"early-stage",
+	"growth",
+	"corporate",
+] as const;
+
+export const COMMUNITY_TAGS = [
+	...COMMUNITY_TAG_AREAS,
+	...COMMUNITY_TAG_SECTORS,
+	...COMMUNITY_TAG_VALUES,
+	...COMMUNITY_TAG_ACTIVITIES,
+	...COMMUNITY_TAG_STAGES,
+] as const;
+
+export type CommunityTag = (typeof COMMUNITY_TAGS)[number];
+
+export const COMMUNITY_TAG_LABELS: Record<CommunityTag, string> = {
+	development: "Desarrollo",
+	design: "Diseño",
+	"data-ai": "Data & IA",
+	web3: "Web3",
+	mobile: "Mobile",
+	cybersecurity: "Ciberseguridad",
+	product: "Producto",
+	fintech: "Fintech",
+	healthtech: "Healthtech",
+	edtech: "Edtech",
+	agritech: "Agritech",
+	legaltech: "Legaltech",
+	govtech: "Govtech",
+	proptech: "Proptech",
+	climatetech: "Climatetech",
+	"open-source": "Open Source",
+	"social-impact": "Impacto Social",
+	sustainability: "Sostenibilidad",
+	"diversity-inclusion": "Diversidad e Inclusión",
+	education: "Educación",
+	networking: "Networking",
+	incubation: "Incubación",
+	acceleration: "Aceleración",
+	investment: "Inversión",
+	coworking: "Coworking",
+	events: "Eventos",
+	mentorship: "Mentoría",
+	students: "Estudiantes",
+	"early-stage": "Early-stage",
+	growth: "Growth",
+	corporate: "Corporate",
+};
+
+export const COMMUNITY_TAG_CATEGORIES = {
+	areas: {
+		label: "Áreas",
+		tags: COMMUNITY_TAG_AREAS,
+	},
+	sectors: {
+		label: "Sectores",
+		tags: COMMUNITY_TAG_SECTORS,
+	},
+	values: {
+		label: "Valores",
+		tags: COMMUNITY_TAG_VALUES,
+	},
+	activities: {
+		label: "Actividades",
+		tags: COMMUNITY_TAG_ACTIVITIES,
+	},
+	stages: {
+		label: "Etapa",
+		tags: COMMUNITY_TAG_STAGES,
+	},
+} as const;
+
 export const SKILL_LEVELS = [
 	"beginner",
 	"intermediate",
@@ -547,6 +660,9 @@ export const organizations = pgTable("organizations", {
 
 	// Status
 	isVerified: boolean("is_verified").default(false), // Admin can verify
+
+	// Tags for discoverability
+	tags: text("tags").array(),
 
 	// Timestamps
 	createdAt: timestamp("created_at", {

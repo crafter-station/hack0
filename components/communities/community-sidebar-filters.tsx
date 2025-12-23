@@ -1,9 +1,15 @@
 "use client";
 
-import { Check, Search, X } from "lucide-react";
+import { Check, Plus, Search, X } from "lucide-react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
-import { LATAM_COUNTRIES, ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
+import { useCallback, useState } from "react";
+import {
+	COMMUNITY_TAG_CATEGORIES,
+	COMMUNITY_TAG_LABELS,
+	type CommunityTag,
+	ORGANIZER_TYPE_LABELS,
+} from "@/lib/db/schema";
 
 const SIZE_FILTERS = [
 	{ id: "small", label: "< 100 miembros", max: 100 },
@@ -14,6 +20,12 @@ const SIZE_FILTERS = [
 const VERIFICATION_FILTERS = [
 	{ id: "verified", label: "Verificadas" },
 	{ id: "unverified", label: "Sin verificar" },
+] as const;
+
+const ACTIVE_COUNTRIES = [
+	{ code: "PE", name: "Perú" },
+	{ code: "CO", name: "Colombia" },
+	{ code: "CL", name: "Chile" },
 ] as const;
 
 const POPULAR_TYPES = [
@@ -32,7 +44,9 @@ interface CommunitySidebarFiltersProps {
 	defaultTypes?: string[];
 	defaultSizes?: string[];
 	defaultVerification?: string[];
+	defaultTags?: string[];
 	availableCountries?: string[];
+	availableTags?: string[];
 }
 
 export function CommunitySidebarFilters({
@@ -41,7 +55,9 @@ export function CommunitySidebarFilters({
 	defaultTypes = [],
 	defaultSizes = [],
 	defaultVerification = [],
+	defaultTags = [],
 	availableCountries = [],
+	availableTags = [],
 }: CommunitySidebarFiltersProps) {
 	const router = useRouter();
 	const pathname = usePathname();
@@ -84,27 +100,10 @@ export function CommunitySidebarFilters({
 		updateUrl(key, newValues);
 	};
 
-	// Get country names from codes
-	const countryMap = useMemo(() => {
-		const map: Record<string, string> = {};
-		for (const country of LATAM_COUNTRIES) {
-			map[country.code] = country.name;
-		}
-		return map;
-	}, []);
-
-	// Filter to show only countries that have communities
-	const displayCountries = useMemo(() => {
-		if (availableCountries.length > 0) {
-			return LATAM_COUNTRIES.filter((c) =>
-				availableCountries.includes(c.code),
-			);
-		}
-		return LATAM_COUNTRIES.filter((c) => c.code !== "GLOBAL");
-	}, [availableCountries]);
+	const displayCountries = ACTIVE_COUNTRIES;
 
 	return (
-		<aside className="hidden lg:block w-[220px] flex-shrink-0">
+		<aside className="hidden lg:block w-[190px] flex-shrink-0">
 			{/* Search */}
 			<form
 				onSubmit={handleSearchSubmit}
@@ -170,6 +169,13 @@ export function CommunitySidebarFilters({
 								</span>
 							</label>
 						))}
+						<Link
+							href="/roadmap#latam"
+							className="flex items-center gap-2 px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+						>
+							<Plus className="w-3.5 h-3.5" />
+							<span>¿Tu país? Súmate</span>
+						</Link>
 					</div>
 				</div>
 
@@ -278,6 +284,52 @@ export function CommunitySidebarFilters({
 						))}
 					</div>
 				</div>
+
+				{/* Tags by category */}
+				{Object.entries(COMMUNITY_TAG_CATEGORIES).map(
+					([categoryKey, category]) => {
+						const categoryTags = category.tags.filter(
+							(tag) =>
+								availableTags.length === 0 || availableTags.includes(tag),
+						);
+						if (categoryTags.length === 0) return null;
+
+						return (
+							<div key={categoryKey}>
+								<h3 className="text-[10px] text-muted-foreground font-medium mb-2 uppercase tracking-wider">
+									{category.label}
+								</h3>
+								<div className="space-y-0.5">
+									{categoryTags.map((tag) => (
+										<label
+											key={tag}
+											className="flex items-center gap-2 px-2 py-1.5 text-xs cursor-pointer hover:bg-muted/30 transition-colors"
+										>
+											<div
+												className={`w-4 h-4 border flex items-center justify-center transition-colors ${
+													defaultTags.includes(tag)
+														? "bg-foreground border-foreground"
+														: "border-muted-foreground/60 bg-transparent"
+												}`}
+												onClick={() => toggleFilter("tags", tag, defaultTags)}
+											>
+												{defaultTags.includes(tag) && (
+													<Check className="w-3 h-3 text-background" />
+												)}
+											</div>
+											<span
+												className="text-muted-foreground"
+												onClick={() => toggleFilter("tags", tag, defaultTags)}
+											>
+												{COMMUNITY_TAG_LABELS[tag as CommunityTag]}
+											</span>
+										</label>
+									))}
+								</div>
+							</div>
+						);
+					},
+				)}
 			</div>
 		</aside>
 	);
