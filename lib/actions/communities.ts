@@ -432,7 +432,8 @@ export async function requestAdminUpgrade(
 
 	return {
 		success: true,
-		message: "Tu solicitud ha sido enviada. El owner de la comunidad la revisará pronto.",
+		message:
+			"Tu solicitud ha sido enviada. El owner de la comunidad la revisará pronto.",
 	};
 }
 
@@ -443,6 +444,7 @@ export async function requestAdminUpgrade(
 export interface PublicCommunityFilters {
 	search?: string;
 	type?: string;
+	department?: string;
 	verifiedOnly?: boolean;
 	orderBy?: "popular" | "recent" | "name";
 }
@@ -458,13 +460,23 @@ export interface PublicCommunity {
 	isVerified: boolean | null;
 	memberCount: number;
 	isFollowing: boolean;
+	email: string | null;
+	country: string | null;
+	department: string | null;
+	websiteUrl: string | null;
 }
 
 export async function getPublicCommunities(
 	filters: PublicCommunityFilters = {},
 ): Promise<PublicCommunity[]> {
 	const { userId } = await auth();
-	const { search, type, verifiedOnly, orderBy = "popular" } = filters;
+	const {
+		search,
+		type,
+		department,
+		verifiedOnly,
+		orderBy = "popular",
+	} = filters;
 
 	const allCommunities = await db.query.organizations.findMany({
 		where: and(
@@ -494,6 +506,10 @@ export async function getPublicCommunities(
 		filtered = filtered.filter((c) => c.type === type);
 	}
 
+	if (department) {
+		filtered = filtered.filter((c) => c.department === department);
+	}
+
 	if (verifiedOnly) {
 		filtered = filtered.filter((c) => c.isVerified);
 	}
@@ -518,6 +534,10 @@ export async function getPublicCommunities(
 		isVerified: c.isVerified,
 		memberCount: c.members.length,
 		isFollowing: userMemberships.has(c.id),
+		email: c.email,
+		country: c.country,
+		department: c.department,
+		websiteUrl: c.websiteUrl,
 	}));
 
 	result.sort((a, b) => {
@@ -540,4 +560,19 @@ export async function getPublicCommunities(
 	});
 
 	return result;
+}
+
+export async function getUniqueDepartments(): Promise<string[]> {
+	const orgs = await db.query.organizations.findMany({
+		where: and(
+			eq(organizations.isPublic, true),
+			eq(organizations.isPersonalOrg, false),
+		),
+		columns: { department: true },
+	});
+
+	const departments = [
+		...new Set(orgs.map((o) => o.department).filter(Boolean)),
+	] as string[];
+	return departments.sort();
 }

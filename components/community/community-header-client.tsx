@@ -4,6 +4,9 @@ import {
 	BarChart3,
 	Calendar,
 	CheckCircle2,
+	Globe,
+	Mail,
+	MapPin,
 	Settings,
 	Users,
 } from "lucide-react";
@@ -69,7 +72,9 @@ export function CommunityHeaderClient({
 							</div>
 						) : (
 							<div className="h-10 w-10 shrink-0 rounded-lg bg-muted border border-border flex items-center justify-center text-sm font-medium text-muted-foreground">
-								{(community.displayName || community.name).charAt(0).toUpperCase()}
+								{(community.displayName || community.name)
+									.charAt(0)
+									.toUpperCase()}
 							</div>
 						)}
 
@@ -82,11 +87,40 @@ export function CommunityHeaderClient({
 									<CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
 								)}
 							</div>
-							{community.description && (
-								<p className="text-sm text-muted-foreground">
-									{community.description}
-								</p>
-							)}
+
+							<div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+								{community.department && (
+									<span className="inline-flex items-center gap-1">
+										<MapPin className="h-3 w-3" />
+										{community.department}
+										{community.country ? `, ${community.country}` : ""}
+									</span>
+								)}
+								{community.email && (
+									<a
+										href={`mailto:${community.email}`}
+										className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+									>
+										<Mail className="h-3 w-3" />
+										{community.email}
+									</a>
+								)}
+								{community.websiteUrl && (
+									<a
+										href={community.websiteUrl}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+									>
+										<Globe className="h-3 w-3" />
+										<span className="truncate max-w-[150px]">
+											{community.websiteUrl
+												.replace(/^https?:\/\//, "")
+												.replace(/\/$/, "")}
+										</span>
+									</a>
+								)}
+							</div>
 						</div>
 					</div>
 

@@ -1,6 +1,14 @@
 "use client";
 
-import { CheckCircle2, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import {
+	CheckCircle2,
+	ChevronDown,
+	ChevronUp,
+	Globe,
+	Loader2,
+	Mail,
+	MapPin,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -20,6 +28,10 @@ interface PublicCommunity {
 	isVerified: boolean | null;
 	memberCount: number;
 	isFollowing: boolean;
+	email: string | null;
+	country: string | null;
+	department: string | null;
+	websiteUrl: string | null;
 }
 
 interface DiscoverOrganizationListProps {
@@ -177,6 +189,12 @@ export function DiscoverOrganizationList({
 									Tipo <SortIcon field="type" />
 								</button>
 							</th>
+							<th className="pb-2 pr-4 font-medium hidden lg:table-cell">
+								Ubicación
+							</th>
+							<th className="pb-2 pr-4 font-medium hidden xl:table-cell">
+								Contacto
+							</th>
 							<th className="pb-2 pr-4 font-medium hidden sm:table-cell">
 								<button
 									onClick={() => handleSort("members")}
@@ -231,6 +249,45 @@ export function DiscoverOrganizationList({
 								</td>
 								<td className="py-2 pr-4 text-muted-foreground hidden md:table-cell">
 									{org.type ? ORGANIZER_TYPE_LABELS[org.type] || org.type : "—"}
+								</td>
+								<td className="py-2 pr-4 text-muted-foreground hidden lg:table-cell">
+									{org.department ? (
+										<span className="inline-flex items-center gap-1">
+											<MapPin className="h-3 w-3" />
+											{org.department}
+										</span>
+									) : (
+										"—"
+									)}
+								</td>
+								<td className="py-2 pr-4 hidden xl:table-cell">
+									<div className="flex items-center gap-2">
+										{org.email && (
+											<a
+												href={`mailto:${org.email}`}
+												className="text-muted-foreground hover:text-foreground transition-colors"
+												onClick={(e) => e.stopPropagation()}
+												title={org.email}
+											>
+												<Mail className="h-3.5 w-3.5" />
+											</a>
+										)}
+										{org.websiteUrl && (
+											<a
+												href={org.websiteUrl}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="text-muted-foreground hover:text-foreground transition-colors"
+												onClick={(e) => e.stopPropagation()}
+												title={org.websiteUrl}
+											>
+												<Globe className="h-3.5 w-3.5" />
+											</a>
+										)}
+										{!org.email && !org.websiteUrl && (
+											<span className="text-muted-foreground/50">—</span>
+										)}
+									</div>
 								</td>
 								<td className="py-2 pr-4 hidden sm:table-cell">
 									<span

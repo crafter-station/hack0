@@ -9,12 +9,16 @@ import { DiscoverOrganizationList } from "@/components/communities/discover-orga
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Button } from "@/components/ui/button";
-import { getPublicCommunities } from "@/lib/actions/communities";
+import {
+	getPublicCommunities,
+	getUniqueDepartments,
+} from "@/lib/actions/communities";
 
 interface DiscoverPageProps {
 	searchParams: Promise<{
 		search?: string;
 		type?: string;
+		department?: string;
 		verified?: string;
 		view?: "cards" | "table";
 	}>;
@@ -26,16 +30,22 @@ export const metadata = {
 		"Descubre comunidades de tecnología, hackathons y eventos en Perú. Únete a la comunidad tech más activa.",
 };
 
-export default async function DiscoverPage({ searchParams }: DiscoverPageProps) {
+export default async function DiscoverPage({
+	searchParams,
+}: DiscoverPageProps) {
 	const { userId } = await auth();
 	const params = await searchParams;
 
-	const communities = await getPublicCommunities({
-		search: params.search,
-		type: params.type,
-		verifiedOnly: params.verified === "true",
-		orderBy: "popular",
-	});
+	const [communities, departments] = await Promise.all([
+		getPublicCommunities({
+			search: params.search,
+			type: params.type,
+			department: params.department,
+			verifiedOnly: params.verified === "true",
+			orderBy: "popular",
+		}),
+		getUniqueDepartments(),
+	]);
 
 	const isAuthenticated = !!userId;
 	const viewMode = params.view || "cards";
@@ -47,19 +57,34 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
 			<section className="sticky top-11 z-40 border-b bg-background/95 backdrop-blur-md">
 				<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
 					<div className="flex items-center justify-between gap-2 py-2">
-						<Suspense fallback={<div className="h-7 w-40 animate-pulse bg-muted rounded" />}>
+						<Suspense
+							fallback={
+								<div className="h-7 w-40 animate-pulse bg-muted rounded" />
+							}
+						>
 							<CommunityTabToggle />
 						</Suspense>
 						<div className="flex items-center gap-2">
-							<Suspense fallback={<div className="h-7 w-48 animate-pulse bg-muted rounded" />}>
+							<Suspense
+								fallback={
+									<div className="h-7 w-48 animate-pulse bg-muted rounded" />
+								}
+							>
 								<CommunityFilters
 									defaultSearch={params.search}
 									defaultType={params.type}
+									defaultDepartment={params.department}
 									defaultVerified={params.verified === "true"}
 									defaultView={viewMode}
+									departments={departments}
 								/>
 							</Suspense>
-							<Button variant="secondary" size="sm" className="h-7 text-xs" asChild>
+							<Button
+								variant="secondary"
+								size="sm"
+								className="h-7 text-xs"
+								asChild
+							>
 								<Link href="/c/new">
 									<Plus className="h-3.5 w-3.5" />
 									<span className="hidden sm:inline">Nueva</span>

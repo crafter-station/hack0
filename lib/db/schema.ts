@@ -60,6 +60,10 @@ export const organizerTypeEnum = pgEnum("organizer_type", [
 	"student_org", // Organizaciones estudiantiles (IEEE, ACM)
 	"startup", // Startups, incubadoras
 	"media", // Medios tech
+	"investor", // Fondos de inversión, VCs, SAFIs, Red Ángel, CVC
+	"law_firm", // Estudios de abogados
+	"consulting", // Consultoras
+	"coworking", // Espacios de coworking
 ]);
 
 export const formatEnum = pgEnum("format", ["virtual", "in-person", "hybrid"]);
@@ -113,7 +117,6 @@ export const eventSyncStatusEnum = pgEnum("event_sync_status", [
 	"source_deleted", // Source event no longer exists
 	"unknown", // Never checked
 ]);
-
 
 // Events table (hackathons, conferences, workshops, etc.)
 export const events = pgTable("events", {
@@ -371,6 +374,10 @@ export const ORGANIZER_TYPES = [
 	"student_org",
 	"startup",
 	"media",
+	"investor",
+	"law_firm",
+	"consulting",
+	"coworking",
 ] as const;
 
 export type OrganizerType = (typeof ORGANIZER_TYPES)[number];
@@ -386,6 +393,10 @@ export const ORGANIZER_TYPE_LABELS: Record<string, string> = {
 	student_org: "Org. Estudiantil",
 	startup: "Startup",
 	media: "Medio Tech",
+	investor: "Fondo / VC",
+	law_firm: "Estudio Legal",
+	consulting: "Consultora",
+	coworking: "Coworking",
 };
 
 export const SKILL_LEVELS = [
@@ -487,6 +498,11 @@ export const organizations = pgTable("organizations", {
 
 	// Contact
 	email: varchar("email", { length: 255 }),
+
+	// Location (LATAM)
+	country: varchar("country", { length: 10 }), // ISO code: PE, CO, MX, AR, CL, etc.
+	department: varchar("department", { length: 100 }), // Region/State: Lima, Arequipa, Antioquia, etc.
+	city: varchar("city", { length: 100 }), // City name
 
 	// Links
 	websiteUrl: varchar("website_url", { length: 500 }),
@@ -871,7 +887,6 @@ export const lumaEventMappings = pgTable("luma_event_mappings", {
 export type LumaEventMapping = typeof lumaEventMappings.$inferSelect;
 export type NewLumaEventMapping = typeof lumaEventMappings.$inferInsert;
 
-
 // ============================================
 // EVENT HOSTS - All Luma hosts per event (not just first)
 // ============================================
@@ -900,7 +915,9 @@ export const eventHosts = pgTable(
 			withTimezone: true,
 		}).defaultNow(),
 	},
-	(table) => [uniqueIndex("event_host_unique_idx").on(table.eventId, table.lumaHostApiId)],
+	(table) => [
+		uniqueIndex("event_host_unique_idx").on(table.eventId, table.lumaHostApiId),
+	],
 );
 
 export type EventHost = typeof eventHosts.$inferSelect;
@@ -917,7 +934,9 @@ export const hostClaimTypeEnum = pgEnum("host_claim_type", [
 
 export const lumaHostMappings = pgTable("luma_host_mappings", {
 	id: uuid("id").primaryKey().defaultRandom(),
-	lumaHostApiId: varchar("luma_host_api_id", { length: 255 }).unique().notNull(),
+	lumaHostApiId: varchar("luma_host_api_id", { length: 255 })
+		.unique()
+		.notNull(),
 	lumaHostName: varchar("luma_host_name", { length: 255 }),
 	lumaHostEmail: varchar("luma_host_email", { length: 255 }),
 	lumaHostAvatarUrl: varchar("luma_host_avatar_url", { length: 500 }),
@@ -943,7 +962,6 @@ export const lumaHostMappings = pgTable("luma_host_mappings", {
 
 export type LumaHostMapping = typeof lumaHostMappings.$inferSelect;
 export type NewLumaHostMapping = typeof lumaHostMappings.$inferInsert;
-
 
 // ============================================
 // MULTI-SOURCE SCRAPING - Scheduled scraping system
@@ -1185,7 +1203,6 @@ export const eventHostOrganizationsRelations = relations(
 	}),
 );
 
-
 export const eventHostsRelations = relations(eventHosts, ({ one }) => ({
 	event: one(events, {
 		fields: [eventHosts.eventId],
@@ -1202,4 +1219,3 @@ export const lumaHostMappingsRelations = relations(
 		}),
 	}),
 );
-

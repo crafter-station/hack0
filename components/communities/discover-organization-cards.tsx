@@ -1,6 +1,13 @@
 "use client";
 
-import { CheckCircle2, Loader2, Users } from "lucide-react";
+import {
+	CheckCircle2,
+	Globe,
+	Loader2,
+	Mail,
+	MapPin,
+	Users,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -20,6 +27,10 @@ interface PublicCommunity {
 	isVerified: boolean | null;
 	memberCount: number;
 	isFollowing: boolean;
+	email: string | null;
+	country: string | null;
+	department: string | null;
+	websiteUrl: string | null;
 }
 
 interface DiscoverOrganizationCardsProps {
@@ -147,6 +158,35 @@ export function DiscoverOrganizationCards({
 							{org.description}
 						</p>
 					)}
+
+					<div className="flex items-center gap-2 text-[11px] text-muted-foreground mb-2">
+						{org.department && (
+							<span className="inline-flex items-center gap-1">
+								<MapPin className="h-3 w-3" />
+								{org.department}
+							</span>
+						)}
+						{org.email && (
+							<a
+								href={`mailto:${org.email}`}
+								className="relative z-10 inline-flex items-center gap-1 hover:text-foreground transition-colors"
+								onClick={(e) => e.stopPropagation()}
+							>
+								<Mail className="h-3 w-3" />
+							</a>
+						)}
+						{org.websiteUrl && (
+							<a
+								href={org.websiteUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="relative z-10 inline-flex items-center gap-1 hover:text-foreground transition-colors"
+								onClick={(e) => e.stopPropagation()}
+							>
+								<Globe className="h-3 w-3" />
+							</a>
+						)}
+					</div>
 
 					<div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
 						<div className="flex items-center gap-2">
