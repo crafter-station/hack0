@@ -10,6 +10,7 @@ import { MyOrganizationList } from "@/components/communities/my-organization-lis
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { getAllUserOrganizations } from "@/lib/actions/organizations";
+import { getCommunitiesViewPreference } from "@/lib/view-preferences";
 
 interface CommunitiesPageProps {
 	searchParams: Promise<{
@@ -49,7 +50,10 @@ export default async function CommunitiesPage({ searchParams }: CommunitiesPageP
 		organizations = organizations.filter(({ role }) => role === params.role);
 	}
 
-	const viewMode = params.view || "cards";
+	// Use URL param if explicitly set, otherwise use saved preference
+	const hasExplicitView = "view" in params;
+	const savedPreference = await getCommunitiesViewPreference();
+	const viewMode = hasExplicitView && params.view ? params.view : savedPreference;
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
