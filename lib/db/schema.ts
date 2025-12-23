@@ -90,6 +90,29 @@ export const approvalStatusEnum = pgEnum("approval_status", [
 	"rejected",
 ]);
 
+export const relationshipTypeEnum = pgEnum("relationship_type", [
+	"partner",
+	"investor",
+	"invested_by",
+	"accelerated",
+	"accelerated_by",
+	"incubated",
+	"incubated_by",
+	"member_of",
+	"sponsor",
+	"co_host",
+	"alumni",
+	"subsidiary",
+	"parent",
+]);
+
+export const relationshipSourceEnum = pgEnum("relationship_source", [
+	"manual",
+	"scraped",
+	"inferred",
+	"imported",
+]);
+
 export const userRoleEnum = pgEnum("user_role", [
 	"member", // Participante/asistente a eventos
 	"organizer", // Organizador de eventos/comunidad
@@ -538,6 +561,98 @@ export const organizations = pgTable("organizations", {
 
 export type Organization = typeof organizations.$inferSelect;
 export type NewOrganization = typeof organizations.$inferInsert;
+
+// ============================================
+// ORGANIZATION RELATIONSHIPS - Graph connections
+// ============================================
+
+export const organizationRelationships = pgTable("organization_relationships", {
+	id: uuid("id").primaryKey().defaultRandom(),
+
+	sourceOrgId: uuid("source_org_id")
+		.references(() => organizations.id)
+		.notNull(),
+	targetOrgId: uuid("target_org_id")
+		.references(() => organizations.id)
+		.notNull(),
+
+	relationshipType: relationshipTypeEnum("relationship_type").notNull(),
+
+	description: text("description"),
+	strength: integer("strength").default(5),
+
+	source: relationshipSourceEnum("source").default("manual"),
+	confidence: integer("confidence").default(100),
+	sourceUrl: varchar("source_url", { length: 500 }),
+
+	isBidirectional: boolean("is_bidirectional").default(false),
+
+	isVerified: boolean("is_verified").default(false),
+	verifiedBy: varchar("verified_by", { length: 255 }),
+	verifiedAt: timestamp("verified_at", { mode: "date", withTimezone: true }),
+
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	updatedAt: timestamp("updated_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+});
+
+export type OrganizationRelationship =
+	typeof organizationRelationships.$inferSelect;
+export type NewOrganizationRelationship =
+	typeof organizationRelationships.$inferInsert;
+
+export const RELATIONSHIP_TYPES = [
+	"partner",
+	"investor",
+	"invested_by",
+	"accelerated",
+	"accelerated_by",
+	"incubated",
+	"incubated_by",
+	"member_of",
+	"sponsor",
+	"co_host",
+	"alumni",
+	"subsidiary",
+	"parent",
+] as const;
+
+export type RelationshipType = (typeof RELATIONSHIP_TYPES)[number];
+
+export const RELATIONSHIP_TYPE_LABELS: Record<string, string> = {
+	partner: "Partner",
+	investor: "Invirtió en",
+	invested_by: "Recibió inversión de",
+	accelerated: "Aceleró a",
+	accelerated_by: "Fue acelerado por",
+	incubated: "Incubó a",
+	incubated_by: "Fue incubado por",
+	member_of: "Miembro de",
+	sponsor: "Patrocina a",
+	co_host: "Co-organiza con",
+	alumni: "Ex-participante de",
+	subsidiary: "Subsidiaria de",
+	parent: "Empresa matriz de",
+};
+
+export const RELATIONSHIP_SOURCES = [
+	"manual",
+	"scraped",
+	"inferred",
+	"imported",
+] as const;
+
+export const RELATIONSHIP_SOURCE_LABELS: Record<string, string> = {
+	manual: "Manual",
+	scraped: "Descubierto",
+	inferred: "Inferido",
+	imported: "Importado",
+};
 
 // ============================================
 // COMMUNITY MEMBERS - Multi-user community management
@@ -1132,7 +1247,29 @@ export const organizationsRelations = relations(organizations, ({ many }) => ({
 	sponsorships: many(eventSponsors),
 	hostingEvents: many(eventHostOrganizations),
 	hostMappings: many(lumaHostMappings),
+	outgoingRelationships: many(organizationRelationships, {
+		relationName: "sourceOrg",
+	}),
+	incomingRelationships: many(organizationRelationships, {
+		relationName: "targetOrg",
+	}),
 }));
+
+export const organizationRelationshipsRelations = relations(
+	organizationRelationships,
+	({ one }) => ({
+		sourceOrg: one(organizations, {
+			fields: [organizationRelationships.sourceOrgId],
+			references: [organizations.id],
+			relationName: "sourceOrg",
+		}),
+		targetOrg: one(organizations, {
+			fields: [organizationRelationships.targetOrgId],
+			references: [organizations.id],
+			relationName: "targetOrg",
+		}),
+	}),
+);
 
 export const communityMembersRelations = relations(
 	communityMembers,

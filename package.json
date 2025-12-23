@@ -132,6 +132,9 @@
 		"lint:fix": "biome lint --write",
 		"migrate:personal-orgs": "bun run scripts/migrate-personal-orgs.ts",
 		"scrape": "bun run scripts/scrape-devpost.ts",
+		"seed:ecosistema": "bun run scripts/seed-ecosistema-orgs.ts",
+		"seed:ecosistema:with-logos": "bun run scripts/seed-ecosistema-orgs.ts --upload-logos",
+		"rollback:ecosistema": "bun run scripts/rollback-ecosistema-orgs.ts",
 		"start": "next start"
 	},
 	"version": "0.1.0"
