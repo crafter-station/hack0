@@ -28,7 +28,11 @@ cp .env.example .env
 ```bash
 bun run dev          # Start dev server
 bun run build        # Production build
+
+bun run check        # Check linting + formatting
 bun run lint         # Lint code
+bun run lint:fix     # Lint and fix
+bun run format       # Format code
 
 bun run db:push      # Push schema to database
 bun run db:studio    # Open Drizzle Studio
@@ -38,6 +42,6 @@ bun run db:seed      # Seed sample data
 ## Guidelines
 
 - Keep PRs focused and small
-- Run `bun run build` before submitting
+- Run `bun run check` and `bun run build` before submitting
 - Use conventional commit messages when possible
 - Don't commit `.env` or credentials
