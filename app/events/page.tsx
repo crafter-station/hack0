@@ -4,6 +4,7 @@ import { AllEventsTable } from "@/components/events/all-events-table";
 import { EventsCalendar } from "@/components/events/events-calendar";
 import { EventsCards } from "@/components/events/events-cards";
 import { EventsMapView } from "@/components/events/events-map-view";
+import { EventsPreviewView } from "@/components/events/events-preview-view";
 import { EventsTabToggle } from "@/components/events/events-tab-toggle";
 import { EventsToolbar } from "@/components/events/events-toolbar";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -20,7 +21,7 @@ async function EventsContent({
 	viewMode,
 }: {
 	filters: EventFilters;
-	viewMode: "table" | "cards" | "calendar" | "map";
+	viewMode: "table" | "cards" | "calendar" | "map" | "preview";
 }) {
 	const result = await getEvents(filters);
 
@@ -35,6 +36,15 @@ async function EventsContent({
 				total={result.total}
 				hasMore={result.hasMore}
 				filters={filters}
+			/>
+		);
+	}
+
+	if (viewMode === "preview") {
+		return (
+			<EventsPreviewView
+				events={result.events}
+				total={result.total}
 			/>
 		);
 	}

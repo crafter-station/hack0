@@ -2,6 +2,7 @@
 
 import {
 	Calendar,
+	Eye,
 	LayoutGrid,
 	List,
 	Map,
@@ -122,7 +123,7 @@ export function EventsToolbar() {
 		});
 	};
 
-	const handleViewChange = (value: "table" | "cards" | "calendar" | "map") => {
+	const handleViewChange = (value: "table" | "cards" | "calendar" | "map" | "preview") => {
 		if (!value) return;
 		setFilters({ view: value });
 	};
@@ -147,6 +148,9 @@ export function EventsToolbar() {
 					</ToggleGroupItem>
 					<ToggleGroupItem value="map" aria-label="Mapa" className="h-7 px-2">
 						<Map className="h-3.5 w-3.5" />
+					</ToggleGroupItem>
+					<ToggleGroupItem value="preview" aria-label="Vista previa" className="h-7 px-2">
+						<Eye className="h-3.5 w-3.5" />
 					</ToggleGroupItem>
 				</ToggleGroup>
 			</ButtonGroup>
