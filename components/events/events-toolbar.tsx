@@ -29,6 +29,15 @@ import {
 } from "@/lib/db/schema";
 import { searchParamsParsers } from "@/lib/search-params";
 
+type ViewMode = "table" | "cards" | "calendar" | "map" | "preview";
+
+const COOKIE_NAME = "hack0-events-view";
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
+
+function saveViewPreference(view: ViewMode) {
+	document.cookie = `${COOKIE_NAME}=${view}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
+}
+
 const SKILL_LEVEL_LABELS: Record<string, string> = {
 	beginner: "Principiante",
 	intermediate: "Intermedio",
@@ -123,8 +132,9 @@ export function EventsToolbar() {
 		});
 	};
 
-	const handleViewChange = (value: "table" | "cards" | "calendar" | "map" | "preview") => {
+	const handleViewChange = (value: ViewMode) => {
 		if (!value) return;
+		saveViewPreference(value);
 		setFilters({ view: value });
 	};
 

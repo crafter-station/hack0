@@ -11,6 +11,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { type EventFilters, getEvents } from "@/lib/actions/events";
 import { loadSearchParams } from "@/lib/search-params";
+import { getEventsViewPreference } from "@/lib/view-preferences";
 
 interface EventsPageProps {
 	searchParams: Promise<SearchParams>;
@@ -71,6 +72,7 @@ async function EventsContent({
 }
 
 export default async function EventsPage({ searchParams }: EventsPageProps) {
+	const rawParams = await searchParams;
 	const params = await loadSearchParams(searchParams);
 
 	const filters: EventFilters = {
@@ -89,7 +91,10 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 		page: params.page,
 	};
 
-	const viewMode = params.view;
+	// Use URL param if explicitly set, otherwise use saved preference
+	const hasExplicitView = "view" in rawParams;
+	const savedPreference = await getEventsViewPreference();
+	const viewMode = hasExplicitView ? params.view : savedPreference;
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
