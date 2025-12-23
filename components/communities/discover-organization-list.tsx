@@ -92,11 +92,11 @@ function FollowButton({
 		<button
 			onClick={handleClick}
 			disabled={isPending}
-			className={`inline-flex items-center justify-center h-7 px-3 text-[11px] font-medium rounded-md transition-colors ${
+			className={`inline-flex items-center justify-center h-7 px-3 text-[11px] font-medium transition-colors disabled:opacity-50 ${
 				optimisticFollowing
 					? "bg-muted text-muted-foreground hover:bg-muted/80"
-					: "bg-foreground text-background hover:bg-foreground/90"
-			} disabled:opacity-50`}
+					: "border border-foreground/50 text-foreground bg-transparent hover:bg-foreground hover:text-background"
+			}`}
 		>
 			{isPending ? (
 				<Loader2 className="h-3 w-3 animate-spin" />

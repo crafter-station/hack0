@@ -1,16 +1,20 @@
 import { auth } from "@clerk/nextjs/server";
-import { Plus } from "lucide-react";
+import { LayoutGrid, List, Plus } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
-import { CommunityFilters } from "@/components/communities/community-filters";
+import { CommunityActiveFilters } from "@/components/communities/community-active-filters";
+import { CommunityCategoryTabs } from "@/components/communities/community-category-tabs";
+import { CommunitySidebarFilters } from "@/components/communities/community-sidebar-filters";
 import { CommunityTabToggle } from "@/components/communities/community-tab-toggle";
 import { DiscoverOrganizationCards } from "@/components/communities/discover-organization-cards";
 import { DiscoverOrganizationList } from "@/components/communities/discover-organization-list";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
 	getPublicCommunities,
+	getUniqueCountries,
 	getUniqueDepartments,
 } from "@/lib/actions/communities";
 
@@ -18,7 +22,12 @@ interface DiscoverPageProps {
 	searchParams: Promise<{
 		search?: string;
 		type?: string;
+		types?: string;
 		department?: string;
+		countries?: string;
+		sizes?: string;
+		verification?: string;
+		category?: string;
 		verified?: string;
 		view?: "cards" | "table";
 	}>;
@@ -36,19 +45,34 @@ export default async function DiscoverPage({
 	const { userId } = await auth();
 	const params = await searchParams;
 
-	const [communities, departments] = await Promise.all([
+	// Parse multi-value params
+	const countriesArray = params.countries?.split(",").filter(Boolean) || [];
+	const typesArray = params.types?.split(",").filter(Boolean) || [];
+	const sizesArray = params.sizes?.split(",").filter(Boolean) || [];
+	const verificationArray =
+		params.verification?.split(",").filter(Boolean) || [];
+
+	const [communities, _departments, availableCountries] = await Promise.all([
 		getPublicCommunities({
 			search: params.search,
 			type: params.type,
+			types: typesArray.length > 0 ? typesArray : undefined,
 			department: params.department,
+			countries: countriesArray.length > 0 ? countriesArray : undefined,
+			sizes: sizesArray.length > 0 ? sizesArray : undefined,
+			verification:
+				verificationArray.length > 0 ? verificationArray : undefined,
+			category: params.category,
 			verifiedOnly: params.verified === "true",
 			orderBy: "popular",
 		}),
 		getUniqueDepartments(),
+		getUniqueCountries(),
 	]);
 
 	const isAuthenticated = !!userId;
 	const viewMode = params.view || "cards";
+	const activeCategory = params.category || "todas";
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
@@ -65,51 +89,118 @@ export default async function DiscoverPage({
 							<CommunityTabToggle />
 						</Suspense>
 						<div className="flex items-center gap-2">
-							<Suspense
-								fallback={
-									<div className="h-7 w-48 animate-pulse bg-muted rounded" />
-								}
+							<ViewToggle currentView={viewMode} searchParams={params} />
+							<Link
+								href="/c/new"
+								className="inline-flex h-7 items-center gap-1.5 bg-foreground text-background px-3 text-xs font-medium hover:bg-foreground/90 transition-colors"
 							>
-								<CommunityFilters
-									defaultSearch={params.search}
-									defaultType={params.type}
-									defaultDepartment={params.department}
-									defaultVerified={params.verified === "true"}
-									defaultView={viewMode}
-									departments={departments}
-								/>
-							</Suspense>
-							<Button
-								variant="secondary"
-								size="sm"
-								className="h-7 text-xs"
-								asChild
-							>
-								<Link href="/c/new">
-									<Plus className="h-3.5 w-3.5" />
-									<span className="hidden sm:inline">Nueva</span>
-								</Link>
-							</Button>
+								<Plus className="h-3.5 w-3.5" />
+								<span className="hidden sm:inline">Crear</span>
+							</Link>
 						</div>
 					</div>
 				</div>
 			</section>
 
 			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-4 flex-1 w-full">
-				{viewMode === "table" ? (
-					<DiscoverOrganizationList
-						organizations={communities}
-						isAuthenticated={isAuthenticated}
-					/>
-				) : (
-					<DiscoverOrganizationCards
-						organizations={communities}
-						isAuthenticated={isAuthenticated}
-					/>
-				)}
+				<div className="flex gap-6">
+					{/* Sidebar filters */}
+					<Suspense
+						fallback={
+							<div className="hidden lg:block w-[220px] h-96 animate-pulse bg-muted rounded" />
+						}
+					>
+						<CommunitySidebarFilters
+							defaultSearch={params.search}
+							defaultCountries={countriesArray}
+							defaultTypes={typesArray}
+							defaultSizes={sizesArray}
+							defaultVerification={verificationArray}
+							availableCountries={availableCountries}
+						/>
+					</Suspense>
+
+					{/* Main content */}
+					<div className="flex-1 min-w-0">
+						{/* Category tabs */}
+						<div className="flex items-center justify-between mb-4">
+							<Suspense
+								fallback={
+									<div className="h-7 w-64 animate-pulse bg-muted rounded" />
+								}
+							>
+								<CommunityCategoryTabs activeTab={activeCategory} />
+							</Suspense>
+						</div>
+
+						{/* Active filters */}
+						<Suspense fallback={null}>
+							<CommunityActiveFilters totalResults={communities.length} />
+						</Suspense>
+
+						{/* Results */}
+						{viewMode === "table" ? (
+							<DiscoverOrganizationList
+								organizations={communities}
+								isAuthenticated={isAuthenticated}
+							/>
+						) : (
+							<DiscoverOrganizationCards
+								organizations={communities}
+								isAuthenticated={isAuthenticated}
+							/>
+						)}
+					</div>
+				</div>
 			</main>
 
 			<SiteFooter />
 		</div>
+	);
+}
+
+function ViewToggle({
+	currentView,
+	searchParams,
+}: {
+	currentView: "cards" | "table";
+	searchParams: Record<string, string | undefined>;
+}) {
+	const createViewUrl = (view: string) => {
+		const params = new URLSearchParams();
+		for (const [key, value] of Object.entries(searchParams)) {
+			if (value && key !== "view") {
+				params.set(key, value);
+			}
+		}
+		params.set("view", view);
+		return `?${params.toString()}`;
+	};
+
+	return (
+		<ButtonGroup>
+			<ToggleGroup type="single" value={currentView} className="h-7">
+				<ToggleGroupItem
+					value="cards"
+					aria-label="Tarjetas"
+					className="h-7 px-2"
+					asChild
+				>
+					<Link href={createViewUrl("cards")}>
+						<LayoutGrid className="h-3.5 w-3.5" />
+					</Link>
+				</ToggleGroupItem>
+				<ToggleGroupItem
+					value="table"
+					aria-label="Lista"
+					className="h-7 px-2"
+					asChild
+				>
+					<Link href={createViewUrl("table")}>
+						<List className="h-3.5 w-3.5" />
+					</Link>
+				</ToggleGroupItem>
+			</ToggleGroup>
+		</ButtonGroup>
 	);
 }

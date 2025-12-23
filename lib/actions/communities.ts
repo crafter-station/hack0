@@ -444,10 +444,31 @@ export async function requestAdminUpgrade(
 export interface PublicCommunityFilters {
 	search?: string;
 	type?: string;
+	types?: string[];
 	department?: string;
+	countries?: string[];
+	sizes?: string[];
+	verification?: string[];
+	category?: string;
 	verifiedOnly?: boolean;
 	orderBy?: "popular" | "recent" | "name";
 }
+
+// Category to types mapping
+const CATEGORY_TYPE_MAP: Record<string, string[]> = {
+	desarrollo: ["community", "startup", "company"],
+	diseno: ["community", "coworking"],
+	"data-ia": ["community", "university", "company"],
+	negocios: ["startup", "investor", "consulting", "law_firm", "coworking"],
+	comunidad: ["community", "ngo", "student_org"],
+};
+
+// Size filter definitions
+const SIZE_FILTER_RANGES: Record<string, { min?: number; max?: number }> = {
+	small: { max: 100 },
+	medium: { min: 100, max: 1000 },
+	large: { min: 1000 },
+};
 
 export interface PublicCommunity {
 	id: string;
@@ -473,7 +494,12 @@ export async function getPublicCommunities(
 	const {
 		search,
 		type,
+		types,
 		department,
+		countries,
+		sizes,
+		verification,
+		category,
 		verifiedOnly,
 		orderBy = "popular",
 	} = filters;
@@ -502,16 +528,49 @@ export async function getPublicCommunities(
 		);
 	}
 
+	// Single type filter (legacy)
 	if (type) {
 		filtered = filtered.filter((c) => c.type === type);
+	}
+
+	// Multiple types filter
+	if (types && types.length > 0) {
+		filtered = filtered.filter((c) => c.type && types.includes(c.type));
+	}
+
+	// Category filter (maps to types)
+	if (category && CATEGORY_TYPE_MAP[category]) {
+		const categoryTypes = CATEGORY_TYPE_MAP[category];
+		filtered = filtered.filter((c) => c.type && categoryTypes.includes(c.type));
 	}
 
 	if (department) {
 		filtered = filtered.filter((c) => c.department === department);
 	}
 
+	// Countries filter
+	if (countries && countries.length > 0) {
+		filtered = filtered.filter((c) => c.country && countries.includes(c.country));
+	}
+
 	if (verifiedOnly) {
 		filtered = filtered.filter((c) => c.isVerified);
+	}
+
+	// Verification filter (can be both verified and unverified selected)
+	if (verification && verification.length > 0) {
+		filtered = filtered.filter((c) => {
+			if (verification.includes("verified") && verification.includes("unverified")) {
+				return true; // Both selected, show all
+			}
+			if (verification.includes("verified")) {
+				return c.isVerified === true;
+			}
+			if (verification.includes("unverified")) {
+				return c.isVerified !== true;
+			}
+			return true;
+		});
 	}
 
 	let userMemberships: Set<string> = new Set();
@@ -523,7 +582,7 @@ export async function getPublicCommunities(
 		userMemberships = new Set(memberships.map((m) => m.communityId));
 	}
 
-	const result: PublicCommunity[] = filtered.map((c) => ({
+	let result: PublicCommunity[] = filtered.map((c) => ({
 		id: c.id,
 		slug: c.slug,
 		name: c.name,
@@ -539,6 +598,19 @@ export async function getPublicCommunities(
 		department: c.department,
 		websiteUrl: c.websiteUrl,
 	}));
+
+	// Size filter (applied after memberCount is calculated)
+	if (sizes && sizes.length > 0) {
+		result = result.filter((c) => {
+			return sizes.some((sizeId) => {
+				const range = SIZE_FILTER_RANGES[sizeId];
+				if (!range) return false;
+				const meetsMin = range.min === undefined || c.memberCount >= range.min;
+				const meetsMax = range.max === undefined || c.memberCount < range.max;
+				return meetsMin && meetsMax;
+			});
+		});
+	}
 
 	result.sort((a, b) => {
 		const aVerified = a.isVerified ? 1 : 0;
@@ -575,4 +647,19 @@ export async function getUniqueDepartments(): Promise<string[]> {
 		...new Set(orgs.map((o) => o.department).filter(Boolean)),
 	] as string[];
 	return departments.sort();
+}
+
+export async function getUniqueCountries(): Promise<string[]> {
+	const orgs = await db.query.organizations.findMany({
+		where: and(
+			eq(organizations.isPublic, true),
+			eq(organizations.isPersonalOrg, false),
+		),
+		columns: { country: true },
+	});
+
+	const countries = [
+		...new Set(orgs.map((o) => o.country).filter(Boolean)),
+	] as string[];
+	return countries.sort();
 }
