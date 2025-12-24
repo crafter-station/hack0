@@ -89,7 +89,7 @@ export function CardReveal({
 						>
 							{/* Back of card - AI background as cover */}
 							<div
-								className="w-full aspect-[4/5] overflow-hidden backface-hidden relative rounded-lg ring-2 ring-white/50"
+								className="w-full aspect-[3/5] overflow-hidden backface-hidden relative rounded-lg ring-2 ring-white/50"
 								style={{ backfaceVisibility: "hidden" }}
 							>
 								{coverBackgroundUrl || generatedBackgroundUrl ? (
