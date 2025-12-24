@@ -25,9 +25,18 @@ export default async function OnboardingCompletePage({
 		redirect("/onboarding");
 	}
 
-	const personalOrg = await getOrCreatePersonalOrg();
-
 	if (prefs.role !== "organizer") {
+		redirect(redirect_url || "/c/discover");
+	}
+
+	let personalOrg = null;
+	try {
+		personalOrg = await getOrCreatePersonalOrg();
+	} catch (error) {
+		console.error("Failed to create personal org:", error);
+	}
+
+	if (!personalOrg) {
 		redirect(redirect_url || "/c/discover");
 	}
 
