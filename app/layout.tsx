@@ -10,6 +10,7 @@ import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/(app)/api/uploadthing/core";
+import { GiftPromoBanner } from "@/components/gift/gift-promo-banner";
 import { GlobalSearch } from "@/components/global-search";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeSelector } from "@/components/theme-selector";
@@ -200,6 +201,7 @@ export default function RootLayout({
 					>
 						<QueryProvider>
 							<PostHogProvider>
+								<GiftPromoBanner />
 								<NuqsAdapter>{children}</NuqsAdapter>
 							</PostHogProvider>
 							<GlobalSearch />
