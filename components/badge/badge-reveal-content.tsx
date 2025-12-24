@@ -68,7 +68,7 @@ export function BadgeRevealContent({
 							className="absolute inset-0"
 							style={{
 								background:
-									"linear-gradient(to bottom, rgba(10, 10, 15, 0.3) 0%, transparent 30%, transparent 70%, rgba(10, 10, 15, 0.5) 100%)",
+									"linear-gradient(to bottom, rgba(10, 10, 15, 0.85) 0%, rgba(10, 10, 15, 0.4) 15%, transparent 35%, transparent 50%, rgba(10, 10, 15, 0.5) 65%, rgba(10, 10, 15, 0.95) 100%)",
 							}}
 						/>
 					</motion.div>

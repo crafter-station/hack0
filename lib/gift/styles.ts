@@ -57,35 +57,85 @@ export const BACKGROUND_MOODS = [
 export type BackgroundMood = (typeof BACKGROUND_MOODS)[number];
 
 export const BACKGROUND_PROMPTS: Record<BackgroundMood, string> = {
-	night_cozy: `Dark Christmas night background.
-Very dark navy blue base with scattered soft golden bokeh lights.
-Subtle snowflakes. Mostly dark with gentle warm accents.
-Keep large dark areas for text readability.
-Elegant, minimal Christmas mood.
-No characters, no objects, no text.`,
+	night_cozy: `Pixel art Christmas night sky background.
+Retro 16-bit style, clean pixel aesthetic.
+Dark navy blue sky with pixel star pattern.
+Large glowing pixel moon in TOP corner.
+Santa sleigh silhouette in corner of sky.
+IMPORTANT: Keep center very dark and empty.
+Details and decorations only on edges and corners.
+Vignette effect - darker center, elements on borders.
+No text, simple pixel art style.`,
 
-	warm_paper: `Dark Christmas background with subtle warm tones.
-Very dark base with soft amber bokeh scattered sparsely.
-Gentle golden sparkles, mostly in corners.
-Keep center and edges dark for text readability.
-Elegant minimal Christmas aesthetic.
-No characters, no objects, no text.`,
+	warm_paper: `Pixel art cozy Christmas scene.
+Retro 16-bit game aesthetic, clean pixels.
+Dark brick wall as main background.
+Christmas stockings hanging at BOTTOM edge only.
+Warm amber glow from corners.
+IMPORTANT: Keep center very dark and empty.
+All decorative elements pushed to edges and corners.
+Vignette effect for center focus area.
+No text, simple pixel art style.`,
 
-	pine_gold: `Dark forest Christmas background.
-Very dark green/black base with subtle pine silhouettes.
-Sparse golden bokeh lights scattered gently.
-Keep most of the image dark for text readability.
-Elegant minimal forest Christmas feel.
-No characters, no objects, no text.`,
+	pine_gold: `Pixel art snowy window scene.
+Retro 16-bit style, clean pixel aesthetic.
+Window frame elements only on EDGES of image.
+Snowy pine trees visible only at corners.
+Dark night sky fills the center.
+IMPORTANT: Keep center very dark and minimal.
+Decorations and details only on borders.
+Large empty dark area in middle.
+No text, simple pixel art style.`,
 
-	ember_glow: `Dark cozy Christmas background.
-Very dark base with soft warm amber glow in corners.
-Subtle golden bokeh scattered sparsely.
-Keep center dark for text readability.
-Elegant minimal fireplace Christmas mood.
-No characters, no objects, no text.`,
+	ember_glow: `Pixel art Christmas background.
+Retro 16-bit game aesthetic, clean pixels.
+Christmas tree branches only at CORNERS.
+Ornaments and lights only on edges.
+Dark brick wall in center area.
+IMPORTANT: Keep center very dark and empty.
+Push all colorful elements to borders.
+Vignette effect - empty middle, details on edges.
+No text, simple pixel art style.`,
 };
 
 export function getRandomBackgroundMood(): BackgroundMood {
 	return BACKGROUND_MOODS[Math.floor(Math.random() * BACKGROUND_MOODS.length)];
 }
+
+export const COVER_BACKGROUND_PROMPTS: Record<BackgroundMood, string> = {
+	night_cozy: `Pixel art magical Christmas night scene.
+Retro 16-bit style, vibrant and festive.
+Dark navy blue sky with bright pixel stars.
+Large glowing yellow moon with Santa sleigh crossing.
+Snowy rooftops and chimneys at bottom.
+Twinkling Christmas lights everywhere.
+Colorful and magical holiday atmosphere.
+No text, pixel art style.`,
+
+	warm_paper: `Pixel art cozy Christmas fireplace scene.
+Retro 16-bit game aesthetic, warm and inviting.
+Stone fireplace with crackling orange fire.
+Colorful Christmas stockings hanging in a row.
+Decorated mantle with garland and lights.
+Warm amber glow fills the scene.
+Festive and cozy holiday feeling.
+No text, pixel art style.`,
+
+	pine_gold: `Pixel art snowy Christmas window scene.
+Retro 16-bit style, magical and bright.
+Beautiful arched wooden window frame.
+View of snowy pine forest outside.
+Falling snowflakes and twinkling stars.
+Frost patterns on window edges.
+Warm candlelight reflecting on glass.
+No text, pixel art style.`,
+
+	ember_glow: `Pixel art decorated Christmas tree scene.
+Retro 16-bit game aesthetic, colorful and festive.
+Full Christmas tree with ornaments and lights.
+Red, gold, and silver pixel decorations.
+Glowing star on top of tree.
+Wrapped presents at the base.
+Warm magical Christmas atmosphere.
+No text, pixel art style.`,
+};

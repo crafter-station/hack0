@@ -1497,6 +1497,7 @@ export const giftCards = pgTable("gift_cards", {
 	recipientName: varchar("recipient_name", { length: 100 }),
 	generatedImageUrl: varchar("generated_image_url", { length: 500 }),
 	generatedBackgroundUrl: varchar("generated_background_url", { length: 500 }),
+	coverBackgroundUrl: varchar("cover_background_url", { length: 500 }),
 	message: text("message"),
 	layoutId: varchar("layout_id", { length: 20 }).notNull(),
 	style: giftCardStyleEnum("style").notNull(),

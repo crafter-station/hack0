@@ -16,6 +16,7 @@ interface CardRevealProps {
 	builderId: number;
 	generatedImageUrl: string;
 	generatedBackgroundUrl?: string;
+	coverBackgroundUrl?: string;
 	manifestoPhrase: string;
 	verticalLabel: string;
 	builderName?: string;
@@ -26,6 +27,7 @@ export function CardReveal({
 	builderId,
 	generatedImageUrl,
 	generatedBackgroundUrl,
+	coverBackgroundUrl,
 	manifestoPhrase,
 	verticalLabel,
 	builderName,
@@ -60,9 +62,9 @@ export function CardReveal({
 						className="w-full aspect-[4/5] overflow-hidden backface-hidden relative rounded-lg ring-2 ring-white/50"
 						style={{ backfaceVisibility: "hidden" }}
 					>
-						{generatedBackgroundUrl ? (
+						{coverBackgroundUrl || generatedBackgroundUrl ? (
 							<img
-								src={generatedBackgroundUrl}
+								src={coverBackgroundUrl || generatedBackgroundUrl}
 								alt="Tu regalo"
 								className="w-full h-full object-cover"
 							/>

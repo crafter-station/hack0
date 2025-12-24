@@ -9,15 +9,15 @@ import { Button } from "@/components/ui/button";
 
 const PHASES = [
 	{ time: 0, message: "Los duendes despiertan", icon: "🧝" },
-	{ time: 6, message: "Buscando tu nombre en la lista", icon: "📜" },
-	{ time: 12, message: "Pintando tu retrato mágico", icon: "🎨" },
-	{ time: 20, message: "Espolvoreando nieve", icon: "❄️" },
-	{ time: 28, message: "Decorando el árbol", icon: "🎄" },
-	{ time: 36, message: "Escribiendo tu carta", icon: "✉️" },
-	{ time: 44, message: "Envolviendo tu regalo", icon: "🎁" },
+	{ time: 5, message: "Buscando tu nombre en la lista", icon: "📜" },
+	{ time: 10, message: "Pintando tu retrato mágico", icon: "🎨" },
+	{ time: 17, message: "Espolvoreando nieve", icon: "❄️" },
+	{ time: 24, message: "Decorando el árbol", icon: "🎄" },
+	{ time: 32, message: "Escribiendo tu carta", icon: "✉️" },
+	{ time: 40, message: "Envolviendo tu regalo", icon: "🎁" },
 ];
 
-const ESTIMATED_DURATION = 55;
+const ESTIMATED_DURATION = 52;
 
 const GIFT_COLORS = {
 	text: "#fafafa",

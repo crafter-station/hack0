@@ -81,6 +81,9 @@ export default async function GiftCardPage({ params }: CardPageProps) {
 				builderId={card.builderId || 0}
 				generatedImageUrl={card.generatedImageUrl}
 				generatedBackgroundUrl={card.generatedBackgroundUrl}
+				coverBackgroundUrl={
+					card.coverBackgroundUrl || card.generatedBackgroundUrl
+				}
 				manifestoPhrase={card.message}
 				verticalLabel={card.verticalLabel || "BUILDER"}
 				builderName={card.recipientName || undefined}

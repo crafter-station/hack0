@@ -13,6 +13,7 @@ import {
 import {
 	BACKGROUND_PROMPTS,
 	type BackgroundMood,
+	COVER_BACKGROUND_PROMPTS,
 	type GiftCardStyle,
 	STYLE_PROMPTS,
 } from "@/lib/gift/styles";
@@ -53,7 +54,7 @@ export const generateGiftCardTask = task({
 
 			metadata.set("step", "generating_all_parallel");
 
-			const [portraitResult, backgroundResult, manifestoResult] =
+			const [portraitResult, backgroundResult, coverResult, manifestoResult] =
 				await Promise.all([
 					fal.subscribe("fal-ai/gpt-image-1.5/edit", {
 						input: {
@@ -71,6 +72,13 @@ export const generateGiftCardTask = task({
 							quality: "high",
 						},
 					}),
+					fal.subscribe("fal-ai/gpt-image-1.5", {
+						input: {
+							prompt: COVER_BACKGROUND_PROMPTS[backgroundMood],
+							image_size: "1024x1024",
+							quality: "high",
+						},
+					}),
 					generateText({
 						model: "openai/gpt-4o-mini",
 						prompt: getManifestoPrompt(recipientName),
@@ -83,6 +91,10 @@ export const generateGiftCardTask = task({
 
 			const generatedBackgroundUrl = (
 				backgroundResult.data as { images: Array<{ url: string }> }
+			).images[0].url;
+
+			const coverBackgroundUrl = (
+				coverResult.data as { images: Array<{ url: string }> }
 			).images[0].url;
 
 			metadata.set("step", "removing_background");
@@ -117,25 +129,31 @@ export const generateGiftCardTask = task({
 
 			metadata.set("generatedImageUrl", generatedImageUrl);
 			metadata.set("generatedBackgroundUrl", generatedBackgroundUrl);
+			metadata.set("coverBackgroundUrl", coverBackgroundUrl);
 			metadata.set("manifesto", manifesto.phrase);
 			metadata.set("verticalLabel", manifesto.verticalLabel);
 			metadata.set("step", "uploading_final");
 
 			const utapi = new UTApi();
-			const [uploadPortrait, uploadBackground] = await Promise.all([
-				utapi.uploadFilesFromUrl(generatedImageUrl),
-				utapi.uploadFilesFromUrl(generatedBackgroundUrl),
-			]);
+			const [uploadPortrait, uploadBackground, uploadCover] = await Promise.all(
+				[
+					utapi.uploadFilesFromUrl(generatedImageUrl),
+					utapi.uploadFilesFromUrl(generatedBackgroundUrl),
+					utapi.uploadFilesFromUrl(coverBackgroundUrl),
+				],
+			);
 
 			const finalImageUrl = uploadPortrait.data?.url || generatedImageUrl;
 			const finalBackgroundUrl =
 				uploadBackground.data?.url || generatedBackgroundUrl;
+			const finalCoverUrl = uploadCover.data?.url || coverBackgroundUrl;
 
 			await db
 				.update(giftCards)
 				.set({
 					generatedImageUrl: finalImageUrl,
 					generatedBackgroundUrl: finalBackgroundUrl,
+					coverBackgroundUrl: finalCoverUrl,
 					message: manifesto.phrase,
 					verticalLabel: manifesto.verticalLabel,
 					status: "completed",
@@ -146,6 +164,7 @@ export const generateGiftCardTask = task({
 			metadata.set("step", "completed");
 			metadata.set("finalImageUrl", finalImageUrl);
 			metadata.set("finalBackgroundUrl", finalBackgroundUrl);
+			metadata.set("finalCoverUrl", finalCoverUrl);
 
 			return {
 				success: true,
@@ -153,6 +172,7 @@ export const generateGiftCardTask = task({
 				builderId,
 				generatedImageUrl: finalImageUrl,
 				generatedBackgroundUrl: finalBackgroundUrl,
+				coverBackgroundUrl: finalCoverUrl,
 				message: manifesto.phrase,
 				verticalLabel: manifesto.verticalLabel,
 			};
