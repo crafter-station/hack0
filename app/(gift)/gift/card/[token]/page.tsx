@@ -5,6 +5,16 @@ import { CardReveal } from "@/components/gift/card-reveal";
 import { db } from "@/lib/db";
 import { giftCards } from "@/lib/db/schema";
 
+function getBaseUrl() {
+	if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+		return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+	}
+	if (process.env.VERCEL_URL) {
+		return `https://${process.env.VERCEL_URL}`;
+	}
+	return "https://hack0.dev";
+}
+
 interface CardPageProps {
 	params: Promise<{ token: string }>;
 }
@@ -17,6 +27,8 @@ export async function generateMetadata({
 		where: eq(giftCards.shareToken, token),
 	});
 
+	const baseUrl = getBaseUrl();
+
 	if (!card || !card.builderId) {
 		return {
 			title: "HACK0.DEV 2025",
@@ -26,6 +38,7 @@ export async function generateMetadata({
 
 	const formattedId = `#${card.builderId.toString().padStart(4, "0")}`;
 	const builderName = card.recipientName ? ` - ${card.recipientName}` : "";
+	const ogImageUrl = `${baseUrl}/api/badge/og/${token}`;
 
 	return {
 		title: `HACK0.DEV 2025 ${formattedId}${builderName}`,
@@ -33,9 +46,10 @@ export async function generateMetadata({
 		openGraph: {
 			title: `HACK0.DEV 2025 ${formattedId}${builderName}`,
 			description: card.message || "Badge navideño de hack0.dev",
+			url: `${baseUrl}/gift/card/${token}`,
 			images: [
 				{
-					url: `/api/badge/og/${token}`,
+					url: ogImageUrl,
 					width: 1200,
 					height: 1200,
 					alt: `Badge de ${card.recipientName || "Builder"}`,
@@ -47,7 +61,7 @@ export async function generateMetadata({
 			card: "summary_large_image",
 			title: `HACK0.DEV 2025 ${formattedId}${builderName}`,
 			description: card.message || "Badge navideño de hack0.dev",
-			images: [`/api/badge/og/${token}`],
+			images: [ogImageUrl],
 		},
 	};
 }

@@ -2,7 +2,7 @@
 
 import Atropos from "atropos/react";
 import { motion } from "framer-motion";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { BadgeRevealContent } from "../badge/badge-reveal-content";
 import { GiftActions } from "./gift-actions";
 import { GiftBox3D } from "./gift-box-3d";
@@ -36,7 +36,6 @@ export function CardReveal({
 }: CardRevealProps) {
 	const [isFlipped, setIsFlipped] = useState(false);
 	const [revealComplete, setRevealComplete] = useState(false);
-	const badgeRef = useRef<HTMLDivElement>(null);
 
 	const handleClick = () => {
 		setIsFlipped(!isFlipped);
@@ -153,7 +152,6 @@ export function CardReveal({
 
 							{/* Front of card - Badge */}
 							<div
-								ref={badgeRef}
 								className="absolute inset-0 w-full backface-hidden"
 								style={{
 									backfaceVisibility: "hidden",
@@ -194,7 +192,6 @@ export function CardReveal({
 						message={manifestoPhrase}
 						recipientName={builderName}
 						builderId={builderId}
-						badgeRef={badgeRef}
 					/>
 				)}
 			</motion.div>

@@ -1,9 +1,9 @@
 "use client";
 
 import { SignInButton, useAuth } from "@clerk/nextjs";
-import { toPng } from "html-to-image";
-import { Check, Download, Loader2, Share2, Trophy } from "lucide-react";
-import { type RefObject, useState } from "react";
+import { Check, Download, Gift, Loader2, Share2, Trophy } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 import { AchievementUnlocked } from "@/components/achievements/achievement-unlocked";
 import { LinkedinLogo } from "@/components/logos/linkedin";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,6 @@ interface GiftActionsProps {
 	message: string;
 	recipientName?: string;
 	builderId?: number;
-	badgeRef?: RefObject<HTMLDivElement | null>;
 }
 
 interface UnlockedAchievement {
@@ -37,12 +36,12 @@ export function GiftActions({
 	generatedImageUrl,
 	message,
 	builderId,
-	badgeRef,
 }: GiftActionsProps) {
 	const { isSignedIn } = useAuth();
 	const [isSaving, setIsSaving] = useState(false);
 	const [isSaved, setIsSaved] = useState(false);
 	const [copied, setCopied] = useState(false);
+	const [isDownloading, setIsDownloading] = useState(false);
 	const [unlockedAchievement, setUnlockedAchievement] =
 		useState<UnlockedAchievement | null>(null);
 
@@ -51,33 +50,22 @@ export function GiftActions({
 		: "";
 
 	const handleDownload = async () => {
+		setIsDownloading(true);
 		try {
-			if (badgeRef?.current) {
-				const dataUrl = await toPng(badgeRef.current, {
-					backgroundColor: "#0a0a0f",
-					pixelRatio: 2,
-					cacheBust: true,
-				});
-				const a = document.createElement("a");
-				a.href = dataUrl;
-				a.download = `hack0-badge-2025${formattedId ? `-${formattedId.replace("#", "")}` : ""}.png`;
-				document.body.appendChild(a);
-				a.click();
-				document.body.removeChild(a);
-			} else {
-				const response = await fetch(generatedImageUrl);
-				const blob = await response.blob();
-				const url = window.URL.createObjectURL(blob);
-				const a = document.createElement("a");
-				a.href = url;
-				a.download = `hack0-badge-2025${formattedId ? `-${formattedId.replace("#", "")}` : ""}.png`;
-				document.body.appendChild(a);
-				a.click();
-				document.body.removeChild(a);
-				window.URL.revokeObjectURL(url);
-			}
+			const response = await fetch(`/api/badge/og/${token}`);
+			const blob = await response.blob();
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = `hack0-badge-2025${formattedId ? `-${formattedId.replace("#", "")}` : ""}.jpg`;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			window.URL.revokeObjectURL(url);
 		} catch (error) {
 			console.error("Download failed:", error);
+		} finally {
+			setIsDownloading(false);
 		}
 	};
 
@@ -158,6 +146,7 @@ export function GiftActions({
 				<div className="grid grid-cols-2 gap-2">
 					<Button
 						onClick={handleDownload}
+						disabled={isDownloading}
 						variant="outline"
 						className="gap-2"
 						style={{
@@ -166,8 +155,12 @@ export function GiftActions({
 							backgroundColor: "transparent",
 						}}
 					>
-						<Download className="h-4 w-4" />
-						Descargar
+						{isDownloading ? (
+							<Loader2 className="h-4 w-4 animate-spin" />
+						) : (
+							<Download className="h-4 w-4" />
+						)}
+						{isDownloading ? "..." : "Descargar"}
 					</Button>
 
 					<Button
@@ -225,6 +218,16 @@ export function GiftActions({
 						</Button>
 					</SignInButton>
 				)}
+
+				<Link href="/gift" className="w-full">
+					<Button
+						variant="outline"
+						className="w-full gap-2 border-green-500/50 text-green-400 hover:bg-green-500/10 hover:text-green-300"
+					>
+						<Gift className="h-4 w-4" />
+						Obtener mi regalo
+					</Button>
+				</Link>
 			</div>
 
 			{unlockedAchievement && (

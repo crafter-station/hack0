@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { GiftActions } from "../gift/gift-actions";
 
 interface BadgeRevealContentProps {
@@ -28,7 +28,6 @@ export function BadgeRevealContent({
 	hideActions = false,
 }: BadgeRevealContentProps) {
 	const [stage, setStage] = useState(0);
-	const badgeRef = useRef<HTMLDivElement>(null);
 	const formattedId = `#${builderId.toString().padStart(4, "0")}`;
 
 	useEffect(() => {
@@ -50,10 +49,7 @@ export function BadgeRevealContent({
 
 	return (
 		<div className="flex flex-col items-center gap-4 w-full">
-			<div
-				ref={badgeRef}
-				className="relative w-full aspect-[4/5] overflow-hidden bg-[#0a0a0f] rounded-lg ring-2 ring-white/50"
-			>
+			<div className="relative w-full aspect-[4/5] overflow-hidden bg-[#0a0a0f] rounded-lg ring-2 ring-white/50">
 				{generatedBackgroundUrl && (
 					<motion.div
 						className="absolute inset-0"
@@ -251,7 +247,6 @@ export function BadgeRevealContent({
 							message={manifestoPhrase}
 							recipientName={builderName}
 							builderId={builderId}
-							badgeRef={badgeRef}
 						/>
 					)}
 				</motion.div>
