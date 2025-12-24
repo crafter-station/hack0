@@ -7,9 +7,9 @@ import { setStoredGiftToken } from "@/components/gift/gift-landing-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useUploadThing } from "@/lib/uploadthing";
 import { cn } from "@/lib/utils";
-import { Textarea } from "../ui/textarea";
 
 const GIFT_COLORS = {
 	text: "#fafafa",
