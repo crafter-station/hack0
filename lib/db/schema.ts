@@ -1472,3 +1472,156 @@ export const lumaHostMappingsRelations = relations(
 		}),
 	}),
 );
+
+// ============================================
+// GIFT CARDS - Christmas 2025 Gift Experience
+// ============================================
+
+export const giftCardStyleEnum = pgEnum("gift_card_style", [
+	"cozy_christmas",
+	"minimal_festive",
+	"cute_christmas",
+	"soft_pixel",
+]);
+
+export const giftCardStatusEnum = pgEnum("gift_card_status", [
+	"pending",
+	"generating",
+	"completed",
+	"failed",
+]);
+
+export const giftCards = pgTable("gift_cards", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	originalPhotoUrl: varchar("original_photo_url", { length: 500 }).notNull(),
+	recipientName: varchar("recipient_name", { length: 100 }),
+	generatedImageUrl: varchar("generated_image_url", { length: 500 }),
+	generatedBackgroundUrl: varchar("generated_background_url", { length: 500 }),
+	message: text("message"),
+	layoutId: varchar("layout_id", { length: 20 }).notNull(),
+	style: giftCardStyleEnum("style").notNull(),
+	status: giftCardStatusEnum("status").default("pending"),
+	errorMessage: text("error_message"),
+	shareToken: varchar("share_token", { length: 64 }).unique().notNull(),
+	userId: varchar("user_id", { length: 255 }),
+	triggerRunId: varchar("trigger_run_id", { length: 255 }),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	completedAt: timestamp("completed_at", { mode: "date", withTimezone: true }),
+});
+
+export type GiftCard = typeof giftCards.$inferSelect;
+export type NewGiftCard = typeof giftCards.$inferInsert;
+
+// ============================================
+// ACHIEVEMENTS - Gamification System
+// ============================================
+
+export const achievementTypeEnum = pgEnum("achievement_type", [
+	"seasonal",
+	"participation",
+	"winner",
+	"organizer",
+	"community",
+	"streak",
+	"explorer",
+]);
+
+export const achievementRarityEnum = pgEnum("achievement_rarity", [
+	"common",
+	"uncommon",
+	"rare",
+	"epic",
+	"legendary",
+]);
+
+export const achievements = pgTable("achievements", {
+	id: varchar("id", { length: 50 }).primaryKey(),
+	name: varchar("name", { length: 100 }).notNull(),
+	description: text("description").notNull(),
+	iconUrl: varchar("icon_url", { length: 500 }),
+	type: achievementTypeEnum("type").notNull(),
+	rarity: achievementRarityEnum("rarity").default("common"),
+	points: integer("points").default(10),
+	isActive: boolean("is_active").default(true),
+	isSecret: boolean("is_secret").default(false),
+	unlockedBy: text("unlocked_by"),
+	availableFrom: timestamp("available_from", {
+		mode: "date",
+		withTimezone: true,
+	}),
+	availableUntil: timestamp("available_until", {
+		mode: "date",
+		withTimezone: true,
+	}),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+});
+
+export type Achievement = typeof achievements.$inferSelect;
+export type NewAchievement = typeof achievements.$inferInsert;
+
+export const userAchievements = pgTable(
+	"user_achievements",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		userId: varchar("user_id", { length: 255 }).notNull(),
+		achievementId: varchar("achievement_id", { length: 50 })
+			.references(() => achievements.id)
+			.notNull(),
+		unlockedAt: timestamp("unlocked_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+		metadata: text("metadata"),
+	},
+	(table) => [
+		uniqueIndex("user_achievement_unique_idx").on(
+			table.userId,
+			table.achievementId,
+		),
+	],
+);
+
+export type UserAchievement = typeof userAchievements.$inferSelect;
+export type NewUserAchievement = typeof userAchievements.$inferInsert;
+
+export const ACHIEVEMENT_TYPES = [
+	"seasonal",
+	"participation",
+	"winner",
+	"organizer",
+	"community",
+	"streak",
+	"explorer",
+] as const;
+
+export const ACHIEVEMENT_RARITIES = [
+	"common",
+	"uncommon",
+	"rare",
+	"epic",
+	"legendary",
+] as const;
+
+export const ACHIEVEMENT_RARITY_LABELS: Record<string, string> = {
+	common: "Común",
+	uncommon: "Poco común",
+	rare: "Raro",
+	epic: "Épico",
+	legendary: "Legendario",
+};
+
+export const userAchievementsRelations = relations(
+	userAchievements,
+	({ one }) => ({
+		achievement: one(achievements, {
+			fields: [userAchievements.achievementId],
+			references: [achievements.id],
+		}),
+	}),
+);

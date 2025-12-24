@@ -11,9 +11,13 @@ import { UserDropdown } from "./user-dropdown";
 
 interface SiteHeaderProps {
 	showBackButton?: boolean;
+	hideThemeToggle?: boolean;
 }
 
-export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
+export async function SiteHeader({
+	showBackButton = false,
+	hideThemeToggle = false,
+}: SiteHeaderProps) {
 	const { userId } = await auth();
 
 	const [personalOrg, godMode, adminCommunities] = await Promise.all([
@@ -97,6 +101,7 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 							<UserDropdown
 								isGodMode={godMode}
 								adminCommunities={adminCommunities}
+								hideThemeToggle={hideThemeToggle}
 							/>
 						</SignedIn>
 					</div>

@@ -36,6 +36,13 @@ export function SiteFooter() {
 									>
 										Comunidades
 									</Link>
+									<Link
+										href="/gift"
+										className="hover:text-foreground transition-colors inline-flex items-center gap-1"
+									>
+										Regalo de Navidad
+										<span className="text-[10px]">🎄</span>
+									</Link>
 								</nav>
 							</div>
 

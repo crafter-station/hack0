@@ -46,6 +46,20 @@ export const ourFileRouter = {
 
 			return { uploadedBy: metadata.userId, url: file.ufsUrl };
 		}),
+
+	// Public gift photo uploader - NO AUTH REQUIRED for Christmas gift cards
+	giftPhotoUploader: f({
+		"image/jpeg": { maxFileSize: "4MB", maxFileCount: 1 },
+		"image/png": { maxFileSize: "4MB", maxFileCount: 1 },
+		"image/webp": { maxFileSize: "4MB", maxFileCount: 1 },
+	})
+		.middleware(async () => {
+			return { uploadedAt: new Date().toISOString() };
+		})
+		.onUploadComplete(async ({ file }) => {
+			console.log("Gift photo upload complete:", file.ufsUrl);
+			return { url: file.ufsUrl };
+		}),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

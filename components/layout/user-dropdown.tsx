@@ -26,11 +26,13 @@ interface UserDropdownProps {
 		};
 		role: "owner" | "admin";
 	}>;
+	hideThemeToggle?: boolean;
 }
 
 export function UserDropdown({
 	isGodMode = false,
 	adminCommunities = [],
+	hideThemeToggle = false,
 }: UserDropdownProps) {
 	const { user, isLoaded } = useUser();
 	const { signOut } = useClerk();
@@ -158,21 +160,23 @@ export function UserDropdown({
 						<span className="text-xs">Perfil</span>
 					</Link>
 				</DropdownMenuItem>
-				<DropdownMenuItem
-					onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-				>
-					{theme === "dark" ? (
-						<>
-							<Sun className="h-3.5 w-3.5" />
-							<span className="text-xs">Tema claro</span>
-						</>
-					) : (
-						<>
-							<Moon className="h-3.5 w-3.5" />
-							<span className="text-xs">Tema oscuro</span>
-						</>
-					)}
-				</DropdownMenuItem>
+				{!hideThemeToggle && (
+					<DropdownMenuItem
+						onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+					>
+						{theme === "dark" ? (
+							<>
+								<Sun className="h-3.5 w-3.5" />
+								<span className="text-xs">Tema claro</span>
+							</>
+						) : (
+							<>
+								<Moon className="h-3.5 w-3.5" />
+								<span className="text-xs">Tema oscuro</span>
+							</>
+						)}
+					</DropdownMenuItem>
+				)}
 				<DropdownMenuSeparator />
 				<DropdownMenuItem
 					variant="destructive"

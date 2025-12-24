@@ -1,11 +1,38 @@
 "use client";
 
-import { Menu } from "lucide-react";
+import { Gift, Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useMounted } from "@/hooks/use-mounted";
+
+function SnowflakeIcon({ className }: { className?: string }) {
+	return (
+		<svg
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			className={className}
+		>
+			<line x1="12" y1="2" x2="12" y2="22" />
+			<line x1="2" y1="12" x2="22" y2="12" />
+			<line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+			<line x1="19.07" y1="4.93" x2="4.93" y2="19.07" />
+			<line x1="12" y1="2" x2="9" y2="5" />
+			<line x1="12" y1="2" x2="15" y2="5" />
+			<line x1="12" y1="22" x2="9" y2="19" />
+			<line x1="12" y1="22" x2="15" y2="19" />
+			<line x1="2" y1="12" x2="5" y2="9" />
+			<line x1="2" y1="12" x2="5" y2="15" />
+			<line x1="22" y1="12" x2="19" y2="9" />
+			<line x1="22" y1="12" x2="19" y2="15" />
+		</svg>
+	);
+}
 
 const navItems = [
 	{ href: "/", label: "Inicio" },
@@ -22,6 +49,7 @@ export function MobileNav() {
 	const [open, setOpen] = useState(false);
 	const pathname = usePathname();
 	const mounted = useMounted();
+	const isGiftActive = pathname.startsWith("/gift");
 
 	if (!mounted) {
 		return (
@@ -57,6 +85,33 @@ export function MobileNav() {
 					</div>
 
 					<nav className="flex-1 p-6">
+						{/* Festive Gift Banner */}
+						<Link
+							href="/gift"
+							onClick={() => setOpen(false)}
+							className={`
+								flex items-center gap-3 p-4 mb-6
+								bg-emerald-600 dark:bg-emerald-700
+								text-white
+								hover:bg-emerald-700 dark:hover:bg-emerald-600
+								transition-colors
+								${isGiftActive ? "ring-2 ring-emerald-400" : ""}
+							`}
+						>
+							<div className="flex items-center justify-center w-10 h-10 bg-white/10">
+								<Gift className="h-5 w-5" />
+							</div>
+							<div>
+								<div className="flex items-center gap-2">
+									<span className="font-semibold">Regalo de Navidad</span>
+									<SnowflakeIcon className="h-3.5 w-3.5 opacity-75" />
+								</div>
+								<span className="text-xs text-white/80">
+									Crea tu tarjeta personalizada
+								</span>
+							</div>
+						</Link>
+
 						<div className="space-y-1">
 							{navItems.map((item) => {
 								const isActive =
