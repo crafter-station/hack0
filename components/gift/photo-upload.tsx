@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUploadThing } from "@/lib/uploadthing";
 import { cn } from "@/lib/utils";
+import { Textarea } from "../ui/textarea";
 
 const GIFT_COLORS = {
 	text: "#fafafa",
@@ -24,6 +25,7 @@ export function PhotoUpload() {
 	const [image, setImage] = useState<string | null>(null);
 	const [imageFile, setImageFile] = useState<File | null>(null);
 	const [recipientName, setRecipientName] = useState("");
+	const [builderFeelings, setBuilderFeelings] = useState("");
 	const [isUploading, setIsUploading] = useState(false);
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [uploadProgress, setUploadProgress] = useState(0);
@@ -53,6 +55,7 @@ export function PhotoUpload() {
 				body: JSON.stringify({
 					photoUrl,
 					recipientName: recipientName || undefined,
+					builderFeelings: builderFeelings || undefined,
 				}),
 			});
 
@@ -239,6 +242,26 @@ export function PhotoUpload() {
 					placeholder="¿Cómo te llamas?"
 					value={recipientName}
 					onChange={(e) => setRecipientName(e.target.value)}
+					disabled={isLoading}
+					style={{
+						backgroundColor: GIFT_COLORS.bg,
+						borderColor: GIFT_COLORS.border,
+						color: GIFT_COLORS.text,
+					}}
+					className="placeholder:text-[rgba(250,250,250,0.3)]"
+				/>
+				<Label
+					htmlFor="feelings"
+					className="text-xs"
+					style={{ color: GIFT_COLORS.textMuted }}
+				>
+					Describe tus sentimientos en este año (opcional)
+				</Label>
+				<Textarea
+					id="feelings"
+					placeholder="Transformé ideas en soluciones, sin esperar nada a cambio"
+					value={builderFeelings}
+					onChange={(e) => setBuilderFeelings(e.target.value)}
 					disabled={isLoading}
 					style={{
 						backgroundColor: GIFT_COLORS.bg,
