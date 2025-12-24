@@ -141,7 +141,7 @@ export function BadgeRevealContent({
 					{verticalLabel}
 				</motion.div>
 
-				<div className="relative h-full flex flex-col px-6 pt-4 pb-6">
+				<div className="relative h-full flex flex-col px-6 pt-4 pb-4">
 					<motion.div
 						className="flex items-center justify-between mb-2"
 						initial={{ opacity: 0, y: -10 }}
@@ -176,7 +176,7 @@ export function BadgeRevealContent({
 					</motion.div>
 
 					<motion.div
-						className="flex-1 flex items-center justify-center"
+						className="flex-1 flex items-center justify-center min-h-0"
 						initial={{ opacity: 0, scale: 0.8 }}
 						animate={{
 							opacity: stage >= 3 ? 1 : 0,
@@ -184,7 +184,7 @@ export function BadgeRevealContent({
 						}}
 						transition={{ duration: 0.6, ease: "easeOut" }}
 					>
-						<div className="w-72 h-72 rounded-2xl overflow-hidden">
+						<div className="w-52 h-52 sm:w-64 sm:h-64 rounded-2xl overflow-hidden">
 							<img
 								src={generatedImageUrl}
 								alt="Builder portrait"
@@ -193,9 +193,9 @@ export function BadgeRevealContent({
 						</div>
 					</motion.div>
 
-					<div className="mt-auto text-center space-y-2">
+					<div className="mt-auto text-center space-y-1">
 						<motion.p
-							className="text-white text-base font-medium leading-snug px-2 drop-shadow-lg"
+							className="text-white text-sm sm:text-base font-medium leading-snug px-2 drop-shadow-lg"
 							initial={{ opacity: 0, y: 10 }}
 							animate={{
 								opacity: stage >= 4 ? 1 : 0,
@@ -218,12 +218,12 @@ export function BadgeRevealContent({
 						)}
 
 						<motion.p
-							className="text-amber-400 text-lg !font-christmas drop-shadow"
+							className="text-amber-400 text-base sm:text-lg !font-christmas drop-shadow"
 							initial={{ opacity: 0 }}
 							animate={{ opacity: stage >= 6 ? 1 : 0 }}
 							transition={{ duration: 0.4, delay: 0.2 }}
 						>
-							❄️ Feliz Navidad 2025 ❄️
+							Feliz Navidad 2025
 						</motion.p>
 					</div>
 				</div>
