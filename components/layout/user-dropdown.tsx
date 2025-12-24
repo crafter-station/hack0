@@ -32,9 +32,15 @@ export function UserDropdown({
 	isGodMode = false,
 	adminCommunities = [],
 }: UserDropdownProps) {
-	const { user } = useUser();
+	const { user, isLoaded } = useUser();
 	const { signOut } = useClerk();
 	const { theme, setTheme } = useTheme();
+
+	if (!isLoaded) {
+		return (
+			<div className="h-7 w-7 rounded-full bg-muted animate-pulse ring-1 ring-border" />
+		);
+	}
 
 	if (!user) return null;
 
@@ -91,45 +97,55 @@ export function UserDropdown({
 						</DropdownMenuLabel>
 						{[...adminCommunities]
 							.sort((a, b) => {
-								if (a.organization.isPersonalOrg && !b.organization.isPersonalOrg) return -1;
-								if (!a.organization.isPersonalOrg && b.organization.isPersonalOrg) return 1;
+								if (
+									a.organization.isPersonalOrg &&
+									!b.organization.isPersonalOrg
+								)
+									return -1;
+								if (
+									!a.organization.isPersonalOrg &&
+									b.organization.isPersonalOrg
+								)
+									return 1;
 								const nameA = a.organization.displayName || a.organization.name;
 								const nameB = b.organization.displayName || b.organization.name;
 								return nameA.localeCompare(nameB);
 							})
 							.slice(0, 5)
 							.map(({ organization }) => (
-							<DropdownMenuItem asChild key={organization.id}>
-								<Link
-									href={`/c/${organization.slug}`}
-									className="flex items-center gap-2"
-								>
-									{organization.logoUrl ? (
-										<img
-											src={organization.logoUrl}
-											alt={organization.displayName || organization.name}
-											className="h-4 w-4 rounded-full object-cover ring-1 ring-border"
-										/>
-									) : organization.isPersonalOrg ? (
-										<User className="h-3.5 w-3.5" />
-									) : (
-										<Building2 className="h-3.5 w-3.5" />
-									)}
-									<span className="text-xs truncate">
-										{organization.isPersonalOrg
-											? "Personal"
-											: organization.displayName || organization.name}
-									</span>
-								</Link>
-							</DropdownMenuItem>
-						))}
+								<DropdownMenuItem asChild key={organization.id}>
+									<Link
+										href={`/c/${organization.slug}`}
+										className="flex items-center gap-2"
+									>
+										{organization.logoUrl ? (
+											<img
+												src={organization.logoUrl}
+												alt={organization.displayName || organization.name}
+												className="h-4 w-4 rounded-full object-cover ring-1 ring-border"
+											/>
+										) : organization.isPersonalOrg ? (
+											<User className="h-3.5 w-3.5" />
+										) : (
+											<Building2 className="h-3.5 w-3.5" />
+										)}
+										<span className="text-xs truncate">
+											{organization.isPersonalOrg
+												? "Personal"
+												: organization.displayName || organization.name}
+										</span>
+									</Link>
+								</DropdownMenuItem>
+							))}
 						{adminCommunities.length > 5 && (
 							<DropdownMenuItem asChild>
 								<Link
 									href="/c"
 									className="flex items-center justify-center text-muted-foreground"
 								>
-									<span className="text-xs">Ver todas ({adminCommunities.length})</span>
+									<span className="text-xs">
+										Ver todas ({adminCommunities.length})
+									</span>
 								</Link>
 							</DropdownMenuItem>
 						)}
