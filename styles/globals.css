@@ -216,3 +216,137 @@
 		transparent 100%
 	);
 }
+
+/* Custom scrollbar styles */
+/* Firefox standard properties */
+.scrollbar-thin {
+	scrollbar-width: thin;
+	scrollbar-color: hsl(var(--border)) transparent;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.scrollbar-thin::-webkit-scrollbar {
+	height: 6px;
+	width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+	background: hsl(var(--border));
+	border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+	background: hsl(var(--muted-foreground) / 0.2);
+}
+
+/* Custom syntax highlighting for code blocks - grayscale with subtle color accents */
+.hljs {
+	background: hsl(var(--muted)) !important;
+	color: hsl(var(--foreground)) !important;
+	padding: 0 !important; /* Let parent pre handle padding */
+	border-radius: 0;
+	overflow-x: visible;
+}
+
+/* Syntax highlighting tokens - enhanced with subtle colors */
+.hljs-comment,
+.hljs-quote {
+	color: hsl(var(--muted-foreground));
+	font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-addition {
+	color: oklch(0.45 0.1 240); /* Subtle blue for keywords */
+	font-weight: 600;
+}
+
+.dark .hljs-keyword,
+.dark .hljs-selector-tag,
+.dark .hljs-addition {
+	color: oklch(0.7 0.1 240); /* Lighter blue for dark mode */
+}
+
+.hljs-number,
+.hljs-literal,
+.hljs-doctag {
+	color: oklch(0.5 0.12 160); /* Subtle green for numbers */
+}
+
+.dark .hljs-number,
+.dark .hljs-literal,
+.dark .hljs-doctag {
+	color: oklch(0.75 0.12 160); /* Lighter green for dark mode */
+}
+
+.hljs-string,
+.hljs-meta .hljs-string,
+.hljs-regexp {
+	color: oklch(0.5 0.1 30); /* Subtle amber for strings */
+}
+
+.dark .hljs-string,
+.dark .hljs-meta .hljs-string,
+.dark .hljs-regexp {
+	color: oklch(0.75 0.1 80); /* Lighter amber for dark mode */
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class {
+	color: hsl(var(--foreground));
+	font-weight: 600;
+}
+
+.hljs-attribute,
+.hljs-attr,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-class .hljs-title,
+.hljs-type {
+	color: oklch(0.5 0.08 300); /* Subtle purple for attributes */
+}
+
+.dark .hljs-attribute,
+.dark .hljs-attr,
+.dark .hljs-variable,
+.dark .hljs-template-variable,
+.dark .hljs-class .hljs-title,
+.dark .hljs-type {
+	color: oklch(0.75 0.08 300); /* Lighter purple for dark mode */
+}
+
+.hljs-symbol,
+.hljs-bullet,
+.hljs-subst,
+.hljs-meta,
+.hljs-meta .hljs-keyword,
+.hljs-selector-attr,
+.hljs-selector-pseudo,
+.hljs-link {
+	color: hsl(var(--muted-foreground));
+}
+
+.hljs-built_in,
+.hljs-deletion {
+	color: hsl(var(--foreground));
+}
+
+.hljs-formula {
+	background: hsl(var(--muted));
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: 700;
+}

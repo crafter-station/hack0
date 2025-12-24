@@ -33,6 +33,7 @@ import {
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MarkdownEditor } from "@/components/ui/markdown-editor";
 import {
 	Popover,
 	PopoverContent,
@@ -49,7 +50,6 @@ import {
 } from "@/components/ui/responsive-modal";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import { createEvent } from "@/lib/actions/events";
 import { startLumaImport } from "@/lib/actions/import";
 import type { Organization } from "@/lib/db/schema";
@@ -778,22 +778,23 @@ export function OrgEventFormMinimal({
 								</div>
 							</button>
 						</ResponsiveModalTrigger>
-						<ResponsiveModalContent className="max-w-2xl max-h-[80vh]">
-							<ResponsiveModalHeader>
+						<ResponsiveModalContent className="max-w-4xl max-h-[85vh] flex flex-col">
+							<ResponsiveModalHeader className="shrink-0">
 								<ResponsiveModalTitle>
 									Descripción del evento
 								</ResponsiveModalTitle>
 							</ResponsiveModalHeader>
-							<div className="p-4">
-								<Textarea
+							<div className="p-4 flex-1 min-h-0 overflow-hidden">
+								<MarkdownEditor
 									value={description}
-									onChange={(e) => setDescription(e.target.value)}
-									rows={12}
+									onChange={setDescription}
 									placeholder="Describe tu evento... Puedes usar Markdown."
-									className="w-full min-h-[300px]"
+									showToolbar={true}
+									showPreview={true}
+									className="w-full h-full"
 								/>
 							</div>
-							<ResponsiveModalFooter>
+							<ResponsiveModalFooter className="shrink-0">
 								<ResponsiveModalClose asChild>
 									<Button>Guardar</Button>
 								</ResponsiveModalClose>
