@@ -7,7 +7,6 @@ import {
 	Calendar,
 	Clock,
 	ExternalLink,
-	Globe,
 	GraduationCap,
 	MapPin,
 	Sparkles,
@@ -81,19 +80,13 @@ function EventListItem({
 	}, [isHovered]);
 
 	return (
-		<motion.div
+		<div
 			ref={itemRef}
 			data-event-item
-			initial={false}
-			animate={{
-				backgroundColor: isHovered ? "hsl(var(--primary) / 0.08)" : "transparent",
-				borderLeftColor: isHovered ? "hsl(var(--primary))" : "transparent",
-				borderLeftWidth: isHovered ? 3 : 0,
-			}}
-			transition={{ duration: 0.08 }}
 			className={`
-				group relative px-4 py-3 cursor-pointer
+				group relative px-4 py-3 cursor-pointer border-l-3
 				${isEnded ? "opacity-50" : ""}
+				${isHovered ? "bg-primary/8 border-l-primary" : "border-l-transparent"}
 			`}
 			onMouseEnter={onHover}
 		>
@@ -153,21 +146,7 @@ function EventListItem({
 					</div>
 				</div>
 			</div>
-
-			<AnimatePresence>
-				{isHovered && (
-					<motion.div
-						initial={{ opacity: 0, scale: 0.5, x: 10 }}
-						animate={{ opacity: 1, scale: 1, x: 0 }}
-						exit={{ opacity: 0, scale: 0.5, x: 10 }}
-						transition={{ duration: 0.1 }}
-						className="absolute right-3 top-1/2 -translate-y-1/2"
-					>
-						<Zap className="h-4 w-4 text-primary" />
-					</motion.div>
-				)}
-			</AnimatePresence>
-		</motion.div>
+		</div>
 	);
 }
 
@@ -190,9 +169,7 @@ function EventDetailPanel({ event }: { event: EventWithOrg }) {
 			? `${event.prizeCurrency === "PEN" ? "S/" : "$"}${event.prizePool.toLocaleString()}`
 			: null;
 
-	const eventUrl = event.organization?.slug
-		? `/c/${event.organization.slug}/events/${event.slug}`
-		: `/${event.slug}`;
+	const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
 
 	return (
 		<motion.div
@@ -201,7 +178,7 @@ function EventDetailPanel({ event }: { event: EventWithOrg }) {
 			animate={{ opacity: 1, x: 0 }}
 			exit={{ opacity: 0, x: -20 }}
 			transition={{ duration: 0.15, ease: "easeOut" }}
-			className="h-full flex flex-col"
+			className="h-full flex flex-col min-h-0"
 		>
 			{/* Header with image */}
 			<div className="relative h-48 shrink-0 overflow-hidden bg-muted">
@@ -222,7 +199,7 @@ function EventDetailPanel({ event }: { event: EventWithOrg }) {
 					</div>
 				)}
 				<div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-				
+
 				{/* Status badge */}
 				<div className="absolute top-3 right-3">
 					<Badge
@@ -245,7 +222,7 @@ function EventDetailPanel({ event }: { event: EventWithOrg }) {
 			</div>
 
 			{/* Content */}
-			<ScrollArea className="flex-1">
+			<ScrollArea className="flex-1 min-h-0">
 				<div className="p-4 space-y-4">
 					{/* Title & Org */}
 					<div>
@@ -369,7 +346,9 @@ function EventDetailPanel({ event }: { event: EventWithOrg }) {
 											</ul>
 										),
 										li: ({ children }) => (
-											<li className="text-sm text-muted-foreground">{children}</li>
+											<li className="text-sm text-muted-foreground">
+												{children}
+											</li>
 										),
 										a: ({ href, children }) => (
 											<a
@@ -403,7 +382,11 @@ function EventDetailPanel({ event }: { event: EventWithOrg }) {
 				</Button>
 				{event.registrationUrl && !isEnded && (
 					<Button asChild variant="outline" className="w-full gap-2">
-						<a href={event.registrationUrl} target="_blank" rel="noopener noreferrer">
+						<a
+							href={event.registrationUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+						>
 							Inscribirse
 							<ExternalLink className="h-4 w-4" />
 						</a>
@@ -442,16 +425,19 @@ export function EventsPreviewView({ events, total }: EventsPreviewViewProps) {
 
 	const hoveredEvent = useMemo(
 		() => events.find((e) => e.id === hoveredEventId),
-		[events, hoveredEventId]
+		[events, hoveredEventId],
 	);
 
-	const handleEventHover = useCallback((eventId: string | null) => {
-		setHoveredEventId(eventId);
-		if (eventId) {
-			const index = events.findIndex((e) => e.id === eventId);
-			if (index !== -1) setSelectedIndex(index);
-		}
-	}, [events]);
+	const handleEventHover = useCallback(
+		(eventId: string | null) => {
+			setHoveredEventId(eventId);
+			if (eventId) {
+				const index = events.findIndex((e) => e.id === eventId);
+				if (index !== -1) setSelectedIndex(index);
+			}
+		},
+		[events],
+	);
 
 	// Keyboard navigation
 	useEffect(() => {
@@ -474,8 +460,8 @@ export function EventsPreviewView({ events, total }: EventsPreviewViewProps) {
 				setSelectedIndex(-1);
 				setHoveredEventId(null);
 			} else if (e.key === "Enter" && hoveredEvent) {
-				const eventUrl = hoveredEvent.organization?.slug
-					? `/c/${hoveredEvent.organization.slug}/events/${hoveredEvent.slug}`
+				const eventUrl = hoveredEvent.shortCode
+					? `/e/${hoveredEvent.shortCode}`
 					: `/${hoveredEvent.slug}`;
 				window.location.href = eventUrl;
 			}
@@ -529,7 +515,7 @@ export function EventsPreviewView({ events, total }: EventsPreviewViewProps) {
 			</div>
 
 			{/* Detail Panel */}
-			<div className="border rounded-xl overflow-hidden bg-card">
+			<div className="border rounded-xl overflow-hidden bg-card h-full">
 				<AnimatePresence mode="wait">
 					{hoveredEvent ? (
 						<EventDetailPanel event={hoveredEvent} />
@@ -550,4 +536,3 @@ export function EventsPreviewView({ events, total }: EventsPreviewViewProps) {
 		</div>
 	);
 }
-
