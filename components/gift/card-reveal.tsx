@@ -45,7 +45,13 @@ export function CardReveal({
 	};
 
 	return (
-		<div className="flex flex-col items-center gap-4 w-full max-w-sm mx-auto">
+		<motion.div
+			className="flex flex-col items-center gap-4 w-full max-w-sm mx-auto"
+			animate={{
+				justifyContent: isFlipped ? "flex-start" : "center",
+			}}
+			style={{ minHeight: "100%" }}
+		>
 			{/* Shake animation wrapper - moves everything including Atropos */}
 			<motion.div
 				className="w-full cursor-pointer"
@@ -193,6 +199,6 @@ export function CardReveal({
 					builderId={builderId}
 				/>
 			</motion.div>
-		</div>
+		</motion.div>
 	);
 }
