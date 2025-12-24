@@ -23,22 +23,32 @@ export async function SiteHeader({
 	const [personalOrg, godMode, adminCommunities] = await Promise.all([
 		userId
 			? (async () => {
-					const { getOrCreatePersonalOrg } = await import(
-						"@/lib/actions/organizations"
-					);
-					return await getOrCreatePersonalOrg();
+					try {
+						const { getOrCreatePersonalOrg } = await import(
+							"@/lib/actions/organizations"
+						);
+						return await getOrCreatePersonalOrg();
+					} catch (error) {
+						console.error("Failed to get/create personal org:", error);
+						return null;
+					}
 				})()
 			: null,
 		isGodMode(),
 		userId
 			? (async () => {
-					const { getAllUserOrganizations } = await import(
-						"@/lib/actions/organizations"
-					);
-					const allOrgs = await getAllUserOrganizations();
-					return allOrgs.filter(
-						(org) => org.role === "owner" || org.role === "admin",
-					);
+					try {
+						const { getAllUserOrganizations } = await import(
+							"@/lib/actions/organizations"
+						);
+						const allOrgs = await getAllUserOrganizations();
+						return allOrgs.filter(
+							(org) => org.role === "owner" || org.role === "admin",
+						);
+					} catch (error) {
+						console.error("Failed to get user organizations:", error);
+						return [];
+					}
 				})()
 			: [],
 	]);
