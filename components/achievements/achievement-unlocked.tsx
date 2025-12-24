@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Sparkles, Trophy, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ACHIEVEMENT_RARITY_LABELS } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
@@ -58,15 +58,6 @@ export function AchievementUnlocked({
 }: AchievementUnlockedProps) {
 	const [isVisible, setIsVisible] = useState(true);
 	const colors = RARITY_COLORS[achievement.rarity] || RARITY_COLORS.common;
-
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			setIsVisible(false);
-			setTimeout(onClose, 500);
-		}, 6000);
-
-		return () => clearTimeout(timer);
-	}, [onClose]);
 
 	return (
 		<AnimatePresence>
