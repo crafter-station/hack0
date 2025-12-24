@@ -1,11 +1,17 @@
 "use client";
 
 import { SignInButton, useAuth } from "@clerk/nextjs";
-import { Download, Gift, Loader2, Share2, Trophy } from "lucide-react";
+import {
+	Check,
+	Download,
+	Loader2,
+	Share2,
+	Sparkles,
+	Trophy,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AchievementUnlocked } from "@/components/achievements/achievement-unlocked";
-import { getStoredGiftToken } from "@/components/gift/gift-landing-client";
 import { LinkedinLogo } from "@/components/logos/linkedin";
 import { Button } from "@/components/ui/button";
 
@@ -21,6 +27,7 @@ interface GiftActionsProps {
 	message: string;
 	recipientName?: string;
 	builderId?: number;
+	isOwner: boolean;
 }
 
 interface UnlockedAchievement {
@@ -37,6 +44,7 @@ export function GiftActions({
 	generatedImageUrl,
 	message,
 	builderId,
+	isOwner,
 }: GiftActionsProps) {
 	const { isSignedIn, isLoaded } = useAuth();
 	const [isSaved, setIsSaved] = useState(false);
@@ -44,13 +52,7 @@ export function GiftActions({
 	const [isDownloading, setIsDownloading] = useState(false);
 	const [unlockedAchievement, setUnlockedAchievement] =
 		useState<UnlockedAchievement | null>(null);
-	const [isOwner, setIsOwner] = useState(false);
 	const hasAutoClaimedRef = useRef(false);
-
-	useEffect(() => {
-		const storedToken = getStoredGiftToken();
-		setIsOwner(storedToken === token);
-	}, [token]);
 
 	useEffect(() => {
 		if (!isLoaded || !isSignedIn || !isOwner || hasAutoClaimedRef.current)
@@ -150,100 +152,116 @@ export function GiftActions({
 		}
 	};
 
-	return (
-		<>
-			<div className="flex flex-col gap-2 w-full">
-				<Button
-					onClick={handleShareLinkedIn}
-					className="w-full gap-2 bg-[#0A66C2] hover:bg-[#004182] text-white"
-				>
-					<LinkedinLogo className="h-4 w-4" mode="dark" />
-					Compartir en LinkedIn
-				</Button>
-
-				<div className="grid grid-cols-2 gap-2">
+	if (isOwner) {
+		return (
+			<>
+				<div className="flex flex-col gap-2 w-full">
 					<Button
-						onClick={handleDownload}
-						disabled={isDownloading}
-						variant="outline"
-						className="gap-2"
-						style={{
-							borderColor: GIFT_COLORS.border,
-							color: GIFT_COLORS.text,
-							backgroundColor: "transparent",
-						}}
+						onClick={handleShareLinkedIn}
+						className="w-full gap-2 bg-[#0A66C2] hover:bg-[#004182] text-white"
 					>
-						{isDownloading ? (
-							<Loader2 className="h-4 w-4 animate-spin" />
-						) : (
-							<Download className="h-4 w-4" />
-						)}
-						{isDownloading ? "..." : "Descargar"}
+						<LinkedinLogo className="h-4 w-4" mode="dark" />
+						Compartir en LinkedIn
 					</Button>
 
-					<Button
-						onClick={handleShare}
-						variant="outline"
-						className="gap-2"
-						style={{
-							borderColor: GIFT_COLORS.border,
-							color: GIFT_COLORS.text,
-							backgroundColor: "transparent",
-						}}
-					>
-						{copied ? (
-							<>
-								<Check className="h-4 w-4" />
-								Copiado
-							</>
-						) : (
-							<>
-								<Share2 className="h-4 w-4" />
-								Compartir
-							</>
-						)}
-					</Button>
+					<div className="grid grid-cols-2 gap-2">
+						<Button
+							onClick={handleDownload}
+							disabled={isDownloading}
+							variant="outline"
+							className="gap-2"
+							style={{
+								borderColor: GIFT_COLORS.border,
+								color: GIFT_COLORS.text,
+								backgroundColor: "transparent",
+							}}
+						>
+							{isDownloading ? (
+								<Loader2 className="h-4 w-4 animate-spin" />
+							) : (
+								<Download className="h-4 w-4" />
+							)}
+							{isDownloading ? "..." : "Descargar"}
+						</Button>
+
+						<Button
+							onClick={handleShare}
+							variant="outline"
+							className="gap-2"
+							style={{
+								borderColor: GIFT_COLORS.border,
+								color: GIFT_COLORS.text,
+								backgroundColor: "transparent",
+							}}
+						>
+							{copied ? (
+								<>
+									<Check className="h-4 w-4" />
+									Copiado
+								</>
+							) : (
+								<>
+									<Share2 className="h-4 w-4" />
+									Compartir
+								</>
+							)}
+						</Button>
+					</div>
+
+					{isSignedIn ? (
+						<Link href="/profile/achievements" className="w-full">
+							<Button className="w-full gap-2 bg-amber-600 hover:bg-amber-700 text-white">
+								<Trophy className="h-4 w-4" />
+								Ver logro
+							</Button>
+						</Link>
+					) : (
+						<SignInButton mode="modal">
+							<Button className="w-full gap-2 bg-amber-600 hover:bg-amber-700 text-white">
+								<Trophy className="h-4 w-4" />
+								Reclamar logro en hack0
+							</Button>
+						</SignInButton>
+					)}
 				</div>
 
-				{isOwner && (
-					<>
-						{isSignedIn ? (
-							<Link href="/profile/achievements" className="w-full">
-								<Button className="w-full gap-2 bg-amber-600 hover:bg-amber-700 text-white">
-									<Trophy className="h-4 w-4" />
-									Ver logro
-								</Button>
-							</Link>
-						) : (
-							<SignInButton mode="modal">
-								<Button className="w-full gap-2 bg-amber-600 hover:bg-amber-700 text-white">
-									<Trophy className="h-4 w-4" />
-									Reclamar logro en hack0
-								</Button>
-							</SignInButton>
-						)}
-					</>
+				{unlockedAchievement && (
+					<AchievementUnlocked
+						achievement={unlockedAchievement}
+						onClose={() => setUnlockedAchievement(null)}
+					/>
 				)}
+			</>
+		);
+	}
 
-				{!isOwner && (
-					<Link href="/gift" className="w-full">
-						<Button
-							variant="outline"
-							className="w-full gap-2 border-green-500/50 text-green-400 hover:bg-green-500/10 hover:text-green-300"
-						>
-							<Gift className="h-4 w-4" />
-							Obtener mi regalo
-						</Button>
-					</Link>
+	return (
+		<div className="flex flex-col gap-2 w-full">
+			<Button
+				onClick={handleDownload}
+				disabled={isDownloading}
+				variant="outline"
+				className="w-full gap-2"
+				style={{
+					borderColor: GIFT_COLORS.border,
+					color: GIFT_COLORS.text,
+					backgroundColor: "transparent",
+				}}
+			>
+				{isDownloading ? (
+					<Loader2 className="h-4 w-4 animate-spin" />
+				) : (
+					<Download className="h-4 w-4" />
 				)}
-			</div>
+				{isDownloading ? "Descargando..." : "Descargar"}
+			</Button>
 
-			{unlockedAchievement && (
-				<AchievementUnlocked
-					achievement={unlockedAchievement}
-					onClose={() => setUnlockedAchievement(null)}
-				/>
-			)}
-		</>
+			<Link href="/gift" className="w-full">
+				<Button className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+					<Sparkles className="h-4 w-4" />
+					Reclama el tuyo
+				</Button>
+			</Link>
+		</div>
 	);
 }

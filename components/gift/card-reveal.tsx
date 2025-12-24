@@ -2,7 +2,8 @@
 
 import Atropos from "atropos/react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getStoredGiftToken } from "@/components/gift/gift-landing-client";
 import { BadgeRevealContent } from "../badge/badge-reveal-content";
 import { GiftActions } from "./gift-actions";
 import { GiftBox3D } from "./gift-box-3d";
@@ -34,10 +35,22 @@ export function CardReveal({
 	verticalLabel,
 	builderName,
 }: CardRevealProps) {
+	const [isOwner, setIsOwner] = useState<boolean | null>(null);
 	const [isFlipped, setIsFlipped] = useState(false);
 	const [revealComplete, setRevealComplete] = useState(false);
 
+	useEffect(() => {
+		const storedToken = getStoredGiftToken();
+		const ownerStatus = storedToken === token;
+		setIsOwner(ownerStatus);
+		if (!ownerStatus) {
+			setIsFlipped(true);
+			setRevealComplete(true);
+		}
+	}, [token]);
+
 	const handleClick = () => {
+		if (!isOwner) return;
 		setIsFlipped(!isFlipped);
 		if (!isFlipped) {
 			setTimeout(() => setRevealComplete(true), 3600);
@@ -53,14 +66,14 @@ export function CardReveal({
 		>
 			{/* Shake animation wrapper - moves everything including Atropos */}
 			<motion.div
-				className="w-full cursor-pointer"
+				className={`w-full ${isOwner ? "cursor-pointer" : "cursor-default"}`}
 				animate={{
-					rotateZ: isFlipped ? 0 : [0, -2, 2, -1, 1, 0],
+					rotateZ: isOwner && !isFlipped ? [0, -2, 2, -1, 1, 0] : 0,
 				}}
 				transition={{
 					rotateZ: {
 						duration: 0.5,
-						repeat: isFlipped ? 0 : Number.POSITIVE_INFINITY,
+						repeat: isOwner && !isFlipped ? Number.POSITIVE_INFINITY : 0,
 						repeatDelay: 2,
 						ease: "easeInOut",
 					},
@@ -181,7 +194,7 @@ export function CardReveal({
 			</motion.div>
 
 			{/* Social actions outside Atropos - only rendered when flipped */}
-			{isFlipped && (
+			{isFlipped && isOwner !== null && (
 				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{
@@ -196,6 +209,7 @@ export function CardReveal({
 						message={manifestoPhrase}
 						recipientName={builderName}
 						builderId={builderId}
+						isOwner={isOwner}
 					/>
 				</motion.div>
 			)}
