@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { GiftCardLayoutId } from "@/lib/gift/layouts";
 import type { GiftCardStyle } from "@/lib/gift/styles";
 import { GiftActions } from "./gift-actions";
+import { GiftBox3D } from "./gift-box-3d";
 import { GiftCardDisplay } from "./gift-card-display";
 
 const GIFT_COLORS = {
@@ -76,19 +77,28 @@ export function CardReveal({
 						)}
 						{/* Overlay with tap hint */}
 						<div
-							className="absolute inset-0 flex items-center justify-center"
-							style={{ backgroundColor: "rgba(10, 10, 15, 0.2)" }}
+							className="absolute inset-0 flex flex-col items-center justify-center"
+							style={{ backgroundColor: "rgba(10, 10, 15, 0.3)" }}
 						>
-							<div className="text-center" style={{ color: GIFT_COLORS.text }}>
-								<motion.div
-									animate={{ scale: [1, 1.1, 1] }}
-									transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-									className="text-5xl mb-3"
-								>
-									🎁
-								</motion.div>
-								<p className="text-sm font-medium">Toca para abrir</p>
-							</div>
+							<h2
+								className="!font-christmas text-5xl md:text-6xl mb-6"
+								style={{ color: GIFT_COLORS.text }}
+							>
+								Feliz Navidad
+							</h2>
+							<motion.div
+								animate={{ scale: [1, 1.05, 1] }}
+								transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+								className="mb-4"
+							>
+								<GiftBox3D size="lg" />
+							</motion.div>
+							<p
+								className="text-sm font-medium mt-8"
+								style={{ color: GIFT_COLORS.text }}
+							>
+								Toca para abrir
+							</p>
 						</div>
 					</div>
 

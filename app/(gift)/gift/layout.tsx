@@ -1,8 +1,15 @@
 import type { Metadata } from "next";
+import { Great_Vibes } from "next/font/google";
 import { DarkColorScheme } from "@/components/gift/dark-color-scheme";
 import { Snowfall } from "@/components/gift/snowfall";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+
+const greatVibes = Great_Vibes({
+	weight: "400",
+	subsets: ["latin"],
+	variable: "--font-great-vibes",
+});
 
 export const metadata: Metadata = {
 	title: {
@@ -42,7 +49,9 @@ export default function GiftLayout({
 	children: React.ReactNode;
 }) {
 	return (
-		<div className="dark min-h-screen flex flex-col relative overflow-hidden bg-background text-foreground">
+		<div
+			className={`${greatVibes.variable} dark min-h-screen flex flex-col relative overflow-hidden bg-background text-foreground`}
+		>
 			<DarkColorScheme />
 			<Snowfall />
 			<SiteHeader hideThemeToggle />
