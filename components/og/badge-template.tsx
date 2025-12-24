@@ -266,12 +266,34 @@ export function BadgeOGTemplate({
 
 					<div
 						style={{
-							fontSize: "36px",
-							color: "#fbbf24",
+							display: "flex",
+							alignItems: "center",
+							gap: "16px",
 							marginTop: "4px",
 						}}
 					>
-						❄️ Feliz Navidad 2025 ❄️
+						<div
+							style={{
+								width: "40px",
+								height: "3px",
+								backgroundColor: "#fbbf24",
+							}}
+						/>
+						<div
+							style={{
+								fontSize: "36px",
+								color: "#fbbf24",
+							}}
+						>
+							Feliz Navidad 2025
+						</div>
+						<div
+							style={{
+								width: "40px",
+								height: "3px",
+								backgroundColor: "#fbbf24",
+							}}
+						/>
 					</div>
 				</div>
 			</div>
