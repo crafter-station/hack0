@@ -91,7 +91,7 @@ function FollowButton({
 			className={`inline-flex items-center justify-center h-7 px-3 text-[11px] font-medium transition-colors ${
 				optimisticFollowing
 					? "bg-muted text-muted-foreground hover:bg-muted/80"
-					: "bg-foreground text-background hover:bg-foreground/90"
+					: "border border-foreground/50 text-foreground bg-transparent hover:bg-foreground hover:text-background"
 			} disabled:opacity-50`}
 		>
 			{isPending ? (
