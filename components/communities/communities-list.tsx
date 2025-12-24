@@ -12,7 +12,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useTransition } from "react";
 import { useInView } from "react-intersection-observer";
 import { toast } from "sonner";
 import { GithubLogo } from "@/components/logos/github";
@@ -21,6 +21,7 @@ import { LinkedinLogo } from "@/components/logos/linkedin";
 import { TwitterLogo } from "@/components/logos/twitter";
 import {
 	type CommunitiesResponse,
+	type OrderBy,
 	type PublicCommunity,
 	useCommunities,
 } from "@/hooks/use-communities";
@@ -32,8 +33,7 @@ interface CommunitiesListProps {
 	isAuthenticated: boolean;
 }
 
-type SortField = "name" | "type" | "contact" | "members";
-type SortDirection = "asc" | "desc";
+type SortColumn = "name" | "contact" | "members";
 
 function getContactCount(community: PublicCommunity): number {
 	let count = 0;
@@ -176,7 +176,13 @@ function CommunityRow({
 			</td>
 			<td className="py-2 pr-4 hidden xl:table-cell">
 				<div className="flex items-center gap-1.5">
-					<span className="text-muted-foreground tabular-nums min-w-[1ch]">
+					<span
+						className={`tabular-nums min-w-[1ch] ${
+							getContactCount(community) > 0
+								? "text-foreground"
+								: "text-muted-foreground/50"
+						}`}
+					>
 						{getContactCount(community)}
 					</span>
 					{community.websiteUrl && (
@@ -306,17 +312,38 @@ function LoadingRows() {
 	);
 }
 
+function getOrderByFromParams(orderBy: string | null): {
+	column: SortColumn | null;
+	direction: "asc" | "desc";
+} {
+	switch (orderBy) {
+		case "name":
+			return { column: "name", direction: "asc" };
+		case "contact":
+			return { column: "contact", direction: "desc" };
+		case "contact_asc":
+			return { column: "contact", direction: "asc" };
+		case "popular":
+			return { column: "members", direction: "desc" };
+		default:
+			return { column: null, direction: "desc" };
+	}
+}
+
 export function CommunitiesList({
 	initialData,
 	isAuthenticated,
 }: CommunitiesListProps) {
+	const router = useRouter();
 	const searchParams = useSearchParams();
-	const [sortField, setSortField] = useState<SortField>("members");
-	const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
 	const search = searchParams.get("search") || undefined;
 	const type = searchParams.get("type") || undefined;
 	const verifiedOnly = searchParams.get("verified") === "true";
+	const orderByParam = (searchParams.get("orderBy") as OrderBy) || "popular";
+
+	const { column: sortColumn, direction: sortDirection } =
+		getOrderByFromParams(orderByParam);
 
 	const {
 		data,
@@ -329,6 +356,7 @@ export function CommunitiesList({
 		search,
 		type,
 		verifiedOnly,
+		orderBy: orderByParam,
 		initialData,
 	});
 
@@ -344,50 +372,38 @@ export function CommunitiesList({
 	}, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
 	const communities = data?.pages.flatMap((page) => page.communities) ?? [];
-	// Dedupe communities by ID to avoid React key warnings
 	const uniqueCommunities = communities.filter(
 		(community, index, self) =>
 			index === self.findIndex((c) => c.id === community.id),
 	);
 
-	const sortedCommunities = useMemo(() => {
-		const result = [...uniqueCommunities];
-		result.sort((a, b) => {
-			let comparison = 0;
-			switch (sortField) {
-				case "name":
-					comparison = (a.displayName || a.name).localeCompare(
-						b.displayName || b.name,
-					);
-					break;
-				case "type":
-					comparison = (a.type || "").localeCompare(b.type || "");
-					break;
-				case "contact":
-					comparison = getContactCount(a) - getContactCount(b);
-					break;
-				case "members":
-					comparison = a.memberCount - b.memberCount;
-					break;
+	const handleSort = useCallback(
+		(column: SortColumn) => {
+			const params = new URLSearchParams(searchParams.toString());
+			let newOrderBy: OrderBy;
+
+			if (column === "name") {
+				newOrderBy = "name";
+			} else if (column === "members") {
+				newOrderBy = "popular";
+			} else if (column === "contact") {
+				if (sortColumn === "contact") {
+					newOrderBy = sortDirection === "desc" ? "contact_asc" : "contact";
+				} else {
+					newOrderBy = "contact";
+				}
+			} else {
+				newOrderBy = "popular";
 			}
-			return sortDirection === "asc" ? comparison : -comparison;
-		});
-		return result;
-	}, [uniqueCommunities, sortField, sortDirection]);
 
-	const handleSort = (field: SortField) => {
-		if (sortField === field) {
-			setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-		} else {
-			setSortField(field);
-			setSortDirection(
-				field === "members" || field === "contact" ? "desc" : "asc",
-			);
-		}
-	};
+			params.set("orderBy", newOrderBy);
+			router.push(`?${params.toString()}`, { scroll: false });
+		},
+		[router, searchParams, sortColumn, sortDirection],
+	);
 
-	const SortIcon = ({ field }: { field: SortField }) => {
-		if (sortField !== field)
+	const SortIcon = ({ column }: { column: SortColumn }) => {
+		if (sortColumn !== column)
 			return <ChevronDown className="h-2.5 w-2.5 opacity-30" />;
 		return sortDirection === "asc" ? (
 			<ChevronUp className="h-2.5 w-2.5" />
@@ -457,16 +473,11 @@ export function CommunitiesList({
 									onClick={() => handleSort("name")}
 									className="flex items-center gap-1 hover:text-foreground"
 								>
-									Comunidad <SortIcon field="name" />
+									Comunidad <SortIcon column="name" />
 								</button>
 							</th>
 							<th className="pb-2 pr-4 font-medium hidden md:table-cell">
-								<button
-									onClick={() => handleSort("type")}
-									className="flex items-center gap-1 hover:text-foreground"
-								>
-									Tipo <SortIcon field="type" />
-								</button>
+								Tipo
 							</th>
 							<th className="pb-2 pr-4 font-medium hidden lg:table-cell">
 								Ubicación
@@ -476,7 +487,7 @@ export function CommunitiesList({
 									onClick={() => handleSort("contact")}
 									className="flex items-center gap-1 hover:text-foreground"
 								>
-									Contacto <SortIcon field="contact" />
+									Contacto <SortIcon column="contact" />
 								</button>
 							</th>
 							<th className="pb-2 pr-4 font-medium hidden sm:table-cell">
@@ -484,7 +495,7 @@ export function CommunitiesList({
 									onClick={() => handleSort("members")}
 									className="flex items-center gap-1 hover:text-foreground"
 								>
-									Miembros <SortIcon field="members" />
+									Miembros <SortIcon column="members" />
 								</button>
 							</th>
 							<th className="pb-2 font-medium text-right">
@@ -493,7 +504,7 @@ export function CommunitiesList({
 						</tr>
 					</thead>
 					<tbody>
-						{sortedCommunities.map((community) => (
+						{uniqueCommunities.map((community) => (
 							<CommunityRow
 								key={community.id}
 								community={community}

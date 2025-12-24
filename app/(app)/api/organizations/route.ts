@@ -1,11 +1,13 @@
 import { auth } from "@clerk/nextjs/server";
-import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { communityMembers, organizations } from "@/lib/db/schema";
 
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 50;
+
+type OrderBy = "popular" | "recent" | "name" | "contact" | "contact_asc";
 
 export async function GET(request: NextRequest) {
 	try {
@@ -15,9 +17,7 @@ export async function GET(request: NextRequest) {
 		const search = searchParams.get("search") || undefined;
 		const type = searchParams.get("type") || undefined;
 		const verifiedOnly = searchParams.get("verified") === "true";
-		const orderBy =
-			(searchParams.get("orderBy") as "popular" | "recent" | "name") ||
-			"popular";
+		const orderBy = (searchParams.get("orderBy") as OrderBy) || "popular";
 		const limit = Math.min(
 			Number.parseInt(searchParams.get("limit") || String(DEFAULT_LIMIT), 10),
 			MAX_LIMIT,
@@ -96,6 +96,15 @@ export async function GET(request: NextRequest) {
 			.where(and(...conditions))
 			.$dynamic();
 
+		const contactCountSql = sql`(
+			CASE WHEN ${organizations.websiteUrl} IS NOT NULL THEN 1 ELSE 0 END +
+			CASE WHEN ${organizations.email} IS NOT NULL THEN 1 ELSE 0 END +
+			CASE WHEN ${organizations.twitterUrl} IS NOT NULL THEN 1 ELSE 0 END +
+			CASE WHEN ${organizations.linkedinUrl} IS NOT NULL THEN 1 ELSE 0 END +
+			CASE WHEN ${organizations.instagramUrl} IS NOT NULL THEN 1 ELSE 0 END +
+			CASE WHEN ${organizations.githubUrl} IS NOT NULL THEN 1 ELSE 0 END
+		)`;
+
 		// Apply ordering
 		if (orderBy === "popular") {
 			query = query.orderBy(
@@ -104,7 +113,11 @@ export async function GET(request: NextRequest) {
 		} else if (orderBy === "recent") {
 			query = query.orderBy(desc(organizations.createdAt));
 		} else if (orderBy === "name") {
-			query = query.orderBy(organizations.name);
+			query = query.orderBy(asc(organizations.name));
+		} else if (orderBy === "contact") {
+			query = query.orderBy(desc(contactCountSql));
+		} else if (orderBy === "contact_asc") {
+			query = query.orderBy(asc(contactCountSql));
 		}
 
 		const communities = await query.limit(limit).offset(offset);

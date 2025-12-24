@@ -29,11 +29,13 @@ export interface CommunitiesResponse {
 	hasMore: boolean;
 }
 
+export type OrderBy = "popular" | "recent" | "name" | "contact" | "contact_asc";
+
 export interface UseCommunitiesParams {
 	search?: string;
 	type?: string;
 	verifiedOnly?: boolean;
-	orderBy?: "popular" | "recent" | "name";
+	orderBy?: OrderBy;
 	limit?: number;
 	initialData?: CommunitiesResponse;
 }
