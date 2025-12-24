@@ -95,19 +95,17 @@ export default async function GiftCardPage({ params }: CardPageProps) {
 		: "";
 
 	return (
-		<div className="min-h-[calc(100vh-120px)] flex flex-col items-center justify-center px-4 py-6">
-			<CardReveal
-				token={token}
-				builderId={card.builderId || 0}
-				generatedImageUrl={card.generatedImageUrl}
-				generatedBackgroundUrl={card.generatedBackgroundUrl}
-				coverBackgroundUrl={
-					card.coverBackgroundUrl || card.generatedBackgroundUrl
-				}
-				manifestoPhrase={card.message}
-				verticalLabel={card.verticalLabel || "BUILDER"}
-				builderName={card.recipientName || undefined}
-			/>
-		</div>
+		<CardReveal
+			token={token}
+			builderId={card.builderId || 0}
+			generatedImageUrl={card.generatedImageUrl}
+			generatedBackgroundUrl={card.generatedBackgroundUrl}
+			coverBackgroundUrl={
+				card.coverBackgroundUrl || card.generatedBackgroundUrl
+			}
+			manifestoPhrase={card.message}
+			verticalLabel={card.verticalLabel || "BUILDER"}
+			builderName={card.recipientName || undefined}
+		/>
 	);
 }

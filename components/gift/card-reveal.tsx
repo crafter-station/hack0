@@ -46,11 +46,10 @@ export function CardReveal({
 
 	return (
 		<motion.div
-			className="flex flex-col items-center gap-4 w-full max-w-sm mx-auto"
+			className="min-h-[calc(100vh-120px)] flex flex-col items-center gap-4 w-full max-w-sm mx-auto px-4 py-6"
 			animate={{
 				justifyContent: isFlipped ? "flex-start" : "center",
 			}}
-			style={{ minHeight: "100%" }}
 		>
 			{/* Shake animation wrapper - moves everything including Atropos */}
 			<motion.div
