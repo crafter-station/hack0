@@ -4,6 +4,7 @@ import Link from "next/link";
 import { SearchTrigger } from "@/components/search-command";
 import { isGodMode } from "@/lib/god-mode";
 import { CreateButtonGroup } from "./create-button-group";
+import { GithubStars } from "./github-stars";
 import { MainNav } from "./main-nav";
 import { MobileNav } from "./mobile-nav";
 import { UserDropdown } from "./user-dropdown";
@@ -67,7 +68,9 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 						)}
 						<Link href="/" className="flex items-center gap-2">
 							<span className="flex items-center">
-								<span className="text-sm font-semibold tracking-tight">hack0</span>
+								<span className="text-sm font-semibold tracking-tight">
+									hack0
+								</span>
 								<span className="text-sm text-muted-foreground">.dev</span>
 							</span>
 							<span className="font-mono text-[10px] font-medium uppercase tracking-wider text-violet-500 border border-violet-500/30 px-1.5 py-0.5 rounded-sm">
@@ -77,6 +80,7 @@ export async function SiteHeader({ showBackButton = false }: SiteHeaderProps) {
 						<MainNav />
 					</div>
 					<div className="flex items-center gap-2">
+						<GithubStars />
 						<SearchTrigger />
 						<SignedOut>
 							<Link

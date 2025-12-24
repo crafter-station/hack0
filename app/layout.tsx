@@ -10,7 +10,6 @@ import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/(app)/api/uploadthing/core";
-import { GithubBadge } from "@/components/github-badge";
 import { GlobalSearch } from "@/components/global-search";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeSelector } from "@/components/theme-selector";
@@ -205,7 +204,6 @@ export default function RootLayout({
 							</PostHogProvider>
 							<GlobalSearch />
 							<ThemeSelector />
-							<GithubBadge />
 						</QueryProvider>
 					</ThemeProvider>
 					<Analytics />
