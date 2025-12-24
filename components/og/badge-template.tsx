@@ -51,6 +51,15 @@ export function BadgeOGTemplate({
 				}}
 			/>
 
+			<div
+				style={{
+					position: "absolute",
+					inset: "0",
+					background:
+						"linear-gradient(to right, rgba(10, 10, 15, 0.8) 0%, rgba(10, 10, 15, 0.4) 8%, transparent 15%)",
+				}}
+			/>
+
 			<svg
 				width="80"
 				height="80"

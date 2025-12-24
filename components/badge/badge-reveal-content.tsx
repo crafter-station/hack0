@@ -13,6 +13,7 @@ interface BadgeRevealContentProps {
 	verticalLabel: string;
 	builderName?: string;
 	startReveal?: boolean;
+	hideActions?: boolean;
 }
 
 export function BadgeRevealContent({
@@ -24,6 +25,7 @@ export function BadgeRevealContent({
 	verticalLabel,
 	builderName,
 	startReveal = true,
+	hideActions = false,
 }: BadgeRevealContentProps) {
 	const [stage, setStage] = useState(0);
 	const badgeRef = useRef<HTMLDivElement>(null);
@@ -231,27 +233,29 @@ export function BadgeRevealContent({
 				</div>
 			</div>
 
-			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{
-					opacity: stage >= 6 ? 1 : 0,
-					y: stage >= 6 ? 0 : 10,
-				}}
-				transition={{ duration: 0.3, delay: 0.5 }}
-				className="w-full"
-				onClick={(e) => e.stopPropagation()}
-			>
-				{stage >= 6 && (
-					<GiftActions
-						token={token}
-						generatedImageUrl={generatedImageUrl}
-						message={manifestoPhrase}
-						recipientName={builderName}
-						builderId={builderId}
-						badgeRef={badgeRef}
-					/>
-				)}
-			</motion.div>
+			{!hideActions && (
+				<motion.div
+					initial={{ opacity: 0, y: 10 }}
+					animate={{
+						opacity: stage >= 6 ? 1 : 0,
+						y: stage >= 6 ? 0 : 10,
+					}}
+					transition={{ duration: 0.3, delay: 0.5 }}
+					className="w-full"
+					onClick={(e) => e.stopPropagation()}
+				>
+					{stage >= 6 && (
+						<GiftActions
+							token={token}
+							generatedImageUrl={generatedImageUrl}
+							message={manifestoPhrase}
+							recipientName={builderName}
+							builderId={builderId}
+							badgeRef={badgeRef}
+						/>
+					)}
+				</motion.div>
+			)}
 		</div>
 	);
 }

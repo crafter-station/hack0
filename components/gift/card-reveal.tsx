@@ -2,8 +2,9 @@
 
 import Atropos from "atropos/react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { BadgeRevealContent } from "../badge/badge-reveal-content";
+import { GiftActions } from "./gift-actions";
 import { GiftBox3D } from "./gift-box-3d";
 
 const GIFT_COLORS = {
@@ -34,6 +35,8 @@ export function CardReveal({
 	builderName,
 }: CardRevealProps) {
 	const [isFlipped, setIsFlipped] = useState(false);
+	const [revealComplete, setRevealComplete] = useState(false);
+	const badgeRef = useRef<HTMLDivElement>(null);
 
 	return (
 		<div className="flex flex-col items-center gap-4 w-full max-w-sm mx-auto">
@@ -66,6 +69,11 @@ export function CardReveal({
 							},
 						}}
 						style={{ transformStyle: "preserve-3d" }}
+						onAnimationComplete={() => {
+							if (isFlipped) {
+								setTimeout(() => setRevealComplete(true), 3000);
+							}
+						}}
 					>
 						{/* Back of card - AI background as cover */}
 						<div
@@ -134,6 +142,7 @@ export function CardReveal({
 
 						{/* Front of card - Badge */}
 						<div
+							ref={badgeRef}
 							className="absolute inset-0 w-full backface-hidden"
 							style={{
 								backfaceVisibility: "hidden",
@@ -149,11 +158,34 @@ export function CardReveal({
 								verticalLabel={verticalLabel}
 								builderName={builderName}
 								startReveal={isFlipped}
+								hideActions={true}
 							/>
 						</div>
 					</motion.div>
 				</div>
 			</Atropos>
+
+			{/* Social actions outside Atropos */}
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{
+					opacity: revealComplete ? 1 : 0,
+					y: revealComplete ? 0 : 10,
+				}}
+				transition={{ duration: 0.3 }}
+				className="w-full"
+			>
+				{revealComplete && (
+					<GiftActions
+						token={token}
+						generatedImageUrl={generatedImageUrl}
+						message={manifestoPhrase}
+						recipientName={builderName}
+						builderId={builderId}
+						badgeRef={badgeRef}
+					/>
+				)}
+			</motion.div>
 		</div>
 	);
 }
