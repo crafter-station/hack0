@@ -1,7 +1,7 @@
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { GiftPromoBanner } from "@/components/gift/gift-promo-banner";
+import { GiftBanner } from "@/components/gift/gift-banner";
 import { SearchTrigger } from "@/components/search-command";
 import { isGodMode } from "@/lib/god-mode";
 import { CreateButtonGroup } from "./create-button-group";
@@ -56,7 +56,7 @@ export async function SiteHeader({
 
 	return (
 		<>
-			<GiftPromoBanner />
+			<GiftBanner />
 			<header className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur-sm">
 				<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
 					<div className="flex h-11 items-center justify-between">
