@@ -10,17 +10,14 @@ const BANNER_EXPIRY_DATE = new Date("2025-01-06T00:00:00Z");
 
 export function GiftPromoBanner() {
 	const pathname = usePathname();
-	const [isVisible, setIsVisible] = useState(false);
+	const [isDismissed, setIsDismissed] = useState(false);
+	const [isClient, setIsClient] = useState(false);
 
 	useEffect(() => {
-		if (new Date() > BANNER_EXPIRY_DATE) {
-			setIsVisible(false);
-			return;
-		}
-
+		setIsClient(true);
 		const dismissed = localStorage.getItem(BANNER_DISMISSED_KEY);
-		if (!dismissed) {
-			setIsVisible(true);
+		if (dismissed) {
+			setIsDismissed(true);
 		}
 	}, []);
 
@@ -28,10 +25,12 @@ export function GiftPromoBanner() {
 		e.preventDefault();
 		e.stopPropagation();
 		localStorage.setItem(BANNER_DISMISSED_KEY, "true");
-		setIsVisible(false);
+		setIsDismissed(true);
 	};
 
-	if (!isVisible) return null;
+	if (!isClient) return null;
+	if (new Date() > BANNER_EXPIRY_DATE) return null;
+	if (isDismissed) return null;
 	if (pathname?.startsWith("/gift")) return null;
 
 	return (
