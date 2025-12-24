@@ -175,25 +175,23 @@ export function CardReveal({
 				</Atropos>
 			</motion.div>
 
-			{/* Social actions outside Atropos */}
+			{/* Social actions outside Atropos - always rendered to prevent layout shift */}
 			<motion.div
-				initial={{ opacity: 0, y: 10 }}
+				initial={{ opacity: 0 }}
 				animate={{
 					opacity: revealComplete ? 1 : 0,
-					y: revealComplete ? 0 : 10,
+					pointerEvents: revealComplete ? "auto" : "none",
 				}}
 				transition={{ duration: 0.3 }}
 				className="w-full"
 			>
-				{revealComplete && (
-					<GiftActions
-						token={token}
-						generatedImageUrl={generatedImageUrl}
-						message={manifestoPhrase}
-						recipientName={builderName}
-						builderId={builderId}
-					/>
-				)}
+				<GiftActions
+					token={token}
+					generatedImageUrl={generatedImageUrl}
+					message={manifestoPhrase}
+					recipientName={builderName}
+					builderId={builderId}
+				/>
 			</motion.div>
 		</div>
 	);
