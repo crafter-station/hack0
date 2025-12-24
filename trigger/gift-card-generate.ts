@@ -1,16 +1,28 @@
 import { fal } from "@fal-ai/client";
 import { metadata, task } from "@trigger.dev/sdk/v3";
 import { generateText } from "ai";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { db } from "@/lib/db";
 import { giftCards } from "@/lib/db/schema";
+import {
+	getManifestoPrompt,
+	type ManifestoResult,
+	VERTICAL_LABEL_EXAMPLES,
+} from "@/lib/gift/manifesto";
 import {
 	BACKGROUND_PROMPTS,
 	type BackgroundMood,
 	type GiftCardStyle,
 	STYLE_PROMPTS,
 } from "@/lib/gift/styles";
+
+async function getNextBuilderId(): Promise<number> {
+	const result = await db
+		.select({ maxId: sql<number>`COALESCE(MAX(builder_id), 0)` })
+		.from(giftCards);
+	return (result[0]?.maxId || 0) + 1;
+}
 
 export const generateGiftCardTask = task({
 	id: "generate-gift-card",
@@ -25,39 +37,47 @@ export const generateGiftCardTask = task({
 	}) => {
 		const { cardId, photoUrl, recipientName, style, backgroundMood } = payload;
 
-		metadata.set("step", "generating_images");
+		metadata.set("step", "initializing");
 		metadata.set("cardId", cardId);
 
 		try {
+			const builderId = await getNextBuilderId();
+			metadata.set("builderId", builderId);
+
 			await db
 				.update(giftCards)
-				.set({ status: "generating" })
+				.set({ status: "generating", builderId })
 				.where(eq(giftCards.id, cardId));
 
 			fal.config({ credentials: process.env.FAL_API_KEY });
 
-			metadata.set("step", "generating_portrait_and_background");
+			metadata.set("step", "generating_all_parallel");
 
-			const [portraitResult, backgroundResult] = await Promise.all([
-				fal.subscribe("fal-ai/gpt-image-1.5/edit", {
-					input: {
-						prompt: STYLE_PROMPTS[style],
-						image_urls: [photoUrl],
-						image_size: "1024x1024",
-						quality: "high",
-						input_fidelity: "high",
-					},
-				}),
-				fal.subscribe("fal-ai/gpt-image-1.5", {
-					input: {
-						prompt: BACKGROUND_PROMPTS[backgroundMood],
-						image_size: "1024x1024",
-						quality: "high",
-					},
-				}),
-			]);
+			const [portraitResult, backgroundResult, manifestoResult] =
+				await Promise.all([
+					fal.subscribe("fal-ai/gpt-image-1.5/edit", {
+						input: {
+							prompt: STYLE_PROMPTS[style],
+							image_urls: [photoUrl],
+							image_size: "1024x1024",
+							quality: "high",
+							input_fidelity: "high",
+						},
+					}),
+					fal.subscribe("fal-ai/gpt-image-1.5", {
+						input: {
+							prompt: BACKGROUND_PROMPTS[backgroundMood],
+							image_size: "1024x1024",
+							quality: "high",
+						},
+					}),
+					generateText({
+						model: "openai/gpt-4o-mini",
+						prompt: getManifestoPrompt(recipientName),
+					}),
+				]);
 
-			const generatedImageUrl = (
+			const rawPortraitUrl = (
 				portraitResult.data as { images: Array<{ url: string }> }
 			).images[0].url;
 
@@ -65,30 +85,40 @@ export const generateGiftCardTask = task({
 				backgroundResult.data as { images: Array<{ url: string }> }
 			).images[0].url;
 
-			metadata.set("generatedImageUrl", generatedImageUrl);
-			metadata.set("generatedBackgroundUrl", generatedBackgroundUrl);
-			metadata.set("step", "generating_message");
+			metadata.set("step", "removing_background");
 
-			const messageResult = await generateText({
-				model: "openai/gpt-5-nano",
-				prompt: `Escribe un mensaje navideño de hack0 para ${recipientName || "un builder"}.
-Contexto: hack0.dev mapea el ecosistema tech de LATAM. Empezamos por Perú y en 2026 expandimos a toda LATAM.
-Objetivo: Invitar a que nos acompañe en 2026 a mapear y conectar la comunidad tech.
-
-Reglas:
-- Máximo 25 palabras
-- Tono: cálido pero con propósito, como un amigo que te invita a un proyecto importante
-- Menciona sutilmente el 2026 y el mapeo/conexión del ecosistema tech
-- Evita clichés navideños genéricos
-- Hazlo sentir parte de algo más grande
-
-Ejemplos de tono:
-- "En 2026 seguimos mapeando juntos. Gracias por ser parte de esta comunidad."
-- "Este 2026, la misión continúa. ¿Nos acompañas a conectar LATAM?"
-
-Responde SOLO el mensaje, nada más.`,
+			const rmbgResult = await fal.subscribe("fal-ai/rmbg-v2", {
+				input: {
+					image_url: rawPortraitUrl,
+				},
 			});
 
+			const generatedImageUrl = (rmbgResult.data as { image: { url: string } })
+				.image.url;
+
+			let manifesto: ManifestoResult;
+			try {
+				let jsonText = manifestoResult.text.trim();
+				if (jsonText.startsWith("```")) {
+					jsonText = jsonText
+						.replace(/^```(?:json)?\s*/i, "")
+						.replace(/```\s*$/, "");
+				}
+				manifesto = JSON.parse(jsonText) as ManifestoResult;
+			} catch {
+				manifesto = {
+					phrase: manifestoResult.text.trim(),
+					verticalLabel:
+						VERTICAL_LABEL_EXAMPLES[
+							Math.floor(Math.random() * VERTICAL_LABEL_EXAMPLES.length)
+						],
+				};
+			}
+
+			metadata.set("generatedImageUrl", generatedImageUrl);
+			metadata.set("generatedBackgroundUrl", generatedBackgroundUrl);
+			metadata.set("manifesto", manifesto.phrase);
+			metadata.set("verticalLabel", manifesto.verticalLabel);
 			metadata.set("step", "uploading_final");
 
 			const utapi = new UTApi();
@@ -106,7 +136,8 @@ Responde SOLO el mensaje, nada más.`,
 				.set({
 					generatedImageUrl: finalImageUrl,
 					generatedBackgroundUrl: finalBackgroundUrl,
-					message: messageResult.text,
+					message: manifesto.phrase,
+					verticalLabel: manifesto.verticalLabel,
 					status: "completed",
 					completedAt: new Date(),
 				})
@@ -119,9 +150,11 @@ Responde SOLO el mensaje, nada más.`,
 			return {
 				success: true,
 				cardId,
+				builderId,
 				generatedImageUrl: finalImageUrl,
 				generatedBackgroundUrl: finalBackgroundUrl,
-				message: messageResult.text,
+				message: manifesto.phrase,
+				verticalLabel: manifesto.verticalLabel,
 			};
 		} catch (error) {
 			const errorMessage =

@@ -8,15 +8,16 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 const PHASES = [
-	{ time: 0, message: "Preparando tu regalo", icon: "🎁" },
-	{ time: 8, message: "Creando el ambiente", icon: "✨" },
-	{ time: 16, message: "Dibujando tu retrato", icon: "🎨" },
-	{ time: 24, message: "Añadiendo magia", icon: "🪄" },
-	{ time: 32, message: "Escribiendo tu mensaje", icon: "✍️" },
-	{ time: 40, message: "Últimos detalles", icon: "🎄" },
+	{ time: 0, message: "Los duendes despiertan", icon: "🧝" },
+	{ time: 6, message: "Buscando tu nombre en la lista", icon: "📜" },
+	{ time: 12, message: "Pintando tu retrato mágico", icon: "🎨" },
+	{ time: 20, message: "Espolvoreando nieve", icon: "❄️" },
+	{ time: 28, message: "Decorando el árbol", icon: "🎄" },
+	{ time: 36, message: "Escribiendo tu carta", icon: "✉️" },
+	{ time: 44, message: "Envolviendo tu regalo", icon: "🎁" },
 ];
 
-const ESTIMATED_DURATION = 65;
+const ESTIMATED_DURATION = 55;
 
 const GIFT_COLORS = {
 	text: "#fafafa",
@@ -90,10 +91,10 @@ export function GiftLoading({ token }: GiftLoadingProps) {
 						className="text-lg font-semibold mb-1"
 						style={{ color: GIFT_COLORS.text }}
 					>
-						Algo salió mal
+						¡Oh no! El regalo se perdió
 					</h2>
 					<p className="text-sm" style={{ color: GIFT_COLORS.textMuted }}>
-						No pudimos crear tu tarjeta. Por favor, intenta de nuevo.
+						Los renos tuvieron un pequeño accidente. Intentemos de nuevo.
 					</p>
 				</div>
 				<Button
@@ -101,7 +102,7 @@ export function GiftLoading({ token }: GiftLoadingProps) {
 					variant="outline"
 					style={{ borderColor: GIFT_COLORS.border, color: GIFT_COLORS.text }}
 				>
-					Intentar de nuevo
+					Pedir otro regalo 🎁
 				</Button>
 			</div>
 		);
@@ -157,7 +158,7 @@ export function GiftLoading({ token }: GiftLoadingProps) {
 						className="text-xs"
 						style={{ color: "rgba(250, 250, 250, 0.4)" }}
 					>
-						Esto puede tardar hasta un minuto
+						Santa está muy ocupado esta noche...
 					</motion.p>
 				)}
 			</div>

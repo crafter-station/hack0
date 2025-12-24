@@ -2,11 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
-import type { GiftCardLayoutId } from "@/lib/gift/layouts";
-import type { GiftCardStyle } from "@/lib/gift/styles";
-import { GiftActions } from "./gift-actions";
+import { BadgeRevealContent } from "../badge/badge-reveal-content";
 import { GiftBox3D } from "./gift-box-3d";
-import { GiftCardDisplay } from "./gift-card-display";
 
 const GIFT_COLORS = {
 	bg: "#0a0a0f",
@@ -16,22 +13,22 @@ const GIFT_COLORS = {
 
 interface CardRevealProps {
 	token: string;
+	builderId: number;
 	generatedImageUrl: string;
 	generatedBackgroundUrl?: string;
-	message: string;
-	recipientName?: string;
-	layoutId: GiftCardLayoutId;
-	style: GiftCardStyle;
+	manifestoPhrase: string;
+	verticalLabel: string;
+	builderName?: string;
 }
 
 export function CardReveal({
 	token,
+	builderId,
 	generatedImageUrl,
 	generatedBackgroundUrl,
-	message,
-	recipientName,
-	layoutId,
-	style,
+	manifestoPhrase,
+	verticalLabel,
+	builderName,
 }: CardRevealProps) {
 	const [isFlipped, setIsFlipped] = useState(false);
 
@@ -60,7 +57,7 @@ export function CardReveal({
 				>
 					{/* Back of card - AI background as cover */}
 					<div
-						className="w-full aspect-[3/4] overflow-hidden backface-hidden relative"
+						className="w-full aspect-[4/5] overflow-hidden backface-hidden relative rounded-lg ring-2 ring-white/50"
 						style={{ backfaceVisibility: "hidden" }}
 					>
 						{generatedBackgroundUrl ? (
@@ -102,7 +99,7 @@ export function CardReveal({
 						</div>
 					</div>
 
-					{/* Front of card */}
+					{/* Front of card - Badge */}
 					<div
 						className="absolute inset-0 w-full backface-hidden"
 						style={{
@@ -110,44 +107,19 @@ export function CardReveal({
 							transform: "rotateY(180deg)",
 						}}
 					>
-						<GiftCardDisplay
+						<BadgeRevealContent
+							token={token}
+							builderId={builderId}
 							generatedImageUrl={generatedImageUrl}
 							generatedBackgroundUrl={generatedBackgroundUrl}
-							message={message}
-							recipientName={recipientName}
-							layoutId={layoutId}
-							style={style}
+							manifestoPhrase={manifestoPhrase}
+							verticalLabel={verticalLabel}
+							builderName={builderName}
+							startReveal={isFlipped}
 						/>
 					</div>
 				</motion.div>
 			</div>
-
-			{/* Hint when not flipped */}
-			{!isFlipped && (
-				<p className="text-xs" style={{ color: GIFT_COLORS.textMuted }}>
-					Toca la tarjeta para revelar tu regalo
-				</p>
-			)}
-
-			{/* Actions after flip */}
-			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{
-					opacity: isFlipped ? 1 : 0,
-					y: isFlipped ? 0 : 10,
-				}}
-				transition={{ duration: 0.3, delay: 0.3 }}
-				className="w-full"
-			>
-				{isFlipped && (
-					<GiftActions
-						token={token}
-						generatedImageUrl={generatedImageUrl}
-						message={message}
-						recipientName={recipientName}
-					/>
-				)}
-			</motion.div>
 		</div>
 	);
 }

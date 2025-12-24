@@ -1503,6 +1503,8 @@ export const giftCards = pgTable("gift_cards", {
 	status: giftCardStatusEnum("status").default("pending"),
 	errorMessage: text("error_message"),
 	shareToken: varchar("share_token", { length: 64 }).unique().notNull(),
+	builderId: integer("builder_id").unique(),
+	verticalLabel: varchar("vertical_label", { length: 20 }),
 	userId: varchar("user_id", { length: 255 }),
 	triggerRunId: varchar("trigger_run_id", { length: 255 }),
 	createdAt: timestamp("created_at", {

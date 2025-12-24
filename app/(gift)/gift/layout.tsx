@@ -13,32 +13,32 @@ const greatVibes = Great_Vibes({
 
 export const metadata: Metadata = {
 	title: {
-		default: "Regalo de Navidad 2025",
-		template: "%s | Regalo de Navidad 2025",
+		default: "Builder LATAM 2025",
+		template: "%s | Builder LATAM 2025",
 	},
 	description:
-		"Recibe tu tarjeta de Navidad personalizada con IA. Un pequeño regalo de hack0.dev para ti.",
+		"Genera tu Builder Badge 2025. Un regalo de Navidad de hack0.dev para la comunidad tech de LATAM.",
 	keywords: [
-		"tarjeta navidad",
+		"builder latam",
+		"tech latam",
 		"navidad 2025",
-		"regalo navidad",
-		"tarjeta personalizada",
-		"ia navidad",
-		"hack0 navidad",
+		"badge builder",
+		"hack0",
+		"ecosistema tech",
 	],
 	openGraph: {
-		title: "Regalo de Navidad 2025 | hack0.dev",
+		title: "Builder LATAM 2025 | hack0.dev",
 		description:
-			"Recibe tu tarjeta de Navidad personalizada con IA. Un pequeño regalo de hack0.dev para ti.",
+			"Genera tu Builder Badge 2025. Un regalo de Navidad de hack0.dev para la comunidad tech de LATAM.",
 		images: ["/og-gift.png"],
 		type: "website",
 		locale: "es_PE",
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Regalo de Navidad 2025 | hack0.dev",
+		title: "Builder LATAM 2025 | hack0.dev",
 		description:
-			"Recibe tu tarjeta de Navidad personalizada con IA. Un pequeño regalo de hack0.dev para ti.",
+			"Genera tu Builder Badge 2025. Un regalo de Navidad de hack0.dev para la comunidad tech de LATAM.",
 		images: ["/og-gift.png"],
 	},
 };

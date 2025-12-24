@@ -61,6 +61,7 @@
 		"feed": "^5.1.0",
 		"framer-motion": "^12.23.25",
 		"geist": "latest",
+		"html-to-image": "^1.11.13",
 		"input-otp": "^1.4.2",
 		"lucide-react": "^0.556.0",
 		"nanoid": "^5.1.6",
