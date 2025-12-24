@@ -3,6 +3,7 @@
 import { ImagePlus, Loader2, Upload, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { setStoredGiftToken } from "@/components/gift/gift-landing-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -58,6 +59,7 @@ export function PhotoUpload() {
 			if (!response.ok) throw new Error("Failed to generate");
 
 			const { token } = await response.json();
+			setStoredGiftToken(token);
 			router.push(`/gift/loading/${token}`);
 		} catch (error) {
 			console.error("Generation error:", error);

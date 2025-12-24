@@ -3,8 +3,9 @@
 import { SignInButton, useAuth } from "@clerk/nextjs";
 import { Check, Download, Gift, Loader2, Share2, Trophy } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AchievementUnlocked } from "@/components/achievements/achievement-unlocked";
+import { getStoredGiftToken } from "@/components/gift/gift-landing-client";
 import { LinkedinLogo } from "@/components/logos/linkedin";
 import { Button } from "@/components/ui/button";
 
@@ -44,6 +45,12 @@ export function GiftActions({
 	const [isDownloading, setIsDownloading] = useState(false);
 	const [unlockedAchievement, setUnlockedAchievement] =
 		useState<UnlockedAchievement | null>(null);
+	const [isOwner, setIsOwner] = useState(false);
+
+	useEffect(() => {
+		const storedToken = getStoredGiftToken();
+		setIsOwner(storedToken === token);
+	}, [token]);
 
 	const formattedId = builderId
 		? `#${builderId.toString().padStart(4, "0")}`
@@ -187,47 +194,53 @@ export function GiftActions({
 					</Button>
 				</div>
 
-				{isSignedIn ? (
-					<Button
-						onClick={handleSave}
-						disabled={isSaving || isSaved}
-						className="w-full gap-2 bg-amber-600 hover:bg-amber-700 text-white"
-					>
-						{isSaving ? (
-							<>
-								<Loader2 className="h-4 w-4 animate-spin" />
-								Guardando...
-							</>
-						) : isSaved ? (
-							<>
-								<Check className="h-4 w-4" />
-								Badge guardado
-							</>
+				{isOwner && (
+					<>
+						{isSignedIn ? (
+							<Button
+								onClick={handleSave}
+								disabled={isSaving || isSaved}
+								className="w-full gap-2 bg-amber-600 hover:bg-amber-700 text-white"
+							>
+								{isSaving ? (
+									<>
+										<Loader2 className="h-4 w-4 animate-spin" />
+										Guardando...
+									</>
+								) : isSaved ? (
+									<>
+										<Check className="h-4 w-4" />
+										Logro desbloqueado
+									</>
+								) : (
+									<>
+										<Trophy className="h-4 w-4" />
+										Reclamar logro en hack0
+									</>
+								)}
+							</Button>
 						) : (
-							<>
-								<Trophy className="h-4 w-4" />
-								Guardar badge
-							</>
+							<SignInButton mode="modal">
+								<Button className="w-full gap-2 bg-amber-600 hover:bg-amber-700 text-white">
+									<Trophy className="h-4 w-4" />
+									Reclamar logro en hack0
+								</Button>
+							</SignInButton>
 						)}
-					</Button>
-				) : (
-					<SignInButton mode="modal">
-						<Button className="w-full gap-2 bg-amber-600 hover:bg-amber-700 text-white">
-							<Trophy className="h-4 w-4" />
-							Guardar badge
-						</Button>
-					</SignInButton>
+					</>
 				)}
 
-				<Link href="/gift" className="w-full">
-					<Button
-						variant="outline"
-						className="w-full gap-2 border-green-500/50 text-green-400 hover:bg-green-500/10 hover:text-green-300"
-					>
-						<Gift className="h-4 w-4" />
-						Obtener mi regalo
-					</Button>
-				</Link>
+				{!isOwner && (
+					<Link href="/gift" className="w-full">
+						<Button
+							variant="outline"
+							className="w-full gap-2 border-green-500/50 text-green-400 hover:bg-green-500/10 hover:text-green-300"
+						>
+							<Gift className="h-4 w-4" />
+							Obtener mi regalo
+						</Button>
+					</Link>
+				)}
 			</div>
 
 			{unlockedAchievement && (

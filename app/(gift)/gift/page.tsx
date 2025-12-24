@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import GiftBox from "@/components/gift-box";
+import { GiftLandingClient } from "@/components/gift/gift-landing-client";
 
 export const metadata: Metadata = {
 	title: "Recibe tu regalo",
@@ -8,13 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function GiftLandingPage() {
-	return (
-		<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
-			<div className="flex flex-col items-center justify-center min-h-[70vh] py-12">
-				<div className="relative w-full h-[50vh] min-h-[300px]">
-					<GiftBox />
-				</div>
-			</div>
-		</div>
-	);
+	return <GiftLandingClient />;
 }
