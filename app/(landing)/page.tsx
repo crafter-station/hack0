@@ -1,3 +1,4 @@
+import { GiftBanner } from "@/components/gift/gift-banner";
 import { CTASection } from "@/components/landing/cta-section";
 import { EventsPreviewSection } from "@/components/landing/events-preview-section";
 import { FAQSection } from "@/components/landing/faq-section";
@@ -16,6 +17,7 @@ export default async function HomePage() {
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
+			<GiftBanner />
 			<SiteHeader />
 
 			<HeroSection stats={stats} departmentsWithEvents={departmentsWithEvents} countriesWithEvents={countriesWithEvents} />
