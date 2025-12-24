@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useMounted } from "@/hooks/use-mounted";
 import { convertTinteToShadcn, type TinteTheme } from "@/lib/tinte-to-shadcn";
 import type { FontInfo } from "@/types/fonts";
 
@@ -54,6 +55,7 @@ export function ThemeSelector({ onThemeChange }: ThemeSelectorProps) {
 	const [loading, setLoading] = useState(false);
 	const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
 	const [_currentPage, setCurrentPage] = useState(1);
+	const mounted = useMounted();
 
 	const [bodyFont, setBodyFont] = useState<string>("Geist");
 	const [headingFont, setHeadingFont] = useState<string>("Geist");
@@ -200,6 +202,10 @@ export function ThemeSelector({ onThemeChange }: ThemeSelectorProps) {
 		},
 		[fetchThemes],
 	);
+
+	if (!mounted) {
+		return null;
+	}
 
 	return (
 		<Drawer open={open} onOpenChange={setOpen}>
