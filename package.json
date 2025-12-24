@@ -47,6 +47,7 @@
 		"@uploadthing/react": "^7.3.3",
 		"@vercel/analytics": "^1.5.0",
 		"ai": "^5.0.108",
+		"atropos": "^2.0.2",
 		"autoprefixer": "^10.4.22",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
