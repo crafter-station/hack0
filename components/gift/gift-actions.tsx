@@ -105,14 +105,22 @@ export function GiftActions({
 		}
 	};
 
+	const getShareUrl = () => {
+		const baseUrl =
+			process.env.NODE_ENV === "production"
+				? "https://hack0.dev"
+				: window.location.origin;
+		return `${baseUrl}/gift/card/${token}`;
+	};
+
 	const handleShareLinkedIn = () => {
-		const shareUrl = `${window.location.origin}/gift/card/${token}`;
+		const shareUrl = "https://hack0.dev/gift/card/" + token;
 		const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
 		window.open(linkedInUrl, "_blank", "noopener,noreferrer");
 	};
 
 	const handleShare = async () => {
-		const shareUrl = `${window.location.origin}/gift/card/${token}`;
+		const shareUrl = getShareUrl();
 		const shareText = `HACK0.DEV 2025 ${formattedId} - "${message}"`;
 
 		if (navigator.share) {
