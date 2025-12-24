@@ -180,24 +180,25 @@ export function CardReveal({
 				</Atropos>
 			</motion.div>
 
-			{/* Social actions outside Atropos - always rendered to prevent layout shift */}
-			<motion.div
-				initial={{ opacity: 0 }}
-				animate={{
-					opacity: isFlipped && revealComplete ? 1 : 0,
-					pointerEvents: isFlipped && revealComplete ? "auto" : "none",
-				}}
-				transition={{ duration: 0.3 }}
-				className="w-full"
-			>
-				<GiftActions
-					token={token}
-					generatedImageUrl={generatedImageUrl}
-					message={manifestoPhrase}
-					recipientName={builderName}
-					builderId={builderId}
-				/>
-			</motion.div>
+			{/* Social actions outside Atropos - only rendered when flipped */}
+			{isFlipped && (
+				<motion.div
+					initial={{ opacity: 0 }}
+					animate={{
+						opacity: revealComplete ? 1 : 0,
+					}}
+					transition={{ duration: 0.3 }}
+					className="w-full"
+				>
+					<GiftActions
+						token={token}
+						generatedImageUrl={generatedImageUrl}
+						message={manifestoPhrase}
+						recipientName={builderName}
+						builderId={builderId}
+					/>
+				</motion.div>
+			)}
 		</motion.div>
 	);
 }

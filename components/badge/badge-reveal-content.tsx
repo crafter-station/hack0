@@ -184,7 +184,7 @@ export function BadgeRevealContent({
 						}}
 						transition={{ duration: 0.6, ease: "easeOut" }}
 					>
-						<div className="w-52 h-52 sm:w-64 sm:h-64 rounded-2xl overflow-hidden">
+						<div className="w-56 h-56 sm:w-72 sm:h-72 rounded-2xl overflow-hidden">
 							<img
 								src={generatedImageUrl}
 								alt="Builder portrait"
