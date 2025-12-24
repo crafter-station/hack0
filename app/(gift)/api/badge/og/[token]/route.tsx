@@ -25,33 +25,43 @@ export async function GET(request: NextRequest, context: RouteContext) {
 			return new Response("Card not found", { status: 404 });
 		}
 
-		let portraitDataUri: string | undefined;
-		if (card.generatedImageUrl) {
+		const fetchImageAsDataUri = async (url: string) => {
 			try {
-				const imageResponse = await fetch(card.generatedImageUrl);
-				if (imageResponse.ok) {
-					const imageBuffer = await imageResponse.arrayBuffer();
-					const base64 = Buffer.from(imageBuffer).toString("base64");
+				const response = await fetch(url);
+				if (response.ok) {
+					const buffer = await response.arrayBuffer();
+					const base64 = Buffer.from(buffer).toString("base64");
 					const contentType =
-						imageResponse.headers.get("content-type") || "image/png";
-					portraitDataUri = `data:${contentType};base64,${base64}`;
+						response.headers.get("content-type") || "image/png";
+					return `data:${contentType};base64,${base64}`;
 				}
-			} catch (imgError) {
-				console.error("Failed to fetch portrait image:", imgError);
+			} catch (error) {
+				console.error("Failed to fetch image:", error);
 			}
-		}
+			return undefined;
+		};
+
+		const [portraitDataUri, backgroundDataUri] = await Promise.all([
+			card.generatedImageUrl
+				? fetchImageAsDataUri(card.generatedImageUrl)
+				: undefined,
+			card.generatedBackgroundUrl
+				? fetchImageAsDataUri(card.generatedBackgroundUrl)
+				: undefined,
+		]);
 
 		const pngResponse = new ImageResponse(
 			<BadgeOGTemplate
 				builderId={card.builderId || 0}
 				portraitUrl={portraitDataUri}
-				manifestoPhrase={card.message || "Builder LATAM 2025"}
+				backgroundUrl={backgroundDataUri}
+				manifestoPhrase={card.message || "HACK0.DEV 2025"}
 				verticalLabel={card.verticalLabel || "BUILDER"}
 				builderName={card.recipientName || undefined}
 			/>,
 			{
 				width: 1200,
-				height: 630,
+				height: 1200,
 				format: "png",
 			},
 		);

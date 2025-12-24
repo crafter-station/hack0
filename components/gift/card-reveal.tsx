@@ -77,24 +77,39 @@ export function CardReveal({
 						{/* Overlay with tap hint */}
 						<div
 							className="absolute inset-0 flex flex-col items-center justify-center"
-							style={{ backgroundColor: "rgba(10, 10, 15, 0.3)" }}
+							style={{ backgroundColor: "rgba(10, 10, 15, 0.2)" }}
 						>
-							<h2
-								className="!font-christmas text-5xl md:text-6xl mb-6"
-								style={{ color: GIFT_COLORS.text }}
-							>
-								Feliz Navidad
-							</h2>
+							{/* Red ribbon behind text */}
+							<div className="relative w-full flex items-center justify-center mb-6 -rotate-3">
+								<div
+									className="absolute w-[120%] h-20"
+									style={{
+										background:
+											"linear-gradient(90deg, transparent 0%, #b91c1c 10%, #dc2626 50%, #b91c1c 90%, transparent 100%)",
+										boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
+									}}
+								/>
+								<h2
+									className="!font-christmas text-5xl md:text-6xl relative z-10 drop-shadow-lg"
+									style={{ color: GIFT_COLORS.text }}
+								>
+									Feliz Navidad
+								</h2>
+							</div>
 							<motion.div
 								animate={{ scale: [1, 1.05, 1] }}
 								transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-								className="mb-4"
+								className="mb-4 -translate-y-4 -translate-x-4"
 							>
 								<GiftBox3D size="lg" />
 							</motion.div>
 							<p
-								className="text-sm font-medium mt-8"
-								style={{ color: GIFT_COLORS.text }}
+								className="text-sm font-medium mt-8 px-4 py-2 rounded-full"
+								style={{
+									color: GIFT_COLORS.text,
+									backgroundColor: "rgba(0, 0, 0, 0.6)",
+									backdropFilter: "blur(4px)",
+								}}
 							>
 								Toca para abrir
 							</p>

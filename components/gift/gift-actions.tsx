@@ -89,12 +89,12 @@ export function GiftActions({
 
 	const handleShare = async () => {
 		const shareUrl = `${window.location.origin}/gift/card/${token}`;
-		const shareText = `Builder LATAM 2025 ${formattedId} - "${message}"`;
+		const shareText = `HACK0.DEV 2025 ${formattedId} - "${message}"`;
 
 		if (navigator.share) {
 			try {
 				await navigator.share({
-					title: `Builder LATAM 2025 ${formattedId}`,
+					title: `HACK0.DEV 2025 ${formattedId}`,
 					text: shareText,
 					url: shareUrl,
 				});

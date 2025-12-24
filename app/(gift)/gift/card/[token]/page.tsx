@@ -19,28 +19,34 @@ export async function generateMetadata({
 
 	if (!card || !card.builderId) {
 		return {
-			title: "Builder LATAM 2025",
-			description: "Badge de builder del ecosistema tech LATAM.",
+			title: "HACK0.DEV 2025",
+			description: "Badge navideño de hack0.dev",
 		};
 	}
 
 	const formattedId = `#${card.builderId.toString().padStart(4, "0")}`;
+	const builderName = card.recipientName ? ` - ${card.recipientName}` : "";
 
 	return {
-		title: `Builder LATAM 2025 ${formattedId}`,
-		description: card.message || "Badge de builder del ecosistema tech LATAM.",
+		title: `HACK0.DEV 2025 ${formattedId}${builderName}`,
+		description: card.message || "Badge navideño de hack0.dev",
 		openGraph: {
-			title: `Builder LATAM 2025 ${formattedId}`,
-			description:
-				card.message || "Badge de builder del ecosistema tech LATAM.",
-			images: [`/api/badge/og/${token}`],
+			title: `HACK0.DEV 2025 ${formattedId}${builderName}`,
+			description: card.message || "Badge navideño de hack0.dev",
+			images: [
+				{
+					url: `/api/badge/og/${token}`,
+					width: 1200,
+					height: 1200,
+					alt: `Badge de ${card.recipientName || "Builder"}`,
+				},
+			],
 			type: "profile",
 		},
 		twitter: {
 			card: "summary_large_image",
-			title: `Builder LATAM 2025 ${formattedId}`,
-			description:
-				card.message || "Badge de builder del ecosistema tech LATAM.",
+			title: `HACK0.DEV 2025 ${formattedId}${builderName}`,
+			description: card.message || "Badge navideño de hack0.dev",
 			images: [`/api/badge/og/${token}`],
 		},
 	};

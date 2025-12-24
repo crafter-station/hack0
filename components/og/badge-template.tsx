@@ -1,9 +1,9 @@
 /** @jsxImportSource react */
-import type { CSSProperties } from "react";
 
 interface BadgeOGTemplateProps {
 	builderId: number;
 	portraitUrl?: string;
+	backgroundUrl?: string;
 	manifestoPhrase: string;
 	verticalLabel: string;
 	builderName?: string;
@@ -12,83 +12,84 @@ interface BadgeOGTemplateProps {
 export function BadgeOGTemplate({
 	builderId,
 	portraitUrl,
+	backgroundUrl,
 	manifestoPhrase,
 	verticalLabel,
 	builderName,
 }: BadgeOGTemplateProps) {
 	const formattedId = `#${builderId.toString().padStart(4, "0")}`;
 
-	const gridPattern: CSSProperties = {
-		backgroundImage: `
-			linear-gradient(rgba(250, 250, 250, 0.03) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(250, 250, 250, 0.03) 1px, transparent 1px)
-		`,
-		backgroundSize: "32px 32px",
-		position: "absolute",
-		inset: "0",
-	};
-
 	return (
 		<div
 			style={{
 				width: "1200px",
-				height: "630px",
+				height: "1200px",
 				display: "flex",
 				position: "relative",
 				backgroundColor: "#0a0a0f",
 				overflow: "hidden",
 			}}
 		>
-			<div style={gridPattern} />
+			{backgroundUrl && (
+				<img
+					src={backgroundUrl}
+					style={{
+						position: "absolute",
+						width: "100%",
+						height: "100%",
+						objectFit: "cover",
+					}}
+				/>
+			)}
 
 			<div
 				style={{
 					position: "absolute",
 					inset: "0",
 					background:
-						"radial-gradient(ellipse at center, transparent 0%, #0a0a0f 70%)",
+						"linear-gradient(to bottom, rgba(10, 10, 15, 0.85) 0%, rgba(10, 10, 15, 0.2) 20%, transparent 40%, transparent 55%, rgba(10, 10, 15, 0.4) 70%, rgba(10, 10, 15, 0.95) 100%)",
 				}}
 			/>
 
 			<svg
-				width="48"
-				height="48"
+				width="64"
+				height="64"
 				viewBox="0 0 32 32"
 				fill="none"
-				stroke="rgba(250, 250, 250, 0.2)"
+				stroke="rgba(250, 250, 250, 0.5)"
 				strokeWidth="2"
 				style={{ position: "absolute", top: "40px", left: "40px" }}
 			>
 				<path d="M2 10 L2 2 L10 2" />
 			</svg>
 			<svg
-				width="48"
-				height="48"
+				width="64"
+				height="64"
 				viewBox="0 0 32 32"
 				fill="none"
-				stroke="rgba(250, 250, 250, 0.2)"
+				stroke="rgba(250, 250, 250, 0.5)"
 				strokeWidth="2"
 				style={{ position: "absolute", top: "40px", right: "40px" }}
 			>
 				<path d="M22 2 L30 2 L30 10" />
 			</svg>
 			<svg
-				width="48"
-				height="48"
+				width="64"
+				height="64"
 				viewBox="0 0 32 32"
 				fill="none"
-				stroke="rgba(250, 250, 250, 0.2)"
+				stroke="rgba(250, 250, 250, 0.5)"
 				strokeWidth="2"
 				style={{ position: "absolute", bottom: "40px", left: "40px" }}
 			>
 				<path d="M2 22 L2 30 L10 30" />
 			</svg>
 			<svg
-				width="48"
-				height="48"
+				width="64"
+				height="64"
 				viewBox="0 0 32 32"
 				fill="none"
-				stroke="rgba(250, 250, 250, 0.2)"
+				stroke="rgba(250, 250, 250, 0.5)"
 				strokeWidth="2"
 				style={{ position: "absolute", bottom: "40px", right: "40px" }}
 			>
@@ -98,11 +99,11 @@ export function BadgeOGTemplate({
 			<div
 				style={{
 					position: "absolute",
-					left: "20px",
+					left: "30px",
 					top: "50%",
 					transform: "translateY(-50%) rotate(180deg)",
-					color: "rgba(250, 250, 250, 0.15)",
-					fontSize: "14px",
+					color: "rgba(250, 250, 250, 0.8)",
+					fontSize: "16px",
 					fontWeight: "700",
 					letterSpacing: "0.4em",
 					fontFamily: "monospace",
@@ -115,106 +116,30 @@ export function BadgeOGTemplate({
 			<div
 				style={{
 					display: "flex",
+					flexDirection: "column",
 					width: "100%",
-					padding: "60px 80px",
+					padding: "50px 70px",
 					position: "relative",
 				}}
 			>
 				<div
 					style={{
 						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						width: "340px",
-						flexShrink: 0,
-					}}
-				>
-					{portraitUrl ? (
-						<div
-							style={{
-								position: "relative",
-								display: "flex",
-							}}
-						>
-							<div
-								style={{
-									position: "absolute",
-									inset: "-8px",
-									background:
-										"linear-gradient(135deg, rgba(16, 185, 129, 0.3), transparent, rgba(245, 158, 11, 0.3))",
-									borderRadius: "24px",
-									filter: "blur(20px)",
-								}}
-							/>
-							<img
-								src={portraitUrl}
-								style={{
-									width: "280px",
-									height: "280px",
-									borderRadius: "20px",
-									objectFit: "cover",
-									border: "3px solid rgba(250, 250, 250, 0.1)",
-								}}
-							/>
-						</div>
-					) : (
-						<div
-							style={{
-								width: "280px",
-								height: "280px",
-								borderRadius: "20px",
-								backgroundColor: "rgba(250, 250, 250, 0.05)",
-								border: "3px solid rgba(250, 250, 250, 0.1)",
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-								fontSize: "80px",
-								color: "rgba(250, 250, 250, 0.3)",
-							}}
-						>
-							🎄
-						</div>
-					)}
-				</div>
-
-				<div
-					style={{
-						display: "flex",
-						flexDirection: "column",
-						justifyContent: "center",
-						flex: 1,
-						paddingLeft: "60px",
-						gap: "24px",
+						justifyContent: "space-between",
+						alignItems: "flex-start",
+						marginBottom: "20px",
 					}}
 				>
 					<div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
 						<div
 							style={{
-								display: "flex",
-								alignItems: "baseline",
-								gap: "16px",
+								fontSize: "36px",
+								fontWeight: "700",
+								color: "#fafafa",
+								letterSpacing: "-0.01em",
 							}}
 						>
-							<div
-								style={{
-									fontSize: "42px",
-									fontWeight: "700",
-									color: "#fafafa",
-									letterSpacing: "-0.02em",
-								}}
-							>
-								BUILDER LATAM
-							</div>
-							<div
-								style={{
-									fontSize: "36px",
-									fontWeight: "700",
-									color: "#10b981",
-									fontFamily: "monospace",
-								}}
-							>
-								{formattedId}
-							</div>
+							HACK0.DEV
 						</div>
 						<div
 							style={{
@@ -227,13 +152,13 @@ export function BadgeOGTemplate({
 								style={{
 									height: "2px",
 									width: "40px",
-									backgroundColor: "rgba(16, 185, 129, 0.5)",
+									backgroundColor: "rgba(251, 191, 36, 0.7)",
 								}}
 							/>
 							<div
 								style={{
-									fontSize: "18px",
-									color: "rgba(250, 250, 250, 0.4)",
+									fontSize: "16px",
+									color: "rgba(250, 250, 250, 0.7)",
 									fontFamily: "monospace",
 								}}
 							>
@@ -243,19 +168,77 @@ export function BadgeOGTemplate({
 								style={{
 									height: "2px",
 									width: "40px",
-									backgroundColor: "rgba(16, 185, 129, 0.5)",
+									backgroundColor: "rgba(251, 191, 36, 0.7)",
 								}}
 							/>
 						</div>
 					</div>
+					<div
+						style={{
+							fontSize: "36px",
+							fontWeight: "700",
+							color: "#fbbf24",
+							fontFamily: "monospace",
+						}}
+					>
+						{formattedId}
+					</div>
+				</div>
 
+				<div
+					style={{
+						display: "flex",
+						flex: 1,
+						alignItems: "center",
+						justifyContent: "center",
+					}}
+				>
+					{portraitUrl ? (
+						<img
+							src={portraitUrl}
+							style={{
+								width: "500px",
+								height: "500px",
+								objectFit: "contain",
+							}}
+						/>
+					) : (
+						<div
+							style={{
+								width: "500px",
+								height: "500px",
+								borderRadius: "24px",
+								backgroundColor: "rgba(250, 250, 250, 0.05)",
+								border: "3px solid rgba(250, 250, 250, 0.1)",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								fontSize: "120px",
+								color: "rgba(250, 250, 250, 0.3)",
+							}}
+						>
+							🎄
+						</div>
+					)}
+				</div>
+
+				<div
+					style={{
+						display: "flex",
+						flexDirection: "column",
+						alignItems: "center",
+						gap: "16px",
+						marginTop: "auto",
+					}}
+				>
 					<div
 						style={{
 							fontSize: "32px",
 							fontWeight: "500",
 							color: "#fafafa",
 							lineHeight: "1.3",
-							maxWidth: "580px",
+							textAlign: "center",
+							maxWidth: "900px",
 						}}
 					>
 						"{manifestoPhrase}"
@@ -264,10 +247,10 @@ export function BadgeOGTemplate({
 					{builderName && (
 						<div
 							style={{
-								fontSize: "16px",
-								color: "rgba(250, 250, 250, 0.5)",
+								fontSize: "18px",
+								color: "rgba(250, 250, 250, 0.8)",
 								fontFamily: "monospace",
-								letterSpacing: "0.15em",
+								letterSpacing: "0.2em",
 								textTransform: "uppercase",
 							}}
 						>
@@ -277,44 +260,12 @@ export function BadgeOGTemplate({
 
 					<div
 						style={{
-							display: "flex",
-							alignItems: "center",
-							gap: "16px",
-							marginTop: "auto",
+							fontSize: "28px",
+							color: "#fbbf24",
+							marginTop: "8px",
 						}}
 					>
-						<div
-							style={{
-								height: "1px",
-								width: "32px",
-								backgroundColor: "rgba(250, 250, 250, 0.2)",
-							}}
-						/>
-						<div
-							style={{
-								fontSize: "14px",
-								color: "rgba(250, 250, 250, 0.3)",
-								fontFamily: "monospace",
-								letterSpacing: "0.1em",
-							}}
-						>
-							hack0.dev
-						</div>
-						<div
-							style={{
-								height: "1px",
-								width: "32px",
-								backgroundColor: "rgba(250, 250, 250, 0.2)",
-							}}
-						/>
-						<div
-							style={{
-								fontSize: "14px",
-								color: "rgba(245, 158, 11, 0.6)",
-							}}
-						>
-							🎄 Feliz Navidad 2025
-						</div>
+						❄️ Feliz Navidad 2025 ❄️
 					</div>
 				</div>
 			</div>
