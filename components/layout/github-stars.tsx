@@ -31,10 +31,10 @@ export function GithubStars() {
 			rel="noopener noreferrer"
 			className="hidden sm:inline-flex h-7 items-center gap-1.5 border border-border/50 px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
 		>
-			<GithubLogo className="h-3.5 w-3.5" mode="currentColor" />
+			<GithubLogo className="size-3.5" mode="currentColor" />
 			<Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
 			{stars === null ? (
-				<span className="h-3 w-4 bg-muted animate-pulse rounded" />
+				<span className="size-2.5 bg-muted animate-pulse rounded" />
 			) : (
 				<span>{stars}</span>
 			)}

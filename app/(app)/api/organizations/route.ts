@@ -79,6 +79,7 @@ export async function GET(request: NextRequest) {
 					sql<number>`COALESCE(${memberCountSubquery.memberCount}, 0)`.as(
 						"member_count",
 					),
+				email: organizations.email,
 				country: organizations.country,
 				department: organizations.department,
 				websiteUrl: organizations.websiteUrl,
@@ -129,6 +130,7 @@ export async function GET(request: NextRequest) {
 			isVerified: c.isVerified,
 			memberCount: Number(c.memberCount),
 			isFollowing: userMemberships.has(c.id),
+			email: c.email,
 			country: c.country,
 			department: c.department,
 			websiteUrl: c.websiteUrl,

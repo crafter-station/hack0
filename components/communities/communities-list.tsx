@@ -6,6 +6,7 @@ import {
 	ChevronUp,
 	Globe,
 	Loader2,
+	Mail,
 	MapPin,
 } from "lucide-react";
 import Image from "next/image";
@@ -26,7 +27,7 @@ import {
 import { followCommunity, unfollowCommunity } from "@/lib/actions/communities";
 import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
 
-interface InfiniteCommunitiesListProps {
+interface CommunitiesListProps {
 	initialData: CommunitiesResponse;
 	isAuthenticated: boolean;
 }
@@ -175,6 +176,16 @@ function CommunityRow({
 							<Globe className="h-3.5 w-3.5" />
 						</a>
 					)}
+					{community.email && (
+						<a
+							href={`mailto:${community.email}`}
+							className="text-muted-foreground hover:text-foreground transition-colors"
+							onClick={(e) => e.stopPropagation()}
+							title={community.email}
+						>
+							<Mail className="h-3.5 w-3.5" />
+						</a>
+					)}
 					{community.twitterUrl && (
 						<a
 							href={community.twitterUrl}
@@ -220,6 +231,7 @@ function CommunityRow({
 						</a>
 					)}
 					{!community.websiteUrl &&
+						!community.email &&
 						!community.twitterUrl &&
 						!community.linkedinUrl &&
 						!community.instagramUrl &&
@@ -288,10 +300,10 @@ function LoadingRows() {
 	);
 }
 
-export function InfiniteCommunitiesList({
+export function CommunitiesList({
 	initialData,
 	isAuthenticated,
-}: InfiniteCommunitiesListProps) {
+}: CommunitiesListProps) {
 	const searchParams = useSearchParams();
 	const [sortField, setSortField] = useState<SortField>("members");
 	const [sortDirection, setSortDirection] = useState<SortDirection>("desc");

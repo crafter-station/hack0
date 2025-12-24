@@ -7,6 +7,7 @@ import {
 	Globe,
 	Link2,
 	Loader2,
+	Mail,
 	Save,
 	Tags,
 } from "lucide-react";
@@ -59,11 +60,13 @@ const ORGANIZER_TYPE_OPTIONS = Object.entries(ORGANIZER_TYPE_LABELS).map(
 	}),
 );
 
-interface OrgSettingsFormProps {
+interface CommunitySettingsFormProps {
 	organization: Organization;
 }
 
-export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
+export function CommunitySettingsForm({
+	organization,
+}: CommunitySettingsFormProps) {
 	const router = useRouter();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -86,6 +89,7 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
 		organization.instagramUrl || "",
 	);
 	const [githubUrl, setGithubUrl] = useState(organization.githubUrl || "");
+	const [email, setEmail] = useState(organization.email || "");
 	const [tags, setTags] = useState<Tag[]>(
 		(organization.tags || []).map((t) => ({ id: t, text: t })),
 	);
@@ -114,6 +118,7 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
 				linkedinUrl: linkedinUrl || undefined,
 				instagramUrl: instagramUrl || undefined,
 				githubUrl: githubUrl || undefined,
+				email: email || undefined,
 				tags: tags.length > 0 ? tags.map((t) => t.text) : undefined,
 			});
 
@@ -128,7 +133,13 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
 		}
 	};
 
-	const hasLinks = twitterUrl || linkedinUrl || instagramUrl || githubUrl;
+	const hasLinks =
+		websiteUrl ||
+		email ||
+		twitterUrl ||
+		linkedinUrl ||
+		instagramUrl ||
+		githubUrl;
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6">
@@ -389,6 +400,7 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
 										{hasLinks ? (
 											<span className="flex items-center gap-3 text-foreground">
 												{websiteUrl && <Globe className="h-4 w-4" />}
+												{email && <Mail className="h-4 w-4" />}
 												{twitterUrl && <TwitterLogo className="h-4 w-4" />}
 												{linkedinUrl && (
 													<LinkedinLogo
@@ -436,6 +448,22 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
 														value={websiteUrl}
 														onChange={(e) => setWebsiteUrl(e.target.value)}
 														placeholder="https://..."
+													/>
+												</InputGroup>
+											</ButtonGroup>
+										</div>
+										<div className="space-y-2">
+											<Label className="text-sm">Correo de contacto</Label>
+											<ButtonGroup className="w-full [&>*]:!rounded-none">
+												<ButtonGroupText className="!rounded-none">
+													<Mail className="h-4 w-4" />
+												</ButtonGroupText>
+												<InputGroup className="flex-1 !rounded-none">
+													<InputGroupInput
+														type="email"
+														value={email}
+														onChange={(e) => setEmail(e.target.value)}
+														placeholder="contacto@comunidad.com"
 													/>
 												</InputGroup>
 											</ButtonGroup>

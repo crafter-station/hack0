@@ -58,7 +58,7 @@ import {
 	ORGANIZER_TYPE_LIST,
 } from "@/lib/organizer-type-config";
 
-export function CommunityFormMinimal() {
+export function CommunityCreateForm() {
 	const router = useRouter();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -77,6 +77,7 @@ export function CommunityFormMinimal() {
 	const [linkedinUrl, setLinkedinUrl] = useState("");
 	const [instagramUrl, setInstagramUrl] = useState("");
 	const [githubUrl, setGithubUrl] = useState("");
+	const [email, setEmail] = useState("");
 	const [tags, setTags] = useState<Tag[]>([]);
 	const [activeTagIndex, setActiveTagIndex] = useState<number | null>(null);
 	const [country, setCountry] = useState<string>("");
@@ -207,6 +208,7 @@ export function CommunityFormMinimal() {
 				linkedinUrl: linkedinUrl || undefined,
 				instagramUrl: instagramUrl || undefined,
 				githubUrl: githubUrl || undefined,
+				email: email || undefined,
 				tags: tags.length > 0 ? tags.map((t) => t.text) : undefined,
 				country: country || undefined,
 				department: department || undefined,
@@ -608,6 +610,18 @@ export function CommunityFormMinimal() {
 											value={websiteUrl}
 											onChange={(e) => setWebsiteUrl(e.target.value)}
 											placeholder="https://..."
+											className="h-9"
+										/>
+									</div>
+									<div>
+										<Label className="text-sm mb-2 block">
+											Correo de contacto
+										</Label>
+										<Input
+											type="email"
+											value={email}
+											onChange={(e) => setEmail(e.target.value)}
+											placeholder="contacto@comunidad.com"
 											className="h-9"
 										/>
 									</div>

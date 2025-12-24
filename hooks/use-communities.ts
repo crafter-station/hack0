@@ -11,6 +11,7 @@ export interface PublicCommunity {
 	isVerified: boolean | null;
 	memberCount: number;
 	isFollowing: boolean;
+	email: string | null;
 	country: string | null;
 	department: string | null;
 	websiteUrl: string | null;

@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { CheckCircle2 } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
-import { OrgSettingsForm } from "@/components/communities/org-settings-form";
+import { CommunitySettingsForm } from "@/components/communities/community-settings-form";
 import {
 	canManageOrganization,
 	getOrganizationBySlug,
@@ -42,7 +42,7 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
 				</div>
 			)}
 
-			<OrgSettingsForm organization={org} />
+			<CommunitySettingsForm organization={org} />
 		</div>
 	);
 }

@@ -1,6 +1,13 @@
 "use client";
 
-import { CheckCircle2, Globe, Loader2, MapPin, Users } from "lucide-react";
+import {
+	CheckCircle2,
+	Globe,
+	Loader2,
+	Mail,
+	MapPin,
+	Users,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -19,7 +26,7 @@ import {
 import { followCommunity, unfollowCommunity } from "@/lib/actions/communities";
 import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
 
-interface InfiniteCommunitiesGridProps {
+interface CommunitiesGridProps {
 	initialData: CommunitiesResponse;
 	isAuthenticated: boolean;
 }
@@ -158,6 +165,15 @@ function CommunityCard({
 							<Globe className="h-3 w-3" />
 						</a>
 					)}
+					{community.email && (
+						<a
+							href={`mailto:${community.email}`}
+							className="relative z-10 hover:text-foreground transition-colors"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<Mail className="h-3 w-3" />
+						</a>
+					)}
 					{community.twitterUrl && (
 						<a
 							href={community.twitterUrl}
@@ -255,10 +271,10 @@ function LoadingSkeleton() {
 	);
 }
 
-export function InfiniteCommunitiesGrid({
+export function CommunitiesGrid({
 	initialData,
 	isAuthenticated,
-}: InfiniteCommunitiesGridProps) {
+}: CommunitiesGridProps) {
 	const searchParams = useSearchParams();
 
 	const search = searchParams.get("search") || undefined;

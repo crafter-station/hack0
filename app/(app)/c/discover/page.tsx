@@ -3,12 +3,12 @@ import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { LayoutGrid, List, Plus } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
+import { CommunitiesGrid } from "@/components/communities/communities-grid";
+import { CommunitiesList } from "@/components/communities/communities-list";
 import { CommunityActiveFilters } from "@/components/communities/community-active-filters";
 import { CommunityCategoryTabs } from "@/components/communities/community-category-tabs";
 import { CommunitySidebarFilters } from "@/components/communities/community-sidebar-filters";
 import { CommunityTabToggle } from "@/components/communities/community-tab-toggle";
-import { InfiniteCommunitiesGrid } from "@/components/communities/infinite-communities-grid";
-import { InfiniteCommunitiesList } from "@/components/communities/infinite-communities-list";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -120,6 +120,7 @@ async function getInitialCommunities(
 				sql<number>`COALESCE(${memberCountSubquery.memberCount}, 0)`.as(
 					"member_count",
 				),
+			email: organizations.email,
 			country: organizations.country,
 			department: organizations.department,
 			websiteUrl: organizations.websiteUrl,
@@ -158,6 +159,7 @@ async function getInitialCommunities(
 		isVerified: c.isVerified,
 		memberCount: Number(c.memberCount),
 		isFollowing: userMemberships.has(c.id),
+		email: c.email,
 		country: c.country,
 		department: c.department,
 		websiteUrl: c.websiteUrl,
@@ -301,7 +303,7 @@ export default async function DiscoverPage({
 									</div>
 								}
 							>
-								<InfiniteCommunitiesList
+								<CommunitiesList
 									initialData={initialData}
 									isAuthenticated={isAuthenticated}
 								/>
@@ -335,7 +337,7 @@ export default async function DiscoverPage({
 									</div>
 								}
 							>
-								<InfiniteCommunitiesGrid
+								<CommunitiesGrid
 									initialData={initialData}
 									isAuthenticated={isAuthenticated}
 								/>
