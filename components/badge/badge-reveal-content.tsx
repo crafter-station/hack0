@@ -49,7 +49,7 @@ export function BadgeRevealContent({
 
 	return (
 		<div className="flex flex-col items-center gap-4 w-full">
-			<div className="relative w-full aspect-[3/5] overflow-hidden bg-[#0a0a0f] rounded-lg ring-2 ring-white/50">
+			<div className="relative w-full aspect-[4/5] overflow-hidden bg-[#0a0a0f] rounded-lg ring-2 ring-white/50">
 				{generatedBackgroundUrl && (
 					<motion.div
 						className="absolute inset-0"
@@ -184,7 +184,7 @@ export function BadgeRevealContent({
 						}}
 						transition={{ duration: 0.6, ease: "easeOut" }}
 					>
-						<div className="w-56 h-56 sm:w-72 sm:h-72 rounded-2xl overflow-hidden">
+						<div className="w-52 h-52 sm:w-64 sm:h-64 rounded-2xl overflow-hidden">
 							<img
 								src={generatedImageUrl}
 								alt="Builder portrait"

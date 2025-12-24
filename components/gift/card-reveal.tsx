@@ -46,7 +46,7 @@ export function CardReveal({
 
 	return (
 		<motion.div
-			className="min-h-[calc(100vh-120px)] flex flex-col items-center gap-4 w-full max-w-sm mx-auto px-4 py-6"
+			className="min-h-[calc(100vh-120px)] flex flex-col items-center gap-4 w-full max-w-md mx-auto px-4 py-6"
 			animate={{
 				justifyContent: isFlipped ? "flex-start" : "center",
 			}}
@@ -89,7 +89,7 @@ export function CardReveal({
 						>
 							{/* Back of card - AI background as cover */}
 							<div
-								className="w-full aspect-[3/5] overflow-hidden backface-hidden relative rounded-lg ring-2 ring-white/50"
+								className="w-full aspect-[4/5] overflow-hidden backface-hidden relative rounded-lg ring-2 ring-white/50"
 								style={{ backfaceVisibility: "hidden" }}
 							>
 								{coverBackgroundUrl || generatedBackgroundUrl ? (
