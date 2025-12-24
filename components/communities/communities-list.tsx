@@ -32,8 +32,19 @@ interface CommunitiesListProps {
 	isAuthenticated: boolean;
 }
 
-type SortField = "name" | "type" | "members";
+type SortField = "name" | "type" | "contact" | "members";
 type SortDirection = "asc" | "desc";
+
+function getContactCount(community: PublicCommunity): number {
+	let count = 0;
+	if (community.websiteUrl) count++;
+	if (community.email) count++;
+	if (community.twitterUrl) count++;
+	if (community.linkedinUrl) count++;
+	if (community.instagramUrl) count++;
+	if (community.githubUrl) count++;
+	return count;
+}
 
 function FollowButton({
 	communityId,
@@ -165,6 +176,9 @@ function CommunityRow({
 			</td>
 			<td className="py-2 pr-4 hidden xl:table-cell">
 				<div className="flex items-center gap-1.5">
+					<span className="text-muted-foreground tabular-nums min-w-[1ch]">
+						{getContactCount(community)}
+					</span>
 					{community.websiteUrl && (
 						<a
 							href={community.websiteUrl}
@@ -230,14 +244,6 @@ function CommunityRow({
 							<GithubLogo className="h-3.5 w-3.5" mode="currentColor" />
 						</a>
 					)}
-					{!community.websiteUrl &&
-						!community.email &&
-						!community.twitterUrl &&
-						!community.linkedinUrl &&
-						!community.instagramUrl &&
-						!community.githubUrl && (
-							<span className="text-muted-foreground/50">—</span>
-						)}
 				</div>
 			</td>
 			<td className="py-2 pr-4 hidden sm:table-cell">
@@ -357,6 +363,9 @@ export function CommunitiesList({
 				case "type":
 					comparison = (a.type || "").localeCompare(b.type || "");
 					break;
+				case "contact":
+					comparison = getContactCount(a) - getContactCount(b);
+					break;
 				case "members":
 					comparison = a.memberCount - b.memberCount;
 					break;
@@ -371,7 +380,9 @@ export function CommunitiesList({
 			setSortDirection(sortDirection === "asc" ? "desc" : "asc");
 		} else {
 			setSortField(field);
-			setSortDirection(field === "members" ? "desc" : "asc");
+			setSortDirection(
+				field === "members" || field === "contact" ? "desc" : "asc",
+			);
 		}
 	};
 
@@ -461,7 +472,12 @@ export function CommunitiesList({
 								Ubicación
 							</th>
 							<th className="pb-2 pr-4 font-medium hidden xl:table-cell">
-								Contacto
+								<button
+									onClick={() => handleSort("contact")}
+									className="flex items-center gap-1 hover:text-foreground"
+								>
+									Contacto <SortIcon field="contact" />
+								</button>
 							</th>
 							<th className="pb-2 pr-4 font-medium hidden sm:table-cell">
 								<button
