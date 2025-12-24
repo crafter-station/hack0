@@ -7,6 +7,7 @@ import {
 	Globe,
 	MapPin,
 	Settings,
+	Trophy,
 	Users,
 } from "lucide-react";
 import Image from "next/image";
@@ -34,7 +35,7 @@ function extractUsername(url: string, platform: string): string {
 }
 
 interface Tab {
-	id: "events" | "members" | "analytics" | "settings";
+	id: "events" | "members" | "achievements" | "analytics" | "settings";
 	label: string;
 	icon: string;
 }
@@ -53,6 +54,7 @@ const iconMap = {
 	Users,
 	Settings,
 	BarChart3,
+	Trophy,
 } as const;
 
 export function CommunityHeaderClient({
@@ -67,11 +69,13 @@ export function CommunityHeaderClient({
 
 	const currentTab = pathname.includes("/members")
 		? "members"
-		: pathname.includes("/analytics")
-			? "analytics"
-			: pathname.includes("/settings")
-				? "settings"
-				: "events";
+		: pathname.includes("/achievements")
+			? "achievements"
+			: pathname.includes("/analytics")
+				? "analytics"
+				: pathname.includes("/settings")
+					? "settings"
+					: "events";
 
 	return (
 		<div className="border-b bg-muted/30">

@@ -209,7 +209,7 @@ export function GiftActions({
 					</div>
 
 					{isSignedIn ? (
-						<Link href="/profile/achievements" className="w-full">
+						<Link href="/api/redirect/my-achievements" className="w-full">
 							<Button className="w-full gap-2 bg-amber-600 hover:bg-amber-700 text-white">
 								<Trophy className="h-4 w-4" />
 								Ver logro
