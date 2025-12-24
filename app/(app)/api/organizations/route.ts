@@ -15,10 +15,12 @@ export async function GET(request: NextRequest) {
 		const search = searchParams.get("search") || undefined;
 		const type = searchParams.get("type") || undefined;
 		const verifiedOnly = searchParams.get("verified") === "true";
-		const orderBy = (searchParams.get("orderBy") as "popular" | "recent" | "name") || "popular";
+		const orderBy =
+			(searchParams.get("orderBy") as "popular" | "recent" | "name") ||
+			"popular";
 		const limit = Math.min(
 			Number.parseInt(searchParams.get("limit") || String(DEFAULT_LIMIT), 10),
-			MAX_LIMIT
+			MAX_LIMIT,
 		);
 		const offset = Number.parseInt(searchParams.get("offset") || "0", 10);
 
@@ -32,8 +34,8 @@ export async function GET(request: NextRequest) {
 				or(
 					ilike(organizations.name, `%${search}%`),
 					ilike(organizations.displayName, `%${search}%`),
-					ilike(organizations.description, `%${search}%`)
-				)!
+					ilike(organizations.description, `%${search}%`),
+				)!,
 			);
 		}
 
@@ -73,16 +75,31 @@ export async function GET(request: NextRequest) {
 				logoUrl: organizations.logoUrl,
 				isVerified: organizations.isVerified,
 				createdAt: organizations.createdAt,
-				memberCount: sql<number>`COALESCE(${memberCountSubquery.memberCount}, 0)`.as("member_count"),
+				memberCount:
+					sql<number>`COALESCE(${memberCountSubquery.memberCount}, 0)`.as(
+						"member_count",
+					),
+				country: organizations.country,
+				department: organizations.department,
+				websiteUrl: organizations.websiteUrl,
+				twitterUrl: organizations.twitterUrl,
+				linkedinUrl: organizations.linkedinUrl,
+				instagramUrl: organizations.instagramUrl,
+				githubUrl: organizations.githubUrl,
 			})
 			.from(organizations)
-			.leftJoin(memberCountSubquery, eq(organizations.id, memberCountSubquery.communityId))
+			.leftJoin(
+				memberCountSubquery,
+				eq(organizations.id, memberCountSubquery.communityId),
+			)
 			.where(and(...conditions))
 			.$dynamic();
 
 		// Apply ordering
 		if (orderBy === "popular") {
-			query = query.orderBy(desc(sql`COALESCE(${memberCountSubquery.memberCount}, 0)`));
+			query = query.orderBy(
+				desc(sql`COALESCE(${memberCountSubquery.memberCount}, 0)`),
+			);
 		} else if (orderBy === "recent") {
 			query = query.orderBy(desc(organizations.createdAt));
 		} else if (orderBy === "name") {
@@ -112,6 +129,13 @@ export async function GET(request: NextRequest) {
 			isVerified: c.isVerified,
 			memberCount: Number(c.memberCount),
 			isFollowing: userMemberships.has(c.id),
+			country: c.country,
+			department: c.department,
+			websiteUrl: c.websiteUrl,
+			twitterUrl: c.twitterUrl,
+			linkedinUrl: c.linkedinUrl,
+			instagramUrl: c.instagramUrl,
+			githubUrl: c.githubUrl,
 		}));
 
 		const hasMore = offset + communities.length < total;
@@ -127,7 +151,7 @@ export async function GET(request: NextRequest) {
 		console.error("Error fetching organizations:", error);
 		return NextResponse.json(
 			{ error: "Failed to fetch organizations" },
-			{ status: 500 }
+			{ status: 500 },
 		);
 	}
 }

@@ -16,6 +16,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { LocationSelector } from "@/components/communities/location-selector";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup, ButtonGroupText } from "@/components/ui/button-group";
 import {
@@ -78,6 +79,8 @@ export function CommunityFormMinimal() {
 	const [githubUrl, setGithubUrl] = useState("");
 	const [tags, setTags] = useState<Tag[]>([]);
 	const [activeTagIndex, setActiveTagIndex] = useState<number | null>(null);
+	const [country, setCountry] = useState<string>("");
+	const [department, setDepartment] = useState("");
 
 	const [descriptionOpen, setDescriptionOpen] = useState(false);
 	const [linksOpen, setLinksOpen] = useState(false);
@@ -205,6 +208,8 @@ export function CommunityFormMinimal() {
 				instagramUrl: instagramUrl || undefined,
 				githubUrl: githubUrl || undefined,
 				tags: tags.length > 0 ? tags.map((t) => t.text) : undefined,
+				country: country || undefined,
+				department: department || undefined,
 			});
 			router.push(`/c/${slug}`);
 		} catch (err) {
@@ -544,6 +549,19 @@ export function CommunityFormMinimal() {
 								/>
 							</div>
 						</ButtonGroup>
+					</div>
+
+					<div>
+						<Label className="text-xs text-muted-foreground mb-2 block">
+							Ubicación (opcional)
+						</Label>
+						<LocationSelector
+							country={country}
+							onCountryChange={setCountry}
+							region={department}
+							onRegionChange={setDepartment}
+							disabled={isImporting}
+						/>
 					</div>
 
 					<div>

@@ -11,6 +11,13 @@ export interface PublicCommunity {
 	isVerified: boolean | null;
 	memberCount: number;
 	isFollowing: boolean;
+	country: string | null;
+	department: string | null;
+	websiteUrl: string | null;
+	twitterUrl: string | null;
+	linkedinUrl: string | null;
+	instagramUrl: string | null;
+	githubUrl: string | null;
 }
 
 export interface CommunitiesResponse {

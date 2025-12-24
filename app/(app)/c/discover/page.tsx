@@ -13,16 +13,16 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { db } from "@/lib/db";
-import { communityMembers, organizations } from "@/lib/db/schema";
+import type { CommunitiesResponse } from "@/hooks/use-communities";
 import {
 	getTagCounts,
 	getUniqueCountries,
 	getUniqueDepartments,
 	getUniqueTags,
 } from "@/lib/actions/communities";
+import { db } from "@/lib/db";
+import { communityMembers, organizations } from "@/lib/db/schema";
 import { getCommunitiesViewPreference } from "@/lib/view-preferences";
-import type { CommunitiesResponse } from "@/hooks/use-communities";
 
 interface DiscoverPageProps {
 	searchParams: Promise<{
@@ -58,7 +58,7 @@ async function getInitialCommunities(
 		tags?: string;
 		verified?: string;
 	},
-	userId: string | null
+	userId: string | null,
 ): Promise<CommunitiesResponse> {
 	const search = params.search;
 	const type = params.type;
@@ -75,8 +75,8 @@ async function getInitialCommunities(
 			or(
 				ilike(organizations.name, `%${search}%`),
 				ilike(organizations.displayName, `%${search}%`),
-				ilike(organizations.description, `%${search}%`)
-			)!
+				ilike(organizations.description, `%${search}%`),
+			)!,
 		);
 	}
 
@@ -85,9 +85,7 @@ async function getInitialCommunities(
 	}
 
 	if (typesArray.length > 0) {
-		conditions.push(
-			or(...typesArray.map((t) => eq(organizations.type, t)))!
-		);
+		conditions.push(or(...typesArray.map((t) => eq(organizations.type, t)))!);
 	}
 
 	if (verifiedOnly) {
@@ -118,10 +116,23 @@ async function getInitialCommunities(
 			type: organizations.type,
 			logoUrl: organizations.logoUrl,
 			isVerified: organizations.isVerified,
-			memberCount: sql<number>`COALESCE(${memberCountSubquery.memberCount}, 0)`.as("member_count"),
+			memberCount:
+				sql<number>`COALESCE(${memberCountSubquery.memberCount}, 0)`.as(
+					"member_count",
+				),
+			country: organizations.country,
+			department: organizations.department,
+			websiteUrl: organizations.websiteUrl,
+			twitterUrl: organizations.twitterUrl,
+			linkedinUrl: organizations.linkedinUrl,
+			instagramUrl: organizations.instagramUrl,
+			githubUrl: organizations.githubUrl,
 		})
 		.from(organizations)
-		.leftJoin(memberCountSubquery, eq(organizations.id, memberCountSubquery.communityId))
+		.leftJoin(
+			memberCountSubquery,
+			eq(organizations.id, memberCountSubquery.communityId),
+		)
 		.where(and(...conditions))
 		.orderBy(desc(sql`COALESCE(${memberCountSubquery.memberCount}, 0)`))
 		.limit(INITIAL_LIMIT)
@@ -147,6 +158,13 @@ async function getInitialCommunities(
 		isVerified: c.isVerified,
 		memberCount: Number(c.memberCount),
 		isFollowing: userMemberships.has(c.id),
+		country: c.country,
+		department: c.department,
+		websiteUrl: c.websiteUrl,
+		twitterUrl: c.twitterUrl,
+		linkedinUrl: c.linkedinUrl,
+		instagramUrl: c.instagramUrl,
+		githubUrl: c.githubUrl,
 	}));
 
 	return {
@@ -167,7 +185,8 @@ export default async function DiscoverPage({
 	const countriesArray = params.countries?.split(",").filter(Boolean) || [];
 	const typesArray = params.types?.split(",").filter(Boolean) || [];
 	const sizesArray = params.sizes?.split(",").filter(Boolean) || [];
-	const verificationArray = params.verification?.split(",").filter(Boolean) || [];
+	const verificationArray =
+		params.verification?.split(",").filter(Boolean) || [];
 	const tagsArray = params.tags?.split(",").filter(Boolean) || [];
 
 	const [
@@ -189,7 +208,8 @@ export default async function DiscoverPage({
 	// Use URL param if explicitly set, otherwise use saved preference
 	const hasExplicitView = "view" in params;
 	const savedPreference = await getCommunitiesViewPreference();
-	const viewMode = hasExplicitView && params.view ? params.view : savedPreference;
+	const viewMode =
+		hasExplicitView && params.view ? params.view : savedPreference;
 
 	const activeTag = tagsArray.length === 1 ? tagsArray[0] : "todas";
 
@@ -265,7 +285,10 @@ export default async function DiscoverPage({
 									<div className="text-xs animate-pulse">
 										<div className="space-y-3">
 											{Array.from({ length: 12 }).map((_, i) => (
-												<div key={i} className="flex items-center gap-4 py-2 border-b border-border/50">
+												<div
+													key={i}
+													className="flex items-center gap-4 py-2 border-b border-border/50"
+												>
 													<div className="h-6 w-6 rounded-full bg-muted" />
 													<div className="flex-1 space-y-1">
 														<div className="h-3 w-32 rounded bg-muted" />
