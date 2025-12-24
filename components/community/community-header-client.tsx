@@ -5,7 +5,6 @@ import {
 	Calendar,
 	CheckCircle2,
 	Globe,
-	Mail,
 	MapPin,
 	Settings,
 	Users,
@@ -13,8 +12,26 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { GithubLogo } from "@/components/logos/github";
+import { InstagramLogo } from "@/components/logos/instagram";
+import { LinkedinLogo } from "@/components/logos/linkedin";
+import { TwitterLogo } from "@/components/logos/twitter";
 import type { Organization } from "@/lib/db/schema";
 import { CommunityActions } from "./community-actions";
+
+function extractUsername(url: string, platform: string): string {
+	try {
+		const parsed = new URL(url);
+		const path = parsed.pathname.replace(/^\//, "").replace(/\/$/, "");
+		const parts = path.split("/");
+		if (platform === "linkedin") {
+			return parts[1] || parts[0] || url;
+		}
+		return parts[0] || url;
+	} catch {
+		return url;
+	}
+}
 
 interface Tab {
 	id: "events" | "members" | "analytics" | "settings";
@@ -62,7 +79,7 @@ export function CommunityHeaderClient({
 				<div className="flex items-center justify-between gap-4 py-4">
 					<div className="flex items-center gap-3 min-w-0">
 						{community.logoUrl ? (
-							<div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden border border-border">
+							<div className="relative h-16 w-16 shrink-0 rounded-lg overflow-hidden border border-border">
 								<Image
 									src={community.logoUrl}
 									alt={community.displayName || community.name}
@@ -71,7 +88,7 @@ export function CommunityHeaderClient({
 								/>
 							</div>
 						) : (
-							<div className="h-10 w-10 shrink-0 rounded-lg bg-muted border border-border flex items-center justify-center text-sm font-medium text-muted-foreground">
+							<div className="h-16 w-16 shrink-0 rounded-lg bg-muted border border-border flex items-center justify-center text-xl font-medium text-muted-foreground">
 								{(community.displayName || community.name)
 									.charAt(0)
 									.toUpperCase()}
@@ -88,22 +105,19 @@ export function CommunityHeaderClient({
 								)}
 							</div>
 
-							<div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+							{community.description && (
+								<p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">
+									{community.description}
+								</p>
+							)}
+
+							<div className="flex items-center gap-3 text-xs text-muted-foreground mt-1 flex-wrap">
 								{community.department && (
 									<span className="inline-flex items-center gap-1">
 										<MapPin className="h-3 w-3" />
 										{community.department}
 										{community.country ? `, ${community.country}` : ""}
 									</span>
-								)}
-								{community.email && (
-									<a
-										href={`mailto:${community.email}`}
-										className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-									>
-										<Mail className="h-3 w-3" />
-										{community.email}
-									</a>
 								)}
 								{community.websiteUrl && (
 									<a
@@ -113,11 +127,55 @@ export function CommunityHeaderClient({
 										className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
 									>
 										<Globe className="h-3 w-3" />
-										<span className="truncate max-w-[150px]">
+										<span className="truncate max-w-[120px]">
 											{community.websiteUrl
 												.replace(/^https?:\/\//, "")
 												.replace(/\/$/, "")}
 										</span>
+									</a>
+								)}
+								{community.twitterUrl && (
+									<a
+										href={community.twitterUrl}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+									>
+										<TwitterLogo className="h-3 w-3" />@
+										{extractUsername(community.twitterUrl, "twitter")}
+									</a>
+								)}
+								{community.linkedinUrl && (
+									<a
+										href={community.linkedinUrl}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+									>
+										<LinkedinLogo className="h-3 w-3" mode="currentColor" />
+										{extractUsername(community.linkedinUrl, "linkedin")}
+									</a>
+								)}
+								{community.instagramUrl && (
+									<a
+										href={community.instagramUrl}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+									>
+										<InstagramLogo className="h-3 w-3" mode="currentColor" />@
+										{extractUsername(community.instagramUrl, "instagram")}
+									</a>
+								)}
+								{community.githubUrl && (
+									<a
+										href={community.githubUrl}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+									>
+										<GithubLogo className="h-3 w-3" mode="currentColor" />
+										{extractUsername(community.githubUrl, "github")}
 									</a>
 								)}
 							</div>

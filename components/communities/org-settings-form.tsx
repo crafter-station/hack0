@@ -1,27 +1,56 @@
 "use client";
 
+import { type Tag, TagInput } from "emblor";
 import {
-	Building2,
+	Check,
+	ChevronsUpDown,
 	Globe,
-	Image as ImageIcon,
+	Link2,
 	Loader2,
 	Save,
+	Tags,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { LocationSelector } from "@/components/communities/location-selector";
+import { GithubLogo } from "@/components/logos/github";
+import { InstagramLogo } from "@/components/logos/instagram";
+import { LinkedinLogo } from "@/components/logos/linkedin";
+import { TwitterLogo } from "@/components/logos/twitter";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup, ButtonGroupText } from "@/components/ui/button-group";
 import {
-	Field,
-	FieldDescription,
-	FieldGroup,
-	FieldLabel,
-} from "@/components/ui/field";
+	Command,
+	CommandGroup,
+	CommandItem,
+	CommandList,
+} from "@/components/ui/command";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { Input } from "@/components/ui/input";
-import { SearchableSelect } from "@/components/ui/searchable-select";
+import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
+import { Label } from "@/components/ui/label";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+	ResponsiveModal,
+	ResponsiveModalClose,
+	ResponsiveModalContent,
+	ResponsiveModalDescription,
+	ResponsiveModalFooter,
+	ResponsiveModalHeader,
+	ResponsiveModalInset,
+	ResponsiveModalTitle,
+	ResponsiveModalTrigger,
+} from "@/components/ui/responsive-modal";
 import { Textarea } from "@/components/ui/textarea";
 import { updateOrganizationById } from "@/lib/actions/organizations";
 import { ORGANIZER_TYPE_LABELS, type Organization } from "@/lib/db/schema";
+import {
+	getOrganizerTypeConfig,
+	ORGANIZER_TYPE_LIST,
+} from "@/lib/organizer-type-config";
 
 const ORGANIZER_TYPE_OPTIONS = Object.entries(ORGANIZER_TYPE_LABELS).map(
 	([value, label]) => ({
@@ -39,7 +68,32 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState(false);
+
+	const [name, setName] = useState(organization.name);
+	const [description, setDescription] = useState(
+		organization.description || "",
+	);
+	const [type, setType] = useState(organization.type || "community");
 	const [logoUrl, setLogoUrl] = useState(organization.logoUrl || "");
+	const [websiteUrl, setWebsiteUrl] = useState(organization.websiteUrl || "");
+	const [country, setCountry] = useState(organization.country || "");
+	const [department, setDepartment] = useState(organization.department || "");
+	const [twitterUrl, setTwitterUrl] = useState(organization.twitterUrl || "");
+	const [linkedinUrl, setLinkedinUrl] = useState(
+		organization.linkedinUrl || "",
+	);
+	const [instagramUrl, setInstagramUrl] = useState(
+		organization.instagramUrl || "",
+	);
+	const [githubUrl, setGithubUrl] = useState(organization.githubUrl || "");
+	const [tags, setTags] = useState<Tag[]>(
+		(organization.tags || []).map((t) => ({ id: t, text: t })),
+	);
+	const [activeTagIndex, setActiveTagIndex] = useState<number | null>(null);
+
+	const [descriptionOpen, setDescriptionOpen] = useState(false);
+	const [linksOpen, setLinksOpen] = useState(false);
+	const [typeSelectorOpen, setTypeSelectorOpen] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -47,22 +101,21 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
 		setError(null);
 		setSuccess(false);
 
-		const formData = new FormData(e.currentTarget);
-
-		const updateData: any = {
-			name: formData.get("name") as string,
-			description: (formData.get("description") as string) || undefined,
-			type: (formData.get("type") as any) || undefined,
-			websiteUrl: (formData.get("websiteUrl") as string) || undefined,
-			logoUrl: logoUrl || undefined,
-		};
-
-		if (organization.isPersonalOrg) {
-			updateData.slug = formData.get("slug") as string;
-		}
-
 		try {
-			await updateOrganizationById(organization.id, updateData);
+			await updateOrganizationById(organization.id, {
+				name,
+				description: description || undefined,
+				type: type as any,
+				websiteUrl: websiteUrl || undefined,
+				logoUrl: logoUrl || undefined,
+				country: country || undefined,
+				department: department || undefined,
+				twitterUrl: twitterUrl || undefined,
+				linkedinUrl: linkedinUrl || undefined,
+				instagramUrl: instagramUrl || undefined,
+				githubUrl: githubUrl || undefined,
+				tags: tags.length > 0 ? tags.map((t) => t.text) : undefined,
+			});
 
 			setSuccess(true);
 			router.refresh();
@@ -75,8 +128,10 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
 		}
 	};
 
+	const hasLinks = twitterUrl || linkedinUrl || instagramUrl || githubUrl;
+
 	return (
-		<form onSubmit={handleSubmit} className="space-y-8">
+		<form onSubmit={handleSubmit} className="space-y-6">
 			{error && (
 				<div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3">
 					<p className="text-sm text-red-600 dark:text-red-400">{error}</p>
@@ -91,138 +146,402 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
 				</div>
 			)}
 
-			<div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
-				{/* Left column - Main fields */}
-				<FieldGroup className="gap-8">
-					<Field>
-						<FieldLabel htmlFor="name">
-							<Building2 className="h-4 w-4" />
-							Nombre de la comunidad
-						</FieldLabel>
-						<Input
-							id="name"
-							name="name"
-							defaultValue={organization.name}
-							required
-							placeholder="Ej: START Lima"
-							className="text-base"
-						/>
-					</Field>
+			<div className="flex flex-col md:flex-row gap-6">
+				<div className="w-full md:w-56 flex-shrink-0 space-y-3">
+					<div>
+						<Label className="text-xs text-muted-foreground mb-2 block">
+							Tipo de organización
+						</Label>
+						<Popover open={typeSelectorOpen} onOpenChange={setTypeSelectorOpen}>
+							<PopoverTrigger asChild>
+								<Button
+									variant="outline"
+									role="combobox"
+									className="w-full justify-between h-auto py-2.5 px-3"
+								>
+									<div className="flex items-center gap-2.5">
+										{(() => {
+											const config = getOrganizerTypeConfig(type);
+											const Icon = config.icon;
+											return (
+												<>
+													<Icon className="h-4 w-4 text-muted-foreground" />
+													<span className="font-medium">{config.label}</span>
+												</>
+											);
+										})()}
+									</div>
+									<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent
+								className="w-[--radix-popover-trigger-width] p-0"
+								align="start"
+							>
+								<Command>
+									<CommandList>
+										<CommandGroup>
+											{ORGANIZER_TYPE_LIST.map((option) => {
+												const Icon = option.icon;
+												return (
+													<CommandItem
+														key={option.value}
+														value={option.value}
+														onSelect={(value) => {
+															setType(value);
+															setTypeSelectorOpen(false);
+														}}
+														className="flex items-start gap-2.5 py-2.5 cursor-pointer"
+													>
+														<Icon className="h-4 w-4 text-muted-foreground mt-0.5" />
+														<div className="flex-1 min-w-0">
+															<div className="font-medium text-sm">
+																{option.label}
+															</div>
+															<div className="text-xs text-muted-foreground">
+																{option.description}
+															</div>
+														</div>
+														{option.value === type && (
+															<Check className="h-4 w-4 shrink-0 text-emerald-500 mt-0.5" />
+														)}
+													</CommandItem>
+												);
+											})}
+										</CommandGroup>
+									</CommandList>
+								</Command>
+							</PopoverContent>
+						</Popover>
+					</div>
 
-					<Field>
-						<FieldLabel htmlFor="slug">URL personalizada</FieldLabel>
-						<div className="flex items-center gap-2">
-							<span className="text-sm text-muted-foreground">
-								hack0.dev/c/
-							</span>
-							<Input
-								id="slug"
-								name="slug"
-								defaultValue={organization.slug}
-								disabled={!organization.isPersonalOrg}
-								className={
-									organization.isPersonalOrg ? "flex-1" : "flex-1 bg-muted"
-								}
+					<div className="w-full aspect-square overflow-hidden bg-muted border border-border rounded-lg">
+						{logoUrl ? (
+							<div className="relative w-full h-full group">
+								<img
+									src={logoUrl}
+									alt="Logo"
+									className="w-full h-full object-cover"
+								/>
+								<button
+									type="button"
+									onClick={() => setLogoUrl("")}
+									className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+								>
+									<span className="text-white text-xs">Cambiar</span>
+								</button>
+							</div>
+						) : (
+							<ImageUpload
+								value={logoUrl}
+								onChange={setLogoUrl}
+								className="w-full h-full"
+								aspectRatio="square"
 							/>
-						</div>
-						<FieldDescription>
-							{organization.isPersonalOrg
-								? "Puedes personalizar tu URL de perfil"
-								: "El slug no se puede cambiar"}
-						</FieldDescription>
-					</Field>
-
-					<Field>
-						<FieldLabel htmlFor="description">Descripción</FieldLabel>
-						<Textarea
-							id="description"
-							name="description"
-							defaultValue={organization.description || ""}
-							placeholder="Breve descripción de tu comunidad..."
-							rows={4}
-							className="resize-none"
-						/>
-						<FieldDescription>
-							Describe brevemente tu comunidad y su misión
-						</FieldDescription>
-					</Field>
-
-					<Field>
-						<FieldLabel htmlFor="type">
-							<Building2 className="h-4 w-4" />
-							Tipo de comunidad
-						</FieldLabel>
-						<SearchableSelect
-							options={ORGANIZER_TYPE_OPTIONS}
-							value={organization.type || "community"}
-							onValueChange={(value) => {
-								const typeInput = document.querySelector(
-									'input[name="type"]',
-								) as HTMLInputElement;
-								if (typeInput) typeInput.value = value;
-							}}
-							placeholder="Selecciona un tipo"
-							searchPlaceholder="Buscar tipo..."
-							emptyMessage="No se encontró el tipo"
-						/>
-						<input
-							type="hidden"
-							name="type"
-							defaultValue={organization.type || "community"}
-						/>
-					</Field>
-
-					<Field>
-						<FieldLabel htmlFor="websiteUrl">
-							<Globe className="h-4 w-4" />
-							Sitio web
-						</FieldLabel>
-						<Input
-							id="websiteUrl"
-							name="websiteUrl"
-							type="url"
-							defaultValue={organization.websiteUrl || ""}
-							placeholder="https://ejemplo.com"
-						/>
-					</Field>
-				</FieldGroup>
-
-				{/* Right column - Logo (sticky sidebar) */}
-				<div className="lg:sticky lg:top-24 h-fit">
-					<Field>
-						<FieldLabel>
-							<ImageIcon className="h-4 w-4" />
-							Logo
-						</FieldLabel>
-						<ImageUpload
-							value={logoUrl}
-							onChange={setLogoUrl}
-							onRemove={() => setLogoUrl("")}
-							endpoint="imageUploader"
-							aspectRatio="square"
-						/>
-						<FieldDescription className="text-center">
-							Cuadrado, max 4MB
-						</FieldDescription>
-					</Field>
+						)}
+					</div>
 				</div>
-			</div>
 
-			{/* Sticky submit bar */}
-			<div className="flex gap-3 justify-end sticky bottom-4 bg-background/80 backdrop-blur-sm p-4 rounded-lg border">
-				<Button type="submit" disabled={isSubmitting} className="min-w-32">
-					{isSubmitting ? (
-						<>
-							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-							Guardando...
-						</>
-					) : (
-						<>
-							<Save className="mr-2 h-4 w-4" />
-							Guardar cambios
-						</>
-					)}
-				</Button>
+				<div className="flex-1 space-y-3">
+					<textarea
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+						required
+						placeholder="Nombre de la comunidad"
+						rows={2}
+						className="w-full text-2xl font-semibold bg-transparent border-none outline-none focus:outline-none placeholder:text-muted-foreground/40 p-0 resize-none"
+					/>
+
+					<div>
+						<Label className="text-xs text-muted-foreground mb-2 block">
+							URL de la comunidad
+						</Label>
+						<ButtonGroup className="w-full [&>*]:!rounded-none">
+							<ButtonGroupText asChild className="!rounded-none px-2">
+								<Label>hack0.dev/c/</Label>
+							</ButtonGroupText>
+							<InputGroup className="flex-1 !rounded-none">
+								<InputGroupInput
+									value={organization.slug}
+									disabled
+									className="bg-muted"
+								/>
+							</InputGroup>
+						</ButtonGroup>
+						<p className="text-xs text-muted-foreground mt-1">
+							El slug no se puede cambiar
+						</p>
+					</div>
+
+					<div>
+						<Label className="text-xs text-muted-foreground mb-2 block">
+							Descripción
+						</Label>
+						<ResponsiveModal
+							open={descriptionOpen}
+							onOpenChange={setDescriptionOpen}
+						>
+							<ResponsiveModalTrigger asChild>
+								<ButtonGroup className="w-full [&>*]:!rounded-none cursor-pointer">
+									<ButtonGroupText className="!rounded-none">
+										<Globe className="h-4 w-4" />
+									</ButtonGroupText>
+									<button
+										type="button"
+										className="flex-1 border shadow-xs bg-background text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
+									>
+										{description ? (
+											<span className="line-clamp-1">{description}</span>
+										) : (
+											<span className="text-muted-foreground">
+												Describe tu comunidad...
+											</span>
+										)}
+									</button>
+								</ButtonGroup>
+							</ResponsiveModalTrigger>
+							<ResponsiveModalContent className="max-w-lg">
+								<ResponsiveModalHeader>
+									<ResponsiveModalTitle>Descripción</ResponsiveModalTitle>
+									<ResponsiveModalDescription>
+										Escribe una descripción que ayude a los visitantes a
+										entender de qué trata tu comunidad.
+									</ResponsiveModalDescription>
+								</ResponsiveModalHeader>
+								<ResponsiveModalInset>
+									<Textarea
+										value={description}
+										onChange={(e) => setDescription(e.target.value)}
+										rows={6}
+										placeholder="Describe tu comunidad..."
+										className="w-full min-h-[150px] resize-none"
+									/>
+								</ResponsiveModalInset>
+								<ResponsiveModalFooter>
+									<ResponsiveModalClose asChild>
+										<Button variant="outline">Cancelar</Button>
+									</ResponsiveModalClose>
+									<ResponsiveModalClose asChild>
+										<Button>Guardar</Button>
+									</ResponsiveModalClose>
+								</ResponsiveModalFooter>
+							</ResponsiveModalContent>
+						</ResponsiveModal>
+					</div>
+
+					<div>
+						<Label className="text-xs text-muted-foreground mb-2 block">
+							Etiquetas
+						</Label>
+						<ButtonGroup className="w-full [&>*]:!rounded-none">
+							<ButtonGroupText className="!rounded-none">
+								<Tags className="h-4 w-4" />
+							</ButtonGroupText>
+							<div className="flex-1 border shadow-xs bg-background transition-colors focus-within:border-foreground/30 py-1 px-3">
+								<TagInput
+									placeholder="Añadir etiqueta..."
+									tags={tags}
+									setTags={(newTags) => setTags(newTags as Tag[])}
+									activeTagIndex={activeTagIndex}
+									setActiveTagIndex={setActiveTagIndex}
+									styleClasses={{
+										inlineTagsContainer:
+											"!rounded-none !border-0 bg-transparent p-0 gap-1.5",
+										input:
+											"!rounded-none !border-0 !ring-0 !outline-none !shadow-none !p-0 w-full min-w-[80px] !h-7 text-sm bg-transparent focus:!ring-0 focus:!border-0 focus-visible:!ring-0 focus-visible:!border-0",
+										tag: {
+											body: "h-6 relative bg-muted border border-border hover:bg-muted/80 font-medium text-xs ps-2 pe-6",
+											closeButton:
+												"absolute -inset-y-px -end-px p-0 flex size-6 transition-colors text-muted-foreground/80 hover:text-foreground",
+										},
+									}}
+								/>
+							</div>
+						</ButtonGroup>
+					</div>
+
+					<div>
+						<Label className="text-xs text-muted-foreground mb-2 block">
+							Ubicación
+						</Label>
+						<LocationSelector
+							country={country}
+							onCountryChange={setCountry}
+							region={department}
+							onRegionChange={setDepartment}
+						/>
+					</div>
+
+					<div>
+						<Label className="text-xs text-muted-foreground mb-2 block">
+							Redes sociales
+						</Label>
+						<ResponsiveModal open={linksOpen} onOpenChange={setLinksOpen}>
+							<ResponsiveModalTrigger asChild>
+								<ButtonGroup className="w-full [&>*]:!rounded-none cursor-pointer">
+									<ButtonGroupText className="!rounded-none">
+										<Link2 className="h-4 w-4" />
+									</ButtonGroupText>
+									<button
+										type="button"
+										className="flex-1 border shadow-xs bg-background text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
+									>
+										{hasLinks ? (
+											<span className="flex items-center gap-3 text-foreground">
+												{websiteUrl && <Globe className="h-4 w-4" />}
+												{twitterUrl && <TwitterLogo className="h-4 w-4" />}
+												{linkedinUrl && (
+													<LinkedinLogo
+														className="h-4 w-4"
+														mode="currentColor"
+													/>
+												)}
+												{instagramUrl && (
+													<InstagramLogo
+														className="h-4 w-4"
+														mode="currentColor"
+													/>
+												)}
+												{githubUrl && (
+													<GithubLogo className="h-4 w-4" mode="currentColor" />
+												)}
+											</span>
+										) : (
+											<span className="text-muted-foreground">
+												Agregar redes sociales...
+											</span>
+										)}
+									</button>
+								</ButtonGroup>
+							</ResponsiveModalTrigger>
+							<ResponsiveModalContent className="max-w-lg">
+								<ResponsiveModalHeader>
+									<ResponsiveModalTitle>Redes sociales</ResponsiveModalTitle>
+									<ResponsiveModalDescription>
+										Agrega los enlaces a tus redes sociales para que tu
+										comunidad pueda encontrarte.
+									</ResponsiveModalDescription>
+								</ResponsiveModalHeader>
+								<ResponsiveModalInset>
+									<div className="space-y-4">
+										<div className="space-y-2">
+											<Label className="text-sm">Sitio web</Label>
+											<ButtonGroup className="w-full [&>*]:!rounded-none">
+												<ButtonGroupText className="!rounded-none">
+													<Globe className="h-4 w-4" />
+												</ButtonGroupText>
+												<InputGroup className="flex-1 !rounded-none">
+													<InputGroupInput
+														type="url"
+														value={websiteUrl}
+														onChange={(e) => setWebsiteUrl(e.target.value)}
+														placeholder="https://..."
+													/>
+												</InputGroup>
+											</ButtonGroup>
+										</div>
+										<div className="space-y-2">
+											<Label className="text-sm">Twitter / X</Label>
+											<ButtonGroup className="w-full [&>*]:!rounded-none">
+												<ButtonGroupText className="!rounded-none text-foreground">
+													<TwitterLogo className="h-4 w-4" />
+												</ButtonGroupText>
+												<InputGroup className="flex-1 !rounded-none">
+													<InputGroupInput
+														type="url"
+														value={twitterUrl}
+														onChange={(e) => setTwitterUrl(e.target.value)}
+														placeholder="https://x.com/..."
+													/>
+												</InputGroup>
+											</ButtonGroup>
+										</div>
+										<div className="space-y-2">
+											<Label className="text-sm">LinkedIn</Label>
+											<ButtonGroup className="w-full [&>*]:!rounded-none">
+												<ButtonGroupText className="!rounded-none text-foreground">
+													<LinkedinLogo
+														className="h-4 w-4"
+														mode="currentColor"
+													/>
+												</ButtonGroupText>
+												<InputGroup className="flex-1 !rounded-none">
+													<InputGroupInput
+														type="url"
+														value={linkedinUrl}
+														onChange={(e) => setLinkedinUrl(e.target.value)}
+														placeholder="https://linkedin.com/company/..."
+													/>
+												</InputGroup>
+											</ButtonGroup>
+										</div>
+										<div className="space-y-2">
+											<Label className="text-sm">Instagram</Label>
+											<ButtonGroup className="w-full [&>*]:!rounded-none">
+												<ButtonGroupText className="!rounded-none text-foreground">
+													<InstagramLogo
+														className="h-4 w-4"
+														mode="currentColor"
+													/>
+												</ButtonGroupText>
+												<InputGroup className="flex-1 !rounded-none">
+													<InputGroupInput
+														type="url"
+														value={instagramUrl}
+														onChange={(e) => setInstagramUrl(e.target.value)}
+														placeholder="https://instagram.com/..."
+													/>
+												</InputGroup>
+											</ButtonGroup>
+										</div>
+										<div className="space-y-2">
+											<Label className="text-sm">GitHub</Label>
+											<ButtonGroup className="w-full [&>*]:!rounded-none">
+												<ButtonGroupText className="!rounded-none text-foreground">
+													<GithubLogo className="h-4 w-4" mode="currentColor" />
+												</ButtonGroupText>
+												<InputGroup className="flex-1 !rounded-none">
+													<InputGroupInput
+														type="url"
+														value={githubUrl}
+														onChange={(e) => setGithubUrl(e.target.value)}
+														placeholder="https://github.com/..."
+													/>
+												</InputGroup>
+											</ButtonGroup>
+										</div>
+									</div>
+								</ResponsiveModalInset>
+								<ResponsiveModalFooter>
+									<ResponsiveModalClose asChild>
+										<Button variant="outline">Cancelar</Button>
+									</ResponsiveModalClose>
+									<ResponsiveModalClose asChild>
+										<Button>Guardar</Button>
+									</ResponsiveModalClose>
+								</ResponsiveModalFooter>
+							</ResponsiveModalContent>
+						</ResponsiveModal>
+					</div>
+
+					<Button
+						type="submit"
+						disabled={isSubmitting || !name}
+						className="w-full h-10 text-sm gap-2"
+					>
+						{isSubmitting ? (
+							<>
+								<Loader2 className="h-4 w-4 animate-spin" />
+								Guardando...
+							</>
+						) : (
+							<>
+								<Save className="h-4 w-4" />
+								Guardar cambios
+							</>
+						)}
+					</Button>
+				</div>
 			</div>
 		</form>
 	);

@@ -476,6 +476,10 @@ export interface PublicCommunity {
 	country: string | null;
 	department: string | null;
 	websiteUrl: string | null;
+	twitterUrl: string | null;
+	linkedinUrl: string | null;
+	instagramUrl: string | null;
+	githubUrl: string | null;
 	tags: string[] | null;
 }
 
@@ -596,6 +600,10 @@ export async function getPublicCommunities(
 		country: c.country,
 		department: c.department,
 		websiteUrl: c.websiteUrl,
+		twitterUrl: c.twitterUrl,
+		linkedinUrl: c.linkedinUrl,
+		instagramUrl: c.instagramUrl,
+		githubUrl: c.githubUrl,
 		tags: c.tags,
 	}));
 

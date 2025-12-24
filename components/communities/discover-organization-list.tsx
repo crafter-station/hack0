@@ -6,7 +6,6 @@ import {
 	ChevronUp,
 	Globe,
 	Loader2,
-	Mail,
 	MapPin,
 } from "lucide-react";
 import Image from "next/image";
@@ -14,6 +13,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { GithubLogo } from "@/components/logos/github";
+import { InstagramLogo } from "@/components/logos/instagram";
+import { LinkedinLogo } from "@/components/logos/linkedin";
+import { TwitterLogo } from "@/components/logos/twitter";
 import { followCommunity, unfollowCommunity } from "@/lib/actions/communities";
 import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
 
@@ -32,6 +35,10 @@ interface PublicCommunity {
 	country: string | null;
 	department: string | null;
 	websiteUrl: string | null;
+	twitterUrl: string | null;
+	linkedinUrl: string | null;
+	instagramUrl: string | null;
+	githubUrl: string | null;
 }
 
 interface DiscoverOrganizationListProps {
@@ -261,17 +268,7 @@ export function DiscoverOrganizationList({
 									)}
 								</td>
 								<td className="py-2 pr-4 hidden xl:table-cell">
-									<div className="flex items-center gap-2">
-										{org.email && (
-											<a
-												href={`mailto:${org.email}`}
-												className="text-muted-foreground hover:text-foreground transition-colors"
-												onClick={(e) => e.stopPropagation()}
-												title={org.email}
-											>
-												<Mail className="h-3.5 w-3.5" />
-											</a>
-										)}
+									<div className="flex items-center gap-1.5">
 										{org.websiteUrl && (
 											<a
 												href={org.websiteUrl}
@@ -284,9 +281,66 @@ export function DiscoverOrganizationList({
 												<Globe className="h-3.5 w-3.5" />
 											</a>
 										)}
-										{!org.email && !org.websiteUrl && (
-											<span className="text-muted-foreground/50">—</span>
+										{org.twitterUrl && (
+											<a
+												href={org.twitterUrl}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="text-muted-foreground hover:text-foreground transition-colors"
+												onClick={(e) => e.stopPropagation()}
+											>
+												<TwitterLogo className="h-3.5 w-3.5" />
+											</a>
 										)}
+										{org.linkedinUrl && (
+											<a
+												href={org.linkedinUrl}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="text-muted-foreground hover:text-foreground transition-colors"
+												onClick={(e) => e.stopPropagation()}
+											>
+												<LinkedinLogo
+													className="h-3.5 w-3.5"
+													mode="currentColor"
+												/>
+											</a>
+										)}
+										{org.instagramUrl && (
+											<a
+												href={org.instagramUrl}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="text-muted-foreground hover:text-foreground transition-colors"
+												onClick={(e) => e.stopPropagation()}
+											>
+												<InstagramLogo
+													className="h-3.5 w-3.5"
+													mode="currentColor"
+												/>
+											</a>
+										)}
+										{org.githubUrl && (
+											<a
+												href={org.githubUrl}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="text-muted-foreground hover:text-foreground transition-colors"
+												onClick={(e) => e.stopPropagation()}
+											>
+												<GithubLogo
+													className="h-3.5 w-3.5"
+													mode="currentColor"
+												/>
+											</a>
+										)}
+										{!org.websiteUrl &&
+											!org.twitterUrl &&
+											!org.linkedinUrl &&
+											!org.instagramUrl &&
+											!org.githubUrl && (
+												<span className="text-muted-foreground/50">—</span>
+											)}
 									</div>
 								</td>
 								<td className="py-2 pr-4 hidden sm:table-cell">

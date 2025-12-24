@@ -1,18 +1,15 @@
 "use client";
 
-import {
-	CheckCircle2,
-	Globe,
-	Loader2,
-	Mail,
-	MapPin,
-	Users,
-} from "lucide-react";
+import { CheckCircle2, Globe, Loader2, MapPin, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { GithubLogo } from "@/components/logos/github";
+import { InstagramLogo } from "@/components/logos/instagram";
+import { LinkedinLogo } from "@/components/logos/linkedin";
+import { TwitterLogo } from "@/components/logos/twitter";
 import { followCommunity, unfollowCommunity } from "@/lib/actions/communities";
 import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
 
@@ -31,6 +28,10 @@ interface PublicCommunity {
 	country: string | null;
 	department: string | null;
 	websiteUrl: string | null;
+	twitterUrl: string | null;
+	linkedinUrl: string | null;
+	instagramUrl: string | null;
+	githubUrl: string | null;
 }
 
 interface DiscoverOrganizationCardsProps {
@@ -166,26 +167,63 @@ export function DiscoverOrganizationCards({
 								{org.department}
 							</span>
 						)}
-						{org.email && (
-							<a
-								href={`mailto:${org.email}`}
-								className="relative z-10 inline-flex items-center gap-1 hover:text-foreground transition-colors"
-								onClick={(e) => e.stopPropagation()}
-							>
-								<Mail className="h-3 w-3" />
-							</a>
-						)}
-						{org.websiteUrl && (
-							<a
-								href={org.websiteUrl}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="relative z-10 inline-flex items-center gap-1 hover:text-foreground transition-colors"
-								onClick={(e) => e.stopPropagation()}
-							>
-								<Globe className="h-3 w-3" />
-							</a>
-						)}
+						<div className="flex items-center gap-1.5">
+							{org.websiteUrl && (
+								<a
+									href={org.websiteUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="relative z-10 hover:text-foreground transition-colors"
+									onClick={(e) => e.stopPropagation()}
+								>
+									<Globe className="h-3 w-3" />
+								</a>
+							)}
+							{org.twitterUrl && (
+								<a
+									href={org.twitterUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="relative z-10 hover:text-foreground transition-colors"
+									onClick={(e) => e.stopPropagation()}
+								>
+									<TwitterLogo className="h-3 w-3" />
+								</a>
+							)}
+							{org.linkedinUrl && (
+								<a
+									href={org.linkedinUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="relative z-10 hover:text-foreground transition-colors"
+									onClick={(e) => e.stopPropagation()}
+								>
+									<LinkedinLogo className="h-3 w-3" mode="currentColor" />
+								</a>
+							)}
+							{org.instagramUrl && (
+								<a
+									href={org.instagramUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="relative z-10 hover:text-foreground transition-colors"
+									onClick={(e) => e.stopPropagation()}
+								>
+									<InstagramLogo className="h-3 w-3" mode="currentColor" />
+								</a>
+							)}
+							{org.githubUrl && (
+								<a
+									href={org.githubUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="relative z-10 hover:text-foreground transition-colors"
+									onClick={(e) => e.stopPropagation()}
+								>
+									<GithubLogo className="h-3 w-3" mode="currentColor" />
+								</a>
+							)}
+						</div>
 					</div>
 
 					<div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
