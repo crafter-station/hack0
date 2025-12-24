@@ -1,29 +1,23 @@
-#string {
-  width: 0.1rem;
-  border-right: 0.1rem solid #777;
-  height: 45vmin;
-  transform: translate3d(10vmin, 0, 0);
-}
-
 #container {
   position: absolute;
   left: 50%;
-  transform: translate3d(-50%, 0, 0);
+  top: 50%;
+  transform: translate3d(-50%, -50%, 0);
   width: 20vmin;
   perspective: 2000px;
   transform-style: preserve-3d;
-  transform-origin: 50% 0%;
+  transform-origin: 50% 50%;
   transition: transform 1s ease-out;
-  animation: swing 1600ms infinite alternate ease-in-out;
 }
 
 #box {
   transform-style: preserve-3d;
+  transform: rotateX(-20deg) rotateY(-30deg);
 }
 
 #lid {
   transform-style: preserve-3d;
-  transform: translate3d(-1vmin, 0, 0);
+  transform: translate3d(-1vmin, 0, 0) rotateX(-20deg) rotateY(-30deg);
 }
 
 #lid .face {
@@ -114,13 +108,4 @@
   width: 100%;
   height: 20%;
   margin: 40% 0;
-}
-
-@keyframes swing {
-  0% {
-    transform: rotateY(-30deg) rotateZ(40deg);
-  }
-  100% {
-    transform: rotateY(30deg) rotateZ(-40deg);
-  }
 }
