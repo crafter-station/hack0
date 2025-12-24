@@ -25,10 +25,18 @@ export async function POST(req: Request) {
 			return Response.json({ error: "Card not found" }, { status: 404 });
 		}
 
-		await db
-			.update(giftCards)
-			.set({ userId })
-			.where(eq(giftCards.shareToken, token));
+		const userExistingCard = await db.query.giftCards.findFirst({
+			where: eq(giftCards.userId, userId),
+		});
+
+		if (!userExistingCard) {
+			if (!card.userId) {
+				await db
+					.update(giftCards)
+					.set({ userId })
+					.where(eq(giftCards.shareToken, token));
+			}
+		}
 
 		const existingAchievement = await db.query.userAchievements.findFirst({
 			where: and(
