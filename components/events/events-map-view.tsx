@@ -1,29 +1,31 @@
 "use client";
 
 import * as d3 from "d3";
-import { AnimatePresence, motion, useSpring } from "framer-motion";
-import { Calendar, MapPin, Trophy, Zap } from "lucide-react";
+import { Calendar, MapPin, Trophy } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useMemo, useState, useRef, useEffect } from "react";
+import {
+	useCallback,
+	useDeferredValue,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { feature } from "topojson-client";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { EventFilters, EventWithOrg } from "@/lib/actions/events";
-import {
-	formatEventDateRange,
-	getEventStatus,
-} from "@/lib/event-utils";
+import { formatEventDateRange, getEventStatus } from "@/lib/event-utils";
 import {
 	ISO_TO_MAP_ID,
 	LATAM_COUNTRY_IDS,
-	PERU_COUNTRY_ID,
 	PERU_DEPARTMENT_COORDS,
 	PERU_DEPARTMENT_NAME_MAP,
 } from "@/lib/geo/peru-departments";
 import worldData from "@/public/countries-110m.json";
-import peruDeptData from "@/public/peru_departamental_simple.json";
 import latamDotsData from "@/public/latam-dots.json";
+import peruDeptData from "@/public/peru_departamental_simple.json";
 import peruDotsData from "@/public/peru-dots.json";
 
 interface GeoFeature {
@@ -36,6 +38,21 @@ interface GeoFeature {
 const WIDTH = 1000;
 const HEIGHT = 1100;
 
+const pulseKeyframes = `
+@keyframes pulse-dot {
+  0%, 100% { opacity: var(--base-opacity); transform: scale(1); }
+  50% { opacity: calc(var(--base-opacity) + 0.3); transform: scale(1.3); }
+}
+@keyframes pulse-marker {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.3); }
+}
+@keyframes pulse-ring {
+  0% { transform: scale(0.5); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 0; }
+}
+`;
+
 interface EventsMapViewProps {
 	events: EventWithOrg[];
 	total?: number;
@@ -47,7 +64,10 @@ const LATAM_CENTER: [number, number] = [-70, -15];
 const LATAM_SCALE = 750;
 
 // Country zoom configurations: center coordinates and scale for each country
-const COUNTRY_ZOOM_CONFIG: Record<string, { center: [number, number]; scale: number }> = {
+const COUNTRY_ZOOM_CONFIG: Record<
+	string,
+	{ center: [number, number]; scale: number }
+> = {
 	PE: { center: [-75, -9], scale: 3145 },
 	CO: { center: [-74, 4], scale: 2200 },
 	AR: { center: [-64, -38], scale: 1400 },
@@ -132,9 +152,7 @@ function EventListItem({
 	const itemRef = useRef<HTMLDivElement>(null);
 	const status = getEventStatus(event);
 	const isEnded = status.status === "ended";
-	const eventUrl = event.organization?.slug
-		? `/c/${event.organization.slug}/events/${event.slug}`
-		: `/${event.slug}`;
+	const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
 
 	const prize =
 		event.prizePool && event.prizePool > 0
@@ -151,19 +169,13 @@ function EventListItem({
 	}, [isHovered, listRef]);
 
 	return (
-		<motion.div
+		<div
 			ref={itemRef}
 			data-event-item
-			initial={false}
-			animate={{
-				backgroundColor: isHovered ? "hsl(var(--primary) / 0.08)" : "transparent",
-				borderLeftColor: isHovered ? "hsl(var(--primary))" : "transparent",
-				borderLeftWidth: isHovered ? 3 : 0,
-			}}
-			transition={{ duration: 0.08 }}
 			className={`
-				group relative px-4 py-3 border-b border-border/50 cursor-pointer
+				group relative px-4 py-3 border-b border-border/50 cursor-pointer border-l-3
 				${isEnded ? "opacity-50" : ""}
+				${isHovered ? "bg-primary/8 border-l-primary" : "border-l-transparent"}
 			`}
 			onMouseEnter={onHover}
 			onMouseLeave={onLeave}
@@ -226,28 +238,11 @@ function EventListItem({
 					</div>
 				</div>
 			</Link>
-
-			<AnimatePresence>
-				{isHovered && (
-					<motion.div
-						initial={{ opacity: 0, scale: 0.5, x: 10 }}
-						animate={{ opacity: 1, scale: 1, x: 0 }}
-						exit={{ opacity: 0, scale: 0.5, x: 10 }}
-						transition={{ duration: 0.1 }}
-						className="absolute right-3 top-1/2 -translate-y-1/2"
-					>
-						<Zap className="h-4 w-4 text-primary" />
-					</motion.div>
-				)}
-			</AnimatePresence>
-		</motion.div>
+		</div>
 	);
 }
 
-export function EventsMapView({
-	events,
-	total,
-}: EventsMapViewProps) {
+export function EventsMapView({ events, total }: EventsMapViewProps) {
 	const [hoveredEventId, setHoveredEventId] = useState<string | null>(null);
 	const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 	const listRef = useRef<HTMLDivElement>(null);
@@ -279,19 +274,16 @@ export function EventsMapView({
 			.filter(Boolean) as EventLocation[];
 	}, [events]);
 
+	const deferredHoveredId = useDeferredValue(hoveredEventId);
+
 	const hoveredLocation = useMemo(
-		() => eventLocations.find((loc) => loc.eventId === hoveredEventId),
-		[eventLocations, hoveredEventId]
+		() => eventLocations.find((loc) => loc.eventId === deferredHoveredId),
+		[eventLocations, deferredHoveredId],
 	);
 
 	const handleEventHover = useCallback((eventId: string | null) => {
 		setHoveredEventId(eventId);
-		// Sync selected index when hovering
-		if (eventId) {
-			const index = events.findIndex((e) => e.id === eventId);
-			if (index !== -1) setSelectedIndex(index);
-		}
-	}, [events]);
+	}, []);
 
 	// Keyboard navigation
 	useEffect(() => {
@@ -335,9 +327,11 @@ export function EventsMapView({
 	const zoomedCountry = useMemo(() => {
 		if (!hoveredLocation?.country) return null;
 		// For Peru, only zoom if we have department info
-		if (hoveredLocation.country === "PE" && !hoveredLocation.department) return null;
+		if (hoveredLocation.country === "PE" && !hoveredLocation.department)
+			return null;
 		// For other countries, zoom if we have a config
-		if (COUNTRY_ZOOM_CONFIG[hoveredLocation.country]) return hoveredLocation.country;
+		if (COUNTRY_ZOOM_CONFIG[hoveredLocation.country])
+			return hoveredLocation.country;
 		return null;
 	}, [hoveredLocation]);
 
@@ -350,16 +344,13 @@ export function EventsMapView({
 	}
 
 	return (
-		<div 
+		<div
 			ref={containerRef}
 			className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-3 h-[calc(100vh-200px)] min-h-[600px]"
-			tabIndex={0}
 		>
 			<div className="border rounded-xl overflow-hidden bg-card">
 				<div className="px-4 py-3 border-b bg-muted/30">
-					<h3 className="font-semibold text-sm">
-						{events.length} eventos
-					</h3>
+					<h3 className="font-semibold text-sm">{events.length} eventos</h3>
 					<p className="text-xs text-muted-foreground">
 						↑↓ para navegar • Hover para explorar
 					</p>
@@ -407,20 +398,21 @@ function DotPatternMap({
 	zoomedCountry: string | null;
 }) {
 	const countriesData = useMemo(() => {
-		const countries = feature(
+		const featureCollection = feature(
 			worldData as any,
-			(worldData as any).objects.countries
-		).features;
-		return countries.filter((c: any) =>
-			LATAM_COUNTRY_IDS.includes(c.id)
-		) as GeoFeature[];
+			(worldData as any).objects.countries,
+		) as unknown as { features: GeoFeature[] };
+		return featureCollection.features.filter((c) =>
+			LATAM_COUNTRY_IDS.includes(c.id as string),
+		);
 	}, []);
 
 	const peruDepartments = useMemo(() => {
-		return feature(
+		const featureCollection = feature(
 			peruDeptData as any,
-			(peruDeptData as any).objects.peru_departamental_simple
-		).features as GeoFeature[];
+			(peruDeptData as any).objects.peru_departamental_simple,
+		) as unknown as { features: GeoFeature[] };
+		return featureCollection.features;
 	}, []);
 
 	// Base LATAM projection
@@ -446,7 +438,10 @@ function DotPatternMap({
 	// Current active projection
 	const activeProjection = zoomedProjection || latamProjection;
 
-	const latamGeoPath = useMemo(() => d3.geoPath().projection(latamProjection), [latamProjection]);
+	const latamGeoPath = useMemo(
+		() => d3.geoPath().projection(latamProjection),
+		[latamProjection],
+	);
 	const zoomedGeoPath = useMemo(() => {
 		if (!zoomedProjection) return null;
 		return d3.geoPath().projection(zoomedProjection);
@@ -454,12 +449,24 @@ function DotPatternMap({
 
 	// Countries with events
 	const countriesWithEvents = useMemo(() => {
-		return [...new Set(eventLocations.map((loc) => loc.country ? ISO_TO_MAP_ID[loc.country] : null).filter(Boolean))] as string[];
+		return [
+			...new Set(
+				eventLocations
+					.map((loc) => (loc.country ? ISO_TO_MAP_ID[loc.country] : null))
+					.filter(Boolean),
+			),
+		] as string[];
 	}, [eventLocations]);
 
 	// Departments with events (for Peru)
 	const departmentsWithEvents = useMemo(() => {
-		return [...new Set(eventLocations.filter((loc) => loc.department).map((loc) => loc.department))] as string[];
+		return [
+			...new Set(
+				eventLocations
+					.filter((loc) => loc.department)
+					.map((loc) => loc.department),
+			),
+		] as string[];
 	}, [eventLocations]);
 
 	// Get the zoomed country feature
@@ -482,7 +489,7 @@ function DotPatternMap({
 	}, [eventLocations, activeProjection]);
 
 	const hoveredProjected = projectedLocations.find(
-		(loc) => loc.eventId === hoveredEventId
+		(loc) => loc.eventId === hoveredEventId,
 	);
 
 	// Department event coords for Peru view
@@ -502,7 +509,8 @@ function DotPatternMap({
 
 	// Reprojected dots for zoomed country view (non-Peru)
 	const zoomedCountryDots = useMemo(() => {
-		if (!zoomedCountry || zoomedCountry === "PE" || !zoomedProjection) return [];
+		if (!zoomedCountry || zoomedCountry === "PE" || !zoomedProjection)
+			return [];
 		const mapId = ISO_TO_MAP_ID[zoomedCountry];
 		const countryData = latamDotsData.find((c) => c.countryId === mapId);
 		if (!countryData) return [];
@@ -526,406 +534,288 @@ function DotPatternMap({
 
 	return (
 		<div className="relative flex items-center justify-center w-full h-full">
+			<style dangerouslySetInnerHTML={{ __html: pulseKeyframes }} />
 			<svg
 				viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
 				className="w-full h-full bg-transparent"
 				preserveAspectRatio="xMidYMid meet"
 			>
-				<AnimatePresence mode="wait">
-					{!zoomedCountry ? (
-						<motion.g
-							key="latam-view"
-							initial={{ opacity: 0, scale: 0.95 }}
-							animate={{ opacity: 1, scale: 1 }}
-							exit={{ opacity: 0, scale: 1.05 }}
-							transition={{ duration: 0.15, ease: "easeOut" }}
-						>
-							{/* LATAM dot pattern - exactly like home page */}
-							{latamDotsData.map((country) => {
-								const isCountryHovered = hoveredLocation?.country && ISO_TO_MAP_ID[hoveredLocation.country] === country.countryId;
-								const hasEvents = countriesWithEvents.includes(country.countryId);
-								const countryFeature = countriesData.find((c) => c.id === country.countryId);
+				{!zoomedCountry ? (
+					<g>
+						{/* LATAM dot pattern - exactly like home page */}
+						{latamDotsData.map((country) => {
+							const isCountryHovered =
+								hoveredLocation?.country &&
+								ISO_TO_MAP_ID[hoveredLocation.country] === country.countryId;
+							const hasEvents = countriesWithEvents.includes(country.countryId);
+							const countryFeature = countriesData.find(
+								(c) => c.id === country.countryId,
+							);
 
-								return (
-									<g key={country.countryId}>
-										{/* Country border */}
-										{countryFeature && (
-											<path
-												d={latamGeoPath(countryFeature as any) || ""}
-												fill="transparent"
-												stroke={isCountryHovered && hasEvents ? "#888" : hasEvents ? "#666" : "#444"}
-												strokeWidth={isCountryHovered && hasEvents ? 2 : hasEvents ? 1.5 : 1}
-												opacity={isCountryHovered ? 0.8 : hasEvents ? 0.6 : 0.35}
-												style={{ transition: "all 0.2s ease" }}
-											/>
-										)}
-
-										{/* Dot pattern */}
-										{country.dots.map((dot, index) => {
-											const shouldAnimate = index % 5 === 0;
-											const baseOpacity = isCountryHovered && hasEvents ? 0.85 : isCountryHovered ? 0.6 : hasEvents ? 0.6 : 0.35;
-
-											if (shouldAnimate) {
-												return (
-													<motion.circle
-														key={index}
-														cx={dot.x}
-														cy={dot.y}
-														r={1.5}
-														className="fill-foreground"
-														initial={{ opacity: baseOpacity }}
-														animate={{
-															opacity: [baseOpacity, baseOpacity + 0.3, baseOpacity],
-															scale: [1, 1.3, 1],
-														}}
-														transition={{
-															duration: 2.5,
-															repeat: Infinity,
-															ease: "easeInOut",
-															delay: (index % 20) * 0.1,
-														}}
-													/>
-												);
+							return (
+								<g key={country.countryId}>
+									{/* Country border */}
+									{countryFeature && (
+										<path
+											d={latamGeoPath(countryFeature as any) || ""}
+											fill="transparent"
+											stroke={
+												isCountryHovered && hasEvents
+													? "#888"
+													: hasEvents
+														? "#666"
+														: "#444"
 											}
-
-											return (
-												<circle
-													key={index}
-													cx={dot.x}
-													cy={dot.y}
-													r={1.5}
-													className="fill-foreground"
-													opacity={baseOpacity}
-													style={{ transition: "opacity 0.2s ease" }}
-												/>
-											);
-										})}
-									</g>
-								);
-							})}
-
-							{/* Event markers */}
-							{projectedLocations.map((loc) => {
-								const isHovered = loc.eventId === hoveredEventId;
-								return (
-									<g
-										key={loc.eventId}
-										style={{ cursor: "pointer" }}
-										onMouseEnter={() => onEventHover(loc.eventId)}
-										onMouseLeave={() => onEventHover(null)}
-									>
-										<motion.circle
-											cx={loc.x}
-											cy={loc.y}
-											r={4}
-											fill="#f59e0b"
-											initial={{ scale: 0, opacity: 0 }}
-											animate={{
-												scale: isHovered ? [1, 1.5, 1] : [1, 1.3, 1],
-												opacity: [0.9, 1, 0.9],
-											}}
-											transition={{
-												duration: isHovered ? 1 : 2,
-												repeat: Infinity,
-												ease: "easeInOut",
-											}}
+											strokeWidth={
+												isCountryHovered && hasEvents ? 2 : hasEvents ? 1.5 : 1
+											}
+											opacity={isCountryHovered ? 0.8 : hasEvents ? 0.6 : 0.35}
 										/>
-										{isHovered && (
-											<motion.circle
-												cx={loc.x}
-												cy={loc.y}
-												r={12}
-												fill="transparent"
-												stroke="#f59e0b"
-												strokeWidth={2}
-												initial={{ scale: 0.5, opacity: 0 }}
-												animate={{ scale: 1, opacity: [0.8, 0] }}
-												transition={{
-													duration: 1,
-													repeat: Infinity,
-													ease: "easeOut",
-												}}
-											/>
-										)}
-									</g>
-								);
-							})}
-						</motion.g>
-					) : isZoomedIntoPeru ? (
-						<motion.g
-							key="peru-view"
-							initial={{ opacity: 0, scale: 1.1 }}
-							animate={{ opacity: 1, scale: 1 }}
-							exit={{ opacity: 0, scale: 0.9 }}
-							transition={{ duration: 0.15, ease: "easeOut" }}
-						>
-							{/* Peru departments with borders */}
-							{zoomedGeoPath && peruDepartments.map((dept, deptIndex) => {
+									)}
+
+									{country.dots.map((dot, index) => (
+										<circle
+											key={index}
+											cx={dot.x}
+											cy={dot.y}
+											r={1.5}
+											className="fill-foreground"
+											opacity={
+												isCountryHovered && hasEvents
+													? 0.85
+													: isCountryHovered
+														? 0.6
+														: hasEvents
+															? 0.6
+															: 0.35
+											}
+										/>
+									))}
+								</g>
+							);
+						})}
+
+						{projectedLocations.map((loc) => (
+							<g
+								key={loc.eventId}
+								style={{ cursor: "pointer" }}
+								onMouseEnter={() => onEventHover(loc.eventId)}
+								onMouseLeave={() => onEventHover(null)}
+							>
+								<circle
+									cx={loc.x}
+									cy={loc.y}
+									r={loc.eventId === hoveredEventId ? 6 : 4}
+									fill="#f59e0b"
+									opacity={0.9}
+									style={{
+										transformOrigin: `${loc.x}px ${loc.y}px`,
+										animation: "pulse-marker 2s ease-in-out infinite",
+									}}
+								/>
+								{loc.eventId === hoveredEventId && (
+									<circle
+										cx={loc.x}
+										cy={loc.y}
+										r={12}
+										fill="transparent"
+										stroke="#f59e0b"
+										strokeWidth={2}
+										style={{
+											transformOrigin: `${loc.x}px ${loc.y}px`,
+											animation: "pulse-ring 1s ease-out infinite",
+										}}
+									/>
+								)}
+							</g>
+						))}
+					</g>
+				) : isZoomedIntoPeru ? (
+					<g>
+						{/* Peru departments with borders */}
+						{zoomedGeoPath &&
+							peruDepartments.map((dept, deptIndex) => {
 								const deptName = dept.properties?.NOMBDEP || "";
-								const normalizedName = PERU_DEPARTMENT_NAME_MAP[deptName] || deptName;
+								const normalizedName =
+									PERU_DEPARTMENT_NAME_MAP[deptName] || deptName;
 								const hasEvent = departmentsWithEvents.includes(normalizedName);
-								const isHovered = hoveredLocation?.department === normalizedName;
+								const isHovered =
+									hoveredLocation?.department === normalizedName;
 
 								return (
 									<path
 										key={dept.properties?.NOMBDEP || deptIndex}
 										d={zoomedGeoPath(dept as any) || ""}
 										fill="transparent"
-										stroke={isHovered && hasEvent ? "#888" : hasEvent ? "#666" : "#444"}
+										stroke={
+											isHovered && hasEvent
+												? "#888"
+												: hasEvent
+													? "#666"
+													: "#444"
+										}
 										strokeWidth={isHovered && hasEvent ? 2 : hasEvent ? 1.5 : 1}
 										opacity={isHovered ? 0.8 : hasEvent ? 0.6 : 0.35}
-										style={{ transition: "all 0.2s ease" }}
 									/>
 								);
 							})}
 
-							{/* Peru dot pattern */}
-							{peruDotsData.map((dot, index) => {
-								const hasEvent = departmentsWithEvents.includes(dot.dept);
-								const isHovered = hoveredLocation?.department === dot.dept;
-								const shouldAnimate = index % 5 === 0;
-								const baseOpacity = isHovered && hasEvent ? 0.85 : isHovered ? 0.6 : hasEvent ? 0.6 : 0.35;
-
-								if (shouldAnimate) {
-									return (
-										<motion.circle
-											key={index}
-											cx={dot.x}
-											cy={dot.y}
-											r={1.5}
-											className="fill-foreground"
-											style={{ pointerEvents: "none" }}
-											initial={{ opacity: baseOpacity }}
-											animate={{
-												opacity: [baseOpacity, baseOpacity + 0.3, baseOpacity],
-												scale: [1, 1.3, 1],
-											}}
-											transition={{
-												duration: 2.5,
-												repeat: Infinity,
-												ease: "easeInOut",
-												delay: (index % 20) * 0.1,
-											}}
-										/>
-									);
+						{/* Peru dot pattern */}
+						{peruDotsData.map((dot, index) => (
+							<circle
+								key={index}
+								cx={dot.x}
+								cy={dot.y}
+								r={1.5}
+								className="fill-foreground"
+								opacity={
+									hoveredLocation?.department === dot.dept &&
+									departmentsWithEvents.includes(dot.dept)
+										? 0.85
+										: hoveredLocation?.department === dot.dept
+											? 0.6
+											: departmentsWithEvents.includes(dot.dept)
+												? 0.6
+												: 0.35
 								}
+								style={{ pointerEvents: "none" }}
+							/>
+						))}
 
-								return (
+						{departmentEventCoords.map((coord) => {
+							const isHovered =
+								hoveredLocation?.department === coord.department;
+							return (
+								<g key={coord.department}>
 									<circle
-										key={index}
-										cx={dot.x}
-										cy={dot.y}
-										r={1.5}
-										className="fill-foreground"
-										opacity={baseOpacity}
-										style={{ pointerEvents: "none", transition: "opacity 0.2s ease" }}
+										cx={coord.x}
+										cy={coord.y}
+										r={isHovered ? 6 : 4}
+										fill="#f59e0b"
+										opacity={0.9}
+										style={{
+											transformOrigin: `${coord.x}px ${coord.y}px`,
+											animation: "pulse-marker 2s ease-in-out infinite",
+										}}
 									/>
-								);
-							})}
-
-							{/* Event location dots in Peru */}
-							{departmentEventCoords.map((coord, index) => {
-								const isHovered = hoveredLocation?.department === coord.department;
-								return (
-									<g key={coord.department}>
-										<motion.circle
+									{isHovered && (
+										<circle
 											cx={coord.x}
 											cy={coord.y}
-											r={4}
-											fill="#f59e0b"
-											initial={{ scale: 0, opacity: 0 }}
-											animate={{
-												scale: isHovered ? [1, 1.5, 1] : [1, 1.3, 1],
-												opacity: [0.9, 1, 0.9],
-											}}
-											transition={{
-												duration: isHovered ? 1 : 2,
-												repeat: Infinity,
-												ease: "easeInOut",
-												delay: index * 0.15,
+											r={12}
+											fill="transparent"
+											stroke="#f59e0b"
+											strokeWidth={2}
+											style={{
+												transformOrigin: `${coord.x}px ${coord.y}px`,
+												animation: "pulse-ring 1s ease-out infinite",
 											}}
 										/>
-										{isHovered && (
-											<motion.circle
-												cx={coord.x}
-												cy={coord.y}
-												r={12}
-												fill="transparent"
-												stroke="#f59e0b"
-												strokeWidth={2}
-												initial={{ scale: 0.5, opacity: 0 }}
-												animate={{ scale: 1, opacity: [0.8, 0] }}
-												transition={{
-													duration: 1,
-													repeat: Infinity,
-													ease: "easeOut",
-												}}
-											/>
-										)}
-									</g>
-								);
-							})}
-						</motion.g>
-					) : (
-						/* Generic zoomed country view - same style as Peru */
-						<motion.g
-							key={`country-${zoomedCountry}`}
-							initial={{ opacity: 0, scale: 1.1 }}
-							animate={{ opacity: 1, scale: 1 }}
-							exit={{ opacity: 0, scale: 0.9 }}
-							transition={{ duration: 0.15, ease: "easeOut" }}
-						>
-							{/* Country border - same style as Peru departments */}
-							{zoomedCountryFeature && zoomedGeoPath && (
-								<path
-									d={zoomedGeoPath(zoomedCountryFeature as any) || ""}
-									fill="transparent"
-									stroke="#666"
-									strokeWidth={1.5}
-									opacity={0.6}
-									style={{ transition: "all 0.2s ease" }}
-								/>
-							)}
-
-							{/* Dot pattern - same style as Peru */}
-							{zoomedCountryDots.map((dot, index) => {
-								const shouldAnimate = index % 5 === 0;
-								const baseOpacity = 0.6;
-
-								if (shouldAnimate) {
-									return (
-										<motion.circle
-											key={index}
-											cx={dot.x}
-											cy={dot.y}
-											r={1.5}
-											className="fill-foreground"
-											style={{ pointerEvents: "none" }}
-											initial={{ opacity: baseOpacity }}
-											animate={{
-												opacity: [baseOpacity, baseOpacity + 0.3, baseOpacity],
-												scale: [1, 1.3, 1],
-											}}
-											transition={{
-												duration: 2.5,
-												repeat: Infinity,
-												ease: "easeInOut",
-												delay: (index % 20) * 0.1,
-											}}
-										/>
-									);
-								}
-
-								return (
-									<circle
-										key={index}
-										cx={dot.x}
-										cy={dot.y}
-										r={1.5}
-										className="fill-foreground"
-										opacity={baseOpacity}
-										style={{ pointerEvents: "none", transition: "opacity 0.2s ease" }}
-									/>
-								);
-							})}
-
-							{/* Event markers - same style as Peru */}
-							{projectedLocations
-								.filter((loc) => loc.country === zoomedCountry)
-								.map((loc, index) => {
-									const isHovered = loc.eventId === hoveredEventId;
-									return (
-										<g
-											key={loc.eventId}
-											style={{ cursor: "pointer" }}
-											onMouseEnter={() => onEventHover(loc.eventId)}
-											onMouseLeave={() => onEventHover(null)}
-										>
-											<motion.circle
-												cx={loc.x}
-												cy={loc.y}
-												r={4}
-												fill="#f59e0b"
-												initial={{ scale: 0, opacity: 0 }}
-												animate={{
-													scale: isHovered ? [1, 1.5, 1] : [1, 1.3, 1],
-													opacity: [0.9, 1, 0.9],
-												}}
-												transition={{
-													duration: isHovered ? 1 : 2,
-													repeat: Infinity,
-													ease: "easeInOut",
-													delay: index * 0.15,
-												}}
-											/>
-											{isHovered && (
-												<motion.circle
-													cx={loc.x}
-													cy={loc.y}
-													r={12}
-													fill="transparent"
-													stroke="#f59e0b"
-													strokeWidth={2}
-													initial={{ scale: 0.5, opacity: 0 }}
-													animate={{ scale: 1, opacity: [0.8, 0] }}
-													transition={{
-														duration: 1,
-														repeat: Infinity,
-														ease: "easeOut",
-													}}
-												/>
-											)}
-										</g>
-									);
-								})}
-						</motion.g>
-					)}
-				</AnimatePresence>
-
-				{/* Tooltip */}
-				<AnimatePresence>
-					{hoveredProjected && (
-						<motion.g
-							initial={{ opacity: 0, y: 10, scale: 0.9 }}
-							animate={{ opacity: 1, y: 0, scale: 1 }}
-							exit={{ opacity: 0, y: 5, scale: 0.95 }}
-							transition={{ duration: 0.1, ease: "easeOut" }}
-						>
-							<rect
-								x={hoveredProjected.x - 90}
-								y={hoveredProjected.y - 55}
-								width={180}
-								height={42}
-								rx={8}
-								fill="hsl(var(--popover))"
-								stroke="hsl(var(--border))"
-								strokeWidth={1}
+									)}
+								</g>
+							);
+						})}
+					</g>
+				) : (
+					<g>
+						{/* Country border - same style as Peru departments */}
+						{zoomedCountryFeature && zoomedGeoPath && (
+							<path
+								d={zoomedGeoPath(zoomedCountryFeature as any) || ""}
+								fill="transparent"
+								stroke="#666"
+								strokeWidth={1.5}
+								opacity={0.6}
 							/>
+						)}
+
+						{zoomedCountryDots.map((dot, index) => (
+							<circle
+								key={index}
+								cx={dot.x}
+								cy={dot.y}
+								r={1.5}
+								className="fill-foreground"
+								opacity={0.6}
+								style={{ pointerEvents: "none" }}
+							/>
+						))}
+
+						{projectedLocations
+							.filter((loc) => loc.country === zoomedCountry)
+							.map((loc) => (
+								<g
+									key={loc.eventId}
+									style={{ cursor: "pointer" }}
+									onMouseEnter={() => onEventHover(loc.eventId)}
+									onMouseLeave={() => onEventHover(null)}
+								>
+									<circle
+										cx={loc.x}
+										cy={loc.y}
+										r={loc.eventId === hoveredEventId ? 6 : 4}
+										fill="#f59e0b"
+										opacity={0.9}
+										style={{
+											transformOrigin: `${loc.x}px ${loc.y}px`,
+											animation: "pulse-marker 2s ease-in-out infinite",
+										}}
+									/>
+									{loc.eventId === hoveredEventId && (
+										<circle
+											cx={loc.x}
+											cy={loc.y}
+											r={12}
+											fill="transparent"
+											stroke="#f59e0b"
+											strokeWidth={2}
+											style={{
+												transformOrigin: `${loc.x}px ${loc.y}px`,
+												animation: "pulse-ring 1s ease-out infinite",
+											}}
+										/>
+									)}
+								</g>
+							))}
+					</g>
+				)}
+
+				{hoveredProjected && (
+					<g>
+						<rect
+							x={hoveredProjected.x - 90}
+							y={hoveredProjected.y - 55}
+							width={180}
+							height={42}
+							rx={8}
+							fill="hsl(var(--popover))"
+							stroke="hsl(var(--border))"
+							strokeWidth={1}
+						/>
+						<text
+							x={hoveredProjected.x}
+							y={hoveredProjected.y - 38}
+							textAnchor="middle"
+							className="fill-popover-foreground"
+							style={{ fontSize: "12px", fontWeight: 500 }}
+						>
+							{hoveredProjected.name.length > 22
+								? `${hoveredProjected.name.slice(0, 22)}...`
+								: hoveredProjected.name}
+						</text>
+						{hoveredProjected.city && (
 							<text
 								x={hoveredProjected.x}
-								y={hoveredProjected.y - 38}
+								y={hoveredProjected.y - 22}
 								textAnchor="middle"
-								className="fill-popover-foreground"
-								style={{ fontSize: "12px", fontWeight: 500 }}
+								className="fill-muted-foreground"
+								style={{ fontSize: "10px" }}
 							>
-								{hoveredProjected.name.length > 22
-									? `${hoveredProjected.name.slice(0, 22)}...`
-									: hoveredProjected.name}
+								📍 {hoveredProjected.city}
 							</text>
-							{hoveredProjected.city && (
-								<text
-									x={hoveredProjected.x}
-									y={hoveredProjected.y - 22}
-									textAnchor="middle"
-									className="fill-muted-foreground"
-									style={{ fontSize: "10px" }}
-								>
-									📍 {hoveredProjected.city}
-								</text>
-							)}
-						</motion.g>
-					)}
-				</AnimatePresence>
+						)}
+					</g>
+				)}
 			</svg>
 		</div>
 	);
