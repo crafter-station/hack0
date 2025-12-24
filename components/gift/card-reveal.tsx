@@ -179,8 +179,8 @@ export function CardReveal({
 			<motion.div
 				initial={{ opacity: 0 }}
 				animate={{
-					opacity: revealComplete ? 1 : 0,
-					pointerEvents: revealComplete ? "auto" : "none",
+					opacity: isFlipped && revealComplete ? 1 : 0,
+					pointerEvents: isFlipped && revealComplete ? "auto" : "none",
 				}}
 				transition={{ duration: 0.3 }}
 				className="w-full"
