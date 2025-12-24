@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
@@ -69,9 +70,12 @@ export async function generateMetadata({
 export default async function GiftCardPage({ params }: CardPageProps) {
 	const { token } = await params;
 
-	const card = await db.query.giftCards.findFirst({
-		where: eq(giftCards.shareToken, token),
-	});
+	const [{ userId }, card] = await Promise.all([
+		auth(),
+		db.query.giftCards.findFirst({
+			where: eq(giftCards.shareToken, token),
+		}),
+	]);
 
 	if (!card) {
 		notFound();
@@ -90,9 +94,7 @@ export default async function GiftCardPage({ params }: CardPageProps) {
 		redirect(`/gift/loading/${token}`);
 	}
 
-	const formattedId = card.builderId
-		? `#${card.builderId.toString().padStart(4, "0")}`
-		: "";
+	const isOwner = !!userId && card.userId === userId;
 
 	return (
 		<CardReveal
@@ -106,6 +108,7 @@ export default async function GiftCardPage({ params }: CardPageProps) {
 			manifestoPhrase={card.message}
 			verticalLabel={card.verticalLabel || "BUILDER"}
 			builderName={card.recipientName || undefined}
+			isOwner={isOwner}
 		/>
 	);
 }

@@ -2,8 +2,7 @@
 
 import Atropos from "atropos/react";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import { getStoredGiftToken } from "@/components/gift/gift-landing-client";
+import { useState } from "react";
 import { BadgeRevealContent } from "../badge/badge-reveal-content";
 import { GiftActions } from "./gift-actions";
 import { GiftBox3D } from "./gift-box-3d";
@@ -23,6 +22,7 @@ interface CardRevealProps {
 	manifestoPhrase: string;
 	verticalLabel: string;
 	builderName?: string;
+	isOwner: boolean;
 }
 
 export function CardReveal({
@@ -34,20 +34,10 @@ export function CardReveal({
 	manifestoPhrase,
 	verticalLabel,
 	builderName,
+	isOwner,
 }: CardRevealProps) {
-	const [isOwner, setIsOwner] = useState<boolean | null>(null);
-	const [isFlipped, setIsFlipped] = useState(false);
-	const [revealComplete, setRevealComplete] = useState(false);
-
-	useEffect(() => {
-		const storedToken = getStoredGiftToken();
-		const ownerStatus = storedToken === token;
-		setIsOwner(ownerStatus);
-		if (!ownerStatus) {
-			setIsFlipped(true);
-			setRevealComplete(true);
-		}
-	}, [token]);
+	const [isFlipped, setIsFlipped] = useState(!isOwner);
+	const [revealComplete, setRevealComplete] = useState(!isOwner);
 
 	const handleClick = () => {
 		if (!isOwner) return;
@@ -194,7 +184,7 @@ export function CardReveal({
 			</motion.div>
 
 			{/* Social actions outside Atropos - only rendered when flipped */}
-			{isFlipped && isOwner !== null && (
+			{isFlipped && (
 				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{
