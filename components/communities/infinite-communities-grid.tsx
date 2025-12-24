@@ -1,19 +1,23 @@
 "use client";
 
-import { CheckCircle2, Loader2, Users } from "lucide-react";
+import { CheckCircle2, Globe, Loader2, MapPin, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { useInView } from "react-intersection-observer";
 import { toast } from "sonner";
-import { followCommunity, unfollowCommunity } from "@/lib/actions/communities";
-import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
+import { GithubLogo } from "@/components/logos/github";
+import { InstagramLogo } from "@/components/logos/instagram";
+import { LinkedinLogo } from "@/components/logos/linkedin";
+import { TwitterLogo } from "@/components/logos/twitter";
 import {
 	type CommunitiesResponse,
 	type PublicCommunity,
 	useCommunities,
 } from "@/hooks/use-communities";
+import { followCommunity, unfollowCommunity } from "@/lib/actions/communities";
+import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
 
 interface InfiniteCommunitiesGridProps {
 	initialData: CommunitiesResponse;
@@ -135,6 +139,72 @@ function CommunityCard({
 				</p>
 			)}
 
+			<div className="flex items-center gap-2 text-[11px] text-muted-foreground mb-2">
+				{(community.department || community.country) && (
+					<span className="inline-flex items-center gap-1">
+						<MapPin className="h-3 w-3" />
+						{community.department || community.country}
+					</span>
+				)}
+				<div className="flex items-center gap-1.5">
+					{community.websiteUrl && (
+						<a
+							href={community.websiteUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="relative z-10 hover:text-foreground transition-colors"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<Globe className="h-3 w-3" />
+						</a>
+					)}
+					{community.twitterUrl && (
+						<a
+							href={community.twitterUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="relative z-10 hover:text-foreground transition-colors"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<TwitterLogo className="h-3 w-3" />
+						</a>
+					)}
+					{community.linkedinUrl && (
+						<a
+							href={community.linkedinUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="relative z-10 hover:text-foreground transition-colors"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<LinkedinLogo className="h-3 w-3" mode="currentColor" />
+						</a>
+					)}
+					{community.instagramUrl && (
+						<a
+							href={community.instagramUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="relative z-10 hover:text-foreground transition-colors"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<InstagramLogo className="h-3 w-3" mode="currentColor" />
+						</a>
+					)}
+					{community.githubUrl && (
+						<a
+							href={community.githubUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="relative z-10 hover:text-foreground transition-colors"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<GithubLogo className="h-3 w-3" mode="currentColor" />
+						</a>
+					)}
+				</div>
+			</div>
+
 			<div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
 				<div className="flex items-center gap-2">
 					{community.type && (
@@ -163,10 +233,7 @@ function LoadingSkeleton() {
 	return (
 		<>
 			{Array.from({ length: 4 }).map((_, i) => (
-				<div
-					key={i}
-					className="flex flex-col border bg-card p-3 animate-pulse"
-				>
+				<div key={i} className="flex flex-col border bg-card p-3 animate-pulse">
 					<div className="flex items-start gap-3 mb-2">
 						<div className="h-10 w-10 rounded-full bg-muted" />
 						<div className="flex-1 space-y-2">
@@ -227,7 +294,7 @@ export function InfiniteCommunitiesGrid({
 	const communities = data?.pages.flatMap((page) => page.communities) ?? [];
 	const uniqueCommunities = communities.filter(
 		(community, index, self) =>
-			index === self.findIndex((c) => c.id === community.id)
+			index === self.findIndex((c) => c.id === community.id),
 	);
 
 	if (isLoading) {
@@ -284,10 +351,10 @@ export function InfiniteCommunitiesGrid({
 			{/* Show total count */}
 			{data && (
 				<div className="text-center text-xs text-muted-foreground pt-4">
-					Mostrando {uniqueCommunities.length} de {data.pages[0]?.total ?? 0} comunidades
+					Mostrando {uniqueCommunities.length} de {data.pages[0]?.total ?? 0}{" "}
+					comunidades
 				</div>
 			)}
 		</>
 	);
 }
-

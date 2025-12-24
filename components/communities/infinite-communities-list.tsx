@@ -1,19 +1,30 @@
 "use client";
 
-import { CheckCircle2, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import {
+	CheckCircle2,
+	ChevronDown,
+	ChevronUp,
+	Globe,
+	Loader2,
+	MapPin,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useInView } from "react-intersection-observer";
 import { toast } from "sonner";
-import { followCommunity, unfollowCommunity } from "@/lib/actions/communities";
-import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
+import { GithubLogo } from "@/components/logos/github";
+import { InstagramLogo } from "@/components/logos/instagram";
+import { LinkedinLogo } from "@/components/logos/linkedin";
+import { TwitterLogo } from "@/components/logos/twitter";
 import {
 	type CommunitiesResponse,
 	type PublicCommunity,
 	useCommunities,
 } from "@/hooks/use-communities";
+import { followCommunity, unfollowCommunity } from "@/lib/actions/communities";
+import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
 
 interface InfiniteCommunitiesListProps {
 	initialData: CommunitiesResponse;
@@ -137,7 +148,85 @@ function CommunityRow({
 				</Link>
 			</td>
 			<td className="py-2 pr-4 text-muted-foreground hidden md:table-cell">
-				{community.type ? ORGANIZER_TYPE_LABELS[community.type] || community.type : "—"}
+				{community.type
+					? ORGANIZER_TYPE_LABELS[community.type] || community.type
+					: "—"}
+			</td>
+			<td className="py-2 pr-4 text-muted-foreground hidden lg:table-cell">
+				{community.department ? (
+					<span className="inline-flex items-center gap-1">
+						<MapPin className="h-3 w-3" />
+						{community.department}
+					</span>
+				) : (
+					"—"
+				)}
+			</td>
+			<td className="py-2 pr-4 hidden xl:table-cell">
+				<div className="flex items-center gap-1.5">
+					{community.websiteUrl && (
+						<a
+							href={community.websiteUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-muted-foreground hover:text-foreground transition-colors"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<Globe className="h-3.5 w-3.5" />
+						</a>
+					)}
+					{community.twitterUrl && (
+						<a
+							href={community.twitterUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-muted-foreground hover:text-foreground transition-colors"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<TwitterLogo className="h-3.5 w-3.5" />
+						</a>
+					)}
+					{community.linkedinUrl && (
+						<a
+							href={community.linkedinUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-muted-foreground hover:text-foreground transition-colors"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<LinkedinLogo className="h-3.5 w-3.5" mode="currentColor" />
+						</a>
+					)}
+					{community.instagramUrl && (
+						<a
+							href={community.instagramUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-muted-foreground hover:text-foreground transition-colors"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<InstagramLogo className="h-3.5 w-3.5" mode="currentColor" />
+						</a>
+					)}
+					{community.githubUrl && (
+						<a
+							href={community.githubUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-muted-foreground hover:text-foreground transition-colors"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<GithubLogo className="h-3.5 w-3.5" mode="currentColor" />
+						</a>
+					)}
+					{!community.websiteUrl &&
+						!community.twitterUrl &&
+						!community.linkedinUrl &&
+						!community.instagramUrl &&
+						!community.githubUrl && (
+							<span className="text-muted-foreground/50">—</span>
+						)}
+				</div>
 			</td>
 			<td className="py-2 pr-4 hidden sm:table-cell">
 				<span
@@ -177,6 +266,15 @@ function LoadingRows() {
 					</td>
 					<td className="py-2 pr-4 hidden md:table-cell">
 						<div className="h-3 w-16 rounded bg-muted" />
+					</td>
+					<td className="py-2 pr-4 hidden lg:table-cell">
+						<div className="h-3 w-20 rounded bg-muted" />
+					</td>
+					<td className="py-2 pr-4 hidden xl:table-cell">
+						<div className="flex gap-1">
+							<div className="h-3.5 w-3.5 rounded bg-muted" />
+							<div className="h-3.5 w-3.5 rounded bg-muted" />
+						</div>
 					</td>
 					<td className="py-2 pr-4 hidden sm:table-cell">
 						<div className="h-3 w-8 rounded bg-muted" />
@@ -231,7 +329,7 @@ export function InfiniteCommunitiesList({
 	// Dedupe communities by ID to avoid React key warnings
 	const uniqueCommunities = communities.filter(
 		(community, index, self) =>
-			index === self.findIndex((c) => c.id === community.id)
+			index === self.findIndex((c) => c.id === community.id),
 	);
 
 	const sortedCommunities = useMemo(() => {
@@ -240,7 +338,9 @@ export function InfiniteCommunitiesList({
 			let comparison = 0;
 			switch (sortField) {
 				case "name":
-					comparison = (a.displayName || a.name).localeCompare(b.displayName || b.name);
+					comparison = (a.displayName || a.name).localeCompare(
+						b.displayName || b.name,
+					);
 					break;
 				case "type":
 					comparison = (a.type || "").localeCompare(b.type || "");
@@ -264,7 +364,8 @@ export function InfiniteCommunitiesList({
 	};
 
 	const SortIcon = ({ field }: { field: SortField }) => {
-		if (sortField !== field) return <ChevronDown className="h-2.5 w-2.5 opacity-30" />;
+		if (sortField !== field)
+			return <ChevronDown className="h-2.5 w-2.5 opacity-30" />;
 		return sortDirection === "asc" ? (
 			<ChevronUp className="h-2.5 w-2.5" />
 		) : (
@@ -280,9 +381,21 @@ export function InfiniteCommunitiesList({
 						<thead>
 							<tr className="border-b border-border text-left text-muted-foreground">
 								<th className="pb-2 pr-4 font-medium">Comunidad</th>
-								<th className="pb-2 pr-4 font-medium hidden md:table-cell">Tipo</th>
-								<th className="pb-2 pr-4 font-medium hidden sm:table-cell">Miembros</th>
-								<th className="pb-2 font-medium text-right"><span className="sr-only">Acciones</span></th>
+								<th className="pb-2 pr-4 font-medium hidden md:table-cell">
+									Tipo
+								</th>
+								<th className="pb-2 pr-4 font-medium hidden lg:table-cell">
+									Ubicación
+								</th>
+								<th className="pb-2 pr-4 font-medium hidden xl:table-cell">
+									Contacto
+								</th>
+								<th className="pb-2 pr-4 font-medium hidden sm:table-cell">
+									Miembros
+								</th>
+								<th className="pb-2 font-medium text-right">
+									<span className="sr-only">Acciones</span>
+								</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -332,6 +445,12 @@ export function InfiniteCommunitiesList({
 									Tipo <SortIcon field="type" />
 								</button>
 							</th>
+							<th className="pb-2 pr-4 font-medium hidden lg:table-cell">
+								Ubicación
+							</th>
+							<th className="pb-2 pr-4 font-medium hidden xl:table-cell">
+								Contacto
+							</th>
 							<th className="pb-2 pr-4 font-medium hidden sm:table-cell">
 								<button
 									onClick={() => handleSort("members")}
@@ -359,7 +478,11 @@ export function InfiniteCommunitiesList({
 			</div>
 
 			{hasNextPage && (
-				<div ref={loadMoreRef} className="flex justify-center py-8" aria-hidden="true">
+				<div
+					ref={loadMoreRef}
+					className="flex justify-center py-8"
+					aria-hidden="true"
+				>
 					{isFetchingNextPage && (
 						<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
 					)}
@@ -368,10 +491,10 @@ export function InfiniteCommunitiesList({
 
 			{data && (
 				<div className="text-center text-xs text-muted-foreground pt-4">
-					Mostrando {uniqueCommunities.length} de {data.pages[0]?.total ?? 0} comunidades
+					Mostrando {uniqueCommunities.length} de {data.pages[0]?.total ?? 0}{" "}
+					comunidades
 				</div>
 			)}
 		</div>
 	);
 }
-
