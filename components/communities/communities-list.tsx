@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { useInView } from "react-intersection-observer";
 import { toast } from "sonner";
@@ -335,6 +335,7 @@ export function CommunitiesList({
 	isAuthenticated,
 }: CommunitiesListProps) {
 	const router = useRouter();
+	const pathname = usePathname();
 	const searchParams = useSearchParams();
 
 	const search = searchParams.get("search") || undefined;
@@ -352,13 +353,20 @@ export function CommunitiesList({
 		isFetchingNextPage,
 		isLoading,
 		isError,
+		refetch,
 	} = useCommunities({
 		search,
 		type,
 		verifiedOnly,
 		orderBy: orderByParam,
-		initialData,
+		initialData: orderByParam === "popular" ? initialData : undefined,
 	});
+
+	useEffect(() => {
+		if (orderByParam !== "popular") {
+			refetch();
+		}
+	}, [orderByParam, refetch]);
 
 	const { ref: loadMoreRef, inView } = useInView({
 		threshold: 0,
@@ -397,9 +405,9 @@ export function CommunitiesList({
 			}
 
 			params.set("orderBy", newOrderBy);
-			router.push(`?${params.toString()}`, { scroll: false });
+			router.push(`${pathname}?${params.toString()}`, { scroll: false });
 		},
-		[router, searchParams, sortColumn, sortDirection],
+		[router, pathname, searchParams, sortColumn, sortDirection],
 	);
 
 	const SortIcon = ({ column }: { column: SortColumn }) => {
@@ -484,6 +492,7 @@ export function CommunitiesList({
 							</th>
 							<th className="pb-2 pr-4 font-medium hidden xl:table-cell">
 								<button
+									type="button"
 									onClick={() => handleSort("contact")}
 									className="flex items-center gap-1 hover:text-foreground"
 								>

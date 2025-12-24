@@ -48,6 +48,8 @@ export function useCommunities({
 	limit = 12,
 	initialData,
 }: UseCommunitiesParams = {}) {
+	const hasInitialData = initialData !== undefined;
+
 	return useInfiniteQuery({
 		queryKey: ["communities", search, type, verifiedOnly, orderBy],
 		queryFn: async ({ pageParam = 0 }) => {
@@ -79,6 +81,7 @@ export function useCommunities({
 					pageParams: [0],
 				}
 			: undefined,
-		staleTime: 1000 * 60 * 5, // 5 minutes
+		staleTime: hasInitialData ? 1000 * 60 * 5 : 0,
+		refetchOnMount: !hasInitialData,
 	});
 }
