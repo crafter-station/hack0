@@ -117,7 +117,7 @@ export function PhotoUpload() {
 	};
 
 	const handleSubmit = async () => {
-		if (!imageFile) return;
+		if (!imageFile || !recipientName.trim()) return;
 		setIsUploading(true);
 		await startUpload([imageFile]);
 	};
@@ -232,7 +232,7 @@ export function PhotoUpload() {
 					className="text-xs"
 					style={{ color: GIFT_COLORS.textMuted }}
 				>
-					Tu nombre (opcional)
+					Tu nombre
 				</Label>
 				<Input
 					id="name"
@@ -240,6 +240,7 @@ export function PhotoUpload() {
 					value={recipientName}
 					onChange={(e) => setRecipientName(e.target.value)}
 					disabled={isLoading}
+					required
 					style={{
 						backgroundColor: GIFT_COLORS.bg,
 						borderColor: GIFT_COLORS.border,
@@ -251,7 +252,7 @@ export function PhotoUpload() {
 
 			<Button
 				onClick={handleSubmit}
-				disabled={!image || isLoading}
+				disabled={!image || !recipientName.trim() || isLoading}
 				className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
 				size="lg"
 			>
