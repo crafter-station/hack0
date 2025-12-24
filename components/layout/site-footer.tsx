@@ -1,5 +1,6 @@
 import { Github, Heart } from "lucide-react";
 import Link from "next/link";
+import { CrafterStationLogo } from "@/components/logos/crafter-station";
 
 export function SiteFooter() {
 	return (
@@ -9,7 +10,9 @@ export function SiteFooter() {
 					<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
 						<div className="flex flex-col gap-2">
 							<Link href="/" className="flex items-center">
-								<span className="text-sm font-semibold tracking-tight">hack0</span>
+								<span className="text-sm font-semibold tracking-tight">
+									hack0
+								</span>
 								<span className="text-sm text-muted-foreground">.dev</span>
 							</Link>
 							<p className="text-xs text-muted-foreground">
@@ -21,10 +24,16 @@ export function SiteFooter() {
 							<div className="flex flex-col gap-2">
 								<span className="font-medium text-foreground">Explorar</span>
 								<nav className="flex flex-col gap-1.5 text-muted-foreground">
-									<Link href="/events" className="hover:text-foreground transition-colors">
+									<Link
+										href="/events"
+										className="hover:text-foreground transition-colors"
+									>
 										Eventos
 									</Link>
-									<Link href="/c/discover" className="hover:text-foreground transition-colors">
+									<Link
+										href="/c/discover"
+										className="hover:text-foreground transition-colors"
+									>
 										Comunidades
 									</Link>
 								</nav>
@@ -33,13 +42,22 @@ export function SiteFooter() {
 							<div className="flex flex-col gap-2">
 								<span className="font-medium text-foreground">Recursos</span>
 								<nav className="flex flex-col gap-1.5 text-muted-foreground">
-									<Link href="/roadmap" className="hover:text-foreground transition-colors">
+									<Link
+										href="/roadmap"
+										className="hover:text-foreground transition-colors"
+									>
 										Roadmap
 									</Link>
-									<a href="mailto:hey@hack0.dev" className="hover:text-foreground transition-colors">
+									<a
+										href="mailto:hey@hack0.dev"
+										className="hover:text-foreground transition-colors"
+									>
 										Contacto
 									</a>
-									<a href="/feed.xml" className="hover:text-foreground transition-colors">
+									<a
+										href="/feed.xml"
+										className="hover:text-foreground transition-colors"
+									>
 										RSS Feed
 									</a>
 								</nav>
@@ -66,15 +84,16 @@ export function SiteFooter() {
 						<p>© {new Date().getFullYear()} hack0.dev</p>
 						<p className="inline-flex items-center gap-1">
 							Hecho con{" "}
-							<Heart className="h-3 w-3 fill-red-500 text-red-500 animate-pulse" />
-							{" "}en Perú por{" "}
+							<Heart className="h-3 w-3 fill-red-500 text-red-500 animate-pulse" />{" "}
+							en Perú por{" "}
 							<a
 								href="https://www.crafterstation.com/"
 								target="_blank"
 								rel="noopener noreferrer"
-								className="hover:text-foreground transition-colors"
+								className="hover:opacity-80 transition-opacity"
+								aria-label="Crafter Station"
 							>
-								Crafter Station
+								<CrafterStationLogo className="h-4 w-4" />
 							</a>
 						</p>
 					</div>
