@@ -2,7 +2,8 @@
 
 import Atropos from "atropos/react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getStoredGiftToken } from "@/components/gift/gift-landing-client";
 import { BadgeRevealContent } from "../badge/badge-reveal-content";
 import { GiftActions } from "./gift-actions";
 import { GiftBox3D } from "./gift-box-3d";
@@ -22,7 +23,8 @@ interface CardRevealProps {
 	manifestoPhrase: string;
 	verticalLabel: string;
 	builderName?: string;
-	isOwner: boolean;
+	isConfirmedOwner: boolean;
+	cardHasNoOwner: boolean;
 }
 
 export function CardReveal({
@@ -34,10 +36,25 @@ export function CardReveal({
 	manifestoPhrase,
 	verticalLabel,
 	builderName,
-	isOwner,
+	isConfirmedOwner,
+	cardHasNoOwner,
 }: CardRevealProps) {
-	const [isFlipped, setIsFlipped] = useState(!isOwner);
-	const [revealComplete, setRevealComplete] = useState(!isOwner);
+	const [isOwner, setIsOwner] = useState(isConfirmedOwner);
+	const [isFlipped, setIsFlipped] = useState(!isConfirmedOwner);
+	const [revealComplete, setRevealComplete] = useState(!isConfirmedOwner);
+
+	useEffect(() => {
+		if (isConfirmedOwner) return;
+		if (!cardHasNoOwner) return;
+
+		const storedToken = getStoredGiftToken();
+		if (storedToken === token) {
+			setIsOwner(true);
+		} else {
+			setIsFlipped(true);
+			setRevealComplete(true);
+		}
+	}, [isConfirmedOwner, cardHasNoOwner, token]);
 
 	const handleClick = () => {
 		if (!isOwner) return;

@@ -94,7 +94,8 @@ export default async function GiftCardPage({ params }: CardPageProps) {
 		redirect(`/gift/loading/${token}`);
 	}
 
-	const isOwner = !!userId && card.userId === userId;
+	const isConfirmedOwner = !!userId && card.userId === userId;
+	const cardHasNoOwner = card.userId === null;
 
 	return (
 		<CardReveal
@@ -108,7 +109,8 @@ export default async function GiftCardPage({ params }: CardPageProps) {
 			manifestoPhrase={card.message}
 			verticalLabel={card.verticalLabel || "BUILDER"}
 			builderName={card.recipientName || undefined}
-			isOwner={isOwner}
+			isConfirmedOwner={isConfirmedOwner}
+			cardHasNoOwner={cardHasNoOwner}
 		/>
 	);
 }
