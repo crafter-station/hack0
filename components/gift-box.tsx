@@ -37,26 +37,27 @@ export default function GiftBox() {
 					crafter yourself.
 				</h1>
 
-				<div className="flex items-center gap-2 mb-10 flex-wrap justify-center">
+				<div className="flex items-center gap-2 mb-8 flex-wrap justify-center">
 					{styles.map((style) => (
 						<button
 							key={style}
 							onClick={() => setSelectedStyle(style)}
-							className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+							className={`px-3 py-1.5 text-xs font-medium transition-colors ${
 								selectedStyle === style
-									? "bg-white text-black"
-									: "bg-transparent text-gray-400 border border-gray-600 hover:border-gray-400"
+									? "bg-foreground text-background"
+									: "border border-foreground/50 text-foreground bg-transparent hover:bg-foreground hover:text-background"
 							}`}
 						>
 							{style}
 						</button>
 					))}
-					<span className={`${playfair.className} text-gray-400 ml-2`}>
+					<span className={`${playfair.className} text-muted-foreground ml-2 text-sm`}>
 						yourself.
 					</span>
 				</div>
 
-				<div className="w-64 h-64 md:w-72 md:h-72 border-2 border-dashed border-gray-600 rounded-3xl flex items-center justify-center mb-8 overflow-hidden">
+				<div className="w-64 h-64 md:w-72 md:h-72 border border-border/50 flex items-center justify-center mb-8 overflow-hidden cursor-pointer hover:bg-muted/20 transition-colors"
+					onClick={() => fileInputRef.current?.click()}>
 					{image ? (
 						<img
 							src={image}
@@ -64,20 +65,10 @@ export default function GiftBox() {
 							className="w-full h-full object-cover"
 						/>
 					) : (
-						<div className="text-gray-600" />
+						<div className="text-muted-foreground text-sm text-center px-4">
+							Click to upload or drag and drop
+						</div>
 					)}
-				</div>
-
-				<div className="flex flex-col gap-3 w-full max-w-xs">
-					<button className="w-full py-3 px-6 bg-white text-black rounded-full font-medium hover:bg-gray-200 transition-colors">
-						Enable Camera
-					</button>
-					<button
-						onClick={() => fileInputRef.current?.click()}
-						className="w-full py-3 px-6 bg-transparent text-white border border-gray-600 rounded-full font-medium hover:border-gray-400 transition-colors"
-					>
-						Upload Image
-					</button>
 					<input
 						ref={fileInputRef}
 						type="file"
@@ -85,10 +76,21 @@ export default function GiftBox() {
 						onChange={handleUpload}
 						className="hidden"
 					/>
-
 				</div>
 
-				<footer className="mt-auto pt-16 text-gray-500 text-sm">
+				<div className="flex flex-col gap-3 w-full max-w-xs">
+					<button className="w-full h-7 px-3 bg-foreground text-background font-medium text-xs hover:bg-foreground/90 transition-colors">
+						Enable Camera
+					</button>
+					<button
+						onClick={() => setShowForm(false)}
+						className="w-full h-7 px-3 border border-foreground/50 text-foreground bg-transparent font-medium text-xs hover:bg-foreground hover:text-background transition-colors"
+					>
+						Back
+					</button>
+				</div>
+
+				<footer className="mt-auto pt-16 text-muted-foreground text-xs">
 					Built with v0.
 				</footer>
 			</div>
