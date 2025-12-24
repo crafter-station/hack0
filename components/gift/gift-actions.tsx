@@ -1,9 +1,9 @@
 "use client";
 
 import { SignInButton, useAuth } from "@clerk/nextjs";
-import { Check, Download, Gift, Loader2, Share2, Trophy } from "lucide-react";
+import { Download, Gift, Loader2, Share2, Trophy } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AchievementUnlocked } from "@/components/achievements/achievement-unlocked";
 import { getStoredGiftToken } from "@/components/gift/gift-landing-client";
 import { LinkedinLogo } from "@/components/logos/linkedin";
@@ -38,19 +38,48 @@ export function GiftActions({
 	message,
 	builderId,
 }: GiftActionsProps) {
-	const { isSignedIn } = useAuth();
-	const [isSaving, setIsSaving] = useState(false);
+	const { isSignedIn, isLoaded } = useAuth();
 	const [isSaved, setIsSaved] = useState(false);
 	const [copied, setCopied] = useState(false);
 	const [isDownloading, setIsDownloading] = useState(false);
 	const [unlockedAchievement, setUnlockedAchievement] =
 		useState<UnlockedAchievement | null>(null);
 	const [isOwner, setIsOwner] = useState(false);
+	const hasAutoClaimedRef = useRef(false);
 
 	useEffect(() => {
 		const storedToken = getStoredGiftToken();
 		setIsOwner(storedToken === token);
 	}, [token]);
+
+	useEffect(() => {
+		if (!isLoaded || !isSignedIn || !isOwner || hasAutoClaimedRef.current)
+			return;
+		hasAutoClaimedRef.current = true;
+
+		const autoClaim = async () => {
+			try {
+				const response = await fetch("/api/gift/save", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ token }),
+				});
+
+				if (!response.ok) return;
+
+				const data = await response.json();
+				setIsSaved(true);
+
+				if (data.achievementUnlocked) {
+					setUnlockedAchievement(data.achievementUnlocked);
+				}
+			} catch (error) {
+				console.error("Auto-claim failed:", error);
+			}
+		};
+
+		autoClaim();
+	}, [isLoaded, isSignedIn, isOwner, token]);
 
 	const formattedId = builderId
 		? `#${builderId.toString().padStart(4, "0")}`
@@ -113,32 +142,6 @@ export function GiftActions({
 		}
 	};
 
-	const handleSave = async () => {
-		if (!isSignedIn) return;
-
-		setIsSaving(true);
-		try {
-			const response = await fetch("/api/gift/save", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ token }),
-			});
-
-			if (!response.ok) throw new Error("Failed to save");
-
-			const data = await response.json();
-			setIsSaved(true);
-
-			if (data.achievementUnlocked) {
-				setUnlockedAchievement(data.achievementUnlocked);
-			}
-		} catch (error) {
-			console.error("Save failed:", error);
-		} finally {
-			setIsSaving(false);
-		}
-	};
-
 	return (
 		<>
 			<div className="flex flex-col gap-2 w-full">
@@ -197,28 +200,12 @@ export function GiftActions({
 				{isOwner && (
 					<>
 						{isSignedIn ? (
-							<Button
-								onClick={handleSave}
-								disabled={isSaving || isSaved}
-								className="w-full gap-2 bg-amber-600 hover:bg-amber-700 text-white"
-							>
-								{isSaving ? (
-									<>
-										<Loader2 className="h-4 w-4 animate-spin" />
-										Guardando...
-									</>
-								) : isSaved ? (
-									<>
-										<Check className="h-4 w-4" />
-										Logro desbloqueado
-									</>
-								) : (
-									<>
-										<Trophy className="h-4 w-4" />
-										Reclamar logro en hack0
-									</>
-								)}
-							</Button>
+							<Link href="/profile/achievements" className="w-full">
+								<Button className="w-full gap-2 bg-amber-600 hover:bg-amber-700 text-white">
+									<Trophy className="h-4 w-4" />
+									Ver logro
+								</Button>
+							</Link>
 						) : (
 							<SignInButton mode="modal">
 								<Button className="w-full gap-2 bg-amber-600 hover:bg-amber-700 text-white">
