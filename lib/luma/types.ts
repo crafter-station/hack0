@@ -181,3 +181,80 @@ export interface LumaWebhookPayload {
 		calendar_api_id?: string;
 	};
 }
+
+// ============================================
+// PUBLIC API TYPES - For ecosystem scraping
+// ============================================
+
+export interface LumaEntity {
+	api_id: string;
+	type: "user" | "calendar";
+	name: string;
+	slug?: string;
+	bio?: string;
+	avatar_url?: string;
+	cover_url?: string;
+	timezone?: string;
+}
+
+export interface LumaEntityLookupResponse {
+	entity: LumaEntity;
+}
+
+export interface LumaCalendarPerson {
+	api_id: string;
+	email: string;
+	name?: string;
+	first_name?: string;
+	last_name?: string;
+	avatar_url?: string;
+	event_approved_count: number;
+	event_checked_in_count: number;
+	revenue_usd_cents: number;
+	tags?: string[];
+	membership_tier_id?: string;
+	membership_status?: string;
+	created_at: string;
+	updated_at?: string;
+}
+
+export interface LumaCalendarPeopleResponse {
+	entries: LumaCalendarPerson[];
+	has_more: boolean;
+	next_cursor?: string;
+}
+
+export interface LumaPublicCalendarEvent {
+	api_id: string;
+	name: string;
+	slug?: string;
+	url?: string;
+	cover_url?: string;
+	start_at: string;
+	end_at?: string;
+	timezone: string;
+	description?: string;
+	geo_latitude?: string;
+	geo_longitude?: string;
+	geo_address_json?: {
+		address?: string;
+		city?: string;
+		region?: string;
+		country?: string;
+		full_address?: string;
+	};
+	meeting_url?: string;
+	guest_limit?: number;
+	registration_count?: number;
+	hosts?: Array<{
+		api_id: string;
+		name: string;
+		avatar_url?: string;
+	}>;
+}
+
+export interface LumaPublicCalendarEventsResponse {
+	entries: { event: LumaPublicCalendarEvent }[];
+	has_more: boolean;
+	next_cursor?: string;
+}

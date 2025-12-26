@@ -1,7 +1,9 @@
 import { relations } from "drizzle-orm";
 import {
 	boolean,
+	index,
 	integer,
+	jsonb,
 	pgEnum,
 	pgTable,
 	text,
@@ -139,6 +141,32 @@ export const eventSyncStatusEnum = pgEnum("event_sync_status", [
 	"drifted", // Source has changed
 	"source_deleted", // Source event no longer exists
 	"unknown", // Never checked
+]);
+
+// ============================================
+// EXTERNAL SOURCES ENUMS - Multi-platform sync
+// ============================================
+
+export const externalSourceTypeEnum = pgEnum("external_source_type", [
+	"luma",
+	"eventbrite",
+	"meetup",
+	"devpost",
+	"manual",
+]);
+
+export const externalSyncRunStatusEnum = pgEnum("external_sync_run_status", [
+	"pending",
+	"running",
+	"completed",
+	"failed",
+]);
+
+export const externalSyncRunTypeEnum = pgEnum("external_sync_run_type", [
+	"full",
+	"people",
+	"events",
+	"incremental",
 ]);
 
 // Events table (hackathons, conferences, workshops, etc.)
@@ -1117,6 +1145,14 @@ export const users = pgTable("users", {
 		mode: "date",
 		withTimezone: true,
 	}),
+
+	lumaUserId: varchar("luma_user_id", { length: 255 }),
+	externalIds: jsonb("external_ids"),
+	isFromExternalSync: boolean("is_from_external_sync").default(false),
+	externalSyncedAt: timestamp("external_synced_at", {
+		mode: "date",
+		withTimezone: true,
+	}),
 });
 
 export type User = typeof users.$inferSelect;
@@ -1380,6 +1416,281 @@ export type UserEventAttendance = typeof userEventAttendance.$inferSelect;
 export type NewUserEventAttendance = typeof userEventAttendance.$inferInsert;
 
 // ============================================
+// EXTERNAL SOURCES - Multi-platform ecosystem sync
+// ============================================
+
+export const externalCalendars = pgTable(
+	"external_calendars",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+
+		sourceType: externalSourceTypeEnum("source_type").default("luma"),
+		externalId: varchar("external_id", { length: 255 }).notNull(),
+		slug: varchar("slug", { length: 255 }).notNull(),
+
+		name: varchar("name", { length: 255 }).notNull(),
+		description: text("description"),
+		avatarUrl: varchar("avatar_url", { length: 500 }),
+		coverUrl: varchar("cover_url", { length: 500 }),
+
+		country: varchar("country", { length: 10 }),
+		region: varchar("region", { length: 100 }),
+		city: varchar("city", { length: 100 }),
+
+		totalPeople: integer("total_people").default(0),
+		totalEvents: integer("total_events").default(0),
+
+		organizationId: uuid("organization_id").references(() => organizations.id),
+
+		isActive: boolean("is_active").default(true),
+		syncFrequency: syncFrequencyEnum("sync_frequency").default("daily"),
+		lastSyncAt: timestamp("last_sync_at", {
+			mode: "date",
+			withTimezone: true,
+		}),
+		lastSyncStatus: varchar("last_sync_status", { length: 20 }),
+
+		discoveredAt: timestamp("discovered_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+		discoveredFrom: varchar("discovered_from", { length: 255 }),
+
+		createdAt: timestamp("created_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+	},
+	(t) => [
+		uniqueIndex("external_calendar_source_unique").on(
+			t.sourceType,
+			t.externalId,
+		),
+		index("external_calendar_slug_idx").on(t.slug),
+	],
+);
+
+export type ExternalCalendar = typeof externalCalendars.$inferSelect;
+export type NewExternalCalendar = typeof externalCalendars.$inferInsert;
+
+export const externalPeople = pgTable(
+	"external_people",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+
+		sourceType: externalSourceTypeEnum("source_type").default("luma"),
+		externalId: varchar("external_id", { length: 255 }).notNull(),
+		calendarId: uuid("calendar_id")
+			.references(() => externalCalendars.id, { onDelete: "cascade" })
+			.notNull(),
+
+		email: varchar("email", { length: 255 }).notNull(),
+		name: varchar("name", { length: 255 }),
+		firstName: varchar("first_name", { length: 100 }),
+		lastName: varchar("last_name", { length: 100 }),
+		avatarUrl: varchar("avatar_url", { length: 500 }),
+
+		eventApprovedCount: integer("event_approved_count").default(0),
+		eventCheckedInCount: integer("event_checked_in_count").default(0),
+		revenueUsdCents: integer("revenue_usd_cents").default(0),
+
+		tags: text("tags").array(),
+
+		membershipTierId: varchar("membership_tier_id", { length: 255 }),
+		membershipStatus: varchar("membership_status", { length: 50 }),
+
+		userId: uuid("user_id").references(() => users.id),
+
+		firstSeenAt: timestamp("first_seen_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+		lastSeenAt: timestamp("last_seen_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+
+		createdAt: timestamp("created_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+	},
+	(t) => [
+		uniqueIndex("external_person_calendar_unique").on(
+			t.calendarId,
+			t.externalId,
+		),
+		index("external_person_email_idx").on(t.email),
+		index("external_person_user_idx").on(t.userId),
+	],
+);
+
+export type ExternalPerson = typeof externalPeople.$inferSelect;
+export type NewExternalPerson = typeof externalPeople.$inferInsert;
+
+export const externalEvents = pgTable(
+	"external_events",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+
+		sourceType: externalSourceTypeEnum("source_type").default("luma"),
+		externalId: varchar("external_id", { length: 255 }).notNull(),
+		calendarId: uuid("calendar_id")
+			.references(() => externalCalendars.id, { onDelete: "cascade" })
+			.notNull(),
+
+		name: varchar("name", { length: 500 }).notNull(),
+		description: text("description"),
+		slug: varchar("slug", { length: 255 }),
+		url: varchar("url", { length: 500 }),
+		coverUrl: varchar("cover_url", { length: 500 }),
+
+		startsAt: timestamp("starts_at", {
+			mode: "date",
+			withTimezone: true,
+		}),
+		endsAt: timestamp("ends_at", {
+			mode: "date",
+			withTimezone: true,
+		}),
+		timezone: varchar("timezone", { length: 50 }),
+
+		isVirtual: boolean("is_virtual").default(false),
+		address: text("address"),
+		city: varchar("city", { length: 100 }),
+		region: varchar("region", { length: 100 }),
+		country: varchar("country", { length: 10 }),
+		latitude: varchar("latitude", { length: 50 }),
+		longitude: varchar("longitude", { length: 50 }),
+		meetingUrl: varchar("meeting_url", { length: 500 }),
+
+		guestLimit: integer("guest_limit"),
+		registrationCount: integer("registration_count").default(0),
+
+		hosts: jsonb("hosts"),
+
+		rawData: jsonb("raw_data"),
+		contentHash: varchar("content_hash", { length: 64 }),
+
+		eventId: uuid("event_id").references(() => events.id),
+
+		firstSeenAt: timestamp("first_seen_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+		lastSeenAt: timestamp("last_seen_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+
+		createdAt: timestamp("created_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+	},
+	(t) => [
+		uniqueIndex("external_event_source_unique").on(t.sourceType, t.externalId),
+		index("external_event_calendar_idx").on(t.calendarId),
+		index("external_event_starts_idx").on(t.startsAt),
+	],
+);
+
+export type ExternalEvent = typeof externalEvents.$inferSelect;
+export type NewExternalEvent = typeof externalEvents.$inferInsert;
+
+export const externalSyncRuns = pgTable(
+	"external_sync_runs",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+
+		calendarId: uuid("calendar_id").references(() => externalCalendars.id),
+		syncType: externalSyncRunTypeEnum("sync_type").default("full"),
+
+		status: externalSyncRunStatusEnum("status").default("pending"),
+
+		peopleFound: integer("people_found").default(0),
+		peopleCreated: integer("people_created").default(0),
+		peopleUpdated: integer("people_updated").default(0),
+		eventsFound: integer("events_found").default(0),
+		eventsCreated: integer("events_created").default(0),
+		eventsUpdated: integer("events_updated").default(0),
+		usersLinked: integer("users_linked").default(0),
+
+		startedAt: timestamp("started_at", {
+			mode: "date",
+			withTimezone: true,
+		}),
+		completedAt: timestamp("completed_at", {
+			mode: "date",
+			withTimezone: true,
+		}),
+		durationMs: integer("duration_ms"),
+
+		errorMessage: text("error_message"),
+		errorDetails: jsonb("error_details"),
+
+		triggeredBy: varchar("triggered_by", { length: 50 }).default("cron"),
+		triggerRunId: varchar("trigger_run_id", { length: 255 }),
+
+		createdAt: timestamp("created_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+	},
+	(t) => [
+		index("external_sync_run_calendar_idx").on(t.calendarId),
+		index("external_sync_run_status_idx").on(t.status),
+	],
+);
+
+export type ExternalSyncRun = typeof externalSyncRuns.$inferSelect;
+export type NewExternalSyncRun = typeof externalSyncRuns.$inferInsert;
+
+export const ecosystemSnapshots = pgTable("ecosystem_snapshots", {
+	id: uuid("id").primaryKey().defaultRandom(),
+
+	country: varchar("country", { length: 10 }).default("PE"),
+
+	totalCalendars: integer("total_calendars").default(0),
+	activeCalendars: integer("active_calendars").default(0),
+	totalPeople: integer("total_people").default(0),
+	uniqueBuilders: integer("unique_builders").default(0),
+	totalEvents: integer("total_events").default(0),
+	upcomingEvents: integer("upcoming_events").default(0),
+
+	totalCheckIns: integer("total_check_ins").default(0),
+	avgEventsPerBuilder: integer("avg_events_per_builder").default(0),
+
+	topBuilders: jsonb("top_builders"),
+	topCalendars: jsonb("top_calendars"),
+	mostConnected: jsonb("most_connected"),
+
+	totalConnections: integer("total_connections").default(0),
+	avgConnectionsPerBuilder: integer("avg_connections_per_builder").default(0),
+
+	snapshotAt: timestamp("snapshot_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	generationDurationMs: integer("generation_duration_ms"),
+});
+
+export type EcosystemSnapshot = typeof ecosystemSnapshots.$inferSelect;
+export type NewEcosystemSnapshot = typeof ecosystemSnapshots.$inferInsert;
+
+// ============================================
 // RELATIONS
 // ============================================
 
@@ -1400,6 +1711,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 	winnerClaims: many(winnerClaims),
 	memberships: many(communityMembers),
 	attendance: many(userEventAttendance),
+	externalPeople: many(externalPeople),
 }));
 
 export const organizationsRelations = relations(organizations, ({ many }) => ({
@@ -1415,6 +1727,7 @@ export const organizationsRelations = relations(organizations, ({ many }) => ({
 	incomingRelationships: many(organizationRelationships, {
 		relationName: "targetOrg",
 	}),
+	externalCalendars: many(externalCalendars),
 }));
 
 export const organizationRelationshipsRelations = relations(
@@ -1671,6 +1984,55 @@ export const userAchievementsRelations = relations(
 		achievement: one(achievements, {
 			fields: [userAchievements.achievementId],
 			references: [achievements.id],
+		}),
+	}),
+);
+
+// ============================================
+// EXTERNAL SOURCES RELATIONS
+// ============================================
+
+export const externalCalendarsRelations = relations(
+	externalCalendars,
+	({ one, many }) => ({
+		organization: one(organizations, {
+			fields: [externalCalendars.organizationId],
+			references: [organizations.id],
+		}),
+		people: many(externalPeople),
+		events: many(externalEvents),
+		syncRuns: many(externalSyncRuns),
+	}),
+);
+
+export const externalPeopleRelations = relations(externalPeople, ({ one }) => ({
+	calendar: one(externalCalendars, {
+		fields: [externalPeople.calendarId],
+		references: [externalCalendars.id],
+	}),
+	user: one(users, {
+		fields: [externalPeople.userId],
+		references: [users.id],
+	}),
+}));
+
+export const externalEventsRelations = relations(externalEvents, ({ one }) => ({
+	calendar: one(externalCalendars, {
+		fields: [externalEvents.calendarId],
+		references: [externalCalendars.id],
+	}),
+	event: one(events, {
+		fields: [externalEvents.eventId],
+		references: [events.id],
+	}),
+}));
+
+export const externalSyncRunsRelations = relations(
+	externalSyncRuns,
+	({ one }) => ({
+		calendar: one(externalCalendars, {
+			fields: [externalSyncRuns.calendarId],
+			references: [externalCalendars.id],
 		}),
 	}),
 );

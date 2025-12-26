@@ -1,10 +1,16 @@
 import type {
 	LumaApiErrorResponse,
 	LumaCalendarEventsResponse,
+	LumaCalendarPeopleResponse,
+	LumaCalendarPerson,
+	LumaEntity,
+	LumaEntityLookupResponse,
 	LumaEvent,
 	LumaEventResponse,
 	LumaGuest,
 	LumaGuestsResponse,
+	LumaPublicCalendarEvent,
+	LumaPublicCalendarEventsResponse,
 	LumaWebhook,
 	LumaWebhookEventType,
 	LumaWebhookResponse,
@@ -77,7 +83,9 @@ export class LumaClient {
 		if (!response.ok) {
 			const errorText = await response.text();
 			console.error("Luma API error response:", errorText);
-			let errorData: LumaApiErrorResponse = { error: { code: "UNKNOWN_ERROR", message: `HTTP ${response.status}` } };
+			let errorData: LumaApiErrorResponse = {
+				error: { code: "UNKNOWN_ERROR", message: `HTTP ${response.status}` },
+			};
 			try {
 				errorData = JSON.parse(errorText) as LumaApiErrorResponse;
 			} catch {
@@ -233,13 +241,21 @@ export class LumaClient {
 			const imageBlob = await imageResponse.blob();
 			const contentType = imageBlob.type || "image/jpeg";
 
-			const supportedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+			const supportedTypes = [
+				"image/jpeg",
+				"image/png",
+				"image/webp",
+				"image/gif",
+			];
 			if (!supportedTypes.includes(contentType)) {
-				console.error(`Luma does not support image type: ${contentType}. Supported: ${supportedTypes.join(", ")}`);
+				console.error(
+					`Luma does not support image type: ${contentType}. Supported: ${supportedTypes.join(", ")}`,
+				);
 				return null;
 			}
 
-			const { upload_url, file_url } = await this.createImageUploadUrl(contentType);
+			const { upload_url, file_url } =
+				await this.createImageUploadUrl(contentType);
 
 			const uploadResponse = await fetch(upload_url, {
 				method: "PUT",
@@ -249,7 +265,11 @@ export class LumaClient {
 
 			if (!uploadResponse.ok) {
 				const errorText = await uploadResponse.text();
-				console.error("Failed to upload image to Luma CDN:", uploadResponse.status, errorText);
+				console.error(
+					"Failed to upload image to Luma CDN:",
+					uploadResponse.status,
+					errorText,
+				);
 				return null;
 			}
 
@@ -381,6 +401,105 @@ export class LumaClient {
 			const message = error instanceof Error ? error.message : "Unknown error";
 			return { success: false, error: message };
 		}
+	}
+
+	// ============================================
+	// PUBLIC API METHODS - For ecosystem scraping
+	// ============================================
+
+	async lookupEntity(slug: string): Promise<LumaEntity | null> {
+		try {
+			const params = new URLSearchParams({ slug });
+			const response = await this.request<LumaEntityLookupResponse>(
+				`/v1/entity/lookup?${params}`,
+			);
+			return response.entity;
+		} catch (error) {
+			if (error instanceof LumaApiError && error.status === 404) {
+				return null;
+			}
+			throw error;
+		}
+	}
+
+	async listCalendarPeople(
+		calendarApiId: string,
+		options?: { cursor?: string },
+	): Promise<{
+		people: LumaCalendarPerson[];
+		hasMore: boolean;
+		nextCursor?: string;
+	}> {
+		const params = new URLSearchParams({ calendar_api_id: calendarApiId });
+		if (options?.cursor) params.set("cursor", options.cursor);
+
+		const response = await this.request<LumaCalendarPeopleResponse>(
+			`/v1/calendar/list-people?${params}`,
+		);
+
+		return {
+			people: response.entries,
+			hasMore: response.has_more,
+			nextCursor: response.next_cursor,
+		};
+	}
+
+	async getAllCalendarPeople(
+		calendarApiId: string,
+	): Promise<LumaCalendarPerson[]> {
+		const allPeople: LumaCalendarPerson[] = [];
+		let cursor: string | undefined;
+		let hasMore = true;
+
+		while (hasMore) {
+			const result = await this.listCalendarPeople(calendarApiId, { cursor });
+			allPeople.push(...result.people);
+			hasMore = result.hasMore;
+			cursor = result.nextCursor;
+		}
+
+		return allPeople;
+	}
+
+	async listPublicCalendarEvents(
+		calendarApiId: string,
+		options?: { cursor?: string },
+	): Promise<{
+		events: LumaPublicCalendarEvent[];
+		hasMore: boolean;
+		nextCursor?: string;
+	}> {
+		const params = new URLSearchParams({ calendar_api_id: calendarApiId });
+		if (options?.cursor) params.set("cursor", options.cursor);
+
+		const response = await this.request<LumaPublicCalendarEventsResponse>(
+			`/v1/calendar/list-events?${params}`,
+		);
+
+		return {
+			events: response.entries.map((e) => e.event),
+			hasMore: response.has_more,
+			nextCursor: response.next_cursor,
+		};
+	}
+
+	async getAllPublicCalendarEvents(
+		calendarApiId: string,
+	): Promise<LumaPublicCalendarEvent[]> {
+		const allEvents: LumaPublicCalendarEvent[] = [];
+		let cursor: string | undefined;
+		let hasMore = true;
+
+		while (hasMore) {
+			const result = await this.listPublicCalendarEvents(calendarApiId, {
+				cursor,
+			});
+			allEvents.push(...result.events);
+			hasMore = result.hasMore;
+			cursor = result.nextCursor;
+		}
+
+		return allEvents;
 	}
 }
 
