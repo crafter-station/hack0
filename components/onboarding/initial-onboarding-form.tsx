@@ -1,7 +1,6 @@
 "use client";
 
 import { Building2, Loader2, User } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { createOrUpdateUser } from "@/lib/actions/users";
@@ -28,7 +27,6 @@ interface InitialOnboardingFormProps {
 export function InitialOnboardingForm({
 	redirectUrl,
 }: InitialOnboardingFormProps) {
-	const router = useRouter();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [role, setRole] = useState<"member" | "organizer" | "">("");
@@ -51,8 +49,7 @@ export function InitialOnboardingForm({
 			const destination =
 				redirectUrl ||
 				(role === "organizer" ? "/onboarding/complete" : "/c/discover");
-			router.push(destination);
-			router.refresh();
+			window.location.href = destination;
 		} catch (err) {
 			setError(
 				err instanceof Error
