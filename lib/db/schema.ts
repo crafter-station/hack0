@@ -1055,22 +1055,83 @@ export const IMPORT_STATUSES = [
 	"failed",
 ] as const;
 
-// User Preferences (Onboarding)
+// ============================================
+// USERS - First-class builders in the ecosystem
+// ============================================
+
+export const users = pgTable("users", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	clerkId: varchar("clerk_id", { length: 255 }).unique().notNull(),
+
+	username: varchar("username", { length: 50 }).unique(),
+	displayName: varchar("display_name", { length: 100 }),
+	email: varchar("email", { length: 255 }),
+	avatarUrl: varchar("avatar_url", { length: 500 }),
+	bio: text("bio"),
+	headline: varchar("headline", { length: 150 }),
+
+	country: varchar("country", { length: 10 }),
+	region: varchar("region", { length: 100 }),
+	city: varchar("city", { length: 100 }),
+	timezone: varchar("timezone", { length: 50 }).default("America/Lima"),
+
+	skills: text("skills").array(),
+	domains: text("domains").array(),
+
+	websiteUrl: varchar("website_url", { length: 500 }),
+	githubUrl: varchar("github_url", { length: 500 }),
+	linkedinUrl: varchar("linkedin_url", { length: 500 }),
+	twitterUrl: varchar("twitter_url", { length: 500 }),
+
+	isOpenToWork: boolean("is_open_to_work").default(false),
+	isOpenToFreelance: boolean("is_open_to_freelance").default(false),
+	isOpenToCollab: boolean("is_open_to_collab").default(false),
+	isOpenToMentor: boolean("is_open_to_mentor").default(false),
+	isOpenToSpeaking: boolean("is_open_to_speaking").default(false),
+
+	isPublic: boolean("is_public").default(true),
+	showEmail: boolean("show_email").default(false),
+
+	role: userRoleEnum("role").default("member"),
+	formatPreference: formatPreferenceEnum("format_preference").default("any"),
+	skillLevel: skillLevelEnum("skill_level").default("all"),
+	hasCompletedOnboarding: boolean("has_completed_onboarding").default(false),
+
+	eventsAttendedCount: integer("events_attended_count").default(0),
+	eventsOrganizedCount: integer("events_organized_count").default(0),
+	hackathonsCount: integer("hackathons_count").default(0),
+	hackathonWinsCount: integer("hackathon_wins_count").default(0),
+	communitiesCount: integer("communities_count").default(0),
+	achievementsCount: integer("achievements_count").default(0),
+	totalPoints: integer("total_points").default(0),
+
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	updatedAt: timestamp("updated_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	lastSeenAt: timestamp("last_seen_at", {
+		mode: "date",
+		withTimezone: true,
+	}),
+});
+
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+
+// User Preferences (DEPRECATED - migrating to users table)
 export const userPreferences = pgTable("user_preferences", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	clerkUserId: varchar("clerk_user_id", { length: 255 }).unique().notNull(),
-
-	// Onboarding data
-	role: userRoleEnum("role").notNull(), // member o organizer
-	department: varchar("department", { length: 100 }), // Lima, Arequipa, etc.
-	city: varchar("city", { length: 100 }), // Para ciudades específicas
+	role: userRoleEnum("role").notNull(),
+	department: varchar("department", { length: 100 }),
+	city: varchar("city", { length: 100 }),
 	formatPreference: formatPreferenceEnum("format_preference").default("any"),
 	skillLevel: skillLevelEnum("skill_level").default("all"),
-
-	// Estado de onboarding
 	hasCompletedOnboarding: boolean("has_completed_onboarding").default(false),
-
-	// Timestamps
 	createdAt: timestamp("created_at", {
 		mode: "date",
 		withTimezone: true,
@@ -1354,6 +1415,14 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
 	organizers: many(eventOrganizers),
 	hostOrganizations: many(eventHostOrganizations),
 	lumaHosts: many(eventHosts),
+}));
+
+export const usersRelations = relations(users, ({ many }) => ({
+	achievements: many(userAchievements),
+	giftCards: many(giftCards),
+	winnerClaims: many(winnerClaims),
+	memberships: many(communityMembers),
+	attendance: many(userEventAttendance),
 }));
 
 export const organizationsRelations = relations(organizations, ({ many }) => ({

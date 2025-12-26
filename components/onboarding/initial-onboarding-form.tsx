@@ -4,7 +4,7 @@ import { Building2, Loader2, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { createOrUpdateUserPreferences } from "@/lib/actions/user-preferences";
+import { createOrUpdateUser } from "@/lib/actions/users";
 
 const ROLE_OPTIONS = [
 	{
@@ -43,17 +43,21 @@ export function InitialOnboardingForm({
 		setIsSubmitting(true);
 
 		try {
-			await createOrUpdateUserPreferences({
+			await createOrUpdateUser({
 				role: role as "member" | "organizer",
 				hasCompletedOnboarding: true,
 			});
 
-			const destination = redirectUrl || (role === "organizer" ? "/onboarding/complete" : "/c/discover");
+			const destination =
+				redirectUrl ||
+				(role === "organizer" ? "/onboarding/complete" : "/c/discover");
 			router.push(destination);
 			router.refresh();
 		} catch (err) {
 			setError(
-				err instanceof Error ? err.message : "Error al guardar. Intenta de nuevo.",
+				err instanceof Error
+					? err.message
+					: "Error al guardar. Intenta de nuevo.",
 			);
 			setIsSubmitting(false);
 		}

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { InitialOnboardingForm } from "@/components/onboarding/initial-onboarding-form";
-import { getUserPreferences } from "@/lib/actions/user-preferences";
+import { getCurrentUser } from "@/lib/actions/users";
 
 interface OnboardingPageProps {
 	searchParams: Promise<{ redirect_url?: string }>;
@@ -19,9 +19,9 @@ export default async function OnboardingPage({
 		redirect("/sign-in");
 	}
 
-	const prefs = await getUserPreferences();
-	if (prefs?.hasCompletedOnboarding) {
-		if (prefs.role === "organizer") {
+	const user = await getCurrentUser();
+	if (user?.hasCompletedOnboarding) {
+		if (user.role === "organizer") {
 			redirect(redirect_url || "/onboarding/complete");
 		}
 		redirect(redirect_url || "/c/discover");
@@ -37,9 +37,7 @@ export default async function OnboardingPage({
 						<h1 className="text-3xl font-bold tracking-tight">
 							Bienvenido a hack0
 						</h1>
-						<p className="text-muted-foreground">
-							¿Qué te trae por aquí?
-						</p>
+						<p className="text-muted-foreground">¿Qué te trae por aquí?</p>
 					</div>
 
 					<InitialOnboardingForm redirectUrl={redirect_url} />

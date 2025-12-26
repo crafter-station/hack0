@@ -5,7 +5,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { PostOnboardingChoice } from "@/components/onboarding/post-onboarding-choice";
 import { getOrCreatePersonalOrg } from "@/lib/actions/organizations";
-import { getUserPreferences } from "@/lib/actions/user-preferences";
+import { getCurrentUser } from "@/lib/actions/users";
 import { db } from "@/lib/db";
 import { communityMembers } from "@/lib/db/schema";
 import { isGodMode } from "@/lib/god-mode";
@@ -31,9 +31,9 @@ export default async function OnboardingRedirectPage({
 		redirect("/events");
 	}
 
-	const prefs = await getUserPreferences();
+	const user = await getCurrentUser();
 
-	if (!prefs || !prefs.hasCompletedOnboarding) {
+	if (!user || !user.hasCompletedOnboarding) {
 		const onboardingUrl = redirect_url
 			? `/onboarding?redirect_url=${encodeURIComponent(redirect_url)}`
 			: "/onboarding";
@@ -48,7 +48,7 @@ export default async function OnboardingRedirectPage({
 	const personalOrg = await getOrCreatePersonalOrg();
 
 	// For organizers: show choice screen (unless skip_choice is set)
-	if (prefs.role === "organizer" && !skip_choice) {
+	if (user.role === "organizer" && !skip_choice) {
 		return (
 			<div className="min-h-screen bg-background flex flex-col">
 				<SiteHeader />
@@ -61,7 +61,7 @@ export default async function OnboardingRedirectPage({
 	}
 
 	// For organizers with skip_choice: go to personal org
-	if (prefs.role === "organizer") {
+	if (user.role === "organizer") {
 		redirect(`/c/${personalOrg.slug}`);
 	}
 
