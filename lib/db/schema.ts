@@ -1122,29 +1122,6 @@ export const users = pgTable("users", {
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 
-// User Preferences (DEPRECATED - migrating to users table)
-export const userPreferences = pgTable("user_preferences", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	clerkUserId: varchar("clerk_user_id", { length: 255 }).unique().notNull(),
-	role: userRoleEnum("role").notNull(),
-	department: varchar("department", { length: 100 }),
-	city: varchar("city", { length: 100 }),
-	formatPreference: formatPreferenceEnum("format_preference").default("any"),
-	skillLevel: skillLevelEnum("skill_level").default("all"),
-	hasCompletedOnboarding: boolean("has_completed_onboarding").default(false),
-	createdAt: timestamp("created_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-	updatedAt: timestamp("updated_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-});
-
-export type UserPreferences = typeof userPreferences.$inferSelect;
-export type NewUserPreferences = typeof userPreferences.$inferInsert;
-
 // ============================================
 // LUMA INTEGRATION - Direct API calendar sync
 // ============================================

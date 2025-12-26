@@ -15,7 +15,7 @@
  *   CLERK_SECRET_KEY=sk_live_xxx bun run migrate:personal-orgs
  *
  * What it does:
- * 1. Finds ALL users (members and organizers) in user_preferences
+ * 1. Finds ALL users (members and organizers) in users table
  * 2. For each, checks if they already have a personal org
  * 3. If not, creates one with @username slug from GitHub/Clerk
  * 4. Syncs profile image from Clerk
@@ -107,7 +107,7 @@ async function main() {
 	console.log("🚀 Starting personal org migration for ALL users...\n");
 
 	// Get ALL users (both members and organizers)
-	const allUsers = await db.query.userPreferences.findMany();
+	const allUsers = await db.query.users.findMany();
 
 	console.log(`Found ${allUsers.length} users total\n`);
 
@@ -116,7 +116,7 @@ async function main() {
 	let failed = 0;
 
 	for (const user of allUsers) {
-		const result = await createPersonalOrgForUser(user.clerkUserId);
+		const result = await createPersonalOrgForUser(user.clerkId);
 
 		if (result.success) {
 			if (result.existed) {
