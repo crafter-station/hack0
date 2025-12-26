@@ -29,22 +29,30 @@ export interface ManifestoResult {
 	verticalLabel: string;
 }
 
-export function getManifestoPrompt(builderName: string | undefined): string {
+export function getManifestoPrompt(
+	builderName: string | undefined,
+	builderFeelings: string | undefined,
+): string {
 	const phraseExamples = MANIFESTO_EXAMPLES.slice(0, 6)
 		.map((e) => `- "${e}"`)
 		.join("\n");
 	const labelExamples = VERTICAL_LABEL_EXAMPLES.join(", ");
+
+	let manifestoPhraseExplanation = `1. FRASE DE MANIFIESTO:
+Estilo: declaración personal poderosa, tipo logro desbloqueado.
+Tono: confiado, directo, sin arrogancia. Como algo que pondrías en tu bio de Twitter.
+Ejemplos (NO copies, genera variaciones únicas):
+${phraseExamples}`;
+	if (builderFeelings) {
+		manifestoPhraseExplanation += `Toma en cuenta el sentimiento de la persona: ${builderFeelings}.`;
+	}
 
 	return `Genera contenido para un badge de builder tech de LATAM.
 Nombre del builder: ${builderName || "Builder"}
 
 Necesito DOS cosas:
 
-1. FRASE DE MANIFIESTO:
-Estilo: declaración personal poderosa, tipo logro desbloqueado.
-Tono: confiado, directo, sin arrogancia. Como algo que pondrías en tu bio de Twitter.
-Ejemplos (NO copies, genera variaciones únicas):
-${phraseExamples}
+${manifestoPhraseExplanation}
 
 Reglas para la frase:
 - Máximo 12 palabras

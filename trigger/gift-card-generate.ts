@@ -32,11 +32,19 @@ export const generateGiftCardTask = task({
 		cardId: string;
 		photoUrl: string;
 		recipientName?: string;
+		builderFeelings?: string;
 		style: GiftCardStyle;
 		backgroundMood: BackgroundMood;
 		layoutId: string;
 	}) => {
-		const { cardId, photoUrl, recipientName, style, backgroundMood } = payload;
+		const {
+			cardId,
+			photoUrl,
+			recipientName,
+			builderFeelings,
+			style,
+			backgroundMood,
+		} = payload;
 
 		metadata.set("step", "initializing");
 		metadata.set("cardId", cardId);
@@ -81,7 +89,7 @@ export const generateGiftCardTask = task({
 					}),
 					generateText({
 						model: "openai/gpt-4o-mini",
-						prompt: getManifestoPrompt(recipientName),
+						prompt: getManifestoPrompt(recipientName, builderFeelings),
 					}),
 				]);
 

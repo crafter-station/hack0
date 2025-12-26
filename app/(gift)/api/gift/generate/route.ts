@@ -14,7 +14,7 @@ import type { generateGiftCardTask } from "@/trigger/gift-card-generate";
 
 export async function POST(req: Request) {
 	try {
-		const { photoUrl, recipientName } = await req.json();
+		const { photoUrl, recipientName, builderFeelings } = await req.json();
 
 		if (!photoUrl) {
 			return Response.json({ error: "Photo URL is required" }, { status: 400 });
@@ -42,6 +42,7 @@ export async function POST(req: Request) {
 				cardId: card.id,
 				photoUrl,
 				recipientName,
+				builderFeelings,
 				style: style as GiftCardStyle,
 				backgroundMood: backgroundMood as BackgroundMood,
 				layoutId,
