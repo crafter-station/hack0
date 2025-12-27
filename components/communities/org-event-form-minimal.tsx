@@ -33,7 +33,7 @@ import {
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MarkdownEditor } from "@/components/ui/markdown-editor";
+import { LexicalLiveEditor } from "@/components/ui/lexical-live-editor";
 import {
 	Popover,
 	PopoverContent,
@@ -785,13 +785,12 @@ export function OrgEventFormMinimal({
 								</ResponsiveModalTitle>
 							</ResponsiveModalHeader>
 							<div className="p-4 flex-1 min-h-0 overflow-hidden">
-								<MarkdownEditor
+								<LexicalLiveEditor
 									value={description}
 									onChange={setDescription}
 									placeholder="Describe tu evento... Puedes usar Markdown."
-									showToolbar={true}
-									showPreview={true}
 									className="w-full h-full"
+									autoFocus={true}
 								/>
 							</div>
 							<ResponsiveModalFooter className="shrink-0">
