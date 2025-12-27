@@ -6,6 +6,7 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useMounted } from "@/hooks/use-mounted";
 
 const faqs = [
 	{
@@ -41,6 +42,8 @@ const faqs = [
 ];
 
 export function FAQSection() {
+	const mounted = useMounted();
+
 	return (
 		<section className="border-t py-12 md:py-16">
 			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
@@ -52,18 +55,33 @@ export function FAQSection() {
 						</p>
 					</div>
 
-					<Accordion type="single" collapsible className="w-full">
-						{faqs.map((faq, index) => (
-							<AccordionItem key={index} value={`item-${index}`}>
-								<AccordionTrigger className="text-left text-sm">
-									{faq.question}
-								</AccordionTrigger>
-								<AccordionContent className="text-sm text-muted-foreground">
-									{faq.answer}
-								</AccordionContent>
-							</AccordionItem>
-						))}
-					</Accordion>
+					{mounted ? (
+						<Accordion type="single" collapsible className="w-full">
+							{faqs.map((faq, index) => (
+								<AccordionItem key={index} value={`item-${index}`}>
+									<AccordionTrigger className="text-left text-sm">
+										{faq.question}
+									</AccordionTrigger>
+									<AccordionContent className="text-sm text-muted-foreground">
+										{faq.answer}
+									</AccordionContent>
+								</AccordionItem>
+							))}
+						</Accordion>
+					) : (
+						<div className="w-full space-y-0">
+							{faqs.map((faq, index) => (
+								<div key={index} className="border-b py-4">
+									<button
+										type="button"
+										className="flex w-full items-center justify-between text-left text-sm font-medium"
+									>
+										{faq.question}
+									</button>
+								</div>
+							))}
+						</div>
+					)}
 				</div>
 			</div>
 		</section>

@@ -12,9 +12,19 @@ export async function getUserInfo(userId: string) {
 
 	const githubUsername = githubAccount?.username || null;
 
+	const emailPrefix = user.primaryEmailAddress?.emailAddress?.split("@")[0];
+	const formattedEmailPrefix = emailPrefix
+		? emailPrefix
+				.replace(/[._]/g, " ")
+				.split(" ")
+				.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+				.join(" ")
+		: null;
+
 	const fullName =
 		`${user.firstName || ""} ${user.lastName || ""}`.trim() ||
 		user.username ||
+		formattedEmailPrefix ||
 		"Usuario";
 
 	return {
@@ -26,15 +36,23 @@ export async function getUserInfo(userId: string) {
 		lastName: user.lastName,
 		imageUrl: user.imageUrl,
 		email: user.primaryEmailAddress?.emailAddress,
+		emailPrefix,
 	};
 }
 
 export async function getPersonalOrgSlug(userId: string): Promise<string> {
 	const info = await getUserInfo(userId);
 
-	const baseSlug = info.githubUsername || info.username || userId.slice(0, 8);
+	const baseSlug =
+		info.githubUsername ||
+		info.username ||
+		info.emailPrefix ||
+		userId.slice(0, 8);
 
-	// Don't include @ in the slug - Next.js interprets @ as route groups
-	// We'll show @ in the UI, but store the slug without it
-	return baseSlug;
+	const sanitizedSlug = baseSlug
+		.toLowerCase()
+		.replace(/[^a-z0-9_-]/g, "")
+		.slice(0, 32);
+
+	return sanitizedSlug || userId.slice(0, 8);
 }

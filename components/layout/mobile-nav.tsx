@@ -3,17 +3,15 @@
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-	Sheet,
-	SheetContent,
-	SheetTrigger,
-} from "@/components/ui/sheet";
 import { useState } from "react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useMounted } from "@/hooks/use-mounted";
 
 const navItems = [
 	{ href: "/", label: "Inicio" },
 	{ href: "/events", label: "Eventos" },
 	{ href: "/c/discover", label: "Comunidades" },
+	{ href: "/gift/gallery", label: "Galería 🎄" },
 ];
 
 const secondaryItems = [
@@ -24,6 +22,19 @@ const secondaryItems = [
 export function MobileNav() {
 	const [open, setOpen] = useState(false);
 	const pathname = usePathname();
+	const mounted = useMounted();
+
+	if (!mounted) {
+		return (
+			<button
+				type="button"
+				className="md:hidden inline-flex h-7 w-7 items-center justify-center text-muted-foreground"
+			>
+				<Menu className="h-4 w-4" />
+				<span className="sr-only">Menú</span>
+			</button>
+		);
+	}
 
 	return (
 		<Sheet open={open} onOpenChange={setOpen}>
@@ -39,7 +50,9 @@ export function MobileNav() {
 							className="flex items-center"
 							onClick={() => setOpen(false)}
 						>
-							<span className="text-lg font-semibold tracking-tight">hack0</span>
+							<span className="text-lg font-semibold tracking-tight">
+								hack0
+							</span>
 							<span className="text-lg text-muted-foreground">.dev</span>
 						</Link>
 					</div>
@@ -47,7 +60,8 @@ export function MobileNav() {
 					<nav className="flex-1 p-6">
 						<div className="space-y-1">
 							{navItems.map((item) => {
-								const isActive = pathname === item.href ||
+								const isActive =
+									pathname === item.href ||
 									(item.href !== "/" && pathname.startsWith(item.href));
 								return (
 									<Link
@@ -69,7 +83,7 @@ export function MobileNav() {
 							<p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
 								Recursos
 							</p>
-							{secondaryItems.map((item) => (
+							{secondaryItems.map((item) =>
 								item.external ? (
 									<a
 										key={item.href}
@@ -88,8 +102,8 @@ export function MobileNav() {
 									>
 										{item.label}
 									</Link>
-								)
-							))}
+								),
+							)}
 						</div>
 					</nav>
 

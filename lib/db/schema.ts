@@ -60,6 +60,10 @@ export const organizerTypeEnum = pgEnum("organizer_type", [
 	"student_org", // Organizaciones estudiantiles (IEEE, ACM)
 	"startup", // Startups, incubadoras
 	"media", // Medios tech
+	"investor", // Fondos de inversión, VCs, SAFIs, Red Ángel, CVC
+	"law_firm", // Estudios de abogados
+	"consulting", // Consultoras
+	"coworking", // Espacios de coworking
 ]);
 
 export const formatEnum = pgEnum("format", ["virtual", "in-person", "hybrid"]);
@@ -84,6 +88,29 @@ export const approvalStatusEnum = pgEnum("approval_status", [
 	"pending",
 	"approved",
 	"rejected",
+]);
+
+export const relationshipTypeEnum = pgEnum("relationship_type", [
+	"partner",
+	"investor",
+	"invested_by",
+	"accelerated",
+	"accelerated_by",
+	"incubated",
+	"incubated_by",
+	"member_of",
+	"sponsor",
+	"co_host",
+	"alumni",
+	"subsidiary",
+	"parent",
+]);
+
+export const relationshipSourceEnum = pgEnum("relationship_source", [
+	"manual",
+	"scraped",
+	"inferred",
+	"imported",
 ]);
 
 export const userRoleEnum = pgEnum("user_role", [
@@ -113,7 +140,6 @@ export const eventSyncStatusEnum = pgEnum("event_sync_status", [
 	"source_deleted", // Source event no longer exists
 	"unknown", // Never checked
 ]);
-
 
 // Events table (hackathons, conferences, workshops, etc.)
 export const events = pgTable("events", {
@@ -371,6 +397,10 @@ export const ORGANIZER_TYPES = [
 	"student_org",
 	"startup",
 	"media",
+	"investor",
+	"law_firm",
+	"consulting",
+	"coworking",
 ] as const;
 
 export type OrganizerType = (typeof ORGANIZER_TYPES)[number];
@@ -386,7 +416,124 @@ export const ORGANIZER_TYPE_LABELS: Record<string, string> = {
 	student_org: "Org. Estudiantil",
 	startup: "Startup",
 	media: "Medio Tech",
+	investor: "Fondo / VC",
+	law_firm: "Estudio Legal",
+	consulting: "Consultora",
+	coworking: "Coworking",
 };
+
+export const COMMUNITY_TAG_AREAS = [
+	"development",
+	"design",
+	"data-ai",
+	"web3",
+	"mobile",
+	"cybersecurity",
+	"product",
+] as const;
+
+export const COMMUNITY_TAG_SECTORS = [
+	"fintech",
+	"healthtech",
+	"edtech",
+	"agritech",
+	"legaltech",
+	"govtech",
+	"proptech",
+	"climatetech",
+] as const;
+
+export const COMMUNITY_TAG_VALUES = [
+	"open-source",
+	"social-impact",
+	"sustainability",
+	"diversity-inclusion",
+] as const;
+
+export const COMMUNITY_TAG_ACTIVITIES = [
+	"education",
+	"networking",
+	"incubation",
+	"acceleration",
+	"investment",
+	"coworking",
+	"events",
+	"mentorship",
+] as const;
+
+export const COMMUNITY_TAG_STAGES = [
+	"students",
+	"early-stage",
+	"growth",
+	"corporate",
+] as const;
+
+export const COMMUNITY_TAGS = [
+	...COMMUNITY_TAG_AREAS,
+	...COMMUNITY_TAG_SECTORS,
+	...COMMUNITY_TAG_VALUES,
+	...COMMUNITY_TAG_ACTIVITIES,
+	...COMMUNITY_TAG_STAGES,
+] as const;
+
+export type CommunityTag = (typeof COMMUNITY_TAGS)[number];
+
+export const COMMUNITY_TAG_LABELS: Record<CommunityTag, string> = {
+	development: "Desarrollo",
+	design: "Diseño",
+	"data-ai": "Data & IA",
+	web3: "Web3",
+	mobile: "Mobile",
+	cybersecurity: "Ciberseguridad",
+	product: "Producto",
+	fintech: "Fintech",
+	healthtech: "Healthtech",
+	edtech: "Edtech",
+	agritech: "Agritech",
+	legaltech: "Legaltech",
+	govtech: "Govtech",
+	proptech: "Proptech",
+	climatetech: "Climatetech",
+	"open-source": "Open Source",
+	"social-impact": "Impacto Social",
+	sustainability: "Sostenibilidad",
+	"diversity-inclusion": "Diversidad e Inclusión",
+	education: "Educación",
+	networking: "Networking",
+	incubation: "Incubación",
+	acceleration: "Aceleración",
+	investment: "Inversión",
+	coworking: "Coworking",
+	events: "Eventos",
+	mentorship: "Mentoría",
+	students: "Estudiantes",
+	"early-stage": "Early-stage",
+	growth: "Growth",
+	corporate: "Corporate",
+};
+
+export const COMMUNITY_TAG_CATEGORIES = {
+	areas: {
+		label: "Áreas",
+		tags: COMMUNITY_TAG_AREAS,
+	},
+	sectors: {
+		label: "Sectores",
+		tags: COMMUNITY_TAG_SECTORS,
+	},
+	values: {
+		label: "Valores",
+		tags: COMMUNITY_TAG_VALUES,
+	},
+	activities: {
+		label: "Actividades",
+		tags: COMMUNITY_TAG_ACTIVITIES,
+	},
+	stages: {
+		label: "Etapa",
+		tags: COMMUNITY_TAG_STAGES,
+	},
+} as const;
 
 export const SKILL_LEVELS = [
 	"beginner",
@@ -488,6 +635,11 @@ export const organizations = pgTable("organizations", {
 	// Contact
 	email: varchar("email", { length: 255 }),
 
+	// Location (LATAM)
+	country: varchar("country", { length: 10 }), // ISO code: PE, CO, MX, AR, CL, etc.
+	department: varchar("department", { length: 100 }), // Region/State: Lima, Arequipa, Antioquia, etc.
+	city: varchar("city", { length: 100 }), // City name
+
 	// Links
 	websiteUrl: varchar("website_url", { length: 500 }),
 	logoUrl: varchar("logo_url", { length: 500 }),
@@ -509,6 +661,9 @@ export const organizations = pgTable("organizations", {
 	// Status
 	isVerified: boolean("is_verified").default(false), // Admin can verify
 
+	// Tags for discoverability
+	tags: text("tags").array(),
+
 	// Timestamps
 	createdAt: timestamp("created_at", {
 		mode: "date",
@@ -522,6 +677,98 @@ export const organizations = pgTable("organizations", {
 
 export type Organization = typeof organizations.$inferSelect;
 export type NewOrganization = typeof organizations.$inferInsert;
+
+// ============================================
+// ORGANIZATION RELATIONSHIPS - Graph connections
+// ============================================
+
+export const organizationRelationships = pgTable("organization_relationships", {
+	id: uuid("id").primaryKey().defaultRandom(),
+
+	sourceOrgId: uuid("source_org_id")
+		.references(() => organizations.id)
+		.notNull(),
+	targetOrgId: uuid("target_org_id")
+		.references(() => organizations.id)
+		.notNull(),
+
+	relationshipType: relationshipTypeEnum("relationship_type").notNull(),
+
+	description: text("description"),
+	strength: integer("strength").default(5),
+
+	source: relationshipSourceEnum("source").default("manual"),
+	confidence: integer("confidence").default(100),
+	sourceUrl: varchar("source_url", { length: 500 }),
+
+	isBidirectional: boolean("is_bidirectional").default(false),
+
+	isVerified: boolean("is_verified").default(false),
+	verifiedBy: varchar("verified_by", { length: 255 }),
+	verifiedAt: timestamp("verified_at", { mode: "date", withTimezone: true }),
+
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	updatedAt: timestamp("updated_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+});
+
+export type OrganizationRelationship =
+	typeof organizationRelationships.$inferSelect;
+export type NewOrganizationRelationship =
+	typeof organizationRelationships.$inferInsert;
+
+export const RELATIONSHIP_TYPES = [
+	"partner",
+	"investor",
+	"invested_by",
+	"accelerated",
+	"accelerated_by",
+	"incubated",
+	"incubated_by",
+	"member_of",
+	"sponsor",
+	"co_host",
+	"alumni",
+	"subsidiary",
+	"parent",
+] as const;
+
+export type RelationshipType = (typeof RELATIONSHIP_TYPES)[number];
+
+export const RELATIONSHIP_TYPE_LABELS: Record<string, string> = {
+	partner: "Partner",
+	investor: "Invirtió en",
+	invested_by: "Recibió inversión de",
+	accelerated: "Aceleró a",
+	accelerated_by: "Fue acelerado por",
+	incubated: "Incubó a",
+	incubated_by: "Fue incubado por",
+	member_of: "Miembro de",
+	sponsor: "Patrocina a",
+	co_host: "Co-organiza con",
+	alumni: "Ex-participante de",
+	subsidiary: "Subsidiaria de",
+	parent: "Empresa matriz de",
+};
+
+export const RELATIONSHIP_SOURCES = [
+	"manual",
+	"scraped",
+	"inferred",
+	"imported",
+] as const;
+
+export const RELATIONSHIP_SOURCE_LABELS: Record<string, string> = {
+	manual: "Manual",
+	scraped: "Descubierto",
+	inferred: "Inferido",
+	imported: "Importado",
+};
 
 // ============================================
 // COMMUNITY MEMBERS - Multi-user community management
@@ -871,7 +1118,6 @@ export const lumaEventMappings = pgTable("luma_event_mappings", {
 export type LumaEventMapping = typeof lumaEventMappings.$inferSelect;
 export type NewLumaEventMapping = typeof lumaEventMappings.$inferInsert;
 
-
 // ============================================
 // EVENT HOSTS - All Luma hosts per event (not just first)
 // ============================================
@@ -900,7 +1146,9 @@ export const eventHosts = pgTable(
 			withTimezone: true,
 		}).defaultNow(),
 	},
-	(table) => [uniqueIndex("event_host_unique_idx").on(table.eventId, table.lumaHostApiId)],
+	(table) => [
+		uniqueIndex("event_host_unique_idx").on(table.eventId, table.lumaHostApiId),
+	],
 );
 
 export type EventHost = typeof eventHosts.$inferSelect;
@@ -917,7 +1165,9 @@ export const hostClaimTypeEnum = pgEnum("host_claim_type", [
 
 export const lumaHostMappings = pgTable("luma_host_mappings", {
 	id: uuid("id").primaryKey().defaultRandom(),
-	lumaHostApiId: varchar("luma_host_api_id", { length: 255 }).unique().notNull(),
+	lumaHostApiId: varchar("luma_host_api_id", { length: 255 })
+		.unique()
+		.notNull(),
 	lumaHostName: varchar("luma_host_name", { length: 255 }),
 	lumaHostEmail: varchar("luma_host_email", { length: 255 }),
 	lumaHostAvatarUrl: varchar("luma_host_avatar_url", { length: 500 }),
@@ -943,7 +1193,6 @@ export const lumaHostMappings = pgTable("luma_host_mappings", {
 
 export type LumaHostMapping = typeof lumaHostMappings.$inferSelect;
 export type NewLumaHostMapping = typeof lumaHostMappings.$inferInsert;
-
 
 // ============================================
 // MULTI-SOURCE SCRAPING - Scheduled scraping system
@@ -1114,7 +1363,29 @@ export const organizationsRelations = relations(organizations, ({ many }) => ({
 	sponsorships: many(eventSponsors),
 	hostingEvents: many(eventHostOrganizations),
 	hostMappings: many(lumaHostMappings),
+	outgoingRelationships: many(organizationRelationships, {
+		relationName: "sourceOrg",
+	}),
+	incomingRelationships: many(organizationRelationships, {
+		relationName: "targetOrg",
+	}),
 }));
+
+export const organizationRelationshipsRelations = relations(
+	organizationRelationships,
+	({ one }) => ({
+		sourceOrg: one(organizations, {
+			fields: [organizationRelationships.sourceOrgId],
+			references: [organizations.id],
+			relationName: "sourceOrg",
+		}),
+		targetOrg: one(organizations, {
+			fields: [organizationRelationships.targetOrgId],
+			references: [organizations.id],
+			relationName: "targetOrg",
+		}),
+	}),
+);
 
 export const communityMembersRelations = relations(
 	communityMembers,
@@ -1185,7 +1456,6 @@ export const eventHostOrganizationsRelations = relations(
 	}),
 );
 
-
 export const eventHostsRelations = relations(eventHosts, ({ one }) => ({
 	event: one(events, {
 		fields: [eventHosts.eventId],
@@ -1203,3 +1473,158 @@ export const lumaHostMappingsRelations = relations(
 	}),
 );
 
+// ============================================
+// GIFT CARDS - Christmas 2025 Gift Experience
+// ============================================
+
+export const giftCardStyleEnum = pgEnum("gift_card_style", [
+	"cozy_christmas",
+	"minimal_festive",
+	"cute_christmas",
+	"soft_pixel",
+]);
+
+export const giftCardStatusEnum = pgEnum("gift_card_status", [
+	"pending",
+	"generating",
+	"completed",
+	"failed",
+]);
+
+export const giftCards = pgTable("gift_cards", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	originalPhotoUrl: varchar("original_photo_url", { length: 500 }).notNull(),
+	recipientName: varchar("recipient_name", { length: 100 }),
+	generatedImageUrl: varchar("generated_image_url", { length: 500 }),
+	generatedBackgroundUrl: varchar("generated_background_url", { length: 500 }),
+	coverBackgroundUrl: varchar("cover_background_url", { length: 500 }),
+	message: text("message"),
+	layoutId: varchar("layout_id", { length: 20 }).notNull(),
+	style: giftCardStyleEnum("style").notNull(),
+	status: giftCardStatusEnum("status").default("pending"),
+	errorMessage: text("error_message"),
+	shareToken: varchar("share_token", { length: 64 }).unique().notNull(),
+	builderId: integer("builder_id").unique(),
+	verticalLabel: varchar("vertical_label", { length: 20 }),
+	userId: varchar("user_id", { length: 255 }),
+	triggerRunId: varchar("trigger_run_id", { length: 255 }),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+	completedAt: timestamp("completed_at", { mode: "date", withTimezone: true }),
+});
+
+export type GiftCard = typeof giftCards.$inferSelect;
+export type NewGiftCard = typeof giftCards.$inferInsert;
+
+// ============================================
+// ACHIEVEMENTS - Gamification System
+// ============================================
+
+export const achievementTypeEnum = pgEnum("achievement_type", [
+	"seasonal",
+	"participation",
+	"winner",
+	"organizer",
+	"community",
+	"streak",
+	"explorer",
+]);
+
+export const achievementRarityEnum = pgEnum("achievement_rarity", [
+	"common",
+	"uncommon",
+	"rare",
+	"epic",
+	"legendary",
+]);
+
+export const achievements = pgTable("achievements", {
+	id: varchar("id", { length: 50 }).primaryKey(),
+	name: varchar("name", { length: 100 }).notNull(),
+	description: text("description").notNull(),
+	iconUrl: varchar("icon_url", { length: 500 }),
+	type: achievementTypeEnum("type").notNull(),
+	rarity: achievementRarityEnum("rarity").default("common"),
+	points: integer("points").default(10),
+	isActive: boolean("is_active").default(true),
+	isSecret: boolean("is_secret").default(false),
+	unlockedBy: text("unlocked_by"),
+	availableFrom: timestamp("available_from", {
+		mode: "date",
+		withTimezone: true,
+	}),
+	availableUntil: timestamp("available_until", {
+		mode: "date",
+		withTimezone: true,
+	}),
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+});
+
+export type Achievement = typeof achievements.$inferSelect;
+export type NewAchievement = typeof achievements.$inferInsert;
+
+export const userAchievements = pgTable(
+	"user_achievements",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		userId: varchar("user_id", { length: 255 }).notNull(),
+		achievementId: varchar("achievement_id", { length: 50 })
+			.references(() => achievements.id)
+			.notNull(),
+		unlockedAt: timestamp("unlocked_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+		metadata: text("metadata"),
+	},
+	(table) => [
+		uniqueIndex("user_achievement_unique_idx").on(
+			table.userId,
+			table.achievementId,
+		),
+	],
+);
+
+export type UserAchievement = typeof userAchievements.$inferSelect;
+export type NewUserAchievement = typeof userAchievements.$inferInsert;
+
+export const ACHIEVEMENT_TYPES = [
+	"seasonal",
+	"participation",
+	"winner",
+	"organizer",
+	"community",
+	"streak",
+	"explorer",
+] as const;
+
+export const ACHIEVEMENT_RARITIES = [
+	"common",
+	"uncommon",
+	"rare",
+	"epic",
+	"legendary",
+] as const;
+
+export const ACHIEVEMENT_RARITY_LABELS: Record<string, string> = {
+	common: "Común",
+	uncommon: "Poco común",
+	rare: "Raro",
+	epic: "Épico",
+	legendary: "Legendario",
+};
+
+export const userAchievementsRelations = relations(
+	userAchievements,
+	({ one }) => ({
+		achievement: one(achievements, {
+			fields: [userAchievements.achievementId],
+			references: [achievements.id],
+		}),
+	}),
+);

@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "atropos/css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -99,6 +100,7 @@
 	--font-sans:
 		var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
 		BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	--font-christmas: var(--font-great-vibes), cursive;
 
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);

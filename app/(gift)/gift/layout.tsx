@@ -1,0 +1,62 @@
+import type { Metadata } from "next";
+import { Great_Vibes } from "next/font/google";
+import { DarkColorScheme } from "@/components/gift/dark-color-scheme";
+import { Snowfall } from "@/components/gift/snowfall";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SiteHeader } from "@/components/layout/site-header";
+
+const greatVibes = Great_Vibes({
+	weight: "400",
+	subsets: ["latin"],
+	variable: "--font-great-vibes",
+});
+
+export const metadata: Metadata = {
+	title: {
+		default: "Builder LATAM 2025",
+		template: "%s | Builder LATAM 2025",
+	},
+	description:
+		"Genera tu Builder Badge 2025. Un regalo de Navidad de hack0.dev para la comunidad tech de LATAM.",
+	keywords: [
+		"builder latam",
+		"tech latam",
+		"navidad 2025",
+		"badge builder",
+		"hack0",
+		"ecosistema tech",
+	],
+	openGraph: {
+		title: "Builder LATAM 2025 | hack0.dev",
+		description:
+			"Genera tu Builder Badge 2025. Un regalo de Navidad de hack0.dev para la comunidad tech de LATAM.",
+		images: ["/og-gift.png"],
+		type: "website",
+		locale: "es_PE",
+	},
+	twitter: {
+		card: "summary_large_image",
+		title: "Builder LATAM 2025 | hack0.dev",
+		description:
+			"Genera tu Builder Badge 2025. Un regalo de Navidad de hack0.dev para la comunidad tech de LATAM.",
+		images: ["/og-gift.png"],
+	},
+};
+
+export default function GiftLayout({
+	children,
+}: {
+	children: React.ReactNode;
+}) {
+	return (
+		<div
+			className={`${greatVibes.variable} dark min-h-screen flex flex-col relative overflow-hidden bg-background text-foreground`}
+		>
+			<DarkColorScheme />
+			<Snowfall />
+			<SiteHeader hideThemeToggle />
+			<main className="flex-1 relative z-10">{children}</main>
+			<SiteFooter />
+		</div>
+	);
+}

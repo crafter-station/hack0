@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const navItems = [
 	{ href: "/events", label: "Eventos" },
 	{ href: "/c/discover", label: "Comunidades" },
+	{ href: "/gift/gallery", label: "Galería 🎄" },
 	{ href: "/roadmap", label: "Roadmap" },
 ];
 
@@ -17,7 +18,8 @@ export function MainNav() {
 			{navItems.map((item) => {
 				const isActive =
 					pathname === item.href ||
-					(item.href !== "/" && pathname.startsWith(item.href.split("/").slice(0, 2).join("/")));
+					(item.href !== "/" &&
+						pathname.startsWith(item.href.split("/").slice(0, 2).join("/")));
 
 				return (
 					<Link

@@ -9,19 +9,11 @@ hack0.dev is a hackathon and tech event discovery platform focused on Peru. It a
 ## Commands
 
 ```bash
-# Development
 bun run dev          # Start Next.js dev server
 bun run build        # Production build
 bun run lint         # ESLint
-
-# Database (Drizzle + Neon PostgreSQL)
-bun run db:generate  # Generate migrations from schema changes
-bun run db:migrate   # Run migrations
 bun run db:push      # Push schema directly (dev)
 bun run db:studio    # Open Drizzle Studio
-bun run db:seed      # Seed database with sample data
-
-# Scraping
 bun run scrape       # Scrape events from Devpost using Firecrawl
 ```
 
@@ -35,6 +27,7 @@ bun run scrape       # Scrape events from Devpost using Firecrawl
 - **Email**: Resend for notifications
 - **UI**: shadcn/ui components with Tailwind CSS v4
 - **URL State**: nuqs for type-safe search params
+- **Background Jobs**: Trigger.dev v3
 
 ### Key Directories
 
@@ -43,11 +36,9 @@ bun run scrape       # Scrape events from Devpost using Firecrawl
   - `[slug]/page.tsx` - Event detail page with two-column layout
   - `(auth)/` - Clerk auth pages (sign-in, sign-up with catch-all routes)
   - `submit/` - Event submission form (grid layout)
-  - `success/` - Submission success page
-  - `subscribe/`, `unsubscribe/` - Email subscription feedback pages
   - `api/subscribe`, `api/verify`, `api/unsubscribe` - Email subscription endpoints
 - `components/`
-  - `events/` - Event-specific components (event-row-with-children, filter-bar, category-tabs, load-more-button)
+  - `events/` - Event-specific components (event-row-with-children, filter-bar, category-tabs)
   - `layout/` - Shared layout components (site-header, site-footer)
   - `ui/` - shadcn/ui components
 - `lib/`
@@ -57,102 +48,40 @@ bun run scrape       # Scrape events from Devpost using Firecrawl
   - `event-categories.ts` - Category definitions (competitions, learning, community)
   - `email/` - Resend templates and notification logic
   - `scraper/` - Firecrawl-based scraper for Devpost
-- `hooks/` - Custom React hooks
-- `scripts/` - Database seed scripts for specific events
+- `trigger/` - Trigger.dev background tasks (luma-import, org-scraper, drift-check)
 
 ### Data Model
 
 **events** - Main event table:
-
 - Event types: hackathon, conference, workshop, bootcamp, meetup, olympiad, accelerator, etc.
 - Organizer types: university, government, company, community, NGO, etc.
 - Formats: virtual, in-person, hybrid
 - `parentEventId` - For multi-day events or conference tracks (child events)
-- `dayNumber` - Day/track number for child events
 - `prizeCurrency` - USD or PEN (soles)
-- `skillLevel` - beginner/intermediate/advanced/all (beginner and all are considered "junior-friendly")
+- `skillLevel` - beginner/intermediate/advanced/all
 - `isOrganizerVerified` - Verified organizer badge
-- `bannerUrl` - Event banner image (shown as subtle background in rows)
 
-**sponsors** - Event sponsors/partners:
+**sponsors** - Event sponsors/partners with tier: platinum, gold, silver, bronze, partner, community
 
-- Links to event
-- Name, logoUrl, websiteUrl
-- Tier: platinum, gold, silver, bronze, partner, community
-- orderIndex for custom ordering within tier
+**organizerClaims** / **winnerClaims** - Verification requests with status: pending, approved, rejected
 
-**organizerClaims** - Organizer verification requests:
-
-- Links to event and Clerk user
-- Proof URL and description
-- Status: pending, approved, rejected
-
-**winnerClaims** - Winner/podium claims (positions 1, 2, 3 only):
-
-- Links to event and Clerk user
-- Team name, project name, project URL
-- Proof URL (required)
-- Status: pending, approved, rejected
-
-**subscriptions** - Email notification subscriptions:
-
-- Email verification with tokens
-- Unsubscribe tokens
-
-### Parent/Child Events
-
-Events can have parent-child relationships for:
-
-- **Multi-day events** (e.g., JAKUMBRE with 3 days in different venues)
-- **Conference tracks/ejes** (e.g., CONTECIH with Ciberseguridad, Videojuegos, IA tracks)
-
-Child events:
-
-- Have `parentEventId` pointing to parent
-- Have `dayNumber` for ordering (1, 2, 3...)
-- Are excluded from main listing (shown nested under parent)
-- Appear in collapsible row on homepage
-- Appear in "Programa (X días)" section on detail page
+**subscriptions** - Email notification subscriptions with verification tokens
 
 ### Event Categories
-
-Categories group event types for filtering:
 
 - **Todos** - All events (shows prize column)
 - **Competencias** - hackathon, olympiad, competition, robotics (shows prize)
 - **Formación** - workshop, bootcamp, course, certification, summer_school (shows skill level)
 - **Comunidad** - meetup, networking, conference, seminar (minimal columns)
 
-Category tabs appear in the sticky header with icons.
-
 ### Event Ordering
 
-Events are sorted by status priority, then date:
-
-1. **Ongoing** (happening now) - by startDate ASC
+1. **Ongoing** - by startDate ASC
 2. **Open** (registration open) - by startDate ASC
-3. **Upcoming** (hasn't started) - by startDate ASC
-4. **Ended** - by endDate DESC (most recent first)
+3. **Upcoming** - by startDate ASC
+4. **Ended** - by endDate DESC
 
 Featured events appear first within each status group.
-
-### Currency Support
-
-Prizes can be in USD or PEN (Peruvian soles):
-
-- Display: "$" for USD, "S/" for PEN
-- Prize pool totals convert PEN to USD at 3.5 exchange rate
-
-### Date Formatting
-
-Smart date formatting shows year only when needed:
-
-- Current year: "20 sep"
-- Different year: "20 sep 2025"
-- Cross-year range: "28 dic 2024 – 5 ene 2025"
-- Same day: "20 sep" (not "20 sep – 20 sep")
-
-Use `formatEventDateSmart()` or `formatEventDateRange()` from `lib/event-utils.ts`.
 
 ### Design System
 
@@ -161,10 +90,8 @@ Use `formatEventDateSmart()` or `formatEventDateRange()` from `lib/event-utils.t
   - Blue (blue-500): Upcoming events, multi-day badge
   - Gray (muted): Ended events (dimmed)
   - Amber: Junior-friendly badge, featured/sponsored events
-- **Components**: shadcn/ui with custom variants
 - **Event rows**: Banner images as subtle backgrounds with gradient overlay
 - **Event detail page**: Two-column layout (content + sticky sidebar)
-- **Banner fallback**: Diagonal stripe pattern when no bannerUrl
 
 ### Patterns
 
@@ -172,17 +99,75 @@ Use `formatEventDateSmart()` or `formatEventDateRange()` from `lib/event-utils.t
 - URL state managed with nuqs for shareable filter URLs
 - Load more pagination with `useTransition`
 - Clerk auth with redirect (not modal) using `(auth)` route group
-- Shared layout via `SiteHeader` and `SiteFooter` components
-- Organizer verification: Shows "✓" badge or "(sin verificar)"
-- Winner section: Only appears on ended events
-- Sponsors section: Grouped by tier with highlight for platinum/gold
-- Child events: Collapsible in rows, card list in detail page
+- Parent/Child events for multi-day events or conference tracks
 
 ## Environment Variables
 
 Required in `.env`:
-
 - `DATABASE_URL` - Neon PostgreSQL connection string
 - `FIRECRAWL_API_KEY` - For scraping Devpost
 - `RESEND_API_KEY` - For email notifications
 - Clerk keys (`NEXT_PUBLIC_CLERK_*`, `CLERK_SECRET_KEY`)
+
+---
+
+## Trigger.dev v3 Quick Reference
+
+**MUST use `@trigger.dev/sdk/v3`, NEVER `client.defineJob` (v2 deprecated)**
+
+### Basic Task
+
+```ts
+import { metadata, task } from "@trigger.dev/sdk/v3";
+
+export const myTask = task({
+  id: "my-task",
+  maxDuration: 120,
+  run: async (payload: { data: string }) => {
+    metadata.set("step", "processing");
+    // task logic
+    metadata.set("step", "completed");
+    return { success: true };
+  },
+});
+```
+
+### Scheduled Task
+
+```ts
+import { metadata, schedules } from "@trigger.dev/sdk/v3";
+
+export const weeklyTask = schedules.task({
+  id: "weekly-task",
+  cron: "0 4 * * 0", // Every Sunday at 4am UTC
+  run: async () => {
+    metadata.set("step", "running");
+    // task logic
+    return { processed: true };
+  },
+});
+```
+
+### Triggering from Backend
+
+```ts
+import { tasks } from "@trigger.dev/sdk/v3";
+import type { myTask } from "@/trigger/my-task";
+
+const handle = await tasks.trigger<typeof myTask>("my-task", { data: "value" });
+
+// If using triggerAndWait, ALWAYS check result.ok
+const result = await myTask.triggerAndWait({ data: "value" });
+if (result.ok) {
+  console.log(result.output);
+} else {
+  console.error(result.error);
+}
+```
+
+### Key Points
+
+- Use `metadata.set()` for progress tracking (visible in dashboard)
+- `triggerAndWait()` returns `Result` object - check `result.ok` before accessing `result.output`
+- Never wrap `triggerAndWait` in `Promise.all` (not supported)
+- Config in `trigger.config.ts`: project ref, runtime, dirs, retries, maxDuration

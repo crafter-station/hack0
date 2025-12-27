@@ -15,6 +15,8 @@ const nextConfig = {
 			{ hostname: "img.clerk.com" },
 			{ hostname: "images.clerk.dev" },
 		],
+		dangerouslyAllowSVG: true,
+		contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
 	},
 };
 

@@ -3,11 +3,13 @@
 import * as React from "react";
 import {
 	Dialog,
+	DialogBody,
 	DialogClose,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
 	DialogHeader,
+	DialogInset,
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
@@ -22,6 +24,7 @@ import {
 	DrawerTrigger,
 } from "@/components/ui/drawer";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { cn } from "@/lib/utils";
 
 interface ResponsiveModalProps {
 	children: React.ReactNode;
@@ -176,6 +179,55 @@ function ResponsiveModalFooter({
 	return <DrawerFooter className={className}>{children}</DrawerFooter>;
 }
 
+interface ResponsiveModalBodyProps {
+	children: React.ReactNode;
+	className?: string;
+}
+
+function ResponsiveModalBody({
+	children,
+	className,
+}: ResponsiveModalBodyProps) {
+	const { isDesktop } = React.useContext(ResponsiveModalContext);
+
+	if (isDesktop) {
+		return <DialogBody className={className}>{children}</DialogBody>;
+	}
+
+	return (
+		<div className={cn("flex flex-col gap-4 px-4 pb-4", className)}>
+			{children}
+		</div>
+	);
+}
+
+interface ResponsiveModalInsetProps {
+	children: React.ReactNode;
+	className?: string;
+}
+
+function ResponsiveModalInset({
+	children,
+	className,
+}: ResponsiveModalInsetProps) {
+	const { isDesktop } = React.useContext(ResponsiveModalContext);
+
+	if (isDesktop) {
+		return <DialogInset className={className}>{children}</DialogInset>;
+	}
+
+	return (
+		<div
+			className={cn(
+				"flex flex-col gap-6 bg-muted/50 border-y px-4 py-4",
+				className,
+			)}
+		>
+			{children}
+		</div>
+	);
+}
+
 function ResponsiveModalClose({
 	children,
 	asChild,
@@ -191,11 +243,13 @@ function ResponsiveModalClose({
 
 export {
 	ResponsiveModal,
-	ResponsiveModalTrigger,
+	ResponsiveModalBody,
+	ResponsiveModalClose,
 	ResponsiveModalContent,
-	ResponsiveModalHeader,
-	ResponsiveModalTitle,
 	ResponsiveModalDescription,
 	ResponsiveModalFooter,
-	ResponsiveModalClose,
+	ResponsiveModalHeader,
+	ResponsiveModalInset,
+	ResponsiveModalTitle,
+	ResponsiveModalTrigger,
 };

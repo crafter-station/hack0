@@ -6,6 +6,8 @@ import { Suspense } from "react";
 import { AllEventsTable } from "@/components/events/all-events-table";
 import { EventsCalendar } from "@/components/events/events-calendar";
 import { EventsCards } from "@/components/events/events-cards";
+import { EventsMapView } from "@/components/events/events-map-view";
+import { EventsPreviewView } from "@/components/events/events-preview-view";
 import { EventsTabToggle } from "@/components/events/events-tab-toggle";
 import { EventsToolbar } from "@/components/events/events-toolbar";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -13,6 +15,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { Button } from "@/components/ui/button";
 import { type EventFilters, getEvents } from "@/lib/actions/events";
 import { loadSearchParams } from "@/lib/search-params";
+import { getEventsViewPreference } from "@/lib/view-preferences";
 
 interface EventsPageProps {
 	searchParams: Promise<SearchParams>;
@@ -23,12 +26,32 @@ async function EventsContent({
 	viewMode,
 }: {
 	filters: EventFilters;
-	viewMode: "table" | "cards" | "calendar";
+	viewMode: "table" | "cards" | "calendar" | "map" | "preview";
 }) {
 	const result = await getEvents(filters);
 
 	if (viewMode === "calendar") {
 		return <EventsCalendar events={result.events} />;
+	}
+
+	if (viewMode === "map") {
+		return (
+			<EventsMapView
+				events={result.events}
+				total={result.total}
+				hasMore={result.hasMore}
+				filters={filters}
+			/>
+		);
+	}
+
+	if (viewMode === "preview") {
+		return (
+			<EventsPreviewView
+				events={result.events}
+				total={result.total}
+			/>
+		);
 	}
 
 	if (viewMode === "cards") {
@@ -54,6 +77,7 @@ async function EventsContent({
 
 export default async function EventsPage({ searchParams }: EventsPageProps) {
 	const { userId } = await auth();
+	const rawParams = await searchParams;
 	const params = await loadSearchParams(searchParams);
 
 	const personalOrg = userId
@@ -81,7 +105,10 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 		page: params.page,
 	};
 
-	const viewMode = params.view;
+	// Use URL param if explicitly set, otherwise use saved preference
+	const hasExplicitView = "view" in rawParams;
+	const savedPreference = await getEventsViewPreference();
+	const viewMode = hasExplicitView ? params.view : savedPreference;
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">

@@ -2,8 +2,10 @@
 
 import {
 	Calendar,
+	Eye,
 	LayoutGrid,
 	List,
+	Map,
 	Search,
 	SlidersHorizontal,
 	Sparkles,
@@ -26,6 +28,15 @@ import {
 	SKILL_LEVELS,
 } from "@/lib/db/schema";
 import { searchParamsParsers } from "@/lib/search-params";
+
+type ViewMode = "table" | "cards" | "calendar" | "map" | "preview";
+
+const COOKIE_NAME = "hack0-events-view";
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
+
+function saveViewPreference(view: ViewMode) {
+	document.cookie = `${COOKIE_NAME}=${view}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
+}
 
 const SKILL_LEVEL_LABELS: Record<string, string> = {
 	beginner: "Principiante",
@@ -121,8 +132,9 @@ export function EventsToolbar() {
 		});
 	};
 
-	const handleViewChange = (value: "table" | "cards" | "calendar") => {
+	const handleViewChange = (value: ViewMode) => {
 		if (!value) return;
+		saveViewPreference(value);
 		setFilters({ view: value });
 	};
 
@@ -143,6 +155,12 @@ export function EventsToolbar() {
 					</ToggleGroupItem>
 					<ToggleGroupItem value="calendar" aria-label="Calendario" className="h-7 px-2">
 						<Calendar className="h-3.5 w-3.5" />
+					</ToggleGroupItem>
+					<ToggleGroupItem value="map" aria-label="Mapa" className="h-7 px-2">
+						<Map className="h-3.5 w-3.5" />
+					</ToggleGroupItem>
+					<ToggleGroupItem value="preview" aria-label="Vista previa" className="h-7 px-2">
+						<Eye className="h-3.5 w-3.5" />
 					</ToggleGroupItem>
 				</ToggleGroup>
 			</ButtonGroup>

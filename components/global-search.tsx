@@ -9,7 +9,7 @@ import {
 	Home,
 	LayoutDashboard,
 	LogIn,
-	Map,
+	Map as MapIcon,
 	MapPin,
 	Plus,
 	Search,
@@ -27,6 +27,7 @@ import {
 	CommandItem,
 	CommandList,
 } from "@/components/ui/command";
+import { useMounted } from "@/hooks/use-mounted";
 import type { Event, Organization } from "@/lib/db/schema";
 import { formatEventDateShort, getCountryFlag } from "@/lib/event-utils";
 
@@ -50,7 +51,8 @@ export function GlobalSearch() {
 	);
 	const [hasFetched, setHasFetched] = React.useState(false);
 	const router = useRouter();
-	const { isSignedIn, user } = useUser();
+	const { isSignedIn } = useUser();
+	const mounted = useMounted();
 
 	React.useEffect(() => {
 		if (!hasFetched) {
@@ -109,7 +111,13 @@ export function GlobalSearch() {
 		return start && end && start <= now && end >= now;
 	});
 
-	const personalOrg = communities.find(({ organization }) => organization.isPersonalOrg);
+	const personalOrg = communities.find(
+		({ organization }) => organization.isPersonalOrg,
+	);
+
+	if (!mounted) {
+		return null;
+	}
 
 	return (
 		<CommandDialog
@@ -207,9 +215,7 @@ export function GlobalSearch() {
 							</CommandItem>
 						))}
 						{communities.length > 5 && (
-							<CommandItem
-								onSelect={() => runCommand(() => router.push("/c"))}
-							>
+							<CommandItem onSelect={() => runCommand(() => router.push("/c"))}>
 								<LayoutDashboard className="mr-2 h-4 w-4" />
 								Ver todas mis comunidades
 							</CommandItem>
@@ -222,12 +228,16 @@ export function GlobalSearch() {
 						<Search className="mr-2 h-4 w-4" />
 						Todas las comunidades
 					</CommandItem>
-					<CommandItem onSelect={() => runCommand(() => router.push("/events"))}>
+					<CommandItem
+						onSelect={() => runCommand(() => router.push("/events"))}
+					>
 						<Calendar className="mr-2 h-4 w-4" />
 						Todos los eventos
 					</CommandItem>
-					<CommandItem onSelect={() => runCommand(() => router.push("/roadmap"))}>
-						<Map className="mr-2 h-4 w-4" />
+					<CommandItem
+						onSelect={() => runCommand(() => router.push("/roadmap"))}
+					>
+						<MapIcon className="mr-2 h-4 w-4" />
 						Roadmap
 					</CommandItem>
 				</CommandGroup>
@@ -235,7 +245,9 @@ export function GlobalSearch() {
 				{ongoingEvents.length > 0 && (
 					<CommandGroup heading="En curso">
 						{ongoingEvents.slice(0, 3).map((event) => {
-							const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
+							const eventUrl = event.shortCode
+								? `/e/${event.shortCode}`
+								: `/${event.slug}`;
 							return (
 								<CommandItem
 									key={event.id}
@@ -272,7 +284,9 @@ export function GlobalSearch() {
 				{upcomingEvents.length > 0 && (
 					<CommandGroup heading="Próximos eventos">
 						{upcomingEvents.slice(0, 5).map((event) => {
-							const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
+							const eventUrl = event.shortCode
+								? `/e/${event.shortCode}`
+								: `/${event.slug}`;
 							return (
 								<CommandItem
 									key={event.id}
@@ -334,17 +348,13 @@ export function GlobalSearch() {
 						Para principiantes
 					</CommandItem>
 					<CommandItem
-						onSelect={() =>
-							runCommand(() => router.push("/?format=in-person"))
-						}
+						onSelect={() => runCommand(() => router.push("/?format=in-person"))}
 					>
 						<MapPin className="mr-2 h-4 w-4" />
 						Presenciales
 					</CommandItem>
 					<CommandItem
-						onSelect={() =>
-							runCommand(() => router.push("/?format=virtual"))
-						}
+						onSelect={() => runCommand(() => router.push("/?format=virtual"))}
 					>
 						<Users className="mr-2 h-4 w-4" />
 						Virtuales

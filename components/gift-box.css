@@ -1,0 +1,111 @@
+#container {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate3d(-50%, -50%, 0);
+  width: 20vmin;
+  perspective: 2000px;
+  transform-style: preserve-3d;
+  transform-origin: 50% 50%;
+  transition: transform 1s ease-out;
+}
+
+#box {
+  transform-style: preserve-3d;
+  transform: rotateX(-20deg) rotateY(-30deg);
+}
+
+#lid {
+  transform-style: preserve-3d;
+  transform: translate3d(-1vmin, 0, 0) rotateX(-20deg) rotateY(-30deg);
+}
+
+#lid .face {
+  width: 22vmin;
+  height: 5vmin;
+  background: #f5c842;
+}
+
+#lid .face.top {
+  height: 22vmin;
+}
+
+#lid .face.front {
+  transform: rotateY(0deg) translateZ(11vmin);
+  box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.1);
+}
+
+#lid .face.back {
+  transform: rotateX(180deg) translateZ(11vmin);
+  box-shadow: 0px -3px 2px rgba(0, 0, 0, 0.1);
+}
+
+#lid .face.left {
+  transform: rotateY(-90deg) translateZ(11vmin);
+  box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.1);
+}
+
+#lid .face.right {
+  transform: rotateY(90deg) translateZ(11vmin);
+  box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.1);
+}
+
+#lid .face.top {
+  transform: rotateX(90deg) translateZ(11vmin);
+}
+
+#lid .face.bottom {
+  transform: rotateX(-90deg) translateZ(11vmin);
+}
+
+.face {
+  width: 20vmin;
+  height: 20vmin;
+  background: #f0b429;
+  position: absolute;
+  display: inline-block;
+  color: white;
+  font-size: 2rem;
+  opacity: 1;
+  box-sizing: border-box;
+}
+
+.face.front {
+  transform: rotateY(0deg) translateZ(10vmin);
+}
+
+.face.back {
+  transform: rotateX(180deg) translateZ(10vmin);
+}
+
+.face.left {
+  transform: rotateY(-90deg) translateZ(10vmin);
+}
+
+.face.right {
+  transform: rotateY(90deg) translateZ(10vmin);
+}
+
+.face.top {
+  transform: rotateX(90deg) translateZ(10vmin);
+}
+
+.face.bottom {
+  transform: rotateX(-90deg) translateZ(10vmin);
+}
+
+.face .ribbon {
+  position: absolute;
+  background: #e53935;
+  border-right: 1px solid rgba(255, 100, 100, 0.95);
+  border-left: 1px solid rgba(255, 100, 100, 0.95);
+  width: 20%;
+  height: 100%;
+  margin: 0 40%;
+}
+
+.face .ribbon:nth-of-type(2) {
+  width: 100%;
+  height: 20%;
+  margin: 40% 0;
+}
