@@ -245,39 +245,7 @@
 	background: hsl(var(--muted-foreground) / 0.2);
 }
 
-/* Shiki syntax highlighting - grayscale with subtle color accents */
-pre.shiki,
-pre.shiki code {
-	background: hsl(var(--muted)) !important;
-	color: hsl(var(--foreground)) !important;
-	border-radius: 0.5rem;
-}
-
-pre.shiki {
-	padding: 1rem !important;
-	border: 1px solid hsl(var(--border));
-	overflow-x: auto;
-}
-
-pre.shiki code {
-	font-family: var(--font-mono);
-	font-size: 0.875rem;
-	line-height: 1.5;
-}
-
-/* Override Shiki token colors to match grayscale theme */
-.dark pre.shiki,
-.dark pre.shiki code {
-	background-color: hsl(var(--muted)) !important;
-	color: hsl(var(--foreground)) !important;
-}
-
-/* Ensure consistent styling across light and dark modes */
-pre.shiki .line {
-	line-height: 1.5;
-}
-
-/* Fallback for inline code blocks */
+/* Inline code blocks */
 code:not(pre code) {
 	background: hsl(var(--muted));
 	color: hsl(var(--foreground));
@@ -288,18 +256,26 @@ code:not(pre code) {
 }
 
 /* rehype-pretty-code styles */
-pre[data-theme] {
-	background-color: hsl(var(--muted)) !important;
-	border: 1px solid hsl(var(--border));
-	border-radius: 0.5rem;
-	padding: 1rem;
-	overflow-x: auto;
-	margin: 1rem 0;
-}
-
-pre[data-theme] code {
-	display: block;
+pre {
 	font-family: var(--font-mono);
 	font-size: 0.875rem;
 	line-height: 1.5;
+	overflow-x: auto;
+}
+
+pre code {
+	display: block;
+	font-family: var(--font-mono);
+}
+
+/* Shiki token colors - these are automatically applied by rehype-pretty-code */
+pre code[data-theme*=" "],
+pre code[data-theme*=" "] span {
+	color: var(--shiki-light);
+	background-color: transparent;
+}
+
+.dark pre code[data-theme*=" "],
+.dark pre code[data-theme*=" "] span {
+	color: var(--shiki-dark);
 }
