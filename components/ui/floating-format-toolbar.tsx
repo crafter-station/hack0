@@ -1,6 +1,14 @@
 "use client";
 
-import { Bold, Code, Italic, Link, Strikethrough } from "lucide-react";
+import {
+	Bold,
+	Code,
+	Heading1,
+	Heading2,
+	Heading3,
+	Italic,
+	Link,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -18,25 +26,53 @@ export function FloatingFormatToolbar({
 	absolute = false,
 }: FloatingFormatToolbarProps) {
 	const handleFormat = (format: string) => {
+		// Prevent default to avoid losing focus
 		onFormatApplied?.(format);
 	};
 
 	return (
 		<div
 			className={cn(
-				absolute ? "absolute" : "fixed",
-				"z-50",
 				"bg-background/95 backdrop-blur-sm",
 				"border border-border rounded-lg shadow-lg",
 				"px-2 py-1.5",
 				"flex items-center gap-0.5",
 			)}
-			style={{
-				left: `${position.x}px`,
-				top: `${position.y}px`,
-				transform: "translateX(-50%)",
+			style={
+				absolute
+					? undefined
+					: {
+							left: `${position.x}px`,
+							top: `${position.y}px`,
+							transform: "translateX(-50%)",
+						}
+			}
+			onMouseDown={(e) => {
+				// Prevent losing focus when clicking toolbar
+				e.preventDefault();
+				e.stopPropagation();
+			}}
+			onClick={(e) => {
+				// Prevent event bubbling
+				e.stopPropagation();
 			}}
 		>
+			<ToolbarButton
+				onClick={() => handleFormat("heading1")}
+				icon={<Heading1 className="h-4 w-4" />}
+				label="Título 1"
+			/>
+			<ToolbarButton
+				onClick={() => handleFormat("heading2")}
+				icon={<Heading2 className="h-4 w-4" />}
+				label="Título 2"
+			/>
+			<ToolbarButton
+				onClick={() => handleFormat("heading3")}
+				icon={<Heading3 className="h-4 w-4" />}
+				label="Título 3"
+			/>
+			<div className="w-px h-6 bg-border mx-1" />
 			<ToolbarButton
 				onClick={() => handleFormat("bold")}
 				icon={<Bold className="h-4 w-4" />}
@@ -56,11 +92,6 @@ export function FloatingFormatToolbar({
 				shortcut="⌘K"
 			/>
 			<div className="w-px h-6 bg-border mx-1" />
-			<ToolbarButton
-				onClick={() => handleFormat("strikethrough")}
-				icon={<Strikethrough className="h-4 w-4" />}
-				label="Tachado"
-			/>
 			<ToolbarButton
 				onClick={() => handleFormat("link")}
 				icon={<Link className="h-4 w-4" />}
@@ -83,7 +114,10 @@ function ToolbarButton({ onClick, icon, label, shortcut }: ToolbarButtonProps) {
 			type="button"
 			variant="ghost"
 			size="sm"
-			onClick={onClick}
+			onMouseDown={(e) => {
+				e.preventDefault(); // Prevent losing focus
+				onClick();
+			}}
 			className={cn(
 				"h-8 w-8 p-0",
 				"hover:bg-muted",

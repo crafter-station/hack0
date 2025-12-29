@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { HorizontalRuleNode } from "./lexical/nodes/HorizontalRuleNode";
 import { BlockMarkdownPlugin } from "./lexical/plugins/BlockMarkdownPlugin";
 import { EmptyListItemPlugin } from "./lexical/plugins/EmptyListItemPlugin";
+import { FloatingToolbarPlugin } from "./lexical/plugins/FloatingToolbarPlugin";
 import { InlineMarkdownDecoratorPlugin } from "./lexical/plugins/InlineMarkdownDecoratorPlugin";
 import { MarkdownPastePlugin } from "./lexical/plugins/MarkdownPastePlugin";
 import { MarkdownSyncPlugin } from "./lexical/plugins/MarkdownSyncPlugin";
@@ -54,14 +55,14 @@ export function LexicalLiveEditor({
 	const theme = useMemo(
 		() => ({
 			heading: {
-				h1: "text-2xl font-bold mt-2 mb-2 first:mt-0",
-				h2: "text-xl font-bold mt-2 mb-1.5 first:mt-0",
-				h3: "text-lg font-semibold mt-1.5 mb-1 first:mt-0",
-				h4: "text-base font-semibold mt-1 mb-0.5 first:mt-0",
-				h5: "text-sm font-semibold mt-1 mb-0.5 first:mt-0",
-				h6: "text-sm font-medium mt-0.5 mb-0.5 first:mt-0",
+				h1: "text-3xl font-bold mt-6 mb-4 first:mt-0 text-foreground",
+				h2: "text-2xl font-bold mt-5 mb-3 first:mt-0 text-foreground",
+				h3: "text-xl font-semibold mt-4 mb-2 first:mt-0 text-foreground",
+				h4: "text-lg font-semibold mt-3 mb-2 first:mt-0 text-foreground",
+				h5: "text-base font-semibold mt-2 mb-1 first:mt-0 text-foreground",
+				h6: "text-sm font-medium mt-2 mb-1 first:mt-0 text-foreground",
 			},
-			quote: "border-l-4 border-border pl-4 italic text-muted-foreground my-2",
+			quote: "border-l-4 border-border pl-4 italic text-muted-foreground my-4",
 			list: {
 				ul: "list-disc ml-6 space-y-1 my-2",
 				ol: "list-decimal ml-6 space-y-1 my-2",
@@ -75,9 +76,9 @@ export function LexicalLiveEditor({
 				italic: "italic",
 				strikethrough: "line-through text-muted-foreground",
 				underline: "underline",
-				code: "bg-gray-200 dark:bg-gray-800 px-1.5 py-0.5 rounded font-mono text-sm border border-gray-300 dark:border-gray-700",
+				code: "bg-muted text-foreground px-1.5 py-0.5 rounded font-mono text-sm border border-border",
 			},
-			paragraph: "mb-1",
+			paragraph: "mb-2 text-foreground leading-relaxed",
 		}),
 		[],
 	);
@@ -138,6 +139,7 @@ export function LexicalLiveEditor({
 				<InlineMarkdownDecoratorPlugin />
 				<BlockMarkdownPlugin />
 				<EmptyListItemPlugin />
+				<FloatingToolbarPlugin />
 			</LexicalComposer>
 		</div>
 	);
