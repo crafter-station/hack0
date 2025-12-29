@@ -76,7 +76,13 @@ export class HorizontalRuleNode extends DecoratorNode<null> {
 		return false;
 	}
 
+	// Allow the node to be deleted with backspace
 	isIsolated(): boolean {
+		return false;
+	}
+
+	// Make it keyboard selectable for easier deletion
+	isKeyboardSelectable(): boolean {
 		return true;
 	}
 }

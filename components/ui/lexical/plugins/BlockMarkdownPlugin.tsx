@@ -46,78 +46,107 @@ export function BlockMarkdownPlugin() {
 	const [editor] = useLexicalComposerContext();
 
 	useEffect(() => {
-		// Handle Enter key for horizontal rule
-		const removeEnterCommand = editor.registerCommand(
-			KEY_ENTER_COMMAND,
-			() => {
-				let handled = false;
-				editor.update(() => {
-					const selection = $getSelection();
-					if (!$isRangeSelection(selection)) return;
+		// Handle Backspace to convert HR back to --- when in empty paragraph after it
+		const removeBackspaceCommand = editor.registerCommand(
+			KEY_BACKSPACE_COMMAND,
+			(event) => {
+				const selection = $getSelection();
+				if (!$isRangeSelection(selection)) return false;
+				if (!selection.isCollapsed()) return false;
 
-					const anchorNode = selection.anchor.getNode();
-					let textContent = "";
-					if (anchorNode instanceof TextNode) {
-						textContent = anchorNode.getTextContent();
-					}
+				const anchor = selection.anchor;
+				if (anchor.offset !== 0) return false;
 
-					// Check for horizontal rule: --- (3 or more dashes, nothing else)
-					if (/^-{3,}$/.test(textContent.trim())) {
-						const parent = anchorNode.getParent();
-						if ($isParagraphNode(parent)) {
-							// Remove the text node
-							anchorNode.remove();
+				const anchorNode = anchor.getNode();
+				let parent = anchorNode.getParent();
 
-							// Create horizontal rule
-							const hr = $createHorizontalRuleNode();
-							parent.replace(hr);
+				// If we're in a text node, get its parent
+				if (!$isParagraphNode(parent)) {
+					const grandParent = parent?.getParent();
+					if (!grandParent) return false;
+					parent = grandParent;
+				}
 
-							// Create new paragraph after the HR
-							const newParagraph = $createParagraphNode();
-							hr.insertAfter(newParagraph);
-							newParagraph.select();
-							handled = true;
-						}
-					}
-				});
-				return handled;
+				if (!$isParagraphNode(parent)) return false;
+				if (parent.getTextContent() !== "") return false;
+
+				const previousSibling = parent.getPreviousSibling();
+
+				// If previous sibling is HR, convert it back to text
+				if ($isHorizontalRuleNode(previousSibling)) {
+					event?.preventDefault();
+
+					// Simply convert HR to text paragraph and let Lexical handle the rest
+					const textNode = new TextNode("---");
+					const newParagraph = $createParagraphNode();
+					newParagraph.append(textNode);
+
+					previousSibling.replace(newParagraph);
+					parent.remove();
+
+					// Select at the end of the text
+					newParagraph.selectEnd();
+
+					return true;
+				}
+
+				return false;
 			},
 			COMMAND_PRIORITY_HIGH,
 		);
 
-		// Handle Backspace key to delete horizontal rule
-		const removeBackspaceCommand = editor.registerCommand(
-			KEY_BACKSPACE_COMMAND,
-			() => {
-				let handled = false;
-				editor.update(() => {
+		// Handle Enter key for horizontal rule
+		const removeEnterCommand = editor.registerCommand(
+			KEY_ENTER_COMMAND,
+			(event) => {
+				let shouldHandle = false;
+
+				editor.getEditorState().read(() => {
 					const selection = $getSelection();
 					if (!$isRangeSelection(selection)) return;
 
-					// Check if cursor is at the start of an empty paragraph
 					const anchorNode = selection.anchor.getNode();
-					const anchorOffset = selection.anchor.offset;
-
-					// Only proceed if cursor is at position 0
-					if (anchorOffset !== 0) return;
-
 					const parent = anchorNode.getParent();
+
+					// Check if we're in a paragraph
 					if (!$isParagraphNode(parent)) return;
 
-					// Check if paragraph is empty
-					const textContent = parent.getTextContent();
-					if (textContent.trim() !== "") return;
+					// Get all text content from the paragraph
+					const paragraphText = parent.getTextContent().trim();
 
-					// Get the previous sibling
-					const previousSibling = parent.getPreviousSibling();
-
-					// If previous sibling is a horizontal rule, delete it
-					if (previousSibling && $isHorizontalRuleNode(previousSibling)) {
-						previousSibling.remove();
-						handled = true;
+					// Check for horizontal rule: --- (3 or more dashes, nothing else)
+					if (/^-{3,}$/.test(paragraphText)) {
+						shouldHandle = true;
 					}
 				});
-				return handled;
+
+				if (shouldHandle) {
+					event?.preventDefault();
+					editor.update(() => {
+						const selection = $getSelection();
+						if (!$isRangeSelection(selection)) return;
+
+						const anchorNode = selection.anchor.getNode();
+						const parent = anchorNode.getParent();
+
+						if (!$isParagraphNode(parent)) return;
+
+						// Clear the paragraph content
+						parent.clear();
+
+						// Create horizontal rule
+						const hr = $createHorizontalRuleNode();
+						parent.replace(hr);
+
+						// Create new paragraph after the HR
+						const newParagraph = $createParagraphNode();
+						hr.insertAfter(newParagraph);
+						newParagraph.select();
+					});
+					return true;
+				}
+
+				return false;
 			},
 			COMMAND_PRIORITY_HIGH,
 		);
