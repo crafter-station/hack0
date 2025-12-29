@@ -18,6 +18,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { ClaimEventButton } from "@/components/events/claim-event-button";
 import { ClaimHostButton } from "@/components/events/claim-host-button";
 import { EventCountdown } from "@/components/events/event-countdown";
@@ -515,13 +517,18 @@ export default async function EventPage({ params }: EventPageProps) {
 										<Markdown
 											remarkPlugins={[remarkGfm]}
 											components={{
+												h1: ({ children }) => (
+													<h2 className="text-2xl font-bold text-foreground mt-8 mb-4 first:mt-0">
+														{children}
+													</h2>
+												),
 												h2: ({ children }) => (
-													<h3 className="text-lg font-semibold text-foreground mt-6 mb-2">
+													<h3 className="text-xl font-semibold text-foreground mt-6 mb-3">
 														{children}
 													</h3>
 												),
 												h3: ({ children }) => (
-													<h4 className="text-base font-medium text-foreground mt-4 mb-1">
+													<h4 className="text-lg font-medium text-foreground mt-4 mb-2">
 														{children}
 													</h4>
 												),
@@ -553,6 +560,47 @@ export default async function EventPage({ params }: EventPageProps) {
 														{children}
 													</a>
 												),
+												code: ({ children, className }) => {
+													const match = /language-(\w+)/.exec(className || "");
+													const isInline = !match;
+
+													if (isInline) {
+														return (
+															<code className="bg-muted text-foreground px-1.5 py-0.5 rounded font-mono text-sm border border-border">
+																{children}
+															</code>
+														);
+													}
+
+													// Code block with syntax highlighting
+													return (
+														<div className="my-4 rounded-lg border border-border bg-muted/50 overflow-hidden">
+															<div className="overflow-x-auto">
+																<SyntaxHighlighter
+																	language={match[1]}
+																	style={oneDark}
+																	customStyle={{
+																		background: "transparent",
+																		margin: 0,
+																		padding: "1rem",
+																		fontSize: "0.875rem",
+																	}}
+																	codeTagProps={{
+																		style: {
+																			background: "transparent",
+																			fontFamily:
+																				'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
+																		},
+																	}}
+																	PreTag="div"
+																>
+																	{String(children).replace(/\n$/, "")}
+																</SyntaxHighlighter>
+															</div>
+														</div>
+													);
+												},
+												pre: ({ children }) => <>{children}</>,
 												table: ({ children }) => (
 													<div className="overflow-x-auto">
 														<table className="min-w-full border border-border border-collapse text-sm">

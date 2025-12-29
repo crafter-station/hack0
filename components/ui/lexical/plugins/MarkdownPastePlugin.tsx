@@ -82,6 +82,17 @@ export function MarkdownPastePlugin() {
 }
 
 /**
+ * Helper function to append nodes or array of nodes
+ */
+function appendNodes(parent: any, nodes: any) {
+	if (Array.isArray(nodes)) {
+		nodes.forEach((node) => parent.append(node));
+	} else {
+		parent.append(nodes);
+	}
+}
+
+/**
  * Parse a single line of markdown into a Lexical node
  */
 function parseMarkdownLine(line: string) {
@@ -98,34 +109,34 @@ function parseMarkdownLine(line: string) {
 	// Headings (check longer patterns first)
 	if (line.startsWith("##### ")) {
 		const heading = $createHeadingNode("h5");
-		heading.append(parseInlineMarkdown(line.slice(6)));
+		appendNodes(heading, parseInlineMarkdown(line.slice(6)));
 		return heading;
 	}
 	if (line.startsWith("#### ")) {
 		const heading = $createHeadingNode("h4");
-		heading.append(parseInlineMarkdown(line.slice(5)));
+		appendNodes(heading, parseInlineMarkdown(line.slice(5)));
 		return heading;
 	}
 	if (line.startsWith("### ")) {
 		const heading = $createHeadingNode("h3");
-		heading.append(parseInlineMarkdown(line.slice(4)));
+		appendNodes(heading, parseInlineMarkdown(line.slice(4)));
 		return heading;
 	}
 	if (line.startsWith("## ")) {
 		const heading = $createHeadingNode("h2");
-		heading.append(parseInlineMarkdown(line.slice(3)));
+		appendNodes(heading, parseInlineMarkdown(line.slice(3)));
 		return heading;
 	}
 	if (line.startsWith("# ")) {
 		const heading = $createHeadingNode("h1");
-		heading.append(parseInlineMarkdown(line.slice(2)));
+		appendNodes(heading, parseInlineMarkdown(line.slice(2)));
 		return heading;
 	}
 
 	// Blockquote
 	if (line.startsWith("> ")) {
 		const quote = $createQuoteNode();
-		quote.append(parseInlineMarkdown(line.slice(2)));
+		appendNodes(quote, parseInlineMarkdown(line.slice(2)));
 		return quote;
 	}
 
@@ -133,7 +144,7 @@ function parseMarkdownLine(line: string) {
 	if (line.startsWith("- ") || line.startsWith("* ")) {
 		const list = $createListNode("bullet");
 		const listItem = $createListItemNode();
-		listItem.append(parseInlineMarkdown(line.slice(2)));
+		appendNodes(listItem, parseInlineMarkdown(line.slice(2)));
 		list.append(listItem);
 		return list;
 	}
@@ -143,14 +154,14 @@ function parseMarkdownLine(line: string) {
 	if (numberedMatch) {
 		const list = $createListNode("number");
 		const listItem = $createListItemNode();
-		listItem.append(parseInlineMarkdown(numberedMatch[2]));
+		appendNodes(listItem, parseInlineMarkdown(numberedMatch[2]));
 		list.append(listItem);
 		return list;
 	}
 
 	// Regular paragraph with inline formatting
 	const paragraph = $createParagraphNode();
-	paragraph.append(parseInlineMarkdown(line));
+	appendNodes(paragraph, parseInlineMarkdown(line));
 	return paragraph;
 }
 
@@ -158,7 +169,53 @@ function parseMarkdownLine(line: string) {
  * Parse inline markdown formatting and create formatted text nodes
  */
 function parseInlineMarkdown(text: string) {
-	// For now, create text nodes with inline patterns
-	// The InlineMarkdownDecoratorPlugin will handle the formatting
-	return $createTextNode(text);
+	const nodes = [];
+	let currentIndex = 0;
+
+	// Regex to match inline markdown: **bold**, *italic*, __bold__, _italic_, `code`, ~~strikethrough~~
+	const inlineRegex = /(\*\*|__)(.*?)\1|(\*|_)(.*?)\3|`(.*?)`|(~~)(.*?)\6/g;
+	let match;
+
+	while ((match = inlineRegex.exec(text)) !== null) {
+		// Add text before the match
+		if (match.index > currentIndex) {
+			nodes.push($createTextNode(text.slice(currentIndex, match.index)));
+		}
+
+		// Create formatted text node
+		const textNode = $createTextNode(
+			match[2] || match[4] || match[5] || match[7] || "",
+		);
+
+		// Apply formatting based on what was matched
+		if (match[1] === "**" || match[1] === "__") {
+			// Bold
+			textNode.setFormat("bold");
+		} else if (match[3] === "*" || match[3] === "_") {
+			// Italic
+			textNode.setFormat("italic");
+		} else if (match[5]) {
+			// Code
+			textNode.setFormat("code");
+		} else if (match[6] === "~~") {
+			// Strikethrough
+			textNode.setFormat("strikethrough");
+		}
+
+		nodes.push(textNode);
+		currentIndex = match.index + match[0].length;
+	}
+
+	// Add remaining text after the last match
+	if (currentIndex < text.length) {
+		nodes.push($createTextNode(text.slice(currentIndex)));
+	}
+
+	// If no inline formatting was found, return a single text node
+	if (nodes.length === 0) {
+		return $createTextNode(text);
+	}
+
+	// Return all nodes (Lexical will handle multiple nodes)
+	return nodes;
 }

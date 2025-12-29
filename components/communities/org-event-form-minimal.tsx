@@ -784,7 +784,7 @@ export function OrgEventFormMinimal({
 									Descripción del evento
 								</ResponsiveModalTitle>
 							</ResponsiveModalHeader>
-							<div className="p-4 flex-1 min-h-0 overflow-hidden">
+							<div className="p-4 flex-1 min-h-0 overflow-y-scroll">
 								<LexicalLiveEditor
 									value={description}
 									onChange={setDescription}
