@@ -1,5 +1,86 @@
 {
-	"communities": [],
+	"communities": [
+		{
+			"name": "Techsuyo",
+			"luma_slug": "techsuyo",
+			"city": "Lima",
+			"country": "PE",
+			"focus_area": "Technology, Innovation, AI, Entrepreneurship",
+			"type": "Community",
+			"description": "Networking Events by Peruvians in Silicon Valley focusing on Latin innovations and technology",
+			"is_active": true
+		},
+		{
+			"name": "Andino Labs",
+			"luma_slug": "andinolabs",
+			"city": "Lima",
+			"country": "PE",
+			"focus_area": "Open Innovation, AI, Blockchain, Web3, Startups",
+			"type": "Innovation Hub",
+			"description": "Innovation and technology hub focused on networking, failure-sharing, and emerging tech ecosystems",
+			"is_active": true
+		},
+		{
+			"name": "Club del Bitcoin",
+			"luma_slug": "ClubBTC",
+			"city": "Lima",
+			"country": "PE",
+			"focus_area": "Bitcoin, Web3, Blockchain, Crypto",
+			"type": "Community",
+			"description": "La comunidad Web3 más grande y activa de Perú, enfocada en educación y networking",
+			"is_active": true
+		},
+		{
+			"name": "Notion Perú",
+			"luma_slug": "notionperu",
+			"city": "Lima",
+			"country": "PE",
+			"focus_area": "Notion, Productivity, Business Management",
+			"type": "Community",
+			"description": "Notion Peru Community focused on training, workshops, and networking",
+			"is_active": true
+		},
+		{
+			"name": "Hult Prize Perú",
+			"luma_slug": "hultprizeperu",
+			"city": "Lima",
+			"country": "PE",
+			"focus_area": "Social Entrepreneurship, Startups, Innovation",
+			"type": "University Competition",
+			"description": "Social entrepreneurship competition and startup accelerator for university students",
+			"is_active": true
+		},
+		{
+			"name": "Perú Basado",
+			"luma_slug": "perubasado",
+			"city": "Lima",
+			"country": "PE",
+			"focus_area": "Base Blockchain, Web3 Development",
+			"type": "Developer Community",
+			"description": "Community for builders and developers in Peru focused on the Base blockchain ecosystem",
+			"is_active": true
+		},
+		{
+			"name": "Endeavor Perú",
+			"luma_slug": "cal-4wf3IQ85hm7rUS8",
+			"city": "Lima",
+			"country": "PE",
+			"focus_area": "Entrepreneurship, Scale-ups, Innovation, AI",
+			"type": "Accelerator",
+			"description": "Organization supporting high-impact entrepreneurship and business scaling",
+			"is_active": true
+		},
+		{
+			"name": "UTEC Ventures",
+			"luma_slug": "uv.events",
+			"city": "Lima",
+			"country": "PE",
+			"focus_area": "Startups, Venture Capital, AI, Innovation",
+			"type": "University Accelerator",
+			"description": "Startup accelerator and venture capital hub from UTEC supporting tech entrepreneurs",
+			"is_active": true
+		}
+	],
 	"discoveredAt": "2024-12-26T00:00:00Z",
 	"source": "firecrawl-agent"
 }

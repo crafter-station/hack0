@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { startLumaImport } from "@/lib/actions/import";
-import type { lumaImportTask } from "@/trigger/luma-import";
+import type { eventImportTask } from "@/trigger/event-import";
 
 type Step =
 	| "idle"
@@ -77,7 +77,7 @@ function ImportProgress({
 	onSuccess: (slug: string, isVerified: boolean) => void;
 	onError: (error: string) => void;
 }) {
-	const { run, error: realtimeError } = useRealtimeRun<typeof lumaImportTask>(
+	const { run, error: realtimeError } = useRealtimeRun<typeof eventImportTask>(
 		runId,
 		{
 			accessToken,

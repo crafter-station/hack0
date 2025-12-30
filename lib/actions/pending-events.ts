@@ -1,14 +1,9 @@
 "use server";
 
-import { and, eq, isNull } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import {
-	events,
-	eventHosts,
-	lumaHostMappings,
-	organizations,
-} from "@/lib/db/schema";
+import { events } from "@/lib/db/schema";
 import { isGodMode } from "@/lib/god-mode";
 
 export async function getEventsWithoutOrg() {
@@ -19,9 +14,6 @@ export async function getEventsWithoutOrg() {
 
 	const pendingEvents = await db.query.events.findMany({
 		where: isNull(events.organizationId),
-		with: {
-			lumaHosts: true,
-		},
 		orderBy: (events, { desc }) => [desc(events.createdAt)],
 		limit: 100,
 	});
@@ -62,22 +54,6 @@ export async function assignOrganizationToEvent(
 			.update(events)
 			.set({ organizationId })
 			.where(eq(events.id, eventId));
-
-		const eventHostsList = await db.query.eventHosts.findMany({
-			where: eq(eventHosts.eventId, eventId),
-		});
-
-		for (const host of eventHostsList) {
-			await db
-				.update(lumaHostMappings)
-				.set({
-					organizationId,
-					matchSource: "manual",
-					confidence: 100,
-					isVerified: true,
-				})
-				.where(eq(lumaHostMappings.lumaHostApiId, host.lumaHostApiId));
-		}
 
 		revalidatePath("/god/pending");
 		return { success: true };

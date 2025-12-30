@@ -18,20 +18,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
-import { ClaimEventButton } from "@/components/events/claim-event-button";
-import { ClaimHostButton } from "@/components/events/claim-host-button";
+import remarkGfm from "remark-gfm";
+import { AttendanceButton } from "@/components/events/attendance-button";
 import { EventCountdown } from "@/components/events/event-countdown";
 import { ManageEventButton } from "@/components/events/manage-event-button";
 import { WinnerSection } from "@/components/events/winner-section";
 import { CalendarIcon } from "@/components/icons/calendar";
-import { LumaIcon } from "@/components/icons/luma";
 import { TrophyIcon } from "@/components/icons/trophy";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getUserAttendanceClaim } from "@/lib/actions/attendance";
 import { getEventCohost } from "@/lib/actions/cohost-invites";
 import {
 	getChildEvents,
 	getEventByShortCode,
-	getEventLumaHosts,
 	getEventSponsors,
 } from "@/lib/actions/events";
 import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
@@ -52,7 +51,6 @@ import {
 	PERU_TIMEZONE,
 } from "@/lib/event-utils";
 import { isGodMode } from "@/lib/god-mode";
-import remarkGfm from "remark-gfm";
 
 interface EventPageProps {
 	params: Promise<{ code: string }>;
@@ -139,7 +137,6 @@ export default async function EventPage({ params }: EventPageProps) {
 	const { code } = await params;
 	const user = await currentUser();
 	const userId = user?.id;
-	const userHasPersonalOrg = !!(user?.publicMetadata as { lumaHostId?: string })?.lumaHostId;
 	const result = await getEventByShortCode(code, true);
 
 	if (!result) {
@@ -157,12 +154,13 @@ export default async function EventPage({ params }: EventPageProps) {
 		notFound();
 	}
 
-	const [childEvents, eventSponsors, cohosts, lumaHosts] = await Promise.all([
-		getChildEvents(hackathon.id),
-		getEventSponsors(hackathon.id),
-		getEventCohost(hackathon.id),
-		getEventLumaHosts(hackathon.id, userId),
-	]);
+	const [childEvents, eventSponsors, cohosts, attendanceClaim] =
+		await Promise.all([
+			getChildEvents(hackathon.id),
+			getEventSponsors(hackathon.id),
+			getEventCohost(hackathon.id),
+			getUserAttendanceClaim(hackathon.id),
+		]);
 
 	const hasChildEvents = childEvents.length > 0;
 	const hasSponsors = eventSponsors.length > 0;
@@ -170,7 +168,6 @@ export default async function EventPage({ params }: EventPageProps) {
 		(c) => c.status === "approved" && !c.isPrimary,
 	);
 	const hasCohosts = approvedCohosts.length > 0;
-	const hasLumaHosts = lumaHosts.length > 0;
 
 	const status = getEventStatus(hackathon);
 	const isEnded = status.status === "ended";
@@ -308,7 +305,10 @@ export default async function EventPage({ params }: EventPageProps) {
 						/>
 					)}
 					<div className="absolute top-3 right-3">
-						<ManageEventButton event={hackathon} communitySlug={community?.slug} />
+						<ManageEventButton
+							event={hackathon}
+							communitySlug={community?.slug}
+						/>
 					</div>
 				</div>
 
@@ -342,7 +342,10 @@ export default async function EventPage({ params }: EventPageProps) {
 									{hackathon.name}
 								</h1>
 								<div className="hidden md:block">
-									<ManageEventButton event={hackathon} communitySlug={community?.slug} />
+									<ManageEventButton
+										event={hackathon}
+										communitySlug={community?.slug}
+									/>
 								</div>
 							</div>
 
@@ -441,24 +444,26 @@ export default async function EventPage({ params }: EventPageProps) {
 
 							<div className="flex flex-wrap items-center gap-2">
 								<span
-									className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${isEnded
-										? "bg-muted text-muted-foreground"
-										: isOngoing
-											? "bg-emerald-500/10 text-emerald-500"
-											: isOpen
-												? "bg-blue-500/10 text-blue-500"
-												: "bg-amber-500/10 text-amber-500"
-										}`}
+									className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+										isEnded
+											? "bg-muted text-muted-foreground"
+											: isOngoing
+												? "bg-emerald-500/10 text-emerald-500"
+												: isOpen
+													? "bg-blue-500/10 text-blue-500"
+													: "bg-amber-500/10 text-amber-500"
+									}`}
 								>
 									<span
-										className={`h-1.5 w-1.5 rounded-full ${isEnded
-											? "bg-muted-foreground/50"
-											: isOngoing
-												? "bg-emerald-500 animate-pulse"
-												: isOpen
-													? "bg-blue-500"
-													: "bg-amber-500"
-											}`}
+										className={`h-1.5 w-1.5 rounded-full ${
+											isEnded
+												? "bg-muted-foreground/50"
+												: isOngoing
+													? "bg-emerald-500 animate-pulse"
+													: isOpen
+														? "bg-blue-500"
+														: "bg-amber-500"
+										}`}
 									/>
 									{status.label}
 								</span>
@@ -491,13 +496,6 @@ export default async function EventPage({ params }: EventPageProps) {
 											{getDomainLabel(domain)}
 										</span>
 									))}
-
-								{(hasLumaHosts || hackathon.lumaSlug || hackathon.sourceLumaEventId) && (
-									<span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-										<LumaIcon className="h-3 w-3" />
-										Luma
-									</span>
-								)}
 							</div>
 						</div>
 					</div>
@@ -647,24 +645,26 @@ export default async function EventPage({ params }: EventPageProps) {
 															</div>
 														</div>
 														<span
-															className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${childStatus.status === "ended"
-																? "bg-muted text-muted-foreground"
-																: childStatus.status === "ongoing"
-																	? "bg-emerald-500/10 text-emerald-500"
-																	: childStatus.status === "open"
-																		? "bg-blue-500/10 text-blue-500"
-																		: "bg-amber-500/10 text-amber-500"
-																}`}
+															className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+																childStatus.status === "ended"
+																	? "bg-muted text-muted-foreground"
+																	: childStatus.status === "ongoing"
+																		? "bg-emerald-500/10 text-emerald-500"
+																		: childStatus.status === "open"
+																			? "bg-blue-500/10 text-blue-500"
+																			: "bg-amber-500/10 text-amber-500"
+															}`}
 														>
 															<span
-																className={`h-1.5 w-1.5 rounded-full ${childStatus.status === "ended"
-																	? "bg-muted-foreground/50"
-																	: childStatus.status === "ongoing"
-																		? "bg-emerald-500 animate-pulse"
-																		: childStatus.status === "open"
-																			? "bg-blue-500"
-																			: "bg-amber-500"
-																	}`}
+																className={`h-1.5 w-1.5 rounded-full ${
+																	childStatus.status === "ended"
+																		? "bg-muted-foreground/50"
+																		: childStatus.status === "ongoing"
+																			? "bg-emerald-500 animate-pulse"
+																			: childStatus.status === "open"
+																				? "bg-blue-500"
+																				: "bg-amber-500"
+																}`}
 															/>
 															{childStatus.label}
 														</span>
@@ -708,14 +708,17 @@ export default async function EventPage({ params }: EventPageProps) {
 																href={sponsor.organization.websiteUrl || "#"}
 																target="_blank"
 																rel="noopener noreferrer"
-																className={`group flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-muted/50 ${tier === "platinum" || tier === "gold"
-																	? "border-amber-500/30 bg-amber-500/5"
-																	: ""
-																	}`}
+																className={`group flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-muted/50 ${
+																	tier === "platinum" || tier === "gold"
+																		? "border-amber-500/30 bg-amber-500/5"
+																		: ""
+																}`}
 															>
 																<Avatar className="h-10 w-10 rounded-lg">
 																	<AvatarImage
-																		src={sponsor.organization.logoUrl || undefined}
+																		src={
+																			sponsor.organization.logoUrl || undefined
+																		}
 																		alt={sponsor.organization.name}
 																		className="object-contain bg-white"
 																	/>
@@ -861,77 +864,6 @@ export default async function EventPage({ params }: EventPageProps) {
 								</div>
 							)}
 
-							{hasLumaHosts && (
-								<div className="rounded-lg border bg-card">
-									<div className="px-5 py-4 border-b">
-										<h3 className="text-sm font-semibold">
-											Hosts ({lumaHosts.length})
-										</h3>
-									</div>
-									<div className="p-5 space-y-3">
-										{lumaHosts.map((host) => (
-											<div key={host.id} className="flex items-center gap-3">
-												<Avatar className="h-10 w-10 border">
-													<AvatarImage src={host.avatarUrl || undefined} />
-													<AvatarFallback className="text-sm font-medium">
-														{getInitials(host.name || "?")}
-													</AvatarFallback>
-												</Avatar>
-												<div className="flex-1 min-w-0">
-													<div className="flex items-center gap-2">
-														{host.isClaimed && host.organizationSlug ? (
-															<Link
-																href={`/c/${host.organizationSlug}`}
-																className="text-sm font-medium truncate hover:underline"
-															>
-																{host.name}
-															</Link>
-														) : (
-															<p className="text-sm font-medium truncate">
-																{host.name}
-															</p>
-														)}
-														{host.isClaimed && (
-															<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-														)}
-													</div>
-													{host.isPrimary && (
-														<span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
-															Principal
-														</span>
-													)}
-												</div>
-												{userId && !host.isClaimed && (
-													<ClaimHostButton
-														lumaHostApiId={host.lumaHostApiId}
-														hostName={host.name || "Host"}
-														hostAvatarUrl={host.avatarUrl}
-														userHasPersonalOrg={userHasPersonalOrg}
-													/>
-												)}
-											</div>
-										))}
-									</div>
-								</div>
-							)}
-
-							{!community && userId && (
-								<div className="rounded-lg border bg-card">
-									<div className="px-5 py-4 border-b">
-										<h3 className="text-sm font-semibold">¿Es tu evento?</h3>
-									</div>
-									<div className="p-5 space-y-3">
-										<p className="text-sm text-muted-foreground">
-											Si organizas este evento, puedes vincularlo a una de tus comunidades.
-										</p>
-										<ClaimEventButton
-											eventId={hackathon.id}
-											eventName={hackathon.name}
-										/>
-									</div>
-								</div>
-							)}
-
 							<div className="rounded-lg border bg-card">
 								<div className="px-5 py-4 border-b">
 									<h3 className="text-sm font-semibold">Acciones</h3>
@@ -967,6 +899,14 @@ export default async function EventPage({ params }: EventPageProps) {
 										<Bell className="h-4 w-4" />
 										Seguir evento
 									</button>
+
+									<AttendanceButton
+										eventId={hackathon.id}
+										eventEndDate={endDate}
+										initialClaimed={attendanceClaim.hasClaimed}
+										initialVerification={attendanceClaim.verification}
+										className="w-full h-9"
+									/>
 
 									<div className="flex gap-2">
 										{hackathon.websiteUrl && (
@@ -1022,9 +962,7 @@ export default async function EventPage({ params }: EventPageProps) {
 															</p>
 														),
 														ul: ({ children }) => (
-															<ul className="space-y-1 text-sm">
-																{children}
-															</ul>
+															<ul className="space-y-1 text-sm">{children}</ul>
 														),
 														li: ({ children }) => (
 															<li className="text-foreground flex items-start gap-1">
@@ -1087,9 +1025,9 @@ export default async function EventPage({ params }: EventPageProps) {
 												)}
 											{(!endDate ||
 												startDate.toDateString() ===
-												endDate.toDateString()) && (
-													<>, {formatEventDate(startDate, "yyyy")}</>
-												)}
+													endDate.toDateString()) && (
+												<>, {formatEventDate(startDate, "yyyy")}</>
+											)}
 										</p>
 									</div>
 								</div>

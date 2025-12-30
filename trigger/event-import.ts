@@ -4,8 +4,6 @@ import { eq } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { db } from "@/lib/db";
 import { events, importJobs } from "@/lib/db/schema";
-import { getGlobalLumaClient } from "@/lib/luma";
-import { computeContentHash } from "@/lib/luma/host-resolver";
 import {
 	inferCountryFromCity,
 	inferEventType,
@@ -13,8 +11,8 @@ import {
 } from "@/lib/scraper/luma-schema";
 import { createUniqueSlug } from "@/lib/slug-utils";
 
-export const lumaImportTask = task({
-	id: "luma-import",
+export const eventImportTask = task({
+	id: "event-import",
 	maxDuration: 120,
 	run: async (payload: {
 		jobId: string;
@@ -179,14 +177,6 @@ export const lumaImportTask = task({
 					: null;
 				const endDate = extracted.endDate ? new Date(extracted.endDate) : null;
 
-				const sourceContentHash = computeContentHash({
-					name: extracted.name,
-					description: extracted.description,
-					startDate,
-					endDate,
-					venue: extracted.location?.venue,
-				});
-
 				const [newEvent] = await db
 					.insert(events)
 					.values({
@@ -225,10 +215,6 @@ export const lumaImportTask = task({
 						isApproved: isVerified,
 						approvalStatus: isVerified ? "approved" : "pending",
 						status: "upcoming",
-						ownership: "referenced",
-						sourceContentHash,
-						lastSourceCheckAt: new Date(),
-						syncStatus: "synced",
 					})
 					.returning();
 
@@ -240,32 +226,6 @@ export const lumaImportTask = task({
 				metadata.set("eventId", newEvent.id);
 				metadata.set("eventSlug", newEvent.slug);
 				metadata.set("isVerified", isVerified);
-
-				metadata.set("step", "adding_to_hack0_calendar");
-				try {
-					const lumaClient = getGlobalLumaClient();
-					const lumaSlug = lumaUrl.split("/").pop();
-					if (lumaSlug) {
-						const lumaEvent = await lumaClient.getEventBySlug(lumaSlug);
-						const addResult = await lumaClient.addEventToCalendar({
-							event_api_id: lumaEvent.api_id,
-						});
-						metadata.set("addedToHack0Calendar", addResult.success);
-						if (addResult.error) {
-							metadata.set("addToCalendarError", addResult.error);
-						}
-					} else {
-						metadata.set("addedToHack0Calendar", false);
-						metadata.set("addToCalendarError", "Could not extract slug from Luma URL");
-					}
-				} catch (addError) {
-					metadata.set("addedToHack0Calendar", false);
-					metadata.set(
-						"addToCalendarError",
-						addError instanceof Error ? addError.message : "Unknown error",
-					);
-				}
-
 				metadata.set("step", "published");
 
 				return {

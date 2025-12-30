@@ -1,9 +1,9 @@
-import { asc, desc, eq, inArray, or, sql } from "drizzle-orm";
+import { asc, desc, eq, sql } from "drizzle-orm";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { EventList } from "@/components/events/event-list";
 import { db } from "@/lib/db";
-import { events, eventHostOrganizations, eventHosts, lumaHostMappings, organizations } from "@/lib/db/schema";
+import { events, organizations } from "@/lib/db/schema";
 
 interface CommunityPageProps {
 	params: Promise<{ slug: string }>;
@@ -16,31 +16,6 @@ async function CommunityEvents({ slug }: { slug: string }) {
 	});
 
 	if (!community) return null;
-
-	const coHostedEvents = await db
-		.select({ eventId: eventHostOrganizations.eventId })
-		.from(eventHostOrganizations)
-		.where(eq(eventHostOrganizations.organizationId, community.id));
-
-	const coHostedEventIds = coHostedEvents.map((e) => e.eventId);
-
-	const lumaHostIds = await db
-		.select({ lumaHostApiId: lumaHostMappings.lumaHostApiId })
-		.from(lumaHostMappings)
-		.where(eq(lumaHostMappings.organizationId, community.id));
-
-	const lumaHostApiIds = lumaHostIds.map((h) => h.lumaHostApiId);
-
-	let lumaHostedEventIds: string[] = [];
-	if (lumaHostApiIds.length > 0) {
-		const lumaHostedEvents = await db
-			.select({ eventId: eventHosts.eventId })
-			.from(eventHosts)
-			.where(inArray(eventHosts.lumaHostApiId, lumaHostApiIds));
-		lumaHostedEventIds = lumaHostedEvents.map((e) => e.eventId);
-	}
-
-	const allRelatedEventIds = [...new Set([...coHostedEventIds, ...lumaHostedEventIds])];
 
 	const statusPriority = sql<number>`
     CASE
@@ -61,14 +36,6 @@ async function CommunityEvents({ slug }: { slug: string }) {
     END
   `;
 
-	const whereCondition =
-		allRelatedEventIds.length > 0
-			? or(
-					eq(events.organizationId, community.id),
-					inArray(events.id, allRelatedEventIds),
-				)
-			: eq(events.organizationId, community.id);
-
 	const results = await db
 		.select({
 			event: events,
@@ -76,12 +43,8 @@ async function CommunityEvents({ slug }: { slug: string }) {
 		})
 		.from(events)
 		.leftJoin(organizations, eq(events.organizationId, organizations.id))
-		.where(whereCondition)
-		.orderBy(
-			desc(events.isFeatured),
-			asc(statusPriority),
-			asc(dateSortOrder),
-		)
+		.where(eq(events.organizationId, community.id))
+		.orderBy(desc(events.isFeatured), asc(statusPriority), asc(dateSortOrder))
 		.limit(50);
 
 	const communityEvents = results.map((r) => ({

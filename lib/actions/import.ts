@@ -12,7 +12,7 @@ import {
 	normalizeLumaUrl,
 } from "@/lib/scraper/luma-schema";
 import { ensureUniqueShortCode } from "@/lib/slug-utils";
-import type { lumaImportTask } from "@/trigger/luma-import";
+import type { eventImportTask } from "@/trigger/event-import";
 import { getUserCommunityRole } from "./community-members";
 
 interface StartImportResult {
@@ -97,7 +97,7 @@ export async function startLumaImport(
 		})
 		.returning();
 
-	const handle = await tasks.trigger<typeof lumaImportTask>("luma-import", {
+	const handle = await tasks.trigger<typeof eventImportTask>("event-import", {
 		jobId: job.id,
 		lumaUrl: normalizedUrl,
 		organizationId: org.id,
