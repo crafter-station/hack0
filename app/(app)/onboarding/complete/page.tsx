@@ -4,7 +4,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { PostOnboardingChoice } from "@/components/onboarding/post-onboarding-choice";
 import { getOrCreatePersonalOrg } from "@/lib/actions/organizations";
-import { getUserPreferences } from "@/lib/actions/user-preferences";
+import { getCurrentUser } from "@/lib/actions/users";
 
 interface OnboardingCompletePageProps {
 	searchParams: Promise<{ redirect_url?: string }>;
@@ -20,12 +20,12 @@ export default async function OnboardingCompletePage({
 		redirect("/sign-in");
 	}
 
-	const prefs = await getUserPreferences();
-	if (!prefs?.hasCompletedOnboarding) {
+	const user = await getCurrentUser();
+	if (!user?.hasCompletedOnboarding) {
 		redirect("/onboarding");
 	}
 
-	if (prefs.role !== "organizer") {
+	if (user.role !== "organizer") {
 		redirect(redirect_url || "/c/discover");
 	}
 

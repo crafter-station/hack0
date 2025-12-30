@@ -1,10 +1,9 @@
 "use client";
 
 import { Building2, Loader2, User } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { createOrUpdateUserPreferences } from "@/lib/actions/user-preferences";
+import { createOrUpdateUser } from "@/lib/actions/users";
 
 const ROLE_OPTIONS = [
 	{
@@ -28,7 +27,6 @@ interface InitialOnboardingFormProps {
 export function InitialOnboardingForm({
 	redirectUrl,
 }: InitialOnboardingFormProps) {
-	const router = useRouter();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [role, setRole] = useState<"member" | "organizer" | "">("");
@@ -43,17 +41,20 @@ export function InitialOnboardingForm({
 		setIsSubmitting(true);
 
 		try {
-			await createOrUpdateUserPreferences({
+			await createOrUpdateUser({
 				role: role as "member" | "organizer",
 				hasCompletedOnboarding: true,
 			});
 
-			const destination = redirectUrl || (role === "organizer" ? "/onboarding/complete" : "/c/discover");
-			router.push(destination);
-			router.refresh();
+			const destination =
+				redirectUrl ||
+				(role === "organizer" ? "/onboarding/complete" : "/c/discover");
+			window.location.href = destination;
 		} catch (err) {
 			setError(
-				err instanceof Error ? err.message : "Error al guardar. Intenta de nuevo.",
+				err instanceof Error
+					? err.message
+					: "Error al guardar. Intenta de nuevo.",
 			);
 			setIsSubmitting(false);
 		}

@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
 	boolean,
+	index,
 	integer,
 	pgEnum,
 	pgTable,
@@ -125,22 +126,6 @@ export const formatPreferenceEnum = pgEnum("format_preference", [
 	"any", // Sin preferencia
 ]);
 
-// ============================================
-// LUMA AGGREGATION ENUMS
-// ============================================
-
-export const eventOwnershipEnum = pgEnum("event_ownership", [
-	"created", // Hack0 created this event (source of truth)
-	"referenced", // External event, Hack0 just indexes
-]);
-
-export const eventSyncStatusEnum = pgEnum("event_sync_status", [
-	"synced", // In sync with source
-	"drifted", // Source has changed
-	"source_deleted", // Source event no longer exists
-	"unknown", // Never checked
-]);
-
 // Events table (hackathons, conferences, workshops, etc.)
 export const events = pgTable("events", {
 	id: uuid("id").primaryKey().defaultRandom(),
@@ -206,18 +191,6 @@ export const events = pgTable("events", {
 	// Organizer verification (legacy - for claimed events)
 	isOrganizerVerified: boolean("is_organizer_verified").default(false),
 	verifiedOrganizerId: varchar("verified_organizer_id", { length: 255 }), // Clerk user ID
-
-	// Luma Aggregation - Ownership & Sync
-	ownership: eventOwnershipEnum("ownership").default("created"),
-	lumaSlug: varchar("luma_slug", { length: 255 }),
-	sourceLumaCalendarId: varchar("source_luma_calendar_id", { length: 255 }),
-	sourceLumaEventId: varchar("source_luma_event_id", { length: 255 }),
-	sourceContentHash: varchar("source_content_hash", { length: 64 }),
-	lastSourceCheckAt: timestamp("last_source_check_at", {
-		mode: "date",
-		withTimezone: true,
-	}),
-	syncStatus: eventSyncStatusEnum("sync_status").default("synced"),
 
 	// Timestamps
 	createdAt: timestamp("created_at", {
@@ -1055,22 +1028,56 @@ export const IMPORT_STATUSES = [
 	"failed",
 ] as const;
 
-// User Preferences (Onboarding)
-export const userPreferences = pgTable("user_preferences", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	clerkUserId: varchar("clerk_user_id", { length: 255 }).unique().notNull(),
+// ============================================
+// USERS - First-class builders in the ecosystem
+// ============================================
 
-	// Onboarding data
-	role: userRoleEnum("role").notNull(), // member o organizer
-	department: varchar("department", { length: 100 }), // Lima, Arequipa, etc.
-	city: varchar("city", { length: 100 }), // Para ciudades específicas
+export const users = pgTable("users", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	clerkId: varchar("clerk_id", { length: 255 }).unique().notNull(),
+
+	username: varchar("username", { length: 50 }).unique(),
+	displayName: varchar("display_name", { length: 100 }),
+	email: varchar("email", { length: 255 }),
+	avatarUrl: varchar("avatar_url", { length: 500 }),
+	bio: text("bio"),
+	headline: varchar("headline", { length: 150 }),
+
+	country: varchar("country", { length: 10 }),
+	region: varchar("region", { length: 100 }),
+	city: varchar("city", { length: 100 }),
+	timezone: varchar("timezone", { length: 50 }).default("America/Lima"),
+
+	skills: text("skills").array(),
+	domains: text("domains").array(),
+
+	websiteUrl: varchar("website_url", { length: 500 }),
+	githubUrl: varchar("github_url", { length: 500 }),
+	linkedinUrl: varchar("linkedin_url", { length: 500 }),
+	twitterUrl: varchar("twitter_url", { length: 500 }),
+
+	isOpenToWork: boolean("is_open_to_work").default(false),
+	isOpenToFreelance: boolean("is_open_to_freelance").default(false),
+	isOpenToCollab: boolean("is_open_to_collab").default(false),
+	isOpenToMentor: boolean("is_open_to_mentor").default(false),
+	isOpenToSpeaking: boolean("is_open_to_speaking").default(false),
+
+	isPublic: boolean("is_public").default(true),
+	showEmail: boolean("show_email").default(false),
+
+	role: userRoleEnum("role").default("member"),
 	formatPreference: formatPreferenceEnum("format_preference").default("any"),
 	skillLevel: skillLevelEnum("skill_level").default("all"),
-
-	// Estado de onboarding
 	hasCompletedOnboarding: boolean("has_completed_onboarding").default(false),
 
-	// Timestamps
+	eventsAttendedCount: integer("events_attended_count").default(0),
+	eventsOrganizedCount: integer("events_organized_count").default(0),
+	hackathonsCount: integer("hackathons_count").default(0),
+	hackathonWinsCount: integer("hackathon_wins_count").default(0),
+	communitiesCount: integer("communities_count").default(0),
+	achievementsCount: integer("achievements_count").default(0),
+	totalPoints: integer("total_points").default(0),
+
 	createdAt: timestamp("created_at", {
 		mode: "date",
 		withTimezone: true,
@@ -1079,13 +1086,25 @@ export const userPreferences = pgTable("user_preferences", {
 		mode: "date",
 		withTimezone: true,
 	}).defaultNow(),
+	lastSeenAt: timestamp("last_seen_at", {
+		mode: "date",
+		withTimezone: true,
+	}),
+
+	// Luma Email Verification (Fake OAuth)
+	lumaEmail: varchar("luma_email", { length: 255 }),
+	lumaEmailVerified: boolean("luma_email_verified").default(false),
+	lumaEmailVerifiedAt: timestamp("luma_email_verified_at", {
+		mode: "date",
+		withTimezone: true,
+	}),
 });
 
-export type UserPreferences = typeof userPreferences.$inferSelect;
-export type NewUserPreferences = typeof userPreferences.$inferInsert;
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
 
 // ============================================
-// LUMA INTEGRATION - Direct API calendar sync
+// MULTI-SOURCE SCRAPING - Scheduled scraping system
 // ============================================
 
 export const syncFrequencyEnum = pgEnum("sync_frequency", [
@@ -1094,109 +1113,6 @@ export const syncFrequencyEnum = pgEnum("sync_frequency", [
 	"weekly",
 	"manual",
 ]);
-
-export const lumaEventMappings = pgTable("luma_event_mappings", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	lumaEventId: varchar("luma_event_id", { length: 255 }).notNull().unique(),
-	eventId: uuid("event_id")
-		.references(() => events.id)
-		.notNull(),
-	lastSyncedAt: timestamp("last_synced_at", {
-		mode: "date",
-		withTimezone: true,
-	}),
-	lumaUpdatedAt: timestamp("luma_updated_at", {
-		mode: "date",
-		withTimezone: true,
-	}),
-	createdAt: timestamp("created_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-});
-
-export type LumaEventMapping = typeof lumaEventMappings.$inferSelect;
-export type NewLumaEventMapping = typeof lumaEventMappings.$inferInsert;
-
-// ============================================
-// EVENT HOSTS - All Luma hosts per event (not just first)
-// ============================================
-
-export const eventHostRoleEnum = pgEnum("event_host_role", [
-	"host",
-	"co-host",
-	"speaker",
-]);
-
-export const eventHosts = pgTable(
-	"event_hosts",
-	{
-		id: uuid("id").primaryKey().defaultRandom(),
-		eventId: uuid("event_id")
-			.references(() => events.id, { onDelete: "cascade" })
-			.notNull(),
-		lumaHostApiId: varchar("luma_host_api_id", { length: 255 }).notNull(),
-		name: varchar("name", { length: 255 }),
-		email: varchar("email", { length: 255 }),
-		avatarUrl: varchar("avatar_url", { length: 500 }),
-		role: eventHostRoleEnum("role").default("host"),
-		isPrimary: boolean("is_primary").default(false),
-		createdAt: timestamp("created_at", {
-			mode: "date",
-			withTimezone: true,
-		}).defaultNow(),
-	},
-	(table) => [
-		uniqueIndex("event_host_unique_idx").on(table.eventId, table.lumaHostApiId),
-	],
-);
-
-export type EventHost = typeof eventHosts.$inferSelect;
-export type NewEventHost = typeof eventHosts.$inferInsert;
-
-// ============================================
-// LUMA HOST MAPPINGS - Map Luma hosts to organizations/users
-// ============================================
-
-export const hostClaimTypeEnum = pgEnum("host_claim_type", [
-	"personal",
-	"community",
-]);
-
-export const lumaHostMappings = pgTable("luma_host_mappings", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	lumaHostApiId: varchar("luma_host_api_id", { length: 255 })
-		.unique()
-		.notNull(),
-	lumaHostName: varchar("luma_host_name", { length: 255 }),
-	lumaHostEmail: varchar("luma_host_email", { length: 255 }),
-	lumaHostAvatarUrl: varchar("luma_host_avatar_url", { length: 500 }),
-	clerkUserId: varchar("clerk_user_id", { length: 255 }),
-	organizationId: uuid("organization_id").references(() => organizations.id),
-	isVerified: boolean("is_verified").default(false),
-	verificationToken: varchar("verification_token", { length: 255 }),
-	verificationEmail: varchar("verification_email", { length: 255 }),
-	pendingClaimType: hostClaimTypeEnum("pending_claim_type"),
-	lastSeenAt: timestamp("last_seen_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-	createdAt: timestamp("created_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-	updatedAt: timestamp("updated_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-});
-
-export type LumaHostMapping = typeof lumaHostMappings.$inferSelect;
-export type NewLumaHostMapping = typeof lumaHostMappings.$inferInsert;
-
-// ============================================
-// MULTI-SOURCE SCRAPING - Scheduled scraping system
-// ============================================
 
 export const scrapeSourceTypeEnum = pgEnum("scrape_source_type", [
 	"devpost",
@@ -1314,32 +1230,93 @@ export const eventShareAssets = pgTable("event_share_assets", {
 export type EventShareAsset = typeof eventShareAssets.$inferSelect;
 export type NewEventShareAsset = typeof eventShareAssets.$inferInsert;
 
-export const attendanceStatusEnum = pgEnum("attendance_status", [
-	"attending",
-	"interested",
-	"not_going",
+// ============================================
+// EMAIL VERIFICATIONS - For Luma email verification (Fake OAuth)
+// ============================================
+
+export const emailVerificationPurposeEnum = pgEnum(
+	"email_verification_purpose",
+	["luma_connect"],
+);
+
+export const emailVerifications = pgTable(
+	"email_verifications",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+
+		userId: varchar("user_id", { length: 255 }).notNull(),
+		email: varchar("email", { length: 255 }).notNull(),
+		purpose: emailVerificationPurposeEnum("purpose").notNull(),
+
+		token: varchar("token", { length: 255 }).unique().notNull(),
+		expiresAt: timestamp("expires_at", {
+			mode: "date",
+			withTimezone: true,
+		}).notNull(),
+
+		verifiedAt: timestamp("verified_at", {
+			mode: "date",
+			withTimezone: true,
+		}),
+
+		createdAt: timestamp("created_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+	},
+	(t) => [
+		index("email_verification_user_idx").on(t.userId),
+		index("email_verification_token_idx").on(t.token),
+	],
+);
+
+export type EmailVerification = typeof emailVerifications.$inferSelect;
+export type NewEmailVerification = typeof emailVerifications.$inferInsert;
+
+// ============================================
+// ATTENDANCE CLAIMS - "Asistí" Feature
+// ============================================
+
+export const attendanceVerificationEnum = pgEnum("attendance_verification", [
+	"self_reported",
+	"organizer_verified",
 ]);
 
-export const userEventAttendance = pgTable("user_event_attendance", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	eventId: uuid("event_id")
-		.references(() => events.id)
-		.notNull(),
-	userId: varchar("user_id", { length: 255 }).notNull(),
-	status: attendanceStatusEnum("status").default("attending"),
-	sharedAt: timestamp("shared_at", { mode: "date", withTimezone: true }),
-	createdAt: timestamp("created_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-	updatedAt: timestamp("updated_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-});
+export const attendanceClaims = pgTable(
+	"attendance_claims",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		eventId: uuid("event_id")
+			.references(() => events.id, { onDelete: "cascade" })
+			.notNull(),
+		userId: varchar("user_id", { length: 255 }).notNull(),
 
-export type UserEventAttendance = typeof userEventAttendance.$inferSelect;
-export type NewUserEventAttendance = typeof userEventAttendance.$inferInsert;
+		verification:
+			attendanceVerificationEnum("verification").default("self_reported"),
+		verifiedAt: timestamp("verified_at", {
+			mode: "date",
+			withTimezone: true,
+		}),
+		verifiedBy: varchar("verified_by", { length: 255 }),
+
+		claimedAt: timestamp("claimed_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+		createdAt: timestamp("created_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+	},
+	(t) => [
+		uniqueIndex("attendance_claim_unique_idx").on(t.eventId, t.userId),
+		index("attendance_claim_user_idx").on(t.userId),
+		index("attendance_claim_event_idx").on(t.eventId),
+	],
+);
+
+export type AttendanceClaim = typeof attendanceClaims.$inferSelect;
+export type NewAttendanceClaim = typeof attendanceClaims.$inferInsert;
 
 // ============================================
 // RELATIONS
@@ -1353,7 +1330,15 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
 	sponsors: many(eventSponsors),
 	organizers: many(eventOrganizers),
 	hostOrganizations: many(eventHostOrganizations),
-	lumaHosts: many(eventHosts),
+	attendanceClaims: many(attendanceClaims),
+}));
+
+export const usersRelations = relations(users, ({ many }) => ({
+	achievements: many(userAchievements),
+	giftCards: many(giftCards),
+	winnerClaims: many(winnerClaims),
+	memberships: many(communityMembers),
+	attendanceClaims: many(attendanceClaims),
 }));
 
 export const organizationsRelations = relations(organizations, ({ many }) => ({
@@ -1362,7 +1347,6 @@ export const organizationsRelations = relations(organizations, ({ many }) => ({
 	invites: many(communityInvites),
 	sponsorships: many(eventSponsors),
 	hostingEvents: many(eventHostOrganizations),
-	hostMappings: many(lumaHostMappings),
 	outgoingRelationships: many(organizationRelationships, {
 		relationName: "sourceOrg",
 	}),
@@ -1456,19 +1440,12 @@ export const eventHostOrganizationsRelations = relations(
 	}),
 );
 
-export const eventHostsRelations = relations(eventHosts, ({ one }) => ({
-	event: one(events, {
-		fields: [eventHosts.eventId],
-		references: [events.id],
-	}),
-}));
-
-export const lumaHostMappingsRelations = relations(
-	lumaHostMappings,
+export const attendanceClaimsRelations = relations(
+	attendanceClaims,
 	({ one }) => ({
-		organization: one(organizations, {
-			fields: [lumaHostMappings.organizationId],
-			references: [organizations.id],
+		event: one(events, {
+			fields: [attendanceClaims.eventId],
+			references: [events.id],
 		}),
 	}),
 );

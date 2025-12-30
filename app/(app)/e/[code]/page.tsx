@@ -19,21 +19,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ClaimEventButton } from "@/components/events/claim-event-button";
-import { ClaimHostButton } from "@/components/events/claim-host-button";
+import { AttendanceButton } from "@/components/events/attendance-button";
 import { EventCountdown } from "@/components/events/event-countdown";
 import { ManageEventButton } from "@/components/events/manage-event-button";
 import { WinnerSection } from "@/components/events/winner-section";
 import { CalendarIcon } from "@/components/icons/calendar";
-import { LumaIcon } from "@/components/icons/luma";
 import { TrophyIcon } from "@/components/icons/trophy";
-import { MarkdownContent } from "@/components/markdown/markdown-content";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getUserAttendanceClaim } from "@/lib/actions/attendance";
 import { getEventCohost } from "@/lib/actions/cohost-invites";
 import {
 	getChildEvents,
 	getEventByShortCode,
-	getEventLumaHosts,
 	getEventSponsors,
 } from "@/lib/actions/events";
 import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
@@ -140,8 +137,6 @@ export default async function EventPage({ params }: EventPageProps) {
 	const { code } = await params;
 	const user = await currentUser();
 	const userId = user?.id;
-	const userHasPersonalOrg = !!(user?.publicMetadata as { lumaHostId?: string })
-		?.lumaHostId;
 	const result = await getEventByShortCode(code, true);
 
 	if (!result) {
@@ -159,12 +154,13 @@ export default async function EventPage({ params }: EventPageProps) {
 		notFound();
 	}
 
-	const [childEvents, eventSponsors, cohosts, lumaHosts] = await Promise.all([
-		getChildEvents(hackathon.id),
-		getEventSponsors(hackathon.id),
-		getEventCohost(hackathon.id),
-		getEventLumaHosts(hackathon.id, userId),
-	]);
+	const [childEvents, eventSponsors, cohosts, attendanceClaim] =
+		await Promise.all([
+			getChildEvents(hackathon.id),
+			getEventSponsors(hackathon.id),
+			getEventCohost(hackathon.id),
+			getUserAttendanceClaim(hackathon.id),
+		]);
 
 	const hasChildEvents = childEvents.length > 0;
 	const hasSponsors = eventSponsors.length > 0;
@@ -172,7 +168,6 @@ export default async function EventPage({ params }: EventPageProps) {
 		(c) => c.status === "approved" && !c.isPrimary,
 	);
 	const hasCohosts = approvedCohosts.length > 0;
-	const hasLumaHosts = lumaHosts.length > 0;
 
 	const status = getEventStatus(hackathon);
 	const isEnded = status.status === "ended";
@@ -501,15 +496,6 @@ export default async function EventPage({ params }: EventPageProps) {
 											{getDomainLabel(domain)}
 										</span>
 									))}
-
-								{(hasLumaHosts ||
-									hackathon.lumaSlug ||
-									hackathon.sourceLumaEventId) && (
-									<span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-										<LumaIcon className="h-3 w-3" />
-										Luma
-									</span>
-								)}
 							</div>
 						</div>
 					</div>
@@ -523,7 +509,81 @@ export default async function EventPage({ params }: EventPageProps) {
 									<h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
 										Sobre el evento
 									</h2>
-									<MarkdownContent content={hackathon.description} />
+									<div className="space-y-4">
+										<Markdown
+											remarkPlugins={[remarkGfm]}
+											components={{
+												h2: ({ children }) => (
+													<h3 className="text-lg font-semibold text-foreground mt-6 mb-2">
+														{children}
+													</h3>
+												),
+												h3: ({ children }) => (
+													<h4 className="text-base font-medium text-foreground mt-4 mb-1">
+														{children}
+													</h4>
+												),
+												p: ({ children }) => (
+													<p className="text-foreground leading-relaxed">
+														{children}
+													</p>
+												),
+												ul: ({ children }) => (
+													<ul className="list-disc list-inside space-y-1 text-foreground ml-1">
+														{children}
+													</ul>
+												),
+												li: ({ children }) => (
+													<li className="text-foreground">{children}</li>
+												),
+												strong: ({ children }) => (
+													<strong className="font-semibold text-foreground">
+														{children}
+													</strong>
+												),
+												a: ({ href, children }) => (
+													<a
+														href={href}
+														target="_blank"
+														rel="noopener noreferrer"
+														className="text-blue-400 hover:underline"
+													>
+														{children}
+													</a>
+												),
+												table: ({ children }) => (
+													<div className="overflow-x-auto">
+														<table className="min-w-full border border-border border-collapse text-sm">
+															{children}
+														</table>
+													</div>
+												),
+												thead: ({ children }) => (
+													<thead className="bg-muted text-foreground">
+														{children}
+													</thead>
+												),
+												tbody: ({ children }) => (
+													<tbody className="text-foreground">{children}</tbody>
+												),
+												tr: ({ children }) => (
+													<tr className="border-b border-border last:border-b-0">
+														{children}
+													</tr>
+												),
+												th: ({ children }) => (
+													<th className="px-3 py-2 text-left font-semibold align-top">
+														{children}
+													</th>
+												),
+												td: ({ children }) => (
+													<td className="px-3 py-2 align-top">{children}</td>
+												),
+											}}
+										>
+											{hackathon.description}
+										</Markdown>
+									</div>
 								</div>
 							)}
 
@@ -804,78 +864,6 @@ export default async function EventPage({ params }: EventPageProps) {
 								</div>
 							)}
 
-							{hasLumaHosts && (
-								<div className="rounded-lg border bg-card">
-									<div className="px-5 py-4 border-b">
-										<h3 className="text-sm font-semibold">
-											Hosts ({lumaHosts.length})
-										</h3>
-									</div>
-									<div className="p-5 space-y-3">
-										{lumaHosts.map((host) => (
-											<div key={host.id} className="flex items-center gap-3">
-												<Avatar className="h-10 w-10 border">
-													<AvatarImage src={host.avatarUrl || undefined} />
-													<AvatarFallback className="text-sm font-medium">
-														{getInitials(host.name || "?")}
-													</AvatarFallback>
-												</Avatar>
-												<div className="flex-1 min-w-0">
-													<div className="flex items-center gap-2">
-														{host.isClaimed && host.organizationSlug ? (
-															<Link
-																href={`/c/${host.organizationSlug}`}
-																className="text-sm font-medium truncate hover:underline"
-															>
-																{host.name}
-															</Link>
-														) : (
-															<p className="text-sm font-medium truncate">
-																{host.name}
-															</p>
-														)}
-														{host.isClaimed && (
-															<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-														)}
-													</div>
-													{host.isPrimary && (
-														<span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
-															Principal
-														</span>
-													)}
-												</div>
-												{userId && !host.isClaimed && (
-													<ClaimHostButton
-														lumaHostApiId={host.lumaHostApiId}
-														hostName={host.name || "Host"}
-														hostAvatarUrl={host.avatarUrl}
-														userHasPersonalOrg={userHasPersonalOrg}
-													/>
-												)}
-											</div>
-										))}
-									</div>
-								</div>
-							)}
-
-							{!community && userId && (
-								<div className="rounded-lg border bg-card">
-									<div className="px-5 py-4 border-b">
-										<h3 className="text-sm font-semibold">¿Es tu evento?</h3>
-									</div>
-									<div className="p-5 space-y-3">
-										<p className="text-sm text-muted-foreground">
-											Si organizas este evento, puedes vincularlo a una de tus
-											comunidades.
-										</p>
-										<ClaimEventButton
-											eventId={hackathon.id}
-											eventName={hackathon.name}
-										/>
-									</div>
-								</div>
-							)}
-
 							<div className="rounded-lg border bg-card">
 								<div className="px-5 py-4 border-b">
 									<h3 className="text-sm font-semibold">Acciones</h3>
@@ -911,6 +899,14 @@ export default async function EventPage({ params }: EventPageProps) {
 										<Bell className="h-4 w-4" />
 										Seguir evento
 									</button>
+
+									<AttendanceButton
+										eventId={hackathon.id}
+										eventEndDate={endDate}
+										initialClaimed={attendanceClaim.hasClaimed}
+										initialVerification={attendanceClaim.verification}
+										className="w-full h-9"
+									/>
 
 									<div className="flex gap-2">
 										{hackathon.websiteUrl && (
