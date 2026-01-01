@@ -1,6 +1,7 @@
 "use client";
 
 import {
+	Award,
 	BarChart3,
 	Calendar,
 	CheckCircle2,
@@ -35,7 +36,13 @@ function extractUsername(url: string, platform: string): string {
 }
 
 interface Tab {
-	id: "events" | "members" | "achievements" | "analytics" | "settings";
+	id:
+		| "events"
+		| "members"
+		| "achievements"
+		| "badges"
+		| "analytics"
+		| "settings";
 	label: string;
 	icon: string;
 }
@@ -55,6 +62,7 @@ const iconMap = {
 	Settings,
 	BarChart3,
 	Trophy,
+	Award,
 } as const;
 
 export function CommunityHeaderClient({
@@ -71,11 +79,13 @@ export function CommunityHeaderClient({
 		? "members"
 		: pathname.includes("/achievements")
 			? "achievements"
-			: pathname.includes("/analytics")
-				? "analytics"
-				: pathname.includes("/settings")
-					? "settings"
-					: "events";
+			: pathname.includes("/badges")
+				? "badges"
+				: pathname.includes("/analytics")
+					? "analytics"
+					: pathname.includes("/settings")
+						? "settings"
+						: "events";
 
 	return (
 		<div className="border-b bg-muted/30">

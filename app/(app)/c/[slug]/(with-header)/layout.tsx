@@ -34,6 +34,7 @@ async function CommunityHeaderWrapper({ slug }: { slug: string }) {
 			? [
 					{ id: "analytics" as const, label: "Analytics", icon: "BarChart3" },
 					{ id: "settings" as const, label: "Configuración", icon: "Settings" },
+					{ id: "badges" as const, label: "Badges", icon: "Award" },
 				]
 			: []),
 	];
