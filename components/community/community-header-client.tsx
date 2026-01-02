@@ -4,7 +4,6 @@ import {
 	Award,
 	BarChart3,
 	Calendar,
-	CheckCircle2,
 	Globe,
 	MapPin,
 	Settings,
@@ -14,6 +13,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { VerifiedBadge } from "@/components/icons/verified-badge";
 import { GithubLogo } from "@/components/logos/github";
 import { InstagramLogo } from "@/components/logos/instagram";
 import { LinkedinLogo } from "@/components/logos/linkedin";
@@ -115,7 +115,7 @@ export function CommunityHeaderClient({
 									{community.displayName || community.name}
 								</h1>
 								{community.isVerified && (
-									<CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+									<VerifiedBadge className="h-5 w-5 text-blue-500 shrink-0" />
 								)}
 							</div>
 

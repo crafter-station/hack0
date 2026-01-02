@@ -12,7 +12,7 @@ import {
 	Tags,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LocationSelector } from "@/components/communities/location-selector";
 import { GithubLogo } from "@/components/logos/github";
 import { InstagramLogo } from "@/components/logos/instagram";
@@ -47,18 +47,11 @@ import {
 } from "@/components/ui/responsive-modal";
 import { Textarea } from "@/components/ui/textarea";
 import { updateOrganizationById } from "@/lib/actions/organizations";
-import { ORGANIZER_TYPE_LABELS, type Organization } from "@/lib/db/schema";
+import type { Organization } from "@/lib/db/schema";
 import {
 	getOrganizerTypeConfig,
 	ORGANIZER_TYPE_LIST,
 } from "@/lib/organizer-type-config";
-
-const ORGANIZER_TYPE_OPTIONS = Object.entries(ORGANIZER_TYPE_LABELS).map(
-	([value, label]) => ({
-		value,
-		label,
-	}),
-);
 
 interface CommunitySettingsFormProps {
 	organization: Organization;
@@ -94,6 +87,17 @@ export function CommunitySettingsForm({
 		(organization.tags || []).map((t) => ({ id: t, text: t })),
 	);
 	const [activeTagIndex, setActiveTagIndex] = useState<number | null>(null);
+
+	const nameTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: name is needed to recalculate height on text change
+	useEffect(() => {
+		const textarea = nameTextareaRef.current;
+		if (textarea) {
+			textarea.style.height = "auto";
+			textarea.style.height = `${textarea.scrollHeight}px`;
+		}
+	}, [name]);
 
 	const [descriptionOpen, setDescriptionOpen] = useState(false);
 	const [linksOpen, setLinksOpen] = useState(false);
@@ -255,12 +259,13 @@ export function CommunitySettingsForm({
 
 				<div className="flex-1 space-y-3">
 					<textarea
+						ref={nameTextareaRef}
 						value={name}
 						onChange={(e) => setName(e.target.value)}
 						required
 						placeholder="Nombre de la comunidad"
-						rows={2}
-						className="w-full text-2xl font-semibold bg-transparent border-none outline-none focus:outline-none placeholder:text-muted-foreground/40 p-0 resize-none"
+						rows={1}
+						className="w-full text-2xl font-semibold bg-transparent border-none outline-none focus:outline-none placeholder:text-muted-foreground/40 p-0 resize-none overflow-hidden"
 					/>
 
 					<div>

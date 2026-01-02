@@ -1,15 +1,33 @@
-import { asc, desc, eq, sql } from "drizzle-orm";
+import { asc, desc, eq, ilike, or, sql } from "drizzle-orm";
 import type { Metadata } from "next";
+import type { SearchParams } from "nuqs/server";
 import { Suspense } from "react";
-import { EventList } from "@/components/events/event-list";
+import { CommunityEventsToolbar } from "@/components/community/community-events-toolbar";
+import { AllEventsTable } from "@/components/events/all-events-table";
+import { EventsCalendar } from "@/components/events/events-calendar";
+import { EventsCards } from "@/components/events/events-cards";
+import { EventsMapView } from "@/components/events/events-map-view";
+import { EventsPreviewView } from "@/components/events/events-preview-view";
 import { db } from "@/lib/db";
 import { events, organizations } from "@/lib/db/schema";
+import { getEventsViewPreference } from "@/lib/view-preferences";
 
 interface CommunityPageProps {
 	params: Promise<{ slug: string }>;
+	searchParams: Promise<SearchParams>;
 }
 
-async function CommunityEvents({ slug }: { slug: string }) {
+type ViewMode = "table" | "cards" | "calendar" | "map" | "preview";
+
+async function CommunityEvents({
+	slug,
+	viewMode,
+	search,
+}: {
+	slug: string;
+	viewMode: ViewMode;
+	search: string;
+}) {
 	const community = await db.query.organizations.findFirst({
 		where: eq(organizations.slug, slug),
 		columns: { id: true },
@@ -36,6 +54,13 @@ async function CommunityEvents({ slug }: { slug: string }) {
     END
   `;
 
+	const searchFilter = search
+		? or(
+				ilike(events.name, `%${search}%`),
+				ilike(events.description, `%${search}%`),
+			)
+		: undefined;
+
 	const results = await db
 		.select({
 			event: events,
@@ -43,7 +68,11 @@ async function CommunityEvents({ slug }: { slug: string }) {
 		})
 		.from(events)
 		.leftJoin(organizations, eq(events.organizationId, organizations.id))
-		.where(eq(events.organizationId, community.id))
+		.where(
+			searchFilter
+				? sql`${eq(events.organizationId, community.id)} AND ${searchFilter}`
+				: eq(events.organizationId, community.id),
+		)
 		.orderBy(desc(events.isFeatured), asc(statusPriority), asc(dateSortOrder))
 		.limit(50);
 
@@ -52,8 +81,43 @@ async function CommunityEvents({ slug }: { slug: string }) {
 		organization: r.organization,
 	}));
 
+	if (viewMode === "calendar") {
+		return <EventsCalendar events={communityEvents} />;
+	}
+
+	if (viewMode === "map") {
+		return (
+			<EventsMapView
+				events={communityEvents}
+				total={communityEvents.length}
+				hasMore={false}
+				filters={{}}
+			/>
+		);
+	}
+
+	if (viewMode === "preview") {
+		return (
+			<EventsPreviewView
+				events={communityEvents}
+				total={communityEvents.length}
+			/>
+		);
+	}
+
+	if (viewMode === "table") {
+		return (
+			<AllEventsTable
+				events={communityEvents}
+				total={communityEvents.length}
+				hasMore={false}
+				filters={{}}
+			/>
+		);
+	}
+
 	return (
-		<EventList
+		<EventsCards
 			events={communityEvents}
 			total={communityEvents.length}
 			hasMore={false}
@@ -65,25 +129,18 @@ async function CommunityEvents({ slug }: { slug: string }) {
 function EventsSkeleton() {
 	return (
 		<div className="space-y-4">
-			<div className="h-5 bg-muted rounded w-20 animate-pulse" />
-			<div className="rounded-lg border border-border overflow-hidden">
-				<div className="divide-y divide-border">
-					{Array.from({ length: 8 }).map((_, i) => (
-						<div
-							key={i}
-							className="grid grid-cols-[1fr_auto] lg:grid-cols-[1fr_180px_120px_100px_130px] gap-4 items-center px-5 py-4 animate-pulse"
-						>
-							<div className="space-y-2">
-								<div className="h-4 bg-muted rounded w-3/4" />
-								<div className="h-3 bg-muted rounded w-1/2" />
-							</div>
-							<div className="hidden lg:block h-4 bg-muted rounded w-28" />
-							<div className="hidden lg:block h-4 bg-muted rounded w-20" />
-							<div className="hidden lg:block h-4 bg-muted rounded w-16 ml-auto" />
-							<div className="h-7 bg-muted rounded-full w-24 ml-auto" />
-						</div>
-					))}
-				</div>
+			<div className="flex items-center justify-between gap-2">
+				<div className="h-7 w-48 bg-muted rounded animate-pulse" />
+				<div className="h-7 w-32 bg-muted rounded animate-pulse" />
+			</div>
+			<div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+				{Array.from({ length: 8 }).map((_, i) => (
+					<div key={i} className="space-y-2 animate-pulse">
+						<div className="aspect-square bg-muted rounded" />
+						<div className="h-4 bg-muted rounded w-3/4" />
+						<div className="h-3 bg-muted rounded w-1/2" />
+					</div>
+				))}
 			</div>
 		</div>
 	);
@@ -111,12 +168,30 @@ export async function generateMetadata({
 	};
 }
 
-export default async function CommunityPage({ params }: CommunityPageProps) {
+export default async function CommunityPage({
+	params,
+	searchParams,
+}: CommunityPageProps) {
 	const { slug } = await params;
+	const rawParams = await searchParams;
+
+	const hasExplicitView = "view" in rawParams;
+	const savedPreference = await getEventsViewPreference();
+	const urlView = rawParams.view as ViewMode | undefined;
+	const viewMode = hasExplicitView && urlView ? urlView : savedPreference;
+	const search = (rawParams.search as string) || "";
 
 	return (
-		<Suspense fallback={<EventsSkeleton />}>
-			<CommunityEvents slug={slug} />
-		</Suspense>
+		<div className="space-y-4">
+			<Suspense
+				fallback={<div className="h-7 w-full bg-muted rounded animate-pulse" />}
+			>
+				<CommunityEventsToolbar />
+			</Suspense>
+
+			<Suspense fallback={<EventsSkeleton />}>
+				<CommunityEvents slug={slug} viewMode={viewMode} search={search} />
+			</Suspense>
+		</div>
 	);
 }
