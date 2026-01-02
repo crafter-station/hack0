@@ -16,6 +16,9 @@ const categoryValues = [
 ] as const;
 const viewValues = ["table", "cards", "calendar", "map", "preview"] as const;
 const entityValues = ["events", "organizations"] as const;
+const timeFilterValues = ["upcoming", "all", "past"] as const;
+
+export type TimeFilter = (typeof timeFilterValues)[number];
 
 export type EntityType = (typeof entityValues)[number];
 
@@ -40,6 +43,7 @@ export const searchParamsParsers = {
 	mine: parseAsBoolean.withDefault(false),
 	page: parseAsInteger.withDefault(1),
 	view: parseAsStringLiteral(viewValues).withDefault("cards"),
+	timeFilter: parseAsStringLiteral(timeFilterValues).withDefault("all"),
 };
 
 // Create server-side loader

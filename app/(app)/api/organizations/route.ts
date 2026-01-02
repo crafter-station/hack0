@@ -73,6 +73,7 @@ export async function GET(request: NextRequest) {
 				description: organizations.description,
 				type: organizations.type,
 				logoUrl: organizations.logoUrl,
+				coverUrl: organizations.coverUrl,
 				isVerified: organizations.isVerified,
 				createdAt: organizations.createdAt,
 				memberCount:
@@ -140,6 +141,7 @@ export async function GET(request: NextRequest) {
 			description: c.description,
 			type: c.type,
 			logoUrl: c.logoUrl,
+			coverUrl: c.coverUrl,
 			isVerified: c.isVerified,
 			memberCount: Number(c.memberCount),
 			isFollowing: userMemberships.has(c.id),

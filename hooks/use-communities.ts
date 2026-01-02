@@ -8,6 +8,7 @@ export interface PublicCommunity {
 	description: string | null;
 	type: string | null;
 	logoUrl: string | null;
+	coverUrl: string | null;
 	isVerified: boolean | null;
 	memberCount: number;
 	isFollowing: boolean;

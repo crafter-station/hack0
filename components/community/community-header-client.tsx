@@ -108,7 +108,7 @@ export function CommunityHeaderClient({
 							priority
 						/>
 					) : (
-						<div className="w-full h-full bg-gradient-to-br from-neutral-800 to-neutral-900" />
+						<div className="w-full h-full bg-muted" />
 					)}
 				</div>
 

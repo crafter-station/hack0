@@ -685,25 +685,3 @@ export async function getUniqueTags(): Promise<string[]> {
 
 	return [...new Set(allTags)].sort();
 }
-
-export async function getTagCounts(): Promise<{
-	counts: Record<string, number>;
-	total: number;
-}> {
-	const orgs = await db.query.organizations.findMany({
-		where: and(
-			eq(organizations.isPublic, true),
-			eq(organizations.isPersonalOrg, false),
-		),
-		columns: { tags: true },
-	});
-
-	const counts: Record<string, number> = {};
-	for (const org of orgs) {
-		for (const tag of org.tags || []) {
-			counts[tag] = (counts[tag] || 0) + 1;
-		}
-	}
-
-	return { counts, total: orgs.length };
-}

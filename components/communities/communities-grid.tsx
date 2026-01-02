@@ -1,19 +1,13 @@
 "use client";
 
-import {
-	CheckCircle2,
-	Globe,
-	Loader2,
-	Mail,
-	MapPin,
-	Users,
-} from "lucide-react";
+import { Globe, Loader2, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { useInView } from "react-intersection-observer";
 import { toast } from "sonner";
+import { VerifiedBadge } from "@/components/icons/verified-badge";
 import { GithubLogo } from "@/components/logos/github";
 import { InstagramLogo } from "@/components/logos/instagram";
 import { LinkedinLogo } from "@/components/logos/linkedin";
@@ -110,12 +104,27 @@ function CommunityCard({
 	isAuthenticated: boolean;
 }) {
 	return (
-		<div className="group relative flex flex-col border bg-card p-3 transition-colors hover:bg-muted/30">
-			<Link href={`/c/${community.slug}`} className="absolute inset-0 z-0" />
+		<Link
+			href={`/c/${community.slug}`}
+			className="group relative flex flex-col border bg-card overflow-hidden transition-colors hover:bg-muted/30"
+		>
+			<div className="relative aspect-[3/1] w-full overflow-hidden">
+				{community.coverUrl ? (
+					<Image
+						src={community.coverUrl}
+						alt={`${community.displayName || community.name} cover`}
+						fill
+						className="object-cover"
+						sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+					/>
+				) : (
+					<div className="w-full h-full bg-muted" />
+				)}
+			</div>
 
-			<div className="flex items-start gap-3 mb-2">
-				<div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted">
-					{community.logoUrl ? (
+			<div className="relative -mt-5 ml-3 z-10">
+				{community.logoUrl ? (
+					<div className="relative h-10 w-10 rounded-lg border-2 border-background shadow-md overflow-hidden bg-background">
 						<Image
 							src={community.logoUrl}
 							alt={community.displayName || community.name}
@@ -123,125 +132,117 @@ function CommunityCard({
 							className="object-cover"
 							sizes="40px"
 						/>
-					) : (
-						<div className="flex h-full w-full items-center justify-center text-sm font-medium text-muted-foreground">
-							{(community.displayName || community.name).charAt(0)}
-						</div>
-					)}
-				</div>
-				<div className="min-w-0 flex-1">
-					<h3 className="text-sm font-medium text-foreground group-hover:underline underline-offset-2 line-clamp-1 flex items-center gap-1">
-						{community.displayName || community.name}
-						{community.isVerified && (
-							<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-						)}
-					</h3>
-					<p className="text-[11px] text-muted-foreground">@{community.slug}</p>
-				</div>
-			</div>
-
-			{community.description && (
-				<p className="text-xs text-muted-foreground line-clamp-2 mb-2 flex-1">
-					{community.description}
-				</p>
-			)}
-
-			<div className="flex items-center gap-2 text-[11px] text-muted-foreground mb-2">
-				{(community.department || community.country) && (
-					<span className="inline-flex items-center gap-1">
-						<MapPin className="h-3 w-3" />
-						{community.department || community.country}
-					</span>
+					</div>
+				) : (
+					<div className="h-10 w-10 rounded-lg border-2 border-background shadow-md bg-muted flex items-center justify-center text-sm font-semibold text-muted-foreground">
+						{(community.displayName || community.name).charAt(0).toUpperCase()}
+					</div>
 				)}
-				<div className="flex items-center gap-1.5">
-					{community.websiteUrl && (
-						<a
-							href={community.websiteUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="relative z-10 hover:text-foreground transition-colors"
-							onClick={(e) => e.stopPropagation()}
-						>
-							<Globe className="h-3 w-3" />
-						</a>
-					)}
-					{community.email && (
-						<a
-							href={`mailto:${community.email}`}
-							className="relative z-10 hover:text-foreground transition-colors"
-							onClick={(e) => e.stopPropagation()}
-						>
-							<Mail className="h-3 w-3" />
-						</a>
-					)}
-					{community.twitterUrl && (
-						<a
-							href={community.twitterUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="relative z-10 hover:text-foreground transition-colors"
-							onClick={(e) => e.stopPropagation()}
-						>
-							<TwitterLogo className="h-3 w-3" />
-						</a>
-					)}
-					{community.linkedinUrl && (
-						<a
-							href={community.linkedinUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="relative z-10 hover:text-foreground transition-colors"
-							onClick={(e) => e.stopPropagation()}
-						>
-							<LinkedinLogo className="h-3 w-3" mode="currentColor" />
-						</a>
-					)}
-					{community.instagramUrl && (
-						<a
-							href={community.instagramUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="relative z-10 hover:text-foreground transition-colors"
-							onClick={(e) => e.stopPropagation()}
-						>
-							<InstagramLogo className="h-3 w-3" mode="currentColor" />
-						</a>
-					)}
-					{community.githubUrl && (
-						<a
-							href={community.githubUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="relative z-10 hover:text-foreground transition-colors"
-							onClick={(e) => e.stopPropagation()}
-						>
-							<GithubLogo className="h-3 w-3" mode="currentColor" />
-						</a>
-					)}
-				</div>
 			</div>
 
-			<div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
-				<div className="flex items-center gap-2">
-					{community.type && (
-						<span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-muted">
-							{ORGANIZER_TYPE_LABELS[community.type] || community.type}
-						</span>
+			<div className="p-3 pt-2 flex flex-col flex-1">
+				<div className="flex items-center gap-1.5 mb-1">
+					<h3 className="text-sm font-semibold text-foreground group-hover:underline underline-offset-2 line-clamp-1">
+						{community.displayName || community.name}
+					</h3>
+					{community.isVerified && (
+						<VerifiedBadge className="h-4 w-4 text-blue-500 shrink-0" />
 					)}
-					<span className="inline-flex items-center gap-1">
-						<Users className="h-3 w-3" />
-						{community.memberCount}
-					</span>
 				</div>
-				<div className="relative z-10">
-					<FollowButton
-						communityId={community.id}
-						isFollowing={community.isFollowing}
-						isAuthenticated={isAuthenticated}
-					/>
+
+				{community.description && (
+					<p className="text-xs text-muted-foreground line-clamp-2 mb-2 flex-1">
+						{community.description}
+					</p>
+				)}
+
+				<div className="flex items-center gap-2 text-[11px] text-muted-foreground mb-2">
+					<div className="flex items-center gap-1.5">
+						{community.websiteUrl && (
+							<span
+								onClick={(e) => {
+									e.preventDefault();
+									e.stopPropagation();
+									window.open(community.websiteUrl!, "_blank");
+								}}
+								className="hover:text-foreground transition-colors cursor-pointer"
+							>
+								<Globe className="h-3 w-3" />
+							</span>
+						)}
+						{community.twitterUrl && (
+							<span
+								onClick={(e) => {
+									e.preventDefault();
+									e.stopPropagation();
+									window.open(community.twitterUrl!, "_blank");
+								}}
+								className="hover:text-foreground transition-colors cursor-pointer"
+							>
+								<TwitterLogo className="h-3 w-3" />
+							</span>
+						)}
+						{community.linkedinUrl && (
+							<span
+								onClick={(e) => {
+									e.preventDefault();
+									e.stopPropagation();
+									window.open(community.linkedinUrl!, "_blank");
+								}}
+								className="hover:text-foreground transition-colors cursor-pointer"
+							>
+								<LinkedinLogo className="h-3 w-3" mode="currentColor" />
+							</span>
+						)}
+						{community.instagramUrl && (
+							<span
+								onClick={(e) => {
+									e.preventDefault();
+									e.stopPropagation();
+									window.open(community.instagramUrl!, "_blank");
+								}}
+								className="hover:text-foreground transition-colors cursor-pointer"
+							>
+								<InstagramLogo className="h-3 w-3" mode="currentColor" />
+							</span>
+						)}
+						{community.githubUrl && (
+							<span
+								onClick={(e) => {
+									e.preventDefault();
+									e.stopPropagation();
+									window.open(community.githubUrl!, "_blank");
+								}}
+								className="hover:text-foreground transition-colors cursor-pointer"
+							>
+								<GithubLogo className="h-3 w-3" mode="currentColor" />
+							</span>
+						)}
+					</div>
+				</div>
+
+				<div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground mt-auto">
+					<div className="flex items-center gap-2">
+						{community.type && (
+							<span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-muted text-[10px]">
+								{ORGANIZER_TYPE_LABELS[community.type] || community.type}
+							</span>
+						)}
+						<span className="inline-flex items-center gap-1">
+							<Users className="h-3 w-3" />
+							{community.memberCount}
+						</span>
+					</div>
+					<div onClick={(e) => e.preventDefault()} className="relative z-10">
+						<FollowButton
+							communityId={community.id}
+							isFollowing={community.isFollowing}
+							isAuthenticated={isAuthenticated}
+						/>
+					</div>
 				</div>
 			</div>
-		</div>
+		</Link>
 	);
 }
 
@@ -249,21 +250,22 @@ function LoadingSkeleton() {
 	return (
 		<>
 			{Array.from({ length: 4 }).map((_, i) => (
-				<div key={i} className="flex flex-col border bg-card p-3 animate-pulse">
-					<div className="flex items-start gap-3 mb-2">
-						<div className="h-10 w-10 rounded-full bg-muted" />
-						<div className="flex-1 space-y-2">
-							<div className="h-4 w-3/4 rounded bg-muted" />
-							<div className="h-3 w-1/2 rounded bg-muted" />
-						</div>
+				<div
+					key={i}
+					className="flex flex-col border bg-card overflow-hidden animate-pulse"
+				>
+					<div className="aspect-[3/1] w-full bg-muted" />
+					<div className="relative -mt-5 ml-3 z-10">
+						<div className="h-10 w-10 rounded-lg border-2 border-background bg-muted" />
 					</div>
-					<div className="space-y-2 mb-2">
+					<div className="p-3 pt-2 space-y-2">
+						<div className="h-4 w-3/4 rounded bg-muted" />
 						<div className="h-3 w-full rounded bg-muted" />
 						<div className="h-3 w-2/3 rounded bg-muted" />
-					</div>
-					<div className="flex items-center justify-between">
-						<div className="h-5 w-20 rounded bg-muted" />
-						<div className="h-6 w-16 rounded bg-muted" />
+						<div className="flex items-center justify-between pt-1">
+							<div className="h-5 w-20 rounded bg-muted" />
+							<div className="h-6 w-16 rounded bg-muted" />
+						</div>
 					</div>
 				</div>
 			))}

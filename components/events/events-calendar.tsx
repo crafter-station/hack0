@@ -1,7 +1,6 @@
 "use client";
 
 import {
-	addDays,
 	addMonths,
 	differenceInDays,
 	eachDayOfInterval,
@@ -10,15 +9,20 @@ import {
 	getDay,
 	isBefore,
 	isSameDay,
-	isWithinInterval,
 	max,
 	min,
 	startOfDay,
 	startOfMonth,
 	subMonths,
 } from "date-fns";
-import { ChevronLeft, ChevronRight, MapPin, Calendar, Trophy } from "lucide-react";
-import { useState, useMemo, useRef, useCallback } from "react";
+import {
+	Calendar,
+	ChevronLeft,
+	ChevronRight,
+	MapPin,
+	Trophy,
+} from "lucide-react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -46,6 +50,7 @@ const isPastDay = (date: Date) => {
 
 interface EventsCalendarProps {
 	events: EventWithOrg[];
+	timeFilter?: "upcoming" | "all" | "past";
 }
 
 interface CalendarWeek {
@@ -63,18 +68,35 @@ interface EventSpan {
 	lane: number;
 }
 
-export function EventsCalendar({ events }: EventsCalendarProps) {
+function isEventPast(event: EventWithOrg): boolean {
+	if (!event.endDate) return false;
+	return new Date(event.endDate) < new Date();
+}
+
+export function EventsCalendar({
+	events,
+	timeFilter = "upcoming",
+}: EventsCalendarProps) {
 	const [currentMonth, setCurrentMonth] = useState(new Date());
 
-	const eventsWithDates = useMemo(
-		() => events.filter((event) => event.startDate),
-		[events]
-	);
+	const eventsWithDates = useMemo(() => {
+		const withDates = events.filter((event) => event.startDate);
+		if (timeFilter === "upcoming") {
+			return withDates.filter((e) => !isEventPast(e));
+		}
+		if (timeFilter === "past") {
+			return withDates.filter((e) => isEventPast(e));
+		}
+		return withDates;
+	}, [events, timeFilter]);
 
-	const { weeks, allDays } = useMemo(() => {
+	const { weeks } = useMemo(() => {
 		const monthStart = startOfMonth(currentMonth);
 		const monthEnd = endOfMonth(currentMonth);
-		const calendarDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
+		const calendarDays = eachDayOfInterval({
+			start: monthStart,
+			end: monthEnd,
+		});
 
 		const startPadding = getMondayBasedDay(monthStart);
 		const endPadding = 6 - getMondayBasedDay(monthEnd);
@@ -87,7 +109,9 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 			allDays.push(date);
 		}
 
-		calendarDays.forEach((date) => allDays.push(date));
+		for (const date of calendarDays) {
+			allDays.push(date);
+		}
 
 		for (let i = 1; i <= endPadding; i++) {
 			const date = new Date(monthEnd);
@@ -159,7 +183,7 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 			let assignedLane = 0;
 			for (let i = 0; i < lanes.length; i++) {
 				const laneOccupied = lanes[i].some(
-					(col) => col >= span.startCol && col < span.startCol + span.span
+					(col) => col >= span.startCol && col < span.startCol + span.span,
 				);
 				if (!laneOccupied) {
 					assignedLane = i;
@@ -189,7 +213,7 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 
 	const navigateMonth = (direction: "prev" | "next") => {
 		setCurrentMonth((prev) =>
-			direction === "prev" ? subMonths(prev, 1) : addMonths(prev, 1)
+			direction === "prev" ? subMonths(prev, 1) : addMonths(prev, 1),
 		);
 	};
 
@@ -236,12 +260,15 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 	} | null>(null);
 	const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-	const showTooltip = useCallback((event: EventWithOrg, e: React.MouseEvent) => {
-		if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
-		tooltipTimeoutRef.current = setTimeout(() => {
-			setTooltip({ event, x: e.clientX, y: e.clientY });
-		}, 200);
-	}, []);
+	const showTooltip = useCallback(
+		(event: EventWithOrg, e: React.MouseEvent) => {
+			if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
+			tooltipTimeoutRef.current = setTimeout(() => {
+				setTooltip({ event, x: e.clientX, y: e.clientY });
+			}, 200);
+		},
+		[],
+	);
 
 	const hideTooltip = useCallback(() => {
 		if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
@@ -250,11 +277,16 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 		}, 100);
 	}, []);
 
-	const updateTooltipPosition = useCallback((e: React.MouseEvent) => {
-		if (tooltip) {
-			setTooltip((prev) => prev ? { ...prev, x: e.clientX, y: e.clientY } : null);
-		}
-	}, [tooltip]);
+	const updateTooltipPosition = useCallback(
+		(e: React.MouseEvent) => {
+			if (tooltip) {
+				setTooltip((prev) =>
+					prev ? { ...prev, x: e.clientX, y: e.clientY } : null,
+				);
+			}
+		},
+		[tooltip],
+	);
 
 	const EventTooltipContent = ({ event }: { event: EventWithOrg }) => {
 		const { status, label } = getEventStatus(event);
@@ -316,11 +348,21 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 	return (
 		<div className="space-y-4">
 			<div className="flex items-center justify-between">
-				<Button variant="outline" size="sm" onClick={() => navigateMonth("prev")}>
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={() => navigateMonth("prev")}
+				>
 					<ChevronLeft className="h-4 w-4" />
 				</Button>
-				<h2 className="text-xl font-semibold">{formatCalendarMonth(currentMonth)}</h2>
-				<Button variant="outline" size="sm" onClick={() => navigateMonth("next")}>
+				<h2 className="text-xl font-semibold">
+					{formatCalendarMonth(currentMonth)}
+				</h2>
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={() => navigateMonth("next")}
+				>
 					<ChevronRight className="h-4 w-4" />
 				</Button>
 			</div>
@@ -328,19 +370,24 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 			<Card className="py-0 overflow-hidden">
 				<CardContent className="p-0">
 					<div className="grid grid-cols-7 border-b">
-						{["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((day, index) => (
-							<div
-								key={day}
-								className={`p-3 text-center text-sm font-medium text-muted-foreground border-r last:border-r-0 ${index >= 5 ? "bg-muted/50" : ""}`}
-							>
-								{day}
-							</div>
-						))}
+						{["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map(
+							(day, index) => (
+								<div
+									key={day}
+									className={`p-3 text-center text-sm font-medium text-muted-foreground border-r last:border-r-0 ${index >= 5 ? "bg-muted/50" : ""}`}
+								>
+									{day}
+								</div>
+							),
+						)}
 					</div>
 
 					{weeks.map((week, weekIndex) => {
 						const eventSpans = getEventSpansForWeek(week);
-						const maxLanes = eventSpans.length > 0 ? Math.max(...eventSpans.map((s) => s.lane)) + 1 : 0;
+						const maxLanes =
+							eventSpans.length > 0
+								? Math.max(...eventSpans.map((s) => s.lane)) + 1
+								: 0;
 						const isLastWeek = weekIndex === weeks.length - 1;
 
 						return (
@@ -352,7 +399,10 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 									>
 										{week.days.map((date, dayIndex) => {
 											const isWeekendDay = isWeekend(date);
-											const isCurrentMonth = isSameDay(startOfMonth(date), monthStart);
+											const isCurrentMonth = isSameDay(
+												startOfMonth(date),
+												monthStart,
+											);
 											return (
 												<div
 													key={dayIndex}
@@ -382,10 +432,7 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 													}}
 													onClick={() =>
 														span.event.shortCode &&
-														window.open(
-															`/e/${span.event.shortCode}`,
-															"_blank"
-														)
+														window.open(`/e/${span.event.shortCode}`, "_blank")
 													}
 													onMouseEnter={(e) => showTooltip(span.event, e)}
 													onMouseLeave={hideTooltip}
@@ -403,7 +450,10 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 										const isToday = isSameDay(date, new Date());
 										const isWeekendDay = isWeekend(date);
 										const isPast = isPastDay(date);
-										const isCurrentMonth = isSameDay(startOfMonth(date), monthStart);
+										const isCurrentMonth = isSameDay(
+											startOfMonth(date),
+											monthStart,
+										);
 										const singleDayEvents = getSingleDayEventsForDay(date);
 
 										return (
@@ -444,7 +494,7 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 																		event.shortCode &&
 																		window.open(
 																			`/e/${event.shortCode}`,
-																			"_blank"
+																			"_blank",
 																		)
 																	}
 																	onMouseEnter={(e) => showTooltip(event, e)}
@@ -459,7 +509,9 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 														})}
 
 														{singleDayEvents.length > 2 && (
-															<div className={`text-[10px] text-muted-foreground ${isPast ? "opacity-50" : ""}`}>
+															<div
+																className={`text-[10px] text-muted-foreground ${isPast ? "opacity-50" : ""}`}
+															>
 																+{singleDayEvents.length - 2} más
 															</div>
 														)}
@@ -475,7 +527,8 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 				</CardContent>
 			</Card>
 
-			{tooltip && typeof document !== "undefined" &&
+			{tooltip &&
+				typeof document !== "undefined" &&
 				createPortal(
 					<div
 						className="fixed z-50 pointer-events-none animate-in fade-in-0 zoom-in-95 duration-100"
@@ -486,7 +539,7 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
 					>
 						<EventTooltipContent event={tooltip.event} />
 					</div>,
-					document.body
+					document.body,
 				)}
 		</div>
 	);

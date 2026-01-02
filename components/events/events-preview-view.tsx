@@ -37,6 +37,12 @@ import {
 interface EventsPreviewViewProps {
 	events: EventWithOrg[];
 	total?: number;
+	timeFilter?: "upcoming" | "all" | "past";
+}
+
+function isEventPast(event: EventWithOrg): boolean {
+	if (!event.endDate) return false;
+	return new Date(event.endDate) < new Date();
 }
 
 function getStatusColor(status: string) {
@@ -418,7 +424,11 @@ function EmptyDetailPanel() {
 	);
 }
 
-export function EventsPreviewView({ events, total }: EventsPreviewViewProps) {
+export function EventsPreviewView({
+	events,
+	total,
+	timeFilter = "upcoming",
+}: EventsPreviewViewProps) {
 	const [hoveredEventId, setHoveredEventId] = useState<string | null>(null);
 	const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 	const listRef = useRef<HTMLDivElement>(null);
@@ -426,6 +436,16 @@ export function EventsPreviewView({ events, total }: EventsPreviewViewProps) {
 	const hoveredEvent = useMemo(
 		() => events.find((e) => e.id === hoveredEventId),
 		[events, hoveredEventId],
+	);
+
+	const upcomingEvents = useMemo(
+		() => events.filter((e) => !isEventPast(e)),
+		[events],
+	);
+
+	const pastEvents = useMemo(
+		() => events.filter((e) => isEventPast(e)),
+		[events],
 	);
 
 	const handleEventHover = useCallback(
@@ -501,16 +521,55 @@ export function EventsPreviewView({ events, total }: EventsPreviewViewProps) {
 					</p>
 				</div>
 				<ScrollArea className="h-[calc(100%-60px)]" ref={listRef}>
-					<div className="divide-y divide-border/50">
-						{events.map((event) => (
-							<EventListItem
-								key={event.id}
-								event={event}
-								isHovered={hoveredEventId === event.id}
-								onHover={() => handleEventHover(event.id)}
-							/>
-						))}
-					</div>
+					{timeFilter === "all" ? (
+						<div>
+							{upcomingEvents.length > 0 && (
+								<div>
+									<div className="px-4 py-1.5 text-xs font-medium text-foreground bg-muted/30 border-b sticky top-0">
+										Próximos eventos
+									</div>
+									<div className="divide-y divide-border/50">
+										{upcomingEvents.map((event) => (
+											<EventListItem
+												key={event.id}
+												event={event}
+												isHovered={hoveredEventId === event.id}
+												onHover={() => handleEventHover(event.id)}
+											/>
+										))}
+									</div>
+								</div>
+							)}
+							{pastEvents.length > 0 && (
+								<div>
+									<div className="px-4 py-1.5 text-xs font-medium text-muted-foreground bg-muted/30 border-b sticky top-0">
+										Eventos pasados
+									</div>
+									<div className="divide-y divide-border/50">
+										{pastEvents.map((event) => (
+											<EventListItem
+												key={event.id}
+												event={event}
+												isHovered={hoveredEventId === event.id}
+												onHover={() => handleEventHover(event.id)}
+											/>
+										))}
+									</div>
+								</div>
+							)}
+						</div>
+					) : (
+						<div className="divide-y divide-border/50">
+							{events.map((event) => (
+								<EventListItem
+									key={event.id}
+									event={event}
+									isHovered={hoveredEventId === event.id}
+									onHover={() => handleEventHover(event.id)}
+								/>
+							))}
+						</div>
+					)}
 				</ScrollArea>
 			</div>
 

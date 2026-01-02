@@ -50,6 +50,7 @@ export interface EventFilters {
 	mine?: boolean;
 	page?: number;
 	limit?: number;
+	timeFilter?: "upcoming" | "all" | "past";
 }
 
 interface OrganizationInfo {
@@ -88,6 +89,7 @@ export async function getEvents(
 		mine,
 		page = 1,
 		limit = 12,
+		timeFilter = "upcoming",
 	} = filters;
 
 	const conditions: ReturnType<typeof eq>[] = [];
@@ -248,6 +250,17 @@ export async function getEvents(
 	// Department filter
 	if (department && department.length > 0) {
 		conditions.push(or(...department.map((d) => eq(events.department, d)))!);
+	}
+
+	// Time filter - controls upcoming vs past events
+	if (timeFilter === "upcoming") {
+		conditions.push(
+			sql`(${events.endDate} IS NULL OR ${events.endDate} >= NOW())`,
+		);
+	} else if (timeFilter === "past") {
+		conditions.push(
+			sql`${events.endDate} IS NOT NULL AND ${events.endDate} < NOW()`,
+		);
 	}
 
 	// Build where clause

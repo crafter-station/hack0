@@ -1,12 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
 import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm";
-import { LayoutGrid, List, Plus } from "lucide-react";
+import { LayoutGrid, List } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { CommunitiesGrid } from "@/components/communities/communities-grid";
 import { CommunitiesList } from "@/components/communities/communities-list";
 import { CommunityActiveFilters } from "@/components/communities/community-active-filters";
-import { CommunityCategoryTabs } from "@/components/communities/community-category-tabs";
 import { CommunitySidebarFilters } from "@/components/communities/community-sidebar-filters";
 import { CommunityTabToggle } from "@/components/communities/community-tab-toggle";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -15,7 +14,6 @@ import { ButtonGroup } from "@/components/ui/button-group";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { CommunitiesResponse } from "@/hooks/use-communities";
 import {
-	getTagCounts,
 	getUniqueCountries,
 	getUniqueDepartments,
 	getUniqueTags,
@@ -115,6 +113,7 @@ async function getInitialCommunities(
 			description: organizations.description,
 			type: organizations.type,
 			logoUrl: organizations.logoUrl,
+			coverUrl: organizations.coverUrl,
 			isVerified: organizations.isVerified,
 			memberCount:
 				sql<number>`COALESCE(${memberCountSubquery.memberCount}, 0)`.as(
@@ -156,6 +155,7 @@ async function getInitialCommunities(
 		description: c.description,
 		type: c.type,
 		logoUrl: c.logoUrl,
+		coverUrl: c.coverUrl,
 		isVerified: c.isVerified,
 		memberCount: Number(c.memberCount),
 		isFollowing: userMemberships.has(c.id),
@@ -191,29 +191,20 @@ export default async function DiscoverPage({
 		params.verification?.split(",").filter(Boolean) || [];
 	const tagsArray = params.tags?.split(",").filter(Boolean) || [];
 
-	const [
-		initialData,
-		_departments,
-		availableCountries,
-		availableTags,
-		tagData,
-	] = await Promise.all([
-		getInitialCommunities(params, userId),
-		getUniqueDepartments(),
-		getUniqueCountries(),
-		getUniqueTags(),
-		getTagCounts(),
-	]);
+	const [initialData, _departments, availableCountries, availableTags] =
+		await Promise.all([
+			getInitialCommunities(params, userId),
+			getUniqueDepartments(),
+			getUniqueCountries(),
+			getUniqueTags(),
+		]);
 
 	const isAuthenticated = !!userId;
 
-	// Use URL param if explicitly set, otherwise use saved preference
 	const hasExplicitView = "view" in params;
 	const savedPreference = await getCommunitiesViewPreference();
 	const viewMode =
 		hasExplicitView && params.view ? params.view : savedPreference;
-
-	const activeTag = tagsArray.length === 1 ? tagsArray[0] : "todas";
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
@@ -229,16 +220,7 @@ export default async function DiscoverPage({
 						>
 							<CommunityTabToggle />
 						</Suspense>
-						<div className="flex items-center gap-2">
-							<ViewToggle currentView={viewMode} searchParams={params} />
-							<Link
-								href="/c/new"
-								className="inline-flex h-7 items-center gap-1.5 bg-foreground text-background px-3 text-xs font-medium hover:bg-foreground/90 transition-colors"
-							>
-								<Plus className="h-3.5 w-3.5" />
-								<span className="hidden sm:inline">Crear</span>
-							</Link>
-						</div>
+						<ViewToggle currentView={viewMode} searchParams={params} />
 					</div>
 				</div>
 			</section>
@@ -263,20 +245,6 @@ export default async function DiscoverPage({
 					</Suspense>
 
 					<div className="flex-1 min-w-0">
-						<div className="flex items-center justify-between mb-4">
-							<Suspense
-								fallback={
-									<div className="h-7 w-64 animate-pulse bg-muted rounded" />
-								}
-							>
-								<CommunityCategoryTabs
-									activeTab={activeTag}
-									tagCounts={tagData.counts}
-									totalCount={tagData.total}
-								/>
-							</Suspense>
-						</div>
-
 						<Suspense fallback={null}>
 							<CommunityActiveFilters totalResults={initialData.total} />
 						</Suspense>
@@ -315,22 +283,20 @@ export default async function DiscoverPage({
 										{Array.from({ length: 12 }).map((_, i) => (
 											<div
 												key={i}
-												className="flex flex-col border bg-card p-3 animate-pulse"
+												className="flex flex-col border bg-card overflow-hidden animate-pulse"
 											>
-												<div className="flex items-start gap-3 mb-2">
-													<div className="h-10 w-10 rounded-full bg-muted" />
-													<div className="flex-1 space-y-2">
-														<div className="h-4 w-3/4 rounded bg-muted" />
-														<div className="h-3 w-1/2 rounded bg-muted" />
-													</div>
+												<div className="aspect-[3/1] w-full bg-muted" />
+												<div className="relative -mt-5 ml-3 z-10">
+													<div className="h-10 w-10 rounded-lg border-2 border-background bg-muted" />
 												</div>
-												<div className="space-y-2 mb-2">
+												<div className="p-3 pt-2 space-y-2">
+													<div className="h-4 w-3/4 rounded bg-muted" />
 													<div className="h-3 w-full rounded bg-muted" />
 													<div className="h-3 w-2/3 rounded bg-muted" />
-												</div>
-												<div className="flex items-center justify-between">
-													<div className="h-5 w-20 rounded bg-muted" />
-													<div className="h-6 w-16 rounded bg-muted" />
+													<div className="flex items-center justify-between pt-1">
+														<div className="h-5 w-20 rounded bg-muted" />
+														<div className="h-6 w-16 rounded bg-muted" />
+													</div>
 												</div>
 											</div>
 										))}

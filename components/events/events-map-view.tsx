@@ -58,6 +58,7 @@ interface EventsMapViewProps {
 	total?: number;
 	hasMore?: boolean;
 	filters?: EventFilters;
+	timeFilter?: "upcoming" | "all" | "past";
 }
 
 const LATAM_CENTER: [number, number] = [-70, -15];
@@ -242,7 +243,11 @@ function EventListItem({
 	);
 }
 
-export function EventsMapView({ events, total }: EventsMapViewProps) {
+export function EventsMapView({
+	events,
+	total,
+	timeFilter = "upcoming",
+}: EventsMapViewProps) {
 	const [hoveredEventId, setHoveredEventId] = useState<string | null>(null);
 	const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 	const listRef = useRef<HTMLDivElement>(null);
