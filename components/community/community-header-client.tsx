@@ -18,6 +18,12 @@ import { GithubLogo } from "@/components/logos/github";
 import { InstagramLogo } from "@/components/logos/instagram";
 import { LinkedinLogo } from "@/components/logos/linkedin";
 import { TwitterLogo } from "@/components/logos/twitter";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { Organization } from "@/lib/db/schema";
 import { CommunityActions } from "./community-actions";
 
@@ -91,7 +97,7 @@ export function CommunityHeaderClient({
 		<div className="border-b">
 			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
 				{/* Cover Image Section */}
-				<div className="relative aspect-[3/1] md:aspect-[4/1] rounded-xl overflow-hidden mt-4">
+				<div className="relative aspect-[4/1] md:aspect-[5/1] rounded-xl overflow-hidden mt-4">
 					{community.coverUrl ? (
 						<Image
 							src={community.coverUrl}
@@ -106,9 +112,9 @@ export function CommunityHeaderClient({
 				</div>
 
 				{/* Logo Overlay */}
-				<div className="relative -mt-10 ml-4 z-10">
+				<div className="relative -mt-12 ml-4 z-10">
 					{community.logoUrl ? (
-						<div className="relative h-20 w-20 rounded-xl border-4 border-background shadow-lg overflow-hidden bg-background">
+						<div className="relative h-24 w-24 rounded-xl border-4 border-background shadow-lg overflow-hidden bg-background">
 							<Image
 								src={community.logoUrl}
 								alt={community.displayName || community.name}
@@ -117,7 +123,7 @@ export function CommunityHeaderClient({
 							/>
 						</div>
 					) : (
-						<div className="h-20 w-20 rounded-xl border-4 border-background shadow-lg bg-muted flex items-center justify-center text-2xl font-semibold text-muted-foreground">
+						<div className="h-24 w-24 rounded-xl border-4 border-background shadow-lg bg-muted flex items-center justify-center text-3xl font-semibold text-muted-foreground">
 							{(community.displayName || community.name)
 								.charAt(0)
 								.toUpperCase()}
@@ -129,11 +135,11 @@ export function CommunityHeaderClient({
 				<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 pt-3 pb-4">
 					<div className="min-w-0 flex-1">
 						<div className="flex items-center gap-2">
-							<h1 className="text-xl font-semibold tracking-tight">
+							<h1 className="text-2xl font-semibold tracking-tight">
 								{community.displayName || community.name}
 							</h1>
 							{community.isVerified && (
-								<VerifiedBadge className="h-5 w-5 text-blue-500 shrink-0" />
+								<VerifiedBadge className="h-6 w-6 text-blue-500 shrink-0" />
 							)}
 						</div>
 
@@ -143,73 +149,126 @@ export function CommunityHeaderClient({
 							</p>
 						)}
 
-						<div className="flex items-center gap-3 text-xs text-muted-foreground mt-2 flex-wrap">
+						<div className="flex items-center gap-3 text-muted-foreground mt-3 flex-wrap">
 							{community.department && (
-								<span className="inline-flex items-center gap-1">
-									<MapPin className="h-3.5 w-3.5" />
+								<span className="inline-flex items-center gap-1.5 text-xs">
+									<MapPin className="h-4 w-4" />
 									{community.department}
 									{community.country ? `, ${community.country}` : ""}
 								</span>
 							)}
-							{community.websiteUrl && (
-								<a
-									href={community.websiteUrl}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-								>
-									<Globe className="h-3.5 w-3.5" />
-									<span className="truncate max-w-[120px]">
-										{community.websiteUrl
-											.replace(/^https?:\/\//, "")
-											.replace(/\/$/, "")}
-									</span>
-								</a>
-							)}
-							{community.twitterUrl && (
-								<a
-									href={community.twitterUrl}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-								>
-									<TwitterLogo className="h-3.5 w-3.5" />@
-									{extractUsername(community.twitterUrl, "twitter")}
-								</a>
-							)}
-							{community.linkedinUrl && (
-								<a
-									href={community.linkedinUrl}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-								>
-									<LinkedinLogo className="h-3.5 w-3.5" mode="currentColor" />
-									{extractUsername(community.linkedinUrl, "linkedin")}
-								</a>
-							)}
-							{community.instagramUrl && (
-								<a
-									href={community.instagramUrl}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-								>
-									<InstagramLogo className="h-3.5 w-3.5" mode="currentColor" />@
-									{extractUsername(community.instagramUrl, "instagram")}
-								</a>
-							)}
-							{community.githubUrl && (
-								<a
-									href={community.githubUrl}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-								>
-									<GithubLogo className="h-3.5 w-3.5" mode="currentColor" />
-									{extractUsername(community.githubUrl, "github")}
-								</a>
-							)}
+							<TooltipProvider delayDuration={100}>
+								<div className="flex items-center gap-2">
+									{community.websiteUrl && (
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<a
+													href={community.websiteUrl}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="hover:text-foreground transition-colors p-1 rounded-md hover:bg-muted"
+												>
+													<Globe className="h-4 w-4" />
+												</a>
+											</TooltipTrigger>
+											<TooltipContent>
+												<p className="text-xs">
+													Website:{" "}
+													{community.websiteUrl
+														.replace(/^https?:\/\//, "")
+														.replace(/\/$/, "")}
+												</p>
+											</TooltipContent>
+										</Tooltip>
+									)}
+									{community.twitterUrl && (
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<a
+													href={community.twitterUrl}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="hover:text-foreground transition-colors p-1 rounded-md hover:bg-muted"
+												>
+													<TwitterLogo className="h-4 w-4" />
+												</a>
+											</TooltipTrigger>
+											<TooltipContent>
+												<p className="text-xs">
+													X/Twitter: @
+													{extractUsername(community.twitterUrl, "twitter")}
+												</p>
+											</TooltipContent>
+										</Tooltip>
+									)}
+									{community.linkedinUrl && (
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<a
+													href={community.linkedinUrl}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="hover:text-foreground transition-colors p-1 rounded-md hover:bg-muted"
+												>
+													<LinkedinLogo
+														className="h-4 w-4"
+														mode="currentColor"
+													/>
+												</a>
+											</TooltipTrigger>
+											<TooltipContent>
+												<p className="text-xs">
+													LinkedIn:{" "}
+													{extractUsername(community.linkedinUrl, "linkedin")}
+												</p>
+											</TooltipContent>
+										</Tooltip>
+									)}
+									{community.instagramUrl && (
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<a
+													href={community.instagramUrl}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="hover:text-foreground transition-colors p-1 rounded-md hover:bg-muted"
+												>
+													<InstagramLogo
+														className="h-4 w-4"
+														mode="currentColor"
+													/>
+												</a>
+											</TooltipTrigger>
+											<TooltipContent>
+												<p className="text-xs">
+													Instagram: @
+													{extractUsername(community.instagramUrl, "instagram")}
+												</p>
+											</TooltipContent>
+										</Tooltip>
+									)}
+									{community.githubUrl && (
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<a
+													href={community.githubUrl}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="hover:text-foreground transition-colors p-1 rounded-md hover:bg-muted"
+												>
+													<GithubLogo className="h-4 w-4" mode="currentColor" />
+												</a>
+											</TooltipTrigger>
+											<TooltipContent>
+												<p className="text-xs">
+													GitHub:{" "}
+													{extractUsername(community.githubUrl, "github")}
+												</p>
+											</TooltipContent>
+										</Tooltip>
+									)}
+								</div>
+							</TooltipProvider>
 						</div>
 					</div>
 

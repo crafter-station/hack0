@@ -167,7 +167,7 @@ export function CommunitySettingsForm({
 				<Label className="text-xs text-muted-foreground mb-2 block">
 					Imagen de portada
 				</Label>
-				<div className="relative aspect-[3/1] md:aspect-[4/1] rounded-xl overflow-hidden border border-border bg-muted">
+				<div className="relative aspect-[4/1] md:aspect-[5/1] rounded-xl overflow-hidden border border-border bg-muted">
 					{coverUrl ? (
 						<div className="relative w-full h-full group">
 							<img

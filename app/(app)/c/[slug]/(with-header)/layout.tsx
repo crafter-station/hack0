@@ -54,15 +54,15 @@ function CommunityHeaderSkeleton() {
 	return (
 		<div className="border-b">
 			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
-				<div className="relative aspect-[3/1] md:aspect-[4/1] rounded-xl overflow-hidden mt-4 bg-muted animate-pulse" />
+				<div className="relative aspect-[4/1] md:aspect-[5/1] rounded-xl overflow-hidden mt-4 bg-muted animate-pulse" />
 
-				<div className="relative -mt-10 ml-4 z-10">
-					<div className="h-20 w-20 rounded-xl border-4 border-background shadow-lg bg-muted animate-pulse" />
+				<div className="relative -mt-12 ml-4 z-10">
+					<div className="h-24 w-24 rounded-xl border-4 border-background shadow-lg bg-muted animate-pulse" />
 				</div>
 
 				<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 pt-3 pb-4">
 					<div className="min-w-0 flex-1 space-y-2">
-						<div className="h-6 w-48 bg-muted rounded animate-pulse" />
+						<div className="h-7 w-56 bg-muted rounded animate-pulse" />
 						<div className="h-4 w-80 bg-muted rounded animate-pulse" />
 						<div className="flex items-center gap-3 mt-2">
 							<div className="h-3 w-24 bg-muted rounded animate-pulse" />
