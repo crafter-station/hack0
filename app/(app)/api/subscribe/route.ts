@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
@@ -19,7 +19,7 @@ const getAppUrl = () => {
 export async function POST(request: Request) {
 	try {
 		const body = await request.json();
-		const { email } = body;
+		const { email, communityId } = body;
 
 		if (!email || typeof email !== "string") {
 			return NextResponse.json(
@@ -34,11 +34,22 @@ export async function POST(request: Request) {
 			return NextResponse.json({ error: "Email inválido" }, { status: 400 });
 		}
 
+		// Build query conditions based on whether communityId is provided
+		const conditions = communityId
+			? and(
+					eq(subscriptions.email, email.toLowerCase()),
+					eq(subscriptions.communityId, communityId),
+				)
+			: and(
+					eq(subscriptions.email, email.toLowerCase()),
+					isNull(subscriptions.communityId),
+				);
+
 		// Check if already subscribed
 		const existing = await db
 			.select()
 			.from(subscriptions)
-			.where(eq(subscriptions.email, email.toLowerCase()))
+			.where(conditions)
 			.limit(1);
 
 		if (existing.length > 0) {
@@ -107,6 +118,7 @@ export async function POST(request: Request) {
 
 		await db.insert(subscriptions).values({
 			email: email.toLowerCase(),
+			communityId: communityId || null,
 			verificationToken,
 			unsubscribeToken,
 			isVerified: false,

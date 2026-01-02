@@ -62,12 +62,14 @@ export function EventsCards({
 					const isEnded = status.status === "ended";
 					const prize = formatPrize(event.prizePool, event.prizeCurrency);
 
-					const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
+					const eventUrl = event.shortCode
+						? `/e/${event.shortCode}`
+						: `/${event.slug}`;
 
 					return (
 						<Link key={event.id} href={eventUrl}>
 							<Card
-								className={`group h-full overflow-hidden p-0 transition-all hover:shadow-md hover:border-foreground/20 ${isEnded ? "opacity-60" : ""}`}
+								className={`group gap-0 h-full overflow-hidden p-0 transition-all hover:shadow-md hover:border-foreground/20 ${isEnded ? "opacity-60" : ""}`}
 							>
 								<div className="relative aspect-square w-full overflow-hidden">
 									{event.eventImageUrl ? (
@@ -79,7 +81,9 @@ export function EventsCards({
 											sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
 										/>
 									) : (
-										<div className={`flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-muted/80 to-muted ${isEnded ? "grayscale" : ""}`}>
+										<div
+											className={`flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-muted/80 to-muted ${isEnded ? "grayscale" : ""}`}
+										>
 											<Calendar className="h-8 w-8 text-muted-foreground/40" />
 											<span className="text-xs text-muted-foreground/60 px-4 text-center line-clamp-1">
 												{event.name}
@@ -113,7 +117,7 @@ export function EventsCards({
 										</div>
 									)}
 								</div>
-								<CardContent className="p-3 space-y-2">
+								<CardContent className="p-3 border-t space-y-2">
 									<div>
 										<h3 className="font-medium text-sm line-clamp-2 group-hover:text-foreground transition-colors">
 											{event.name}
@@ -130,7 +134,9 @@ export function EventsCards({
 									<div className="flex items-center justify-between gap-2 text-xs">
 										<div className="flex items-center gap-2 text-muted-foreground">
 											{event.format && (
-												<span>{getFormatLabel(event.format, event.department)}</span>
+												<span>
+													{getFormatLabel(event.format, event.department)}
+												</span>
 											)}
 											{event.city && (
 												<span className="flex items-center gap-0.5">
@@ -153,7 +159,12 @@ export function EventsCards({
 				})}
 			</div>
 
-			<LoadMoreButton filters={filters} initialPage={1} hasMore={hasMore} viewMode="cards" />
+			<LoadMoreButton
+				filters={filters}
+				initialPage={1}
+				hasMore={hasMore}
+				viewMode="cards"
+			/>
 		</div>
 	);
 }

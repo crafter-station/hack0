@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/tooltip";
 import type { Organization } from "@/lib/db/schema";
 import { CommunityActions } from "./community-actions";
+import { CommunitySubscribeButton } from "./community-subscribe-button";
 
 function extractUsername(url: string, platform: string): string {
 	try {
@@ -272,7 +273,11 @@ export function CommunityHeaderClient({
 						</div>
 					</div>
 
-					<div className="shrink-0">
+					<div className="shrink-0 flex items-center gap-2">
+						<CommunitySubscribeButton
+							communityId={community.id}
+							communitySlug={slug}
+						/>
 						<CommunityActions
 							communityId={community.id}
 							communitySlug={slug}

@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull, or } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
 	events,
@@ -40,8 +40,9 @@ export async function notifySubscribersOfNewEvent({
 		}
 
 		const eventData = event[0];
+		const communityId = eventData.organizationId;
 
-		// Get all active, verified subscribers
+		// Get active, verified subscribers for this community OR global subscribers
 		const activeSubscribers = await db
 			.select()
 			.from(subscriptions)
@@ -49,6 +50,10 @@ export async function notifySubscribersOfNewEvent({
 				and(
 					eq(subscriptions.isVerified, true),
 					eq(subscriptions.isActive, true),
+					or(
+						eq(subscriptions.communityId, communityId!),
+						isNull(subscriptions.communityId),
+					),
 				),
 			);
 

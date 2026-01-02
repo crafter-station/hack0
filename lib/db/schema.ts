@@ -215,34 +215,45 @@ export type NewEvent = typeof events.$inferInsert;
 // SUBSCRIPTIONS - Email notifications
 // ============================================
 
-export const subscriptions = pgTable("subscriptions", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	email: varchar("email", { length: 255 }).notNull().unique(),
+export const subscriptions = pgTable(
+	"subscriptions",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		email: varchar("email", { length: 255 }).notNull(),
 
-	// Clerk user ID (optional - for logged in users)
-	userId: varchar("user_id", { length: 255 }),
+		// Clerk user ID (optional - for logged in users)
+		userId: varchar("user_id", { length: 255 }),
 
-	// Preferences
-	frequency: varchar("frequency", { length: 20 }).default("weekly"), // instant, daily, weekly
+		// Community ID (optional - null means global subscription)
+		communityId: uuid("community_id").references(() => organizations.id, {
+			onDelete: "cascade",
+		}),
 
-	// Verification
-	isVerified: boolean("is_verified").default(false),
-	verificationToken: varchar("verification_token", { length: 255 }),
+		// Preferences
+		frequency: varchar("frequency", { length: 20 }).default("weekly"), // instant, daily, weekly
 
-	// Status
-	isActive: boolean("is_active").default(true),
-	unsubscribeToken: varchar("unsubscribe_token", { length: 255 }),
+		// Verification
+		isVerified: boolean("is_verified").default(false),
+		verificationToken: varchar("verification_token", { length: 255 }),
 
-	// Timestamps
-	createdAt: timestamp("created_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-	lastEmailSentAt: timestamp("last_email_sent_at", {
-		mode: "date",
-		withTimezone: true,
-	}),
-});
+		// Status
+		isActive: boolean("is_active").default(true),
+		unsubscribeToken: varchar("unsubscribe_token", { length: 255 }),
+
+		// Timestamps
+		createdAt: timestamp("created_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+		lastEmailSentAt: timestamp("last_email_sent_at", {
+			mode: "date",
+			withTimezone: true,
+		}),
+	},
+	(t) => [
+		uniqueIndex("subscription_email_community_idx").on(t.email, t.communityId),
+	],
+);
 
 export type Subscription = typeof subscriptions.$inferSelect;
 export type NewSubscription = typeof subscriptions.$inferInsert;
