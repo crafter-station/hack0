@@ -637,6 +637,14 @@ export const organizations = pgTable("organizations", {
 	// Tags for discoverability
 	tags: text("tags").array(),
 
+	// Badge settings
+	badgeEnabled: boolean("badge_enabled").default(false),
+	badgeStylePrompt: text("badge_style_prompt"),
+	badgeBackgroundPrompt: text("badge_background_prompt"),
+	badgePrimaryColor: varchar("badge_primary_color", { length: 20 }),
+	badgeSecondaryColor: varchar("badge_secondary_color", { length: 20 }),
+	badgeLogoPosition: varchar("badge_logo_position", { length: 20 }),
+
 	// Timestamps
 	createdAt: timestamp("created_at", {
 		mode: "date",
@@ -1605,3 +1613,49 @@ export const userAchievementsRelations = relations(
 		}),
 	}),
 );
+
+// ============================================
+// COMMUNITY BADGES - Member badges for communities
+// ============================================
+
+export const communityBadgeStatusEnum = pgEnum("community_badge_status", [
+	"pending",
+	"generating",
+	"completed",
+	"failed",
+]);
+
+export const communityBadges = pgTable(
+	"community_badges",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		communityId: uuid("community_id")
+			.references(() => organizations.id, { onDelete: "cascade" })
+			.notNull(),
+		userId: varchar("user_id", { length: 255 }).notNull(),
+
+		badgeNumber: integer("badge_number").notNull(),
+		shareToken: varchar("share_token", { length: 64 }).unique().notNull(),
+
+		originalPhotoUrl: varchar("original_photo_url", { length: 500 }),
+		generatedImageUrl: varchar("generated_image_url", { length: 500 }),
+		generatedBackgroundUrl: varchar("generated_background_url", { length: 500 }),
+
+		status: communityBadgeStatusEnum("status").default("pending"),
+		errorMessage: text("error_message"),
+		triggerRunId: varchar("trigger_run_id", { length: 255 }),
+
+		createdAt: timestamp("created_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+		completedAt: timestamp("completed_at", { mode: "date", withTimezone: true }),
+	},
+	(t) => [
+		uniqueIndex("community_badge_unique_idx").on(t.communityId, t.userId),
+		index("community_badge_token_idx").on(t.shareToken),
+	],
+);
+
+export type CommunityBadge = typeof communityBadges.$inferSelect;
+export type NewCommunityBadge = typeof communityBadges.$inferInsert;

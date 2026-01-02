@@ -20,6 +20,7 @@ import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { AttendanceButton } from "@/components/events/attendance-button";
+import { EventLocationMap } from "@/components/events/event-location-map";
 import { EventCountdown } from "@/components/events/event-countdown";
 import { ManageEventButton } from "@/components/events/manage-event-button";
 import { WinnerSection } from "@/components/events/winner-section";
@@ -863,6 +864,17 @@ export default async function EventPage({ params }: EventPageProps) {
 									</div>
 								</div>
 							)}
+
+							<EventLocationMap
+								eventName={hackathon.name}
+								venue={hackathon.venue}
+								city={hackathon.city}
+								department={hackathon.department}
+								country={hackathon.country}
+								geoLatitude={hackathon.geoLatitude}
+								geoLongitude={hackathon.geoLongitude}
+								format={hackathon.format}
+							/>
 
 							<div className="rounded-lg border bg-card">
 								<div className="px-5 py-4 border-b">

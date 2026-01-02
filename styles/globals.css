@@ -164,6 +164,13 @@
 	* {
 		@apply border-border outline-ring/50;
 	}
+
+	.maplibregl-popup-content {
+		@apply bg-transparent! shadow-none! p-0! rounded-none!;
+	}
+	.maplibregl-popup-tip {
+		@apply hidden!;
+	}
 	body {
 		@apply bg-background text-foreground font-sans text-sm;
 		font-feature-settings: "ss01", "ss02", "cv01";
