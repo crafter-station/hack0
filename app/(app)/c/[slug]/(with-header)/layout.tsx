@@ -52,16 +52,21 @@ async function CommunityHeaderWrapper({ slug }: { slug: string }) {
 
 function CommunityHeaderSkeleton() {
 	return (
-		<div className="border-b bg-muted/30">
+		<div className="border-b">
 			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
-				<div className="flex items-center justify-between gap-4 py-4">
-					<div className="flex items-center gap-3 min-w-0">
-						<div className="h-9 w-20 bg-muted rounded animate-pulse" />
-						<div className="h-6 w-px bg-border" />
-						<div className="h-10 w-10 bg-muted rounded-lg animate-pulse" />
-						<div className="space-y-2">
-							<div className="h-5 w-48 bg-muted rounded animate-pulse" />
-							<div className="h-4 w-64 bg-muted rounded animate-pulse" />
+				<div className="relative aspect-[3/1] md:aspect-[4/1] rounded-xl overflow-hidden mt-4 bg-muted animate-pulse" />
+
+				<div className="relative -mt-10 ml-4 z-10">
+					<div className="h-20 w-20 rounded-xl border-4 border-background shadow-lg bg-muted animate-pulse" />
+				</div>
+
+				<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 pt-3 pb-4">
+					<div className="min-w-0 flex-1 space-y-2">
+						<div className="h-6 w-48 bg-muted rounded animate-pulse" />
+						<div className="h-4 w-80 bg-muted rounded animate-pulse" />
+						<div className="flex items-center gap-3 mt-2">
+							<div className="h-3 w-24 bg-muted rounded animate-pulse" />
+							<div className="h-3 w-20 bg-muted rounded animate-pulse" />
 						</div>
 					</div>
 					<div className="h-9 w-32 bg-muted rounded animate-pulse" />
@@ -69,7 +74,7 @@ function CommunityHeaderSkeleton() {
 
 				<nav className="flex items-center gap-1 border-t -mb-px">
 					{Array.from({ length: 4 }).map((_, i) => (
-						<div key={i} className="h-12 w-28 bg-muted/50 animate-pulse" />
+						<div key={i} className="h-10 w-24 bg-muted/50 animate-pulse" />
 					))}
 				</nav>
 			</div>

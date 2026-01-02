@@ -616,6 +616,7 @@ export const organizations = pgTable("organizations", {
 	// Links
 	websiteUrl: varchar("website_url", { length: 500 }),
 	logoUrl: varchar("logo_url", { length: 500 }),
+	coverUrl: varchar("cover_url", { length: 500 }),
 
 	// Social Links (stored as JSON)
 	twitterUrl: varchar("twitter_url", { length: 500 }),
@@ -1639,7 +1640,9 @@ export const communityBadges = pgTable(
 
 		originalPhotoUrl: varchar("original_photo_url", { length: 500 }),
 		generatedImageUrl: varchar("generated_image_url", { length: 500 }),
-		generatedBackgroundUrl: varchar("generated_background_url", { length: 500 }),
+		generatedBackgroundUrl: varchar("generated_background_url", {
+			length: 500,
+		}),
 
 		status: communityBadgeStatusEnum("status").default("pending"),
 		errorMessage: text("error_message"),
@@ -1649,7 +1652,10 @@ export const communityBadges = pgTable(
 			mode: "date",
 			withTimezone: true,
 		}).defaultNow(),
-		completedAt: timestamp("completed_at", { mode: "date", withTimezone: true }),
+		completedAt: timestamp("completed_at", {
+			mode: "date",
+			withTimezone: true,
+		}),
 	},
 	(t) => [
 		uniqueIndex("community_badge_unique_idx").on(t.communityId, t.userId),

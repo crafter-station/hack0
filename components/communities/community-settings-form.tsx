@@ -71,6 +71,7 @@ export function CommunitySettingsForm({
 	);
 	const [type, setType] = useState(organization.type || "community");
 	const [logoUrl, setLogoUrl] = useState(organization.logoUrl || "");
+	const [coverUrl, setCoverUrl] = useState(organization.coverUrl || "");
 	const [websiteUrl, setWebsiteUrl] = useState(organization.websiteUrl || "");
 	const [country, setCountry] = useState(organization.country || "");
 	const [department, setDepartment] = useState(organization.department || "");
@@ -116,6 +117,7 @@ export function CommunitySettingsForm({
 				type: type as any,
 				websiteUrl: websiteUrl || undefined,
 				logoUrl: logoUrl || undefined,
+				coverUrl: coverUrl || undefined,
 				country: country || undefined,
 				department: department || undefined,
 				twitterUrl: twitterUrl || undefined,
@@ -160,6 +162,37 @@ export function CommunitySettingsForm({
 					</p>
 				</div>
 			)}
+
+			<div>
+				<Label className="text-xs text-muted-foreground mb-2 block">
+					Imagen de portada
+				</Label>
+				<div className="relative aspect-[3/1] md:aspect-[4/1] rounded-xl overflow-hidden border border-border bg-muted">
+					{coverUrl ? (
+						<div className="relative w-full h-full group">
+							<img
+								src={coverUrl}
+								alt="Cover"
+								className="w-full h-full object-cover"
+							/>
+							<button
+								type="button"
+								onClick={() => setCoverUrl("")}
+								className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+							>
+								<span className="text-white text-sm">Cambiar portada</span>
+							</button>
+						</div>
+					) : (
+						<ImageUpload
+							value={coverUrl}
+							onChange={setCoverUrl}
+							className="w-full h-full"
+							aspectRatio="banner"
+						/>
+					)}
+				</div>
+			</div>
 
 			<div className="flex flex-col md:flex-row gap-6">
 				<div className="w-full md:w-56 flex-shrink-0 space-y-3">
