@@ -1,16 +1,21 @@
 import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
+import { SettingsSidebar } from "@/components/communities/settings-sidebar";
 import {
 	canManageOrganization,
 	getOrganizationBySlug,
 } from "@/lib/actions/organizations";
 import { isGodMode } from "@/lib/god-mode";
 
-interface BadgesPageProps {
+interface SettingsLayoutProps {
+	children: React.ReactNode;
 	params: Promise<{ slug: string }>;
 }
 
-export default async function BadgesPage({ params }: BadgesPageProps) {
+export default async function SettingsLayout({
+	children,
+	params,
+}: SettingsLayoutProps) {
 	const { slug } = await params;
 	const { userId } = await auth();
 
@@ -32,19 +37,9 @@ export default async function BadgesPage({ params }: BadgesPageProps) {
 	}
 
 	return (
-		<div className="space-y-6">
-			<div>
-				<h2 className="text-lg font-semibold">Badges</h2>
-				<p className="text-sm text-muted-foreground">
-					Gestiona los badges de tu comunidad
-				</p>
-			</div>
-
-			<div className="rounded-lg border border-dashed p-8 text-center">
-				<p className="text-muted-foreground">
-					Los badges de la comunidad aparecerán aquí
-				</p>
-			</div>
+		<div className="flex flex-col md:flex-row gap-8">
+			<SettingsSidebar slug={slug} />
+			<div className="flex-1 min-w-0">{children}</div>
 		</div>
 	);
 }
