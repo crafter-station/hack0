@@ -52,6 +52,8 @@
 		"@uiw/color-convert": "^2.9.2",
 		"@uiw/react-color": "^2.9.2",
 		"@uploadthing/react": "^7.3.3",
+		"@upstash/ratelimit": "^2.0.7",
+		"@upstash/redis": "^1.36.0",
 		"@vercel/analytics": "^1.5.0",
 		"ai": "^5.0.108",
 		"atropos": "^2.0.2",
