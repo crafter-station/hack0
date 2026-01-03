@@ -1,5 +1,6 @@
 "use client";
 
+import { useRealtimeRun } from "@trigger.dev/react-hooks";
 import Atropos from "atropos/react";
 import { ImagePlus, Loader2, Save, Sparkles, Wand2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -11,7 +12,6 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
 	clearCustomTestReferenceImage,
-	getCustomStyleTestStatus,
 	testCustomBadgeStyle,
 	updateCommunityBadgeSettings,
 } from "@/lib/actions/badges";
@@ -31,9 +31,19 @@ interface BadgeSettingsFormProps {
 export function BadgeSettingsForm({ organization }: BadgeSettingsFormProps) {
 	const router = useRouter();
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [isTesting, setIsTesting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState(false);
+
+	const [runId, setRunId] = useState<string | null>(null);
+	const [accessToken, setAccessToken] = useState<string | null>(null);
+
+	const { run } = useRealtimeRun(runId || "", {
+		enabled: !!runId && !!accessToken,
+		accessToken: accessToken || undefined,
+	});
+
+	const isGenerating = run?.isExecuting || false;
+	const generationStep = run?.metadata?.step as string | undefined;
 
 	const [config, setConfig] = useState({
 		enabled: organization.badgeEnabled ?? false,
@@ -51,54 +61,63 @@ export function BadgeSettingsForm({ organization }: BadgeSettingsFormProps) {
 	const [testImageUrl, setTestImageUrl] = useState<string | null>(
 		organization.badgeCustomTestReferenceUrl ?? null,
 	);
+	const [customBackgroundImageUrl, setCustomBackgroundImageUrl] = useState<
+		string | null
+	>(organization.badgeCustomBackgroundImageUrl ?? null);
 	const [isUploadingTestImage, setIsUploadingTestImage] = useState(false);
+	const [isUploadingBackground, setIsUploadingBackground] = useState(false);
 
 	const isCustomStyle = config.aiStyle === CUSTOM_STYLE_ID;
 
 	useEffect(() => {
-		if (isTesting) {
-			const interval = setInterval(async () => {
-				const status = await getCustomStyleTestStatus(organization.id);
-				if (
-					status?.badgeCustomTestPortraitUrl &&
-					status?.badgeCustomTestBackgroundUrl
-				) {
-					setCustomTestImages({
-						portrait: status.badgeCustomTestPortraitUrl,
-						background: status.badgeCustomTestBackgroundUrl,
-					});
-					setIsTesting(false);
-				}
-			}, 3000);
-
-			return () => clearInterval(interval);
+		if (run?.isCompleted) {
+			const portraitUrl = run.metadata?.portraitUrl as string | undefined;
+			const backgroundUrl = run.metadata?.backgroundUrl as string | undefined;
+			if (portraitUrl && backgroundUrl) {
+				setCustomTestImages({
+					portrait: portraitUrl,
+					background: backgroundUrl,
+				});
+			}
+			setRunId(null);
+			setAccessToken(null);
 		}
-	}, [isTesting, organization.id]);
+	}, [run?.isCompleted, run?.metadata]);
+
+	useEffect(() => {
+		if (run?.status === "FAILED") {
+			setError("Error al generar el preview");
+			setRunId(null);
+			setAccessToken(null);
+		}
+	}, [run?.status]);
 
 	const handleTestCustomStyle = async () => {
-		if (!config.customPortraitPrompt || !config.customBackgroundPrompt) {
-			setError("Debes completar ambos prompts para probar");
+		if (!config.customPortraitPrompt) {
+			setError("Debes completar el prompt de retrato");
 			return;
 		}
 
-		setIsTesting(true);
 		setError(null);
+		setCustomTestImages({ portrait: null, background: null });
 
 		try {
 			const result = await testCustomBadgeStyle(
 				organization.id,
 				config.customPortraitPrompt,
-				config.customBackgroundPrompt,
+				config.customBackgroundPrompt || undefined,
 				testImageUrl || undefined,
+				customBackgroundImageUrl || undefined,
 			);
 
 			if (!result.success) {
 				setError(result.error || "Error al iniciar la prueba");
-				setIsTesting(false);
+			} else if (result.runId && result.publicAccessToken) {
+				setRunId(result.runId);
+				setAccessToken(result.publicAccessToken);
 			}
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Error al probar estilo");
-			setIsTesting(false);
 		}
 	};
 
@@ -168,6 +187,29 @@ export function BadgeSettingsForm({ organization }: BadgeSettingsFormProps) {
 
 	const previewImages = getPreviewImages();
 
+	const getStepLabel = (step: string | undefined) => {
+		switch (step) {
+			case "initializing":
+				return "Iniciando...";
+			case "generating_portrait":
+				return "Generando retrato...";
+			case "removing_background":
+				return "Removiendo fondo...";
+			case "generating_background":
+				return "Generando fondo...";
+			case "using_custom_background":
+				return "Usando fondo personalizado...";
+			case "uploading_to_storage":
+				return "Subiendo imágenes...";
+			case "saving_to_database":
+				return "Guardando...";
+			case "completed":
+				return "Completado!";
+			default:
+				return "Procesando...";
+		}
+	};
+
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6">
 			<div className="flex items-center justify-between">
@@ -179,7 +221,7 @@ export function BadgeSettingsForm({ organization }: BadgeSettingsFormProps) {
 				</div>
 				<Button
 					type="submit"
-					disabled={isSubmitting}
+					disabled={isSubmitting || isGenerating}
 					size="sm"
 					className="gap-2"
 				>
@@ -228,6 +270,7 @@ export function BadgeSettingsForm({ organization }: BadgeSettingsFormProps) {
 								onCheckedChange={(checked) =>
 									setConfig((prev) => ({ ...prev, enabled: checked }))
 								}
+								disabled={isGenerating}
 							/>
 						</div>
 
@@ -238,6 +281,7 @@ export function BadgeSettingsForm({ organization }: BadgeSettingsFormProps) {
 							onChange={(color) =>
 								setConfig((prev) => ({ ...prev, brandColor: color }))
 							}
+							disabled={isGenerating}
 						/>
 
 						<div className="h-px bg-border" />
@@ -247,6 +291,7 @@ export function BadgeSettingsForm({ organization }: BadgeSettingsFormProps) {
 							onChange={(styleId) =>
 								setConfig((prev) => ({ ...prev, aiStyle: styleId }))
 							}
+							disabled={isGenerating}
 						/>
 
 						{isCustomStyle && (
@@ -262,9 +307,9 @@ export function BadgeSettingsForm({ organization }: BadgeSettingsFormProps) {
 									</div>
 
 									<div className="space-y-3">
-										<div>
+										<div className={isGenerating ? "input-shimmer" : ""}>
 											<Label className="text-xs text-muted-foreground">
-												Portrait Prompt
+												Portrait Prompt <span className="text-red-500">*</span>
 											</Label>
 											<Textarea
 												placeholder="Describe how the portrait should look..."
@@ -276,15 +321,16 @@ export function BadgeSettingsForm({ organization }: BadgeSettingsFormProps) {
 													}))
 												}
 												className="mt-1.5 min-h-[100px] text-sm"
+												disabled={isGenerating}
 											/>
 										</div>
 
-										<div>
+										<div className={isGenerating ? "input-shimmer" : ""}>
 											<Label className="text-xs text-muted-foreground">
-												Background Prompt
+												Background Prompt (opcional)
 											</Label>
 											<Textarea
-												placeholder="Describe how the background should look..."
+												placeholder="Describe how the background should look... (leave empty if using custom image)"
 												value={config.customBackgroundPrompt}
 												onChange={(e) =>
 													setConfig((prev) => ({
@@ -293,80 +339,157 @@ export function BadgeSettingsForm({ organization }: BadgeSettingsFormProps) {
 													}))
 												}
 												className="mt-1.5 min-h-[80px] text-sm"
+												disabled={isGenerating || !!customBackgroundImageUrl}
 											/>
 										</div>
 
-										<div>
-											<Label className="text-xs text-muted-foreground">
-												Test Image (optional)
-											</Label>
-											<div className="mt-1.5">
-												{testImageUrl ? (
-													<div className="relative inline-block">
-														<img
-															src={testImageUrl}
-															alt="Test"
-															className="h-20 w-20 rounded-lg object-cover border border-border"
-														/>
-														<button
-															type="button"
-															onClick={async () => {
-																setTestImageUrl(null);
-																await clearCustomTestReferenceImage(
-																	organization.id,
-																);
-															}}
-															className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
-														>
-															<X className="h-3 w-3" />
-														</button>
-													</div>
-												) : (
-													<label className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">
-														<div className="h-20 w-20 rounded-lg border border-dashed border-muted-foreground/50 flex items-center justify-center hover:border-muted-foreground transition-colors">
-															{isUploadingTestImage ? (
-																<Loader2 className="h-5 w-5 animate-spin" />
-															) : (
-																<ImagePlus className="h-5 w-5" />
-															)}
-														</div>
-														<input
-															type="file"
-															accept="image/*"
-															className="hidden"
-															disabled={isUploadingTestImage}
-															onChange={async (e) => {
-																const file = e.target.files?.[0];
-																if (!file) return;
-																setIsUploadingTestImage(true);
-																try {
-																	const formData = new FormData();
-																	formData.append("file", file);
-																	const res = await fetch(
-																		"/api/upload-test-image",
-																		{
-																			method: "POST",
-																			body: formData,
-																		},
+										<div className="grid grid-cols-2 gap-3">
+											<div>
+												<Label className="text-xs text-muted-foreground">
+													Test Photo (optional)
+												</Label>
+												<div className="mt-1.5">
+													{testImageUrl ? (
+														<div className="relative inline-block">
+															<img
+																src={testImageUrl}
+																alt="Test"
+																className="h-20 w-20 rounded-lg object-cover border border-border"
+															/>
+															<button
+																type="button"
+																onClick={async () => {
+																	setTestImageUrl(null);
+																	await clearCustomTestReferenceImage(
+																		organization.id,
 																	);
-																	const data = await res.json();
-																	if (data.url) {
-																		setTestImageUrl(data.url);
+																}}
+																className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+																disabled={isGenerating}
+															>
+																<X className="h-3 w-3" />
+															</button>
+														</div>
+													) : (
+														<label className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">
+															<div className="h-20 w-20 rounded-lg border border-dashed border-muted-foreground/50 flex items-center justify-center hover:border-muted-foreground transition-colors">
+																{isUploadingTestImage ? (
+																	<Loader2 className="h-5 w-5 animate-spin" />
+																) : (
+																	<ImagePlus className="h-5 w-5" />
+																)}
+															</div>
+															<input
+																type="file"
+																accept="image/*"
+																className="hidden"
+																disabled={isUploadingTestImage || isGenerating}
+																onChange={async (e) => {
+																	const file = e.target.files?.[0];
+																	if (!file) return;
+																	setIsUploadingTestImage(true);
+																	try {
+																		const formData = new FormData();
+																		formData.append("file", file);
+																		const res = await fetch(
+																			"/api/upload-test-image",
+																			{
+																				method: "POST",
+																				body: formData,
+																			},
+																		);
+																		const data = await res.json();
+																		if (data.url) {
+																			setTestImageUrl(data.url);
+																		}
+																	} catch (err) {
+																		setError("Error uploading image");
+																	} finally {
+																		setIsUploadingTestImage(false);
 																	}
-																} catch (err) {
-																	setError("Error uploading image");
-																} finally {
-																	setIsUploadingTestImage(false);
-																}
-															}}
-														/>
-														<span className="text-xs">Upload your photo</span>
-													</label>
-												)}
+																}}
+															/>
+														</label>
+													)}
+												</div>
+												<p className="text-[10px] text-muted-foreground mt-1">
+													Uses sample photo if not provided
+												</p>
 											</div>
-											<p className="text-[10px] text-muted-foreground mt-1">
-												Uses sample photo if not provided
-											</p>
+
+											<div>
+												<Label className="text-xs text-muted-foreground">
+													Custom Background (optional)
+												</Label>
+												<div className="mt-1.5">
+													{customBackgroundImageUrl ? (
+														<div className="relative inline-block">
+															<img
+																src={customBackgroundImageUrl}
+																alt="Background"
+																className="h-20 w-20 rounded-lg object-cover border border-border"
+															/>
+															<button
+																type="button"
+																onClick={() =>
+																	setCustomBackgroundImageUrl(null)
+																}
+																className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+																disabled={isGenerating}
+															>
+																<X className="h-3 w-3" />
+															</button>
+														</div>
+													) : (
+														<label className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">
+															<div className="h-20 w-20 rounded-lg border border-dashed border-muted-foreground/50 flex items-center justify-center hover:border-muted-foreground transition-colors">
+																{isUploadingBackground ? (
+																	<Loader2 className="h-5 w-5 animate-spin" />
+																) : (
+																	<ImagePlus className="h-5 w-5" />
+																)}
+															</div>
+															<input
+																type="file"
+																accept="image/*"
+																className="hidden"
+																disabled={isUploadingBackground || isGenerating}
+																onChange={async (e) => {
+																	const file = e.target.files?.[0];
+																	if (!file) return;
+																	setIsUploadingBackground(true);
+																	try {
+																		const formData = new FormData();
+																		formData.append("file", file);
+																		const res = await fetch(
+																			"/api/upload-test-image",
+																			{
+																				method: "POST",
+																				body: formData,
+																			},
+																		);
+																		const data = await res.json();
+																		if (data.url) {
+																			setCustomBackgroundImageUrl(data.url);
+																			setConfig((prev) => ({
+																				...prev,
+																				customBackgroundPrompt: "",
+																			}));
+																		}
+																	} catch (err) {
+																		setError("Error uploading background");
+																	} finally {
+																		setIsUploadingBackground(false);
+																	}
+																}}
+															/>
+														</label>
+													)}
+												</div>
+												<p className="text-[10px] text-muted-foreground mt-1">
+													Skip prompt if using custom image
+												</p>
+											</div>
 										</div>
 
 										<Button
@@ -374,17 +497,13 @@ export function BadgeSettingsForm({ organization }: BadgeSettingsFormProps) {
 											variant="outline"
 											size="sm"
 											onClick={handleTestCustomStyle}
-											disabled={
-												isTesting ||
-												!config.customPortraitPrompt ||
-												!config.customBackgroundPrompt
-											}
-											className="w-full gap-2"
+											disabled={isGenerating || !config.customPortraitPrompt}
+											className={`w-full gap-2 ${isGenerating ? "input-shimmer" : ""}`}
 										>
-											{isTesting ? (
+											{isGenerating ? (
 												<>
 													<Loader2 className="h-4 w-4 animate-spin" />
-													Generating preview...
+													{getStepLabel(generationStep)}
 												</>
 											) : (
 												<>
@@ -437,6 +556,13 @@ export function BadgeSettingsForm({ organization }: BadgeSettingsFormProps) {
 										secondaryColor={config.brandColor}
 									/>
 								</Atropos>
+							) : isGenerating ? (
+								<div className="w-full max-w-[280px] aspect-[3/4] rounded-xl border border-dashed border-muted-foreground/30 flex flex-col items-center justify-center gap-3 bg-muted/20 input-shimmer">
+									<Loader2 className="h-10 w-10 text-muted-foreground/50 animate-spin" />
+									<p className="text-sm text-muted-foreground text-center px-4">
+										{getStepLabel(generationStep)}
+									</p>
+								</div>
 							) : (
 								<div className="w-full max-w-[280px] aspect-[3/4] rounded-xl border border-dashed border-muted-foreground/30 flex flex-col items-center justify-center gap-3 bg-muted/20">
 									<Wand2 className="h-10 w-10 text-muted-foreground/50" />
@@ -451,7 +577,9 @@ export function BadgeSettingsForm({ organization }: BadgeSettingsFormProps) {
 							{isCustomStyle
 								? customTestImages.portrait
 									? "Showing your custom style preview"
-									: "Test your custom style to see preview"
+									: isGenerating
+										? "Generating preview..."
+										: "Test your custom style to see preview"
 								: `Preview shows ${config.aiStyle.replace("_", " ")} style`}
 						</p>
 					</div>

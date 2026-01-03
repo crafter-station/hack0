@@ -667,6 +667,9 @@ export const organizations = pgTable("organizations", {
 	badgeCustomTestReferenceUrl: varchar("badge_custom_test_reference_url", {
 		length: 500,
 	}),
+	badgeCustomBackgroundImageUrl: varchar("badge_custom_background_image_url", {
+		length: 500,
+	}),
 
 	// Timestamps
 	createdAt: timestamp("created_at", {

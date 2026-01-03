@@ -55,6 +55,7 @@ export const generateCommunityBadgeTask = task({
 				community?.badgeStylePrompt || DEFAULT_BADGE_STYLE_PROMPT;
 			const backgroundPrompt =
 				community?.badgeBackgroundPrompt || DEFAULT_BADGE_BACKGROUND_PROMPT;
+			const customBackgroundImageUrl = community?.badgeCustomBackgroundImageUrl;
 
 			fal.config({ credentials: process.env.FAL_API_KEY });
 
@@ -84,23 +85,28 @@ export const generateCommunityBadgeTask = task({
 			const generatedImageUrl = (rmbgResult.data as { image: { url: string } })
 				.image.url;
 
-			metadata.set("step", "generating_background");
+			let generatedBackgroundUrl: string;
 
-			const backgroundResult = await fal.subscribe("fal-ai/flux/schnell", {
-				input: {
-					prompt: backgroundPrompt,
-					image_size: {
-						width: 512,
-						height: 512,
+			if (customBackgroundImageUrl) {
+				metadata.set("step", "using_custom_background");
+				generatedBackgroundUrl = customBackgroundImageUrl;
+			} else {
+				metadata.set("step", "generating_background");
+				const backgroundResult = await fal.subscribe("fal-ai/flux/schnell", {
+					input: {
+						prompt: backgroundPrompt,
+						image_size: {
+							width: 512,
+							height: 512,
+						},
+						num_images: 1,
+						enable_safety_checker: false,
 					},
-					num_images: 1,
-					enable_safety_checker: false,
-				},
-			});
-
-			const generatedBackgroundUrl = (
-				backgroundResult.data as { images: Array<{ url: string }> }
-			).images[0].url;
+				});
+				generatedBackgroundUrl = (
+					backgroundResult.data as { images: Array<{ url: string }> }
+				).images[0].url;
+			}
 
 			metadata.set("generatedImageUrl", generatedImageUrl);
 			metadata.set("generatedBackgroundUrl", generatedBackgroundUrl);

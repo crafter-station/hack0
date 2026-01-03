@@ -149,6 +149,8 @@ export async function getCommunityBadgeSettings(communitySlug: string) {
 			badgeCustomTestPortraitUrl: organizations.badgeCustomTestPortraitUrl,
 			badgeCustomTestBackgroundUrl: organizations.badgeCustomTestBackgroundUrl,
 			badgeCustomTestReferenceUrl: organizations.badgeCustomTestReferenceUrl,
+			badgeCustomBackgroundImageUrl:
+				organizations.badgeCustomBackgroundImageUrl,
 		})
 		.from(organizations)
 		.where(eq(organizations.slug, communitySlug))
@@ -224,9 +226,15 @@ export async function getUserMembershipRole(
 export async function testCustomBadgeStyle(
 	communityId: string,
 	portraitPrompt: string,
-	backgroundPrompt: string,
+	backgroundPrompt?: string,
 	testImageUrl?: string,
-): Promise<{ success: boolean; runId?: string; error?: string }> {
+	customBackgroundImageUrl?: string,
+): Promise<{
+	success: boolean;
+	runId?: string;
+	publicAccessToken?: string;
+	error?: string;
+}> {
 	const { userId } = await auth();
 	if (!userId) {
 		return { success: false, error: "No autorizado" };
@@ -257,22 +265,28 @@ export async function testCustomBadgeStyle(
 		.update(organizations)
 		.set({
 			badgeStylePrompt: portraitPrompt,
-			badgeBackgroundPrompt: backgroundPrompt,
+			badgeBackgroundPrompt: backgroundPrompt || null,
 			badgeAiStyle: "custom",
 			badgeCustomTestReferenceUrl: testImageUrl || null,
+			badgeCustomBackgroundImageUrl: customBackgroundImageUrl || null,
+			badgeCustomTestPortraitUrl: null,
+			badgeCustomTestBackgroundUrl: null,
 			updatedAt: new Date(),
 		})
 		.where(eq(organizations.id, communityId));
 
-	const { tasks } = await import("@trigger.dev/sdk/v3");
+	const { tasks, runs } = await import("@trigger.dev/sdk/v3");
 	const handle = await tasks.trigger("test-custom-badge-style", {
 		communityId,
 		portraitPrompt,
 		backgroundPrompt,
 		testImageUrl,
+		customBackgroundImageUrl,
 	});
 
-	return { success: true, runId: handle.id };
+	const publicAccessToken = await runs.generatePublicAccessToken(handle.id);
+
+	return { success: true, runId: handle.id, publicAccessToken };
 }
 
 export async function clearCustomTestReferenceImage(communityId: string) {

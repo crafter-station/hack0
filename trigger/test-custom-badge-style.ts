@@ -16,11 +16,17 @@ export const testCustomBadgeStyleTask = task({
 	run: async (payload: {
 		communityId: string;
 		portraitPrompt: string;
-		backgroundPrompt: string;
+		backgroundPrompt?: string;
 		testImageUrl?: string;
+		customBackgroundImageUrl?: string;
 	}) => {
-		const { communityId, portraitPrompt, backgroundPrompt, testImageUrl } =
-			payload;
+		const {
+			communityId,
+			portraitPrompt,
+			backgroundPrompt,
+			testImageUrl,
+			customBackgroundImageUrl,
+		} = payload;
 
 		metadata.set("step", "initializing");
 		metadata.set("communityId", communityId);
@@ -55,23 +61,31 @@ export const testCustomBadgeStyleTask = task({
 			const portraitNoBgUrl = (rmbgResult.data as { image: { url: string } })
 				.image.url;
 
-			metadata.set("step", "generating_background");
+			let backgroundUrl: string;
 
-			const backgroundResult = await fal.subscribe("fal-ai/flux/schnell", {
-				input: {
-					prompt: backgroundPrompt,
-					image_size: {
-						width: 512,
-						height: 512,
+			if (customBackgroundImageUrl) {
+				metadata.set("step", "using_custom_background");
+				backgroundUrl = customBackgroundImageUrl;
+			} else if (backgroundPrompt) {
+				metadata.set("step", "generating_background");
+				const backgroundResult = await fal.subscribe("fal-ai/flux/schnell", {
+					input: {
+						prompt: backgroundPrompt,
+						image_size: {
+							width: 512,
+							height: 512,
+						},
+						num_images: 1,
+						enable_safety_checker: false,
 					},
-					num_images: 1,
-					enable_safety_checker: false,
-				},
-			});
-
-			const backgroundUrl = (
-				backgroundResult.data as { images: Array<{ url: string }> }
-			).images[0].url;
+				});
+				backgroundUrl = (
+					backgroundResult.data as { images: Array<{ url: string }> }
+				).images[0].url;
+			} else {
+				backgroundUrl =
+					"https://images.unsplash.com/photo-1557683316-973673baf926?w=512&h=512&fit=crop";
+			}
 
 			metadata.set("step", "uploading_to_storage");
 
