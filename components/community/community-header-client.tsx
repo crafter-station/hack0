@@ -13,6 +13,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 import { VerifiedBadge } from "@/components/icons/verified-badge";
 import { GithubLogo } from "@/components/logos/github";
 import { InstagramLogo } from "@/components/logos/instagram";
@@ -27,6 +28,27 @@ import {
 import type { Organization } from "@/lib/db/schema";
 import { CommunityActions } from "./community-actions";
 import { CommunitySubscribeButton } from "./community-subscribe-button";
+
+function hashString(str: string): number {
+	let hash = 0;
+	for (let i = 0; i < str.length; i++) {
+		const char = str.charCodeAt(i);
+		hash = (hash << 5) - hash + char;
+		hash = hash & hash;
+	}
+	return Math.abs(hash);
+}
+
+function generateGradient(name: string): { light: string; dark: string } {
+	const hash = hashString(name);
+	const hue1 = hash % 360;
+	const hue2 = (hash * 7) % 360;
+	const saturation = 25 + (hash % 15);
+	return {
+		light: `linear-gradient(135deg, hsl(${hue1}, ${saturation}%, 92%) 0%, hsl(${hue2}, ${saturation}%, 88%) 100%)`,
+		dark: `linear-gradient(135deg, hsl(${hue1}, ${saturation}%, 12%) 0%, hsl(${hue2}, ${saturation}%, 16%) 100%)`,
+	};
+}
 
 function extractUsername(url: string, platform: string): string {
 	try {
@@ -82,6 +104,11 @@ export function CommunityHeaderClient({
 }: CommunityHeaderClientProps) {
 	const pathname = usePathname();
 
+	const gradients = useMemo(
+		() => generateGradient(community.displayName || community.name),
+		[community.displayName, community.name],
+	);
+
 	const currentTab = pathname.includes("/members")
 		? "members"
 		: pathname.includes("/achievements")
@@ -108,7 +135,16 @@ export function CommunityHeaderClient({
 							priority
 						/>
 					) : (
-						<div className="w-full h-full bg-muted" />
+						<>
+							<div
+								className="absolute inset-0 dark:hidden"
+								style={{ background: gradients.light }}
+							/>
+							<div
+								className="absolute inset-0 hidden dark:block"
+								style={{ background: gradients.dark }}
+							/>
+						</>
 					)}
 				</div>
 

@@ -4,7 +4,7 @@ import { Globe, Loader2, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useInView } from "react-intersection-observer";
 import { toast } from "sonner";
 import { VerifiedBadge } from "@/components/icons/verified-badge";
@@ -19,6 +19,27 @@ import {
 } from "@/hooks/use-communities";
 import { followCommunity, unfollowCommunity } from "@/lib/actions/communities";
 import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
+
+function hashString(str: string): number {
+	let hash = 0;
+	for (let i = 0; i < str.length; i++) {
+		const char = str.charCodeAt(i);
+		hash = (hash << 5) - hash + char;
+		hash = hash & hash;
+	}
+	return Math.abs(hash);
+}
+
+function generateGradient(name: string): { light: string; dark: string } {
+	const hash = hashString(name);
+	const hue1 = hash % 360;
+	const hue2 = (hash * 7) % 360;
+	const saturation = 25 + (hash % 15);
+	return {
+		light: `linear-gradient(135deg, hsl(${hue1}, ${saturation}%, 92%) 0%, hsl(${hue2}, ${saturation}%, 88%) 100%)`,
+		dark: `linear-gradient(135deg, hsl(${hue1}, ${saturation}%, 12%) 0%, hsl(${hue2}, ${saturation}%, 16%) 100%)`,
+	};
+}
 
 interface CommunitiesGridProps {
 	initialData: CommunitiesResponse;
@@ -103,6 +124,11 @@ function CommunityCard({
 	community: PublicCommunity;
 	isAuthenticated: boolean;
 }) {
+	const gradients = useMemo(
+		() => generateGradient(community.displayName || community.name),
+		[community.displayName, community.name],
+	);
+
 	return (
 		<Link
 			href={`/c/${community.slug}`}
@@ -118,7 +144,16 @@ function CommunityCard({
 						sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
 					/>
 				) : (
-					<div className="w-full h-full bg-muted" />
+					<>
+						<div
+							className="absolute inset-0 dark:hidden"
+							style={{ background: gradients.light }}
+						/>
+						<div
+							className="absolute inset-0 hidden dark:block"
+							style={{ background: gradients.dark }}
+						/>
+					</>
 				)}
 			</div>
 
