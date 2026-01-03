@@ -1,20 +1,22 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BadgeGenerator } from "@/components/community/badge-generator";
 import { Button } from "@/components/ui/button";
+import { getUserMembershipRole } from "@/lib/actions/badges";
 import {
-	canGenerateBadge,
-	getUserBadgeForCommunity,
-	getUserMembershipRole,
-} from "@/lib/actions/badges";
+	canGenerateBadgeForCampaign,
+	getCampaignBySlug,
+	getOrCreateDefaultCampaign,
+} from "@/lib/actions/campaigns";
 import { db } from "@/lib/db";
-import { organizations } from "@/lib/db/schema";
+import { communityBadges, organizations } from "@/lib/db/schema";
 
 interface BadgePageProps {
 	params: Promise<{ slug: string }>;
+	searchParams: Promise<{ campaign?: string }>;
 }
 
 export async function generateMetadata({
@@ -35,12 +37,19 @@ export async function generateMetadata({
 	};
 }
 
-export default async function BadgePage({ params }: BadgePageProps) {
+export default async function BadgePage({
+	params,
+	searchParams,
+}: BadgePageProps) {
 	const { slug } = await params;
+	const { campaign: campaignSlug } = await searchParams;
 	const { userId } = await auth();
 
 	if (!userId) {
-		redirect(`/sign-in?redirect=/c/${slug}/badge`);
+		const redirectUrl = campaignSlug
+			? `/c/${slug}/badge?campaign=${campaignSlug}`
+			: `/c/${slug}/badge`;
+		redirect(`/sign-in?redirect=${encodeURIComponent(redirectUrl)}`);
 	}
 
 	const community = await db.query.organizations.findFirst({
@@ -94,25 +103,71 @@ export default async function BadgePage({ params }: BadgePageProps) {
 		);
 	}
 
-	const existingBadge = await getUserBadgeForCommunity(community.id, userId);
+	const campaign = campaignSlug
+		? await getCampaignBySlug(community.id, campaignSlug)
+		: await getOrCreateDefaultCampaign(community.id);
 
-	if (existingBadge) {
+	if (!campaign) {
 		return (
 			<div className="flex flex-col items-center justify-center py-16 text-center">
-				<h1 className="text-2xl font-bold mb-2">Ya tienes un badge</h1>
+				<h1 className="text-2xl font-bold mb-2">Campaña no encontrada</h1>
 				<p className="text-muted-foreground mb-4">
-					Solo puedes generar un badge por comunidad
+					La campaña que buscas no existe o ha finalizado
 				</p>
-				<div className="flex gap-3">
-					<Button asChild variant="outline">
-						<Link href={`/c/${slug}/badge/${existingBadge.shareToken}`}>
-							Ver mi badge
-						</Link>
-					</Button>
-					<Button asChild variant="ghost">
-						<Link href={`/c/${slug}`}>Volver a la comunidad</Link>
-					</Button>
+				<Button asChild variant="outline">
+					<Link href={`/c/${slug}`}>Volver a la comunidad</Link>
+				</Button>
+			</div>
+		);
+	}
+
+	const eligibility = await canGenerateBadgeForCampaign(campaign.id, userId);
+
+	if (!eligibility.allowed) {
+		const [existingBadge] = await db
+			.select()
+			.from(communityBadges)
+			.where(
+				and(
+					eq(communityBadges.campaignId, campaign.id),
+					eq(communityBadges.userId, userId),
+				),
+			)
+			.limit(1);
+
+		if (existingBadge) {
+			return (
+				<div className="flex flex-col items-center justify-center py-16 text-center">
+					<h1 className="text-2xl font-bold mb-2">Ya tienes un badge</h1>
+					<p className="text-muted-foreground mb-4">
+						Ya generaste tu badge para{" "}
+						{campaign.type === "default"
+							? "esta comunidad"
+							: `"${campaign.name}"`}
+					</p>
+					<div className="flex gap-3">
+						<Button asChild variant="outline">
+							<Link href={`/c/${slug}/badge/${existingBadge.shareToken}`}>
+								Ver mi badge
+							</Link>
+						</Button>
+						<Button asChild variant="ghost">
+							<Link href={`/c/${slug}`}>Volver a la comunidad</Link>
+						</Button>
+					</div>
 				</div>
+			);
+		}
+
+		return (
+			<div className="flex flex-col items-center justify-center py-16 text-center">
+				<h1 className="text-2xl font-bold mb-2">No disponible</h1>
+				<p className="text-muted-foreground mb-4">
+					{eligibility.reason || "No puedes generar un badge en este momento"}
+				</p>
+				<Button asChild variant="outline">
+					<Link href={`/c/${slug}`}>Volver a la comunidad</Link>
+				</Button>
 			</div>
 		);
 	}
@@ -134,6 +189,8 @@ export default async function BadgePage({ params }: BadgePageProps) {
 				communityLogo={community.logoUrl}
 				memberRole={memberRole}
 				defaultName={defaultName}
+				campaignId={campaign.id}
+				campaignName={campaign.type !== "default" ? campaign.name : undefined}
 			/>
 		</div>
 	);

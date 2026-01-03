@@ -6,9 +6,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ROLE_LABELS } from "@/lib/badge/defaults";
 import { useUploadThing } from "@/lib/uploadthing";
 import { cn } from "@/lib/utils";
-import { ROLE_LABELS } from "@/lib/badge/defaults";
 
 interface BadgeGeneratorProps {
 	communitySlug: string;
@@ -16,6 +16,8 @@ interface BadgeGeneratorProps {
 	communityLogo?: string | null;
 	memberRole: string;
 	defaultName?: string;
+	campaignId?: string;
+	campaignName?: string;
 }
 
 export function BadgeGenerator({
@@ -24,6 +26,8 @@ export function BadgeGenerator({
 	communityLogo,
 	memberRole,
 	defaultName = "",
+	campaignId,
+	campaignName,
 }: BadgeGeneratorProps) {
 	const router = useRouter();
 	const [image, setImage] = useState<string | null>(null);
@@ -61,6 +65,7 @@ export function BadgeGenerator({
 					communitySlug,
 					photoUrl,
 					memberName: memberName || undefined,
+					campaignId,
 				}),
 			});
 
@@ -72,7 +77,9 @@ export function BadgeGenerator({
 
 			router.push(`/c/${communitySlug}/badge/loading/${data.token}`);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Error al generar el badge");
+			setError(
+				err instanceof Error ? err.message : "Error al generar el badge",
+			);
 			setIsGenerating(false);
 			setIsUploading(false);
 		}
@@ -157,11 +164,10 @@ export function BadgeGenerator({
 					)}
 					<span className="text-lg font-semibold">{communityName}</span>
 				</div>
-				<h1 className="text-2xl font-bold tracking-tight">
-					Genera tu badge
-				</h1>
+				<h1 className="text-2xl font-bold tracking-tight">Genera tu badge</h1>
 				<p className="text-sm text-muted-foreground">
-					Sube tu foto y la transformaremos con IA en un badge único de la comunidad
+					Sube tu foto y la transformaremos con IA en un badge único de la
+					comunidad
 				</p>
 				<div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">
 					<span>Tu rol:</span>

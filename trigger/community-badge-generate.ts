@@ -6,8 +6,10 @@ import {
 	DEFAULT_BADGE_BACKGROUND_PROMPT,
 	DEFAULT_BADGE_STYLE_PROMPT,
 } from "@/lib/badge/defaults";
+import { getStylePrompts } from "@/lib/badge/style-presets";
 import { db } from "@/lib/db";
 import {
+	badgeCampaigns,
 	type CommunityMember,
 	communityBadges,
 	organizations,
@@ -21,6 +23,7 @@ export const generateCommunityBadgeTask = task({
 	run: async (payload: {
 		badgeId: string;
 		communityId: string;
+		campaignId: string;
 		photoUrl: string;
 		memberName: string;
 		memberRole: CommunityMember["role"];
@@ -29,6 +32,7 @@ export const generateCommunityBadgeTask = task({
 		const {
 			badgeId,
 			communityId,
+			campaignId,
 			photoUrl,
 			memberName,
 			memberRole,
@@ -38,6 +42,7 @@ export const generateCommunityBadgeTask = task({
 		metadata.set("step", "initializing");
 		metadata.set("badgeId", badgeId);
 		metadata.set("communityId", communityId);
+		metadata.set("campaignId", campaignId);
 
 		try {
 			await db
@@ -51,11 +56,35 @@ export const generateCommunityBadgeTask = task({
 				.where(eq(organizations.id, communityId))
 				.limit(1);
 
-			const stylePrompt =
-				community?.badgeStylePrompt || DEFAULT_BADGE_STYLE_PROMPT;
-			const backgroundPrompt =
-				community?.badgeBackgroundPrompt || DEFAULT_BADGE_BACKGROUND_PROMPT;
-			const customBackgroundImageUrl = community?.badgeCustomBackgroundImageUrl;
+			const [campaign] = await db
+				.select()
+				.from(badgeCampaigns)
+				.where(eq(badgeCampaigns.id, campaignId))
+				.limit(1);
+
+			let stylePrompt = DEFAULT_BADGE_STYLE_PROMPT;
+			let backgroundPrompt = DEFAULT_BADGE_BACKGROUND_PROMPT;
+			let customBackgroundImageUrl: string | null = null;
+
+			if (campaign?.stylePreset && campaign.stylePreset !== "custom") {
+				const presetPrompts = getStylePrompts(campaign.stylePreset);
+				stylePrompt = campaign.portraitPrompt || presetPrompts.portraitPrompt;
+				backgroundPrompt =
+					campaign.backgroundPrompt || presetPrompts.backgroundPrompt;
+			} else if (campaign?.portraitPrompt) {
+				stylePrompt = campaign.portraitPrompt;
+				backgroundPrompt =
+					campaign.backgroundPrompt || DEFAULT_BADGE_BACKGROUND_PROMPT;
+			} else if (community?.badgeStylePrompt) {
+				stylePrompt = community.badgeStylePrompt;
+				backgroundPrompt =
+					community.badgeBackgroundPrompt || DEFAULT_BADGE_BACKGROUND_PROMPT;
+			}
+
+			customBackgroundImageUrl =
+				campaign?.customBackgroundImageUrl ||
+				community?.badgeCustomBackgroundImageUrl ||
+				null;
 
 			fal.config({ credentials: process.env.FAL_API_KEY });
 
