@@ -20,8 +20,8 @@ import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { AttendanceButton } from "@/components/events/attendance-button";
-import { EventLocationMap } from "@/components/events/event-location-map";
 import { EventCountdown } from "@/components/events/event-countdown";
+import { EventLocationMap } from "@/components/events/event-location-map";
 import { ManageEventButton } from "@/components/events/manage-event-button";
 import { WinnerSection } from "@/components/events/winner-section";
 import { CalendarIcon } from "@/components/icons/calendar";
@@ -313,7 +313,7 @@ export default async function EventPage({ params }: EventPageProps) {
 					</div>
 				</div>
 
-				<section className="mx-auto max-w-screen-xl px-4 py-4 md:py-6">
+				<section className="mx-auto max-w-screen-xl px-8 py-4 md:py-6">
 					<div className="grid md:grid-cols-[240px_1fr] gap-4 md:gap-6">
 						<div className="hidden md:block">
 							<div className="aspect-square w-full overflow-hidden bg-muted border border-border">
@@ -502,7 +502,7 @@ export default async function EventPage({ params }: EventPageProps) {
 					</div>
 				</section>
 
-				<section className="mx-auto max-w-screen-xl px-4 pb-8">
+				<section className="mx-auto max-w-screen-xl px-8 pb-8">
 					<div className="grid lg:grid-cols-[1fr_320px] gap-6 lg:gap-8">
 						<div className="space-y-8 min-w-0">
 							{hackathon.description && (

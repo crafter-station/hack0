@@ -5,7 +5,7 @@ import { CrafterStationLogo } from "@/components/logos/crafter-station";
 export function SiteFooter() {
 	return (
 		<footer className="border-t border-border/50">
-			<div className="mx-auto max-w-screen-xl px-4 py-6">
+			<div className="mx-auto max-w-screen-xl px-8 py-6">
 				<div className="flex flex-col gap-6">
 					<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
 						<div className="flex flex-col gap-2">
