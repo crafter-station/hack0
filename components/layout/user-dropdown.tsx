@@ -92,74 +92,90 @@ export function UserDropdown({
 						<DropdownMenuSeparator />
 					</>
 				)}
-				{adminCommunities && adminCommunities.length > 0 && (
-					<>
-						<DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground font-medium px-2 py-1.5">
-							Mis comunidades
-						</DropdownMenuLabel>
-						{[...adminCommunities]
-							.sort((a, b) => {
-								if (
-									a.organization.isPersonalOrg &&
-									!b.organization.isPersonalOrg
-								)
-									return -1;
-								if (
-									!a.organization.isPersonalOrg &&
-									b.organization.isPersonalOrg
-								)
-									return 1;
-								const nameA = a.organization.displayName || a.organization.name;
-								const nameB = b.organization.displayName || b.organization.name;
-								return nameA.localeCompare(nameB);
-							})
-							.slice(0, 5)
-							.map(({ organization }) => (
-								<DropdownMenuItem asChild key={organization.id}>
+				{(() => {
+					const personalOrg = adminCommunities?.find(
+						(c) => c.organization.isPersonalOrg,
+					);
+					const nonPersonalCommunities =
+						adminCommunities?.filter((c) => !c.organization.isPersonalOrg) ||
+						[];
+
+					return (
+						<>
+							{nonPersonalCommunities.length > 0 && (
+								<>
+									<DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground font-medium px-2 py-1.5">
+										Mis comunidades
+									</DropdownMenuLabel>
+									{[...nonPersonalCommunities]
+										.sort((a, b) => {
+											const nameA =
+												a.organization.displayName || a.organization.name;
+											const nameB =
+												b.organization.displayName || b.organization.name;
+											return nameA.localeCompare(nameB);
+										})
+										.slice(0, 5)
+										.map(({ organization }) => (
+											<DropdownMenuItem asChild key={organization.id}>
+												<Link
+													href={`/c/${organization.slug}`}
+													className="flex items-center gap-2"
+												>
+													{organization.logoUrl ? (
+														<img
+															src={organization.logoUrl}
+															alt={
+																organization.displayName || organization.name
+															}
+															className="h-4 w-4 rounded-full object-cover ring-1 ring-border"
+														/>
+													) : (
+														<Building2 className="h-3.5 w-3.5" />
+													)}
+													<span className="text-xs truncate">
+														{organization.displayName || organization.name}
+													</span>
+												</Link>
+											</DropdownMenuItem>
+										))}
+									{nonPersonalCommunities.length > 5 && (
+										<DropdownMenuItem asChild>
+											<Link
+												href="/c"
+												className="flex items-center justify-center text-muted-foreground"
+											>
+												<span className="text-xs">
+													Ver todas ({nonPersonalCommunities.length})
+												</span>
+											</Link>
+										</DropdownMenuItem>
+									)}
+									<DropdownMenuSeparator />
+								</>
+							)}
+							{personalOrg && (
+								<DropdownMenuItem asChild>
 									<Link
-										href={`/c/${organization.slug}`}
+										href={`/c/${personalOrg.organization.slug}`}
 										className="flex items-center gap-2"
 									>
-										{organization.logoUrl ? (
+										{user.imageUrl ? (
 											<img
-												src={organization.logoUrl}
-												alt={organization.displayName || organization.name}
+												src={user.imageUrl}
+												alt="Perfil"
 												className="h-4 w-4 rounded-full object-cover ring-1 ring-border"
 											/>
-										) : organization.isPersonalOrg ? (
-											<User className="h-3.5 w-3.5" />
 										) : (
-											<Building2 className="h-3.5 w-3.5" />
+											<User className="h-3.5 w-3.5" />
 										)}
-										<span className="text-xs truncate">
-											{organization.isPersonalOrg
-												? "Personal"
-												: organization.displayName || organization.name}
-										</span>
+										<span className="text-xs">Perfil</span>
 									</Link>
 								</DropdownMenuItem>
-							))}
-						{adminCommunities.length > 5 && (
-							<DropdownMenuItem asChild>
-								<Link
-									href="/c"
-									className="flex items-center justify-center text-muted-foreground"
-								>
-									<span className="text-xs">
-										Ver todas ({adminCommunities.length})
-									</span>
-								</Link>
-							</DropdownMenuItem>
-						)}
-						<DropdownMenuSeparator />
-					</>
-				)}
-				<DropdownMenuItem asChild>
-					<Link href="/profile">
-						<User className="h-3.5 w-3.5" />
-						<span className="text-xs">Perfil</span>
-					</Link>
-				</DropdownMenuItem>
+							)}
+						</>
+					);
+				})()}
 				{!hideThemeToggle && (
 					<DropdownMenuItem
 						onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
