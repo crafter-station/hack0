@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { Suspense } from "react";
-import { CommunityHeaderClient } from "@/components/community/community-header-client";
+import { OrgHeaderClient } from "@/components/org/layout";
 import { getUserCommunityRole } from "@/lib/actions/community-members";
 import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
@@ -39,7 +39,7 @@ async function CommunityHeaderWrapper({ slug }: { slug: string }) {
 	];
 
 	return (
-		<CommunityHeaderClient
+		<OrgHeaderClient
 			community={community}
 			slug={slug}
 			userRole={userRole}

@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { Award, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BadgeGalleryCard } from "@/components/community/badge-gallery-card";
+import { BadgeGalleryCard } from "@/components/org/badges";
 import { Button } from "@/components/ui/button";
 import {
 	canGenerateBadge,

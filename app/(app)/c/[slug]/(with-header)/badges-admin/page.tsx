@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
-import { BadgeSettingsForm } from "@/components/communities/badge-settings-form";
+import { BadgeSettingsForm } from "@/components/org/badges";
 import {
 	canManageOrganization,
 	getOrganizationBySlug,
@@ -11,7 +11,9 @@ interface BadgesAdminPageProps {
 	params: Promise<{ slug: string }>;
 }
 
-export default async function BadgesAdminPage({ params }: BadgesAdminPageProps) {
+export default async function BadgesAdminPage({
+	params,
+}: BadgesAdminPageProps) {
 	const { slug } = await params;
 	const { userId } = await auth();
 

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { CampaignForm } from "@/components/communities/campaign-form";
+import { CampaignForm } from "@/components/org/campaigns";
 import { getCampaignById } from "@/lib/actions/campaigns";
 import { getOrganizationBySlug } from "@/lib/actions/organizations";
 

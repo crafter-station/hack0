@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { OrgEventFormMinimal } from "@/components/communities/org-event-form-minimal";
+import { OrgEventFormMinimal } from "@/components/org/creation";
 import { getUserCommunityRole } from "@/lib/actions/community-members";
 import {
 	getAllUserOrganizations,

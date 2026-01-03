@@ -2,12 +2,12 @@ import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import type { SearchParams } from "nuqs/server";
 import { Suspense } from "react";
-import { CommunityEventsToolbar } from "@/components/community/community-events-toolbar";
 import { AllEventsTable } from "@/components/events/all-events-table";
 import { EventsCalendar } from "@/components/events/events-calendar";
 import { EventsCards } from "@/components/events/events-cards";
 import { EventsMapView } from "@/components/events/events-map-view";
 import { EventsPreviewView } from "@/components/events/events-preview-view";
+import { OrgEventsToolbar } from "@/components/org/layout";
 import { getCommunityEventsWithRole } from "@/lib/actions/events";
 import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
@@ -147,7 +147,7 @@ export default async function CommunityPage({
 			<Suspense
 				fallback={<div className="h-7 w-full bg-muted rounded animate-pulse" />}
 			>
-				<CommunityEventsToolbar />
+				<OrgEventsToolbar />
 			</Suspense>
 
 			<Suspense fallback={<EventsSkeleton />}>

@@ -1,7 +1,7 @@
 "use client";
 
 import { Users } from "lucide-react";
-import { InviteManager } from "@/components/communities/invite-manager";
+import { InviteManager } from "@/components/org/members";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,

@@ -1,12 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { CommunityFilters } from "@/components/communities/community-filters";
-import { CommunityTabToggle } from "@/components/communities/community-tab-toggle";
-import { MyOrganizationCards } from "@/components/communities/my-organization-cards";
-import { MyOrganizationList } from "@/components/communities/my-organization-list";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { OrgFilters, OrgTabToggle } from "@/components/org/discovery";
+import { MyOrgCards, MyOrgList } from "@/components/org/my-orgs";
 import { getAllUserOrganizations } from "@/lib/actions/organizations";
 import { getCommunitiesViewPreference } from "@/lib/view-preferences";
 
@@ -70,14 +68,14 @@ export default async function CommunitiesPage({
 								<div className="h-7 w-40 animate-pulse bg-muted rounded" />
 							}
 						>
-							<CommunityTabToggle />
+							<OrgTabToggle />
 						</Suspense>
 						<Suspense
 							fallback={
 								<div className="h-7 w-48 animate-pulse bg-muted rounded" />
 							}
 						>
-							<CommunityFilters
+							<OrgFilters
 								defaultSearch={params.search}
 								defaultRole={params.role}
 								defaultView={viewMode}
@@ -90,9 +88,9 @@ export default async function CommunitiesPage({
 
 			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-4 flex-1 w-full">
 				{viewMode === "table" ? (
-					<MyOrganizationList organizations={organizations} />
+					<MyOrgList organizations={organizations} />
 				) : (
-					<MyOrganizationCards organizations={organizations} />
+					<MyOrgCards organizations={organizations} />
 				)}
 			</main>
 

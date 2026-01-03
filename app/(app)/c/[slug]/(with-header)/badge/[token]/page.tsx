@@ -2,7 +2,7 @@ import { Download, Share2, Twitter } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BadgeDisplay } from "@/components/community/badge-display";
+import { BadgeDisplay } from "@/components/org/badges";
 import { Button } from "@/components/ui/button";
 import { getBadgeByToken } from "@/lib/actions/badges";
 

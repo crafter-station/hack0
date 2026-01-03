@@ -1,7 +1,7 @@
 import { Plus, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CampaignList } from "@/components/communities/campaign-list";
+import { CampaignList } from "@/components/org/campaigns";
 import { Button } from "@/components/ui/button";
 import { getCampaignsForCommunity } from "@/lib/actions/campaigns";
 import { getOrganizationBySlug } from "@/lib/actions/organizations";

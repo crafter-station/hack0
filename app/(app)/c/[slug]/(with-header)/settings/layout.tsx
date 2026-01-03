@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
-import { SettingsSidebar } from "@/components/communities/settings-sidebar";
+import { SettingsSidebar } from "@/components/org/settings";
 import {
 	canManageOrganization,
 	getOrganizationBySlug,

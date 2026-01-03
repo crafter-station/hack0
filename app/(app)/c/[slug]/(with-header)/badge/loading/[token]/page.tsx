@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BadgeLoading } from "@/components/community/badge-loading";
+import { BadgeLoading } from "@/components/org/badges";
 
 interface LoadingPageProps {
 	params: Promise<{ slug: string; token: string }>;

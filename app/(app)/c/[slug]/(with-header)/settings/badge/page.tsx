@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { BadgeSettingsForm } from "@/components/communities/badge-settings-form";
+import { BadgeSettingsForm } from "@/components/org/badges";
 import { getOrganizationBySlug } from "@/lib/actions/organizations";
 
 interface BadgeSettingsPageProps {

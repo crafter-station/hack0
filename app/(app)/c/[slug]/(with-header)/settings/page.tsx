@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { CommunitySettingsForm } from "@/components/communities/community-settings-form";
+import { OrgSettingsForm } from "@/components/org/settings";
 import { getOrganizationBySlug } from "@/lib/actions/organizations";
 
 interface SettingsPageProps {
@@ -17,7 +17,7 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
 
 	return (
 		<div className="space-y-8">
-			<CommunitySettingsForm organization={org} />
+			<OrgSettingsForm organization={org} />
 		</div>
 	);
 }

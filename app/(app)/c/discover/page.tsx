@@ -3,13 +3,15 @@ import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { LayoutGrid, List } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
-import { CommunitiesGrid } from "@/components/communities/communities-grid";
-import { CommunitiesList } from "@/components/communities/communities-list";
-import { CommunityActiveFilters } from "@/components/communities/community-active-filters";
-import { CommunitySidebarFilters } from "@/components/communities/community-sidebar-filters";
-import { CommunityTabToggle } from "@/components/communities/community-tab-toggle";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import {
+	OrgActiveFilters,
+	OrgSidebarFilters,
+	OrgsGrid,
+	OrgsList,
+	OrgTabToggle,
+} from "@/components/org/discovery";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { CommunitiesResponse } from "@/hooks/use-communities";
@@ -218,7 +220,7 @@ export default async function DiscoverPage({
 								<div className="h-7 w-40 animate-pulse bg-muted rounded" />
 							}
 						>
-							<CommunityTabToggle />
+							<OrgTabToggle />
 						</Suspense>
 						<ViewToggle currentView={viewMode} searchParams={params} />
 					</div>
@@ -232,7 +234,7 @@ export default async function DiscoverPage({
 							<div className="hidden lg:block w-[220px] h-96 animate-pulse bg-muted rounded" />
 						}
 					>
-						<CommunitySidebarFilters
+						<OrgSidebarFilters
 							defaultSearch={params.search}
 							defaultCountries={countriesArray}
 							defaultTypes={typesArray}
@@ -246,7 +248,7 @@ export default async function DiscoverPage({
 
 					<div className="flex-1 min-w-0">
 						<Suspense fallback={null}>
-							<CommunityActiveFilters totalResults={initialData.total} />
+							<OrgActiveFilters totalResults={initialData.total} />
 						</Suspense>
 
 						{viewMode === "table" ? (
@@ -271,7 +273,7 @@ export default async function DiscoverPage({
 									</div>
 								}
 							>
-								<CommunitiesList
+								<OrgsList
 									initialData={initialData}
 									isAuthenticated={isAuthenticated}
 								/>
@@ -303,7 +305,7 @@ export default async function DiscoverPage({
 									</div>
 								}
 							>
-								<CommunitiesGrid
+								<OrgsGrid
 									initialData={initialData}
 									isAuthenticated={isAuthenticated}
 								/>

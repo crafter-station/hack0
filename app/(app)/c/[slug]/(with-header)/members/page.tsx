@@ -2,10 +2,12 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { CampaignFilterTabs } from "@/components/community/campaign-filter-tabs";
-import { GenerateBadgeCTA } from "@/components/community/generate-badge-cta";
-import { MemberShowcaseGrid } from "@/components/community/member-showcase-grid";
-import { MembersManagement } from "@/components/community/members-management";
+import { GenerateBadgeCTA } from "@/components/org/badges";
+import { CampaignFilterTabs } from "@/components/org/campaigns";
+import {
+	MemberShowcaseGrid,
+	MembersManagement,
+} from "@/components/org/members";
 import { Separator } from "@/components/ui/separator";
 import { getUserMembershipRole } from "@/lib/actions/badges";
 import {
