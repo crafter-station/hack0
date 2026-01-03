@@ -11,13 +11,13 @@ const STYLES = [
 	{
 		id: "pixel_art",
 		name: "Pixel Art",
-		portraitPrompt: `Transform this person into a pixel art video game character. 16-bit retro style like Final Fantasy or Chrono Trigger sprites. Stylized pixelated features. CRITICAL: Frame the portrait with LOTS OF EMPTY SPACE ABOVE THE HEAD - at least 20% of the image should be empty space above the top of the head. Shoulders and upper chest visible. Plain solid white background. Gaming aesthetic.`,
+		portraitPrompt: `8-bit pixel-art portrait, chest-up view. Keep the person's likeness and features recognizable. Use a simple solid color background. Style should be cartoonish, anime inspired, cute and tender soft. Maintain the original pose and expression.`,
 		backgroundPrompt: `Dark pixel art tech background. Deep purple and navy gradient. Pixel grid pattern. Retro terminal/computer aesthetic with scanlines. Tech hacker vibe. No characters.`,
 	},
 	{
 		id: "cyberpunk",
 		name: "Cyberpunk",
-		portraitPrompt: `Transform this person into a stylized cyberpunk digital art portrait. Neon cyan and magenta edge lighting on face. Artistic stylization - NOT photorealistic. CRITICAL: Frame with LOTS OF EMPTY SPACE ABOVE THE HEAD - at least 20% of image should be empty above the head top. Include shoulders and upper chest. Plain solid white background. Tech noir aesthetic.`,
+		portraitPrompt: `Cyberpunk stylized portrait, chest-up view. Keep the person's likeness and features recognizable. Neon cyan and magenta edge lighting. Use a simple solid color background. Style should be cartoonish, anime inspired, cute and tender soft. Maintain the original pose and expression.`,
 		backgroundPrompt: `Dark cyberpunk background. Black base with neon cyan and magenta geometric grid lines. Circuit board patterns. Holographic HUD elements. Digital matrix rain. High-tech aesthetic. No characters.`,
 	},
 ];
@@ -32,14 +32,11 @@ async function generateStylePreview(style: (typeof STYLES)[0]) {
 	console.log(`\nGenerating preview for: ${style.name}`);
 
 	try {
-		console.log("  - Generating portrait with gpt-image-1.5/edit...");
-		const portraitResult = await fal.subscribe("fal-ai/gpt-image-1.5/edit", {
+		console.log("  - Generating portrait with qwen-image-edit...");
+		const portraitResult = await fal.subscribe("fal-ai/qwen-image-edit", {
 			input: {
 				prompt: style.portraitPrompt,
-				image_urls: [SAMPLE_PHOTO_URL],
-				image_size: "1024x1024",
-				quality: "high",
-				input_fidelity: "high",
+				image_url: SAMPLE_PHOTO_URL,
 			},
 		});
 
@@ -109,7 +106,7 @@ async function generateStylePreview(style: (typeof STYLES)[0]) {
 async function main() {
 	console.log("=== Generating Style Preview Images ===");
 	console.log("Using fal.ai API with:");
-	console.log("  - gpt-image-1.5/edit for portrait generation");
+	console.log("  - qwen-image-edit for portrait generation");
 	console.log("  - bria/background/remove for background removal");
 	console.log("  - flux/schnell for backgrounds");
 

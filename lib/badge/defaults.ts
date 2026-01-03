@@ -1,9 +1,4 @@
-export const DEFAULT_BADGE_STYLE_PROMPT = `Create a modern stylized portrait illustration based on the provided photo.
-Clean digital art style with bold lines and vibrant colors.
-Professional and friendly appearance.
-Tech-inspired aesthetic with subtle geometric elements.
-IMPORTANT: Plain solid light gray or white background for easy cutout.
-Only the character, no background elements.`;
+export const DEFAULT_BADGE_STYLE_PROMPT = `8-bit pixel-art portrait. Keep the person's likeness and features recognizable. Use a simple solid color background. Style should be cartoonish, anime inspired, cute and tender soft.`;
 
 export const DEFAULT_BADGE_BACKGROUND_PROMPT = `Abstract tech-inspired background pattern.
 Modern gradient with geometric shapes.
@@ -20,7 +15,10 @@ export const ROLE_LABELS: Record<string, string> = {
 	follower: "Seguidor",
 };
 
-export const ROLE_BADGE_COLORS: Record<string, { primary: string; secondary: string }> = {
+export const ROLE_BADGE_COLORS: Record<
+	string,
+	{ primary: string; secondary: string }
+> = {
 	owner: { primary: "#FFD700", secondary: "#FFA500" },
 	admin: { primary: "#9B59B6", secondary: "#8E44AD" },
 	member: { primary: "#3498DB", secondary: "#2980B9" },

@@ -8,7 +8,7 @@ import { organizations } from "@/lib/db/schema";
 const DEFAULT_SAMPLE_PHOTO =
 	"https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=512&h=512&fit=crop&crop=face";
 
-const FRAMING_INSTRUCTIONS = `CRITICAL FRAMING: Leave at least 20% empty space ABOVE the head. Show head and shoulders with the face centered. Plain solid white background only.`;
+const FRAMING_INSTRUCTIONS = `8-bit pixel-art portrait, chest-up view. Keep the person's likeness and features recognizable. Use a simple solid color background. Style should be cartoonish, anime inspired, cute and tender soft. Maintain the original pose and expression.`;
 
 export const testCustomBadgeStyleTask = task({
 	id: "test-custom-badge-style",
@@ -33,13 +33,10 @@ export const testCustomBadgeStyleTask = task({
 
 			metadata.set("step", "generating_portrait");
 
-			const portraitResult = await fal.subscribe("fal-ai/gpt-image-1.5/edit", {
+			const portraitResult = await fal.subscribe("fal-ai/qwen-image-edit", {
 				input: {
 					prompt: enhancedPortraitPrompt,
-					image_urls: [sourceImageUrl],
-					image_size: "1024x1024",
-					quality: "high",
-					input_fidelity: "high",
+					image_url: sourceImageUrl,
 				},
 			});
 

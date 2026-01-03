@@ -13,6 +13,8 @@ import {
 	organizations,
 } from "@/lib/db/schema";
 
+const FRAMING_INSTRUCTIONS = `8-bit pixel-art portrait, chest-up view. Keep the person's likeness and features recognizable. Use a simple solid color background. Style should be cartoonish, anime inspired, cute and tender soft. Maintain the original pose and expression.`;
+
 export const generateCommunityBadgeTask = task({
 	id: "generate-community-badge",
 	maxDuration: 120,
@@ -58,13 +60,12 @@ export const generateCommunityBadgeTask = task({
 
 			metadata.set("step", "generating_images");
 
-			const portraitResult = await fal.subscribe("fal-ai/gpt-image-1.5/edit", {
+			const enhancedPrompt = `${stylePrompt}. ${FRAMING_INSTRUCTIONS}`;
+
+			const portraitResult = await fal.subscribe("fal-ai/qwen-image-edit", {
 				input: {
-					prompt: stylePrompt,
-					image_urls: [photoUrl],
-					image_size: "1024x1024",
-					quality: "high",
-					input_fidelity: "high",
+					prompt: enhancedPrompt,
+					image_url: photoUrl,
 				},
 			});
 

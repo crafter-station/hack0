@@ -11,14 +11,14 @@ export const BADGE_STYLE_PRESETS: BadgeStylePreset[] = [
 		id: "pixel_art",
 		name: "Pixel Art",
 		description: "Retro gaming avatar",
-		portraitPrompt: `Transform this person into a pixel art video game character. 16-bit retro style like Final Fantasy or Chrono Trigger sprites. Stylized pixelated features. CRITICAL: Frame the portrait with LOTS OF EMPTY SPACE ABOVE THE HEAD - at least 20% of the image should be empty space above the top of the head. Shoulders and upper chest visible. Plain solid white background. Gaming aesthetic.`,
+		portraitPrompt: `8-bit pixel-art portrait. Keep the person's likeness and features recognizable. Use a simple solid color background. Style should be cartoonish, anime inspired, cute and tender soft.`,
 		backgroundPrompt: `Dark pixel art tech background. Deep purple and navy gradient. Pixel grid pattern. Retro terminal/computer aesthetic with scanlines. Tech hacker vibe. No characters.`,
 	},
 	{
 		id: "cyberpunk",
 		name: "Cyberpunk",
 		description: "Neon tech futuristic",
-		portraitPrompt: `Transform this person into a stylized cyberpunk digital art portrait. Neon cyan and magenta edge lighting on face. Artistic stylization - NOT photorealistic. CRITICAL: Frame with LOTS OF EMPTY SPACE ABOVE THE HEAD - at least 20% of image should be empty above the head top. Include shoulders and upper chest. Plain solid white background. Tech noir aesthetic.`,
+		portraitPrompt: `Cyberpunk stylized portrait. Neon cyan and magenta edge lighting. Keep the person's likeness and features recognizable. Use a simple solid color background. Style should be cartoonish, anime inspired, cute and tender soft.`,
 		backgroundPrompt: `Dark cyberpunk background. Black base with neon cyan and magenta geometric grid lines. Circuit board patterns. Holographic HUD elements. Digital matrix rain. High-tech aesthetic. No characters.`,
 	},
 	{
