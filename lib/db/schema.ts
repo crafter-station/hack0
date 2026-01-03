@@ -611,6 +611,7 @@ export const LATAM_COUNTRIES = [
 export const organizations = pgTable("organizations", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	slug: varchar("slug", { length: 255 }).unique().notNull(),
+	shortCode: varchar("short_code", { length: 10 }).unique(),
 	name: varchar("name", { length: 255 }).notNull(),
 	displayName: varchar("display_name", { length: 255 }), // Public-facing name
 	description: text("description"),

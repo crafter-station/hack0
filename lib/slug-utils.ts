@@ -1,8 +1,8 @@
-import { and, eq, isNull, ne } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { customAlphabet } from "nanoid";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { events } from "@/lib/db/schema";
+import { events, organizations } from "@/lib/db/schema";
 
 const nanoid = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 6);
 
@@ -182,6 +182,27 @@ export async function ensureUniqueShortCode(): Promise<string> {
 			.select({ id: events.id })
 			.from(events)
 			.where(eq(events.shortCode, code))
+			.limit(1);
+
+		if (existing.length === 0) {
+			isUnique = true;
+		} else {
+			code = nanoid();
+		}
+	}
+
+	return code;
+}
+
+export async function ensureUniqueOrgShortCode(): Promise<string> {
+	let code = nanoid();
+	let isUnique = false;
+
+	while (!isUnique) {
+		const existing = await db
+			.select({ id: organizations.id })
+			.from(organizations)
+			.where(eq(organizations.shortCode, code))
 			.limit(1);
 
 		if (existing.length === 0) {
