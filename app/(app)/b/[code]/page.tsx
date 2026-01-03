@@ -59,7 +59,7 @@ export default async function BadgePreviewPage({
 	};
 
 	return (
-		<div className="min-h-screen flex flex-col items-center justify-center py-12 px-4">
+		<main className="flex-1 flex flex-col items-center justify-center py-12 px-4">
 			<div className="w-full max-w-2xl space-y-8">
 				{/* Large Preview */}
 				<div
@@ -153,6 +153,6 @@ export default async function BadgePreviewPage({
 					</Button>
 				</div>
 			</div>
-		</div>
+		</main>
 	);
 }

@@ -1,8 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { organizations } from "@/lib/db/schema";
+import { communityMembers, organizations } from "@/lib/db/schema";
+import { isGodMode } from "@/lib/god-mode";
 import { ensureUniqueOrgShortCode } from "@/lib/slug-utils";
 
 export async function POST(
@@ -28,8 +29,24 @@ export async function POST(
 		);
 	}
 
-	// Check if user is owner or admin
-	if (org.ownerUserId !== userId) {
+	// Check permissions: god mode, owner, or admin
+	const godMode = await isGodMode();
+	let hasPermission = godMode || org.ownerUserId === userId;
+
+	if (!hasPermission) {
+		// Check if user is admin of the community
+		const membership = await db.query.communityMembers.findFirst({
+			where: and(
+				eq(communityMembers.communityId, id),
+				eq(communityMembers.userId, userId),
+			),
+		});
+
+		hasPermission =
+			membership?.role === "owner" || membership?.role === "admin";
+	}
+
+	if (!hasPermission) {
 		return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 	}
 
