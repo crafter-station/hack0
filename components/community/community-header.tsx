@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import {
+	Award,
 	BarChart3,
 	Calendar,
 	CheckCircle2,
@@ -16,7 +17,7 @@ import { CommunityActions } from "./community-actions";
 interface CommunityHeaderProps {
 	community: Organization;
 	slug: string;
-	currentTab: "events" | "members" | "analytics" | "settings";
+	currentTab: "events" | "members" | "badges" | "analytics" | "settings";
 }
 
 export async function CommunityHeader({
@@ -32,10 +33,36 @@ export async function CommunityHeader({
 	const isAuthenticated = !!userId;
 
 	const tabs = [
-		{ id: "events" as const, label: "Eventos", icon: Calendar, requiresAdmin: false },
-		{ id: "members" as const, label: "Miembros", icon: Users, requiresAdmin: false },
-		{ id: "analytics" as const, label: "Analytics", icon: BarChart3, requiresAdmin: true },
-		{ id: "settings" as const, label: "Configuración", icon: Settings, requiresAdmin: true },
+		{
+			id: "events" as const,
+			label: "Eventos",
+			icon: Calendar,
+			requiresAdmin: false,
+		},
+		{
+			id: "members" as const,
+			label: "Miembros",
+			icon: Users,
+			requiresAdmin: false,
+		},
+		{
+			id: "badges" as const,
+			label: "Badges",
+			icon: Award,
+			requiresAdmin: false,
+		},
+		{
+			id: "analytics" as const,
+			label: "Analytics",
+			icon: BarChart3,
+			requiresAdmin: true,
+		},
+		{
+			id: "settings" as const,
+			label: "Configuración",
+			icon: Settings,
+			requiresAdmin: true,
+		},
 	];
 
 	return (

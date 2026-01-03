@@ -1,7 +1,7 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { ROLE_LABELS } from "@/lib/badge/defaults";
+import { cn } from "@/lib/utils";
 
 interface BadgeDisplayProps {
 	generatedImageUrl: string;
@@ -34,7 +34,10 @@ export function BadgeDisplay({
 
 	return (
 		<div
-			className={cn("relative w-full aspect-[3/4] overflow-hidden rounded-xl", className)}
+			className={cn(
+				"relative w-full aspect-[3/4] overflow-hidden rounded-xl",
+				className,
+			)}
 			style={{ backgroundColor: "#0a0a0f" }}
 		>
 			{generatedBackgroundUrl && (
@@ -54,22 +57,22 @@ export function BadgeDisplay({
 				}}
 			/>
 
-			<div className="relative h-full flex flex-col">
-				<div className="absolute top-4 left-4 right-4 flex items-center justify-between">
+			<div className="relative h-full flex flex-col p-4">
+				<div className="flex items-center justify-between mb-2">
 					<div className="flex items-center gap-2">
 						{communityLogo && (
 							<img
 								src={communityLogo}
 								alt={communityName}
-								className="h-8 w-8 rounded-lg object-cover ring-1 ring-white/20"
+								className="h-7 w-7 rounded-lg object-cover ring-1 ring-white/20"
 							/>
 						)}
-						<span className="text-xs font-medium text-white/80 max-w-[120px] truncate">
+						<span className="text-[11px] font-medium text-white/80 max-w-[100px] truncate">
 							{communityName}
 						</span>
 					</div>
 					<div
-						className="px-2 py-1 rounded-full text-[10px] font-semibold text-white"
+						className="px-2 py-0.5 rounded-full text-[9px] font-semibold text-white"
 						style={{
 							background: `linear-gradient(135deg, ${primary}, ${secondary})`,
 						}}
@@ -78,44 +81,35 @@ export function BadgeDisplay({
 					</div>
 				</div>
 
-				<div className="flex-1 flex items-center justify-center p-4 pt-16">
-					<div className="relative">
+				<div className="flex-1 flex items-start justify-center min-h-0 -mt-4">
+					<div className="relative w-full h-[115%]">
 						<div
-							className="absolute -inset-3 blur-2xl rounded-full opacity-60"
+							className="absolute -inset-4 blur-2xl opacity-40"
 							style={{
-								background: `linear-gradient(135deg, ${primary}40, ${secondary}40)`,
+								background: `linear-gradient(135deg, ${primary}, ${secondary})`,
 							}}
 						/>
-						<div
-							className="relative w-56 h-56 sm:w-64 sm:h-64 rounded-full overflow-hidden shadow-2xl"
-							style={{
-								border: `3px solid ${primary}`,
-							}}
-						>
-							<img
-								src={generatedImageUrl}
-								alt="Badge portrait"
-								className="w-full h-full object-cover"
-							/>
-						</div>
+						<img
+							src={generatedImageUrl}
+							alt="Badge portrait"
+							className="relative w-full h-full object-contain object-top drop-shadow-2xl"
+						/>
 					</div>
 				</div>
 
-				<div className="px-5 pb-5 text-center">
+				<div className="mt-2 text-center">
 					{memberName && (
-						<p className="text-lg font-bold text-white mb-1">
-							{memberName}
-						</p>
+						<p className="text-sm font-bold text-white mb-0.5">{memberName}</p>
 					)}
-					<p className="text-xs text-white/60 mb-3">
+					<p className="text-[10px] text-white/60 mb-2">
 						Badge #{badgeNumber.toString().padStart(4, "0")}
 					</p>
 					<div className="flex items-center justify-center gap-2">
-						<div className="h-px w-8 bg-white/20" />
-						<span className="text-[10px] font-mono tracking-wider text-white/40">
+						<div className="h-px w-6 bg-white/20" />
+						<span className="text-[9px] font-mono tracking-wider text-white/40">
 							hack0.dev
 						</span>
-						<div className="h-px w-8 bg-white/20" />
+						<div className="h-px w-6 bg-white/20" />
 					</div>
 				</div>
 			</div>

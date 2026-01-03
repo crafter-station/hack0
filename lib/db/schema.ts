@@ -657,6 +657,16 @@ export const organizations = pgTable("organizations", {
 	badgePrimaryColor: varchar("badge_primary_color", { length: 20 }),
 	badgeSecondaryColor: varchar("badge_secondary_color", { length: 20 }),
 	badgeLogoPosition: varchar("badge_logo_position", { length: 20 }),
+	badgeAiStyle: varchar("badge_ai_style", { length: 50 }),
+	badgeCustomTestPortraitUrl: varchar("badge_custom_test_portrait_url", {
+		length: 500,
+	}),
+	badgeCustomTestBackgroundUrl: varchar("badge_custom_test_background_url", {
+		length: 500,
+	}),
+	badgeCustomTestReferenceUrl: varchar("badge_custom_test_reference_url", {
+		length: 500,
+	}),
 
 	// Timestamps
 	createdAt: timestamp("created_at", {

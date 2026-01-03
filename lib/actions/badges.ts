@@ -3,17 +3,24 @@
 import { auth } from "@clerk/nextjs/server";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { communityBadges, communityMembers, organizations } from "@/lib/db/schema";
+import {
+	communityBadges,
+	communityMembers,
+	organizations,
+} from "@/lib/db/schema";
 
-export async function getUserBadgeForCommunity(communityId: string, userId: string) {
+export async function getUserBadgeForCommunity(
+	communityId: string,
+	userId: string,
+) {
 	const [badge] = await db
 		.select()
 		.from(communityBadges)
 		.where(
 			and(
 				eq(communityBadges.communityId, communityId),
-				eq(communityBadges.userId, userId)
-			)
+				eq(communityBadges.userId, userId),
+			),
 		)
 		.limit(1);
 
@@ -35,8 +42,8 @@ export async function getCommunityBadges(communitySlug: string, limit = 50) {
 		.where(
 			and(
 				eq(communityBadges.communityId, community.id),
-				eq(communityBadges.status, "completed")
-			)
+				eq(communityBadges.status, "completed"),
+			),
 		)
 		.orderBy(desc(communityBadges.badgeNumber))
 		.limit(limit);
@@ -66,7 +73,7 @@ export async function getBadgeByToken(token: string) {
 
 export async function canGenerateBadge(
 	communityId: string,
-	userId: string
+	userId: string,
 ): Promise<{ allowed: boolean; reason?: string }> {
 	const [community] = await db
 		.select()
@@ -79,7 +86,10 @@ export async function canGenerateBadge(
 	}
 
 	if (!community.badgeEnabled) {
-		return { allowed: false, reason: "Los badges no están habilitados para esta comunidad" };
+		return {
+			allowed: false,
+			reason: "Los badges no están habilitados para esta comunidad",
+		};
 	}
 
 	const [membership] = await db
@@ -88,8 +98,8 @@ export async function canGenerateBadge(
 		.where(
 			and(
 				eq(communityMembers.communityId, communityId),
-				eq(communityMembers.userId, userId)
-			)
+				eq(communityMembers.userId, userId),
+			),
 		)
 		.limit(1);
 
@@ -98,7 +108,10 @@ export async function canGenerateBadge(
 	}
 
 	if (membership.role === "follower") {
-		return { allowed: false, reason: "Los seguidores no pueden generar badges. Solicita ser miembro." };
+		return {
+			allowed: false,
+			reason: "Los seguidores no pueden generar badges. Solicita ser miembro.",
+		};
 	}
 
 	const existingBadge = await getUserBadgeForCommunity(communityId, userId);
@@ -132,6 +145,10 @@ export async function getCommunityBadgeSettings(communitySlug: string) {
 			badgePrimaryColor: organizations.badgePrimaryColor,
 			badgeSecondaryColor: organizations.badgeSecondaryColor,
 			badgeLogoPosition: organizations.badgeLogoPosition,
+			badgeAiStyle: organizations.badgeAiStyle,
+			badgeCustomTestPortraitUrl: organizations.badgeCustomTestPortraitUrl,
+			badgeCustomTestBackgroundUrl: organizations.badgeCustomTestBackgroundUrl,
+			badgeCustomTestReferenceUrl: organizations.badgeCustomTestReferenceUrl,
 		})
 		.from(organizations)
 		.where(eq(organizations.slug, communitySlug))
@@ -149,7 +166,8 @@ export async function updateCommunityBadgeSettings(
 		badgePrimaryColor?: string | null;
 		badgeSecondaryColor?: string | null;
 		badgeLogoPosition?: string | null;
-	}
+		badgeAiStyle?: string | null;
+	},
 ) {
 	const { userId } = await auth();
 	if (!userId) {
@@ -162,12 +180,15 @@ export async function updateCommunityBadgeSettings(
 		.where(
 			and(
 				eq(communityMembers.communityId, communityId),
-				eq(communityMembers.userId, userId)
-			)
+				eq(communityMembers.userId, userId),
+			),
 		)
 		.limit(1);
 
-	if (!membership || (membership.role !== "owner" && membership.role !== "admin")) {
+	if (
+		!membership ||
+		(membership.role !== "owner" && membership.role !== "admin")
+	) {
 		throw new Error("Solo admins pueden modificar la configuración de badges");
 	}
 
@@ -182,17 +203,104 @@ export async function updateCommunityBadgeSettings(
 	return { success: true };
 }
 
-export async function getUserMembershipRole(communityId: string, userId: string) {
+export async function getUserMembershipRole(
+	communityId: string,
+	userId: string,
+) {
 	const [membership] = await db
 		.select({ role: communityMembers.role })
 		.from(communityMembers)
 		.where(
 			and(
 				eq(communityMembers.communityId, communityId),
-				eq(communityMembers.userId, userId)
-			)
+				eq(communityMembers.userId, userId),
+			),
 		)
 		.limit(1);
 
 	return membership?.role || null;
+}
+
+export async function testCustomBadgeStyle(
+	communityId: string,
+	portraitPrompt: string,
+	backgroundPrompt: string,
+	testImageUrl?: string,
+): Promise<{ success: boolean; runId?: string; error?: string }> {
+	const { userId } = await auth();
+	if (!userId) {
+		return { success: false, error: "No autorizado" };
+	}
+
+	const [membership] = await db
+		.select()
+		.from(communityMembers)
+		.where(
+			and(
+				eq(communityMembers.communityId, communityId),
+				eq(communityMembers.userId, userId),
+			),
+		)
+		.limit(1);
+
+	if (
+		!membership ||
+		(membership.role !== "owner" && membership.role !== "admin")
+	) {
+		return {
+			success: false,
+			error: "Solo admins pueden probar estilos personalizados",
+		};
+	}
+
+	await db
+		.update(organizations)
+		.set({
+			badgeStylePrompt: portraitPrompt,
+			badgeBackgroundPrompt: backgroundPrompt,
+			badgeAiStyle: "custom",
+			badgeCustomTestReferenceUrl: testImageUrl || null,
+			updatedAt: new Date(),
+		})
+		.where(eq(organizations.id, communityId));
+
+	const { tasks } = await import("@trigger.dev/sdk/v3");
+	const handle = await tasks.trigger("test-custom-badge-style", {
+		communityId,
+		portraitPrompt,
+		backgroundPrompt,
+		testImageUrl,
+	});
+
+	return { success: true, runId: handle.id };
+}
+
+export async function clearCustomTestReferenceImage(communityId: string) {
+	const { userId } = await auth();
+	if (!userId) {
+		return { success: false };
+	}
+
+	await db
+		.update(organizations)
+		.set({
+			badgeCustomTestReferenceUrl: null,
+			updatedAt: new Date(),
+		})
+		.where(eq(organizations.id, communityId));
+
+	return { success: true };
+}
+
+export async function getCustomStyleTestStatus(communityId: string) {
+	const [community] = await db
+		.select({
+			badgeCustomTestPortraitUrl: organizations.badgeCustomTestPortraitUrl,
+			badgeCustomTestBackgroundUrl: organizations.badgeCustomTestBackgroundUrl,
+		})
+		.from(organizations)
+		.where(eq(organizations.id, communityId))
+		.limit(1);
+
+	return community || null;
 }
