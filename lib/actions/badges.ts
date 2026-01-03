@@ -2,6 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { and, desc, eq, sql } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import {
 	communityBadges,
@@ -59,8 +60,7 @@ export async function getBadgeByToken(token: string) {
 				name: organizations.name,
 				displayName: organizations.displayName,
 				logoUrl: organizations.logoUrl,
-				badgePrimaryColor: organizations.badgePrimaryColor,
-				badgeSecondaryColor: organizations.badgeSecondaryColor,
+				badgeAccentColor: organizations.badgeAccentColor,
 			},
 		})
 		.from(communityBadges)
@@ -142,15 +142,14 @@ export async function getCommunityBadgeSettings(communitySlug: string) {
 			badgeEnabled: organizations.badgeEnabled,
 			badgeStylePrompt: organizations.badgeStylePrompt,
 			badgeBackgroundPrompt: organizations.badgeBackgroundPrompt,
-			badgePrimaryColor: organizations.badgePrimaryColor,
-			badgeSecondaryColor: organizations.badgeSecondaryColor,
-			badgeLogoPosition: organizations.badgeLogoPosition,
+			badgeAccentColor: organizations.badgeAccentColor,
 			badgeAiStyle: organizations.badgeAiStyle,
 			badgeCustomTestPortraitUrl: organizations.badgeCustomTestPortraitUrl,
 			badgeCustomTestBackgroundUrl: organizations.badgeCustomTestBackgroundUrl,
 			badgeCustomTestReferenceUrl: organizations.badgeCustomTestReferenceUrl,
 			badgeCustomBackgroundImageUrl:
 				organizations.badgeCustomBackgroundImageUrl,
+			badgeStyleTestImages: organizations.badgeStyleTestImages,
 		})
 		.from(organizations)
 		.where(eq(organizations.slug, communitySlug))
@@ -165,9 +164,7 @@ export async function updateCommunityBadgeSettings(
 		badgeEnabled?: boolean;
 		badgeStylePrompt?: string | null;
 		badgeBackgroundPrompt?: string | null;
-		badgePrimaryColor?: string | null;
-		badgeSecondaryColor?: string | null;
-		badgeLogoPosition?: string | null;
+		badgeAccentColor?: string | null;
 		badgeAiStyle?: string | null;
 	},
 ) {
@@ -194,6 +191,12 @@ export async function updateCommunityBadgeSettings(
 		throw new Error("Solo admins pueden modificar la configuración de badges");
 	}
 
+	const [community] = await db
+		.select({ slug: organizations.slug })
+		.from(organizations)
+		.where(eq(organizations.id, communityId))
+		.limit(1);
+
 	await db
 		.update(organizations)
 		.set({
@@ -201,6 +204,10 @@ export async function updateCommunityBadgeSettings(
 			updatedAt: new Date(),
 		})
 		.where(eq(organizations.id, communityId));
+
+	if (community?.slug) {
+		revalidatePath(`/c/${community.slug}/settings/badge`);
+	}
 
 	return { success: true };
 }
@@ -223,8 +230,9 @@ export async function getUserMembershipRole(
 	return membership?.role || null;
 }
 
-export async function testCustomBadgeStyle(
+export async function testBadgeStyle(
 	communityId: string,
+	styleId: string,
 	portraitPrompt: string,
 	backgroundPrompt?: string,
 	testImageUrl?: string,
@@ -257,36 +265,25 @@ export async function testCustomBadgeStyle(
 	) {
 		return {
 			success: false,
-			error: "Solo admins pueden probar estilos personalizados",
+			error: "Solo admins pueden probar estilos",
 		};
 	}
 
-	await db
-		.update(organizations)
-		.set({
-			badgeStylePrompt: portraitPrompt,
-			badgeBackgroundPrompt: backgroundPrompt || null,
-			badgeAiStyle: "custom",
-			badgeCustomTestReferenceUrl: testImageUrl || null,
-			badgeCustomBackgroundImageUrl: customBackgroundImageUrl || null,
-			badgeCustomTestPortraitUrl: null,
-			badgeCustomTestBackgroundUrl: null,
-			updatedAt: new Date(),
-		})
-		.where(eq(organizations.id, communityId));
-
-	const { tasks, runs } = await import("@trigger.dev/sdk/v3");
-	const handle = await tasks.trigger("test-custom-badge-style", {
+	const { tasks } = await import("@trigger.dev/sdk/v3");
+	const handle = await tasks.trigger("test-badge-style", {
 		communityId,
+		styleId,
 		portraitPrompt,
 		backgroundPrompt,
 		testImageUrl,
 		customBackgroundImageUrl,
 	});
 
-	const publicAccessToken = await runs.generatePublicAccessToken(handle.id);
-
-	return { success: true, runId: handle.id, publicAccessToken };
+	return {
+		success: true,
+		runId: handle.id,
+		publicAccessToken: handle.publicAccessToken,
+	};
 }
 
 export async function clearCustomTestReferenceImage(communityId: string) {

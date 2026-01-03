@@ -52,7 +52,7 @@ export default async function BadgePage({ params }: BadgePageProps) {
 	const { badge, community } = data;
 	const shareUrl = `https://hack0.dev/c/${slug}/badge/${token}`;
 	const twitterText = encodeURIComponent(
-		`Mi badge de ${community.displayName || community.name} en @hack0dev`
+		`Mi badge de ${community.displayName || community.name} en @hack0dev`,
 	);
 
 	return (
@@ -66,8 +66,8 @@ export default async function BadgePage({ params }: BadgePageProps) {
 					badgeNumber={badge.badgeNumber}
 					communityName={community.displayName || community.name}
 					communityLogo={community.logoUrl}
-					primaryColor={community.badgePrimaryColor}
-					secondaryColor={community.badgeSecondaryColor}
+					primaryColor={community.badgeAccentColor}
+					secondaryColor={community.badgeAccentColor}
 				/>
 			</div>
 

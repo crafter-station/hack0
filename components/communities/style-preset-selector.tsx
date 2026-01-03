@@ -19,9 +19,10 @@ interface StylePresetSelectorProps {
 export function StylePresetSelector({
 	value,
 	onChange,
-	label = "AI Style",
-	description = "Choose how member portraits are generated",
-}: StylePresetSelectorProps) {
+	label = "Estilo IA",
+	description = "Elige cómo se generan los retratos de miembros",
+	disabled,
+}: StylePresetSelectorProps & { disabled?: boolean }) {
 	const presets = BADGE_STYLE_PRESETS.filter((s) => s.id !== CUSTOM_STYLE_ID);
 	const customPreset = BADGE_STYLE_PRESETS.find(
 		(s) => s.id === CUSTOM_STYLE_ID,
@@ -51,11 +52,13 @@ export function StylePresetSelector({
 							key={style.id}
 							type="button"
 							onClick={() => onChange(style.id)}
+							disabled={disabled}
 							className={cn(
 								"relative rounded-lg border text-left transition-all duration-150 overflow-hidden group",
 								isSelected
 									? "border-foreground ring-1 ring-foreground"
 									: "border-border hover:border-muted-foreground",
+								disabled && "opacity-50 cursor-not-allowed",
 							)}
 						>
 							{isSelected && (
@@ -78,7 +81,7 @@ export function StylePresetSelector({
 											: "brightness-75 group-hover:brightness-90",
 									)}
 								/>
-								<div className="absolute inset-x-0 -top-2 bottom-6 flex items-start justify-center">
+								<div className="absolute inset-x-0 top-4 bottom-6 flex items-start justify-center">
 									<div className="relative w-[95%] h-full">
 										<Image
 											src={portraitImage}
@@ -107,11 +110,13 @@ export function StylePresetSelector({
 					<button
 						type="button"
 						onClick={() => onChange(CUSTOM_STYLE_ID)}
+						disabled={disabled}
 						className={cn(
 							"relative rounded-lg border text-left transition-all duration-150 overflow-hidden group",
 							value === CUSTOM_STYLE_ID
 								? "border-foreground ring-1 ring-foreground"
 								: "border-border hover:border-muted-foreground border-dashed",
+							disabled && "opacity-50 cursor-not-allowed",
 						)}
 					>
 						{value === CUSTOM_STYLE_ID && (

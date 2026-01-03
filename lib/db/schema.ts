@@ -3,6 +3,7 @@ import {
 	boolean,
 	index,
 	integer,
+	jsonb,
 	pgEnum,
 	pgTable,
 	text,
@@ -654,9 +655,7 @@ export const organizations = pgTable("organizations", {
 	badgeEnabled: boolean("badge_enabled").default(false),
 	badgeStylePrompt: text("badge_style_prompt"),
 	badgeBackgroundPrompt: text("badge_background_prompt"),
-	badgePrimaryColor: varchar("badge_primary_color", { length: 20 }),
-	badgeSecondaryColor: varchar("badge_secondary_color", { length: 20 }),
-	badgeLogoPosition: varchar("badge_logo_position", { length: 20 }),
+	badgeAccentColor: varchar("badge_accent_color", { length: 20 }),
 	badgeAiStyle: varchar("badge_ai_style", { length: 50 }),
 	badgeCustomTestPortraitUrl: varchar("badge_custom_test_portrait_url", {
 		length: 500,
@@ -670,6 +669,9 @@ export const organizations = pgTable("organizations", {
 	badgeCustomBackgroundImageUrl: varchar("badge_custom_background_image_url", {
 		length: 500,
 	}),
+	badgeStyleTestImages: jsonb("badge_style_test_images").$type<
+		Record<string, { portrait: string | null; background: string | null }>
+	>(),
 
 	// Timestamps
 	createdAt: timestamp("created_at", {

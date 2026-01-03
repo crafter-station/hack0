@@ -17,8 +17,26 @@ const STYLES = [
 	{
 		id: "cyberpunk",
 		name: "Cyberpunk",
-		portraitPrompt: `Cyberpunk stylized portrait, chest-up view. Keep the person's likeness and features recognizable. Neon cyan and magenta edge lighting. Use a simple solid color background. Style should be cartoonish, anime inspired, cute and tender soft. Maintain the original pose and expression.`,
-		backgroundPrompt: `Dark cyberpunk background. Black base with neon cyan and magenta geometric grid lines. Circuit board patterns. Holographic HUD elements. Digital matrix rain. High-tech aesthetic. No characters.`,
+		portraitPrompt: `Flat illustration cyberpunk portrait, chest-up view. Keep the person's likeness and features recognizable. Stylized cartoon with neon cyan and magenta colors. Simple cel-shaded style. Bold graphic design aesthetic. Neon glow effects on flat colors. Not photorealistic, illustrated look. Maintain the original pose and expression.`,
+		backgroundPrompt: `Flat illustrated cyberpunk background. Simple geometric neon shapes. Cyan and magenta color blocks. Minimalist sci-fi aesthetic. Clean graphic design style. No photorealism. No characters.`,
+	},
+	{
+		id: "anime",
+		name: "Anime",
+		portraitPrompt: `Anime style portrait, chest-up view. Clean cel-shaded illustration. Big expressive eyes. Smooth skin with soft shading. Keep the person's likeness and features recognizable. Use a simple solid color background. Style should be like modern anime, beautiful and polished. Maintain the original pose and expression.`,
+		backgroundPrompt: `Anime style background. Soft pastel gradient sky with subtle clouds. Cherry blossom petals floating. Dreamy and ethereal atmosphere. Warm golden hour lighting. No characters.`,
+	},
+	{
+		id: "sticker",
+		name: "Sticker",
+		portraitPrompt: `Cute sticker illustration style portrait, chest-up view. Keep the person's likeness recognizable. Thick black outlines around everything. Bright cheerful colors. Slightly chibi proportions with bigger head. Kawaii cute aesthetic. Simple cel-shaded with minimal shading. Like a vinyl sticker or emoji. White background. Maintain the original pose and expression.`,
+		backgroundPrompt: `Colorful pastel gradient background. Soft pink to light blue gradient. Cute and playful aesthetic. Maybe small sparkles or stars. No characters.`,
+	},
+	{
+		id: "ghibli",
+		name: "Ghibli",
+		portraitPrompt: `Studio Ghibli style portrait, chest-up view. Hand-drawn animation look. Soft warm colors. Gentle watercolor-like shading. Miyazaki anime aesthetic. Dreamy and whimsical. Simple but expressive features. Keep the person's likeness recognizable. Cozy and nostalgic feel. Maintain the original pose and expression.`,
+		backgroundPrompt: `Studio Ghibli style background. Soft hand-painted clouds and sky. Warm golden hour lighting. Dreamy pastoral landscape. Watercolor texture. Peaceful and magical atmosphere. No characters.`,
 	},
 ];
 
@@ -103,16 +121,25 @@ async function generateStylePreview(style: (typeof STYLES)[0]) {
 	}
 }
 
+const STYLES_TO_GENERATE = process.argv[2]
+	? process.argv[2].split(",")
+	: STYLES.map((s) => s.id);
+
 async function main() {
 	console.log("=== Generating Style Preview Images ===");
 	console.log("Using fal.ai API with:");
 	console.log("  - qwen-image-edit for portrait generation");
 	console.log("  - bria/background/remove for background removal");
 	console.log("  - flux/schnell for backgrounds");
+	console.log(`\nStyles to generate: ${STYLES_TO_GENERATE.join(", ")}`);
 
 	const results = [];
 
-	for (const style of STYLES) {
+	const stylesToProcess = STYLES.filter((s) =>
+		STYLES_TO_GENERATE.includes(s.id),
+	);
+
+	for (const style of stylesToProcess) {
 		const result = await generateStylePreview(style);
 		results.push(result);
 		await new Promise((resolve) => setTimeout(resolve, 1000));
