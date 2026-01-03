@@ -11,6 +11,7 @@ import {
 	type NewOrganization,
 	organizations,
 } from "@/lib/db/schema";
+import { ensureUniqueOrgShortCode } from "@/lib/slug-utils";
 
 // ============================================
 // ORGANIZATION QUERIES
@@ -77,7 +78,12 @@ export async function getAllUserOrganizations() {
 	];
 
 	allOrgs.sort((a, b) => {
-		const roleOrder: Record<string, number> = { owner: 0, admin: 1, member: 2, follower: 3 };
+		const roleOrder: Record<string, number> = {
+			owner: 0,
+			admin: 1,
+			member: 2,
+			follower: 3,
+		};
 		const aOrder = roleOrder[a.role ?? "follower"] ?? 4;
 		const bOrder = roleOrder[b.role ?? "follower"] ?? 4;
 		if (aOrder !== bOrder) return aOrder - bOrder;
@@ -257,10 +263,13 @@ export async function createOrganization(
 		throw new Error("Slug already taken");
 	}
 
+	const shortCode = await ensureUniqueOrgShortCode();
+
 	const [org] = await db
 		.insert(organizations)
 		.values({
 			...data,
+			shortCode,
 			ownerUserId: userId,
 		})
 		.returning();
@@ -325,10 +334,13 @@ export async function getOrCreatePersonalOrg() {
 			}
 		}
 
+		const shortCode = await ensureUniqueOrgShortCode();
+
 		const [org] = await db
 			.insert(organizations)
 			.values({
 				slug,
+				shortCode,
 				name: userInfo.fullName,
 				displayName: null,
 				type: "community",

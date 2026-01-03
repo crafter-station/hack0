@@ -1,12 +1,17 @@
 "use client";
 
 import type { Tag } from "emblor";
-import { Loader2, Save } from "lucide-react";
+import { Check, Copy, ExternalLink, Loader2, Save, Share2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 import type { Organization } from "@/lib/db/schema";
 import { useUploadThing } from "@/lib/uploadthing";
 import { cn } from "@/lib/utils";
@@ -31,6 +36,52 @@ export function BadgeSettingsForm({ organization }: BadgeSettingsFormProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState(false);
+	const [copied, setCopied] = useState(false);
+	const [shortCode, setShortCode] = useState<string | null>(
+		organization.shortCode ?? null,
+	);
+	const [isGeneratingCode, setIsGeneratingCode] = useState(false);
+	const [origin, setOrigin] = useState("");
+
+	// Set origin on client side
+	useEffect(() => {
+		setOrigin(window.location.origin);
+	}, []);
+
+	// Auto-generate shortCode if missing (for existing orgs)
+	useEffect(() => {
+		if (!shortCode && origin && !isGeneratingCode) {
+			const generateCode = async () => {
+				setIsGeneratingCode(true);
+				try {
+					const response = await fetch(
+						`/api/organizations/${organization.id}/short-code`,
+						{
+							method: "POST",
+						},
+					);
+					if (response.ok) {
+						const data = await response.json();
+						setShortCode(data.shortCode);
+					}
+				} catch (err) {
+					console.error("Error generating short code:", err);
+				} finally {
+					setIsGeneratingCode(false);
+				}
+			};
+			generateCode();
+		}
+	}, [shortCode, origin, organization.id, isGeneratingCode]);
+
+	const previewUrl = shortCode ? `${origin}/b/${shortCode}` : null;
+
+	const copyShareLink = useCallback(() => {
+		if (!previewUrl) return;
+		navigator.clipboard.writeText(previewUrl);
+		setCopied(true);
+		setTimeout(() => setCopied(false), 2000);
+	}, [previewUrl]);
 
 	const [config, setConfig] = useState<BadgeConfig>({
 		logo: organization.logoUrl || "",
@@ -190,6 +241,103 @@ export function BadgeSettingsForm({ organization }: BadgeSettingsFormProps) {
 
 	return (
 		<form onSubmit={handleSubmit} className="space-y-6">
+			{/* Header con título y botones */}
+			<div className="flex items-center justify-between">
+				<div>
+					<h3 className="text-lg font-semibold">Badge Settings</h3>
+					<p className="text-sm text-muted-foreground">
+						Configura los badges de tu comunidad
+					</p>
+				</div>
+				<div className="flex items-center gap-2">
+					<Popover>
+						<PopoverTrigger asChild>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								className="gap-2"
+							>
+								<Share2 className="h-4 w-4" />
+								Compartir
+							</Button>
+						</PopoverTrigger>
+						<PopoverContent className="w-80" align="end">
+							<div className="space-y-3">
+								<div>
+									<h4 className="font-medium text-sm">
+										Compartir vista previa
+									</h4>
+									<p className="text-xs text-muted-foreground">
+										Comparte este link para mostrar la vista previa del badge
+									</p>
+								</div>
+								<div className="flex gap-2">
+									<Input
+										readOnly
+										value={previewUrl || ""}
+										placeholder={isGeneratingCode ? "Generando..." : ""}
+										className="text-xs h-8 font-mono"
+									/>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										className="h-8 px-2 shrink-0"
+										onClick={copyShareLink}
+										disabled={!previewUrl || isGeneratingCode}
+									>
+										{isGeneratingCode ? (
+											<Loader2 className="h-4 w-4 animate-spin" />
+										) : copied ? (
+											<Check className="h-4 w-4 text-emerald-500" />
+										) : (
+											<Copy className="h-4 w-4" />
+										)}
+									</Button>
+								</div>
+								{previewUrl && (
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										className="w-full gap-2 text-xs"
+										asChild
+									>
+										<a
+											href={previewUrl}
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											<ExternalLink className="h-3 w-3" />
+											Abrir en nueva pestaña
+										</a>
+									</Button>
+								)}
+							</div>
+						</PopoverContent>
+					</Popover>
+					<Button
+						type="submit"
+						disabled={isSubmitting}
+						size="sm"
+						className="gap-2"
+					>
+						{isSubmitting ? (
+							<>
+								<Loader2 className="h-4 w-4 animate-spin" />
+								Guardando...
+							</>
+						) : (
+							<>
+								<Save className="h-4 w-4" />
+								Guardar
+							</>
+						)}
+					</Button>
+				</div>
+			</div>
+
 			{error && (
 				<div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3">
 					<p className="text-sm text-red-600 dark:text-red-400">{error}</p>
@@ -453,24 +601,6 @@ export function BadgeSettingsForm({ organization }: BadgeSettingsFormProps) {
 					</div>
 				</div>
 			</div>
-
-			<Button
-				type="submit"
-				disabled={isSubmitting}
-				className="w-full h-10 text-sm gap-2"
-			>
-				{isSubmitting ? (
-					<>
-						<Loader2 className="h-4 w-4 animate-spin" />
-						Guardando...
-					</>
-				) : (
-					<>
-						<Save className="h-4 w-4" />
-						Guardar configuración
-					</>
-				)}
-			</Button>
 		</form>
 	);
 }

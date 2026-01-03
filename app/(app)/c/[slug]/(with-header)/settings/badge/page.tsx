@@ -19,13 +19,6 @@ export default async function BadgeSettingsPage({
 
 	return (
 		<div className="space-y-6">
-			<div>
-				<h3 className="text-lg font-semibold">Badge Settings</h3>
-				<p className="text-sm text-muted-foreground">
-					Configura los badges de tu comunidad
-				</p>
-			</div>
-
 			<BadgeSettingsForm organization={org} />
 		</div>
 	);
