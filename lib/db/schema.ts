@@ -878,15 +878,6 @@ export type NewCommunityRoleRequest = typeof communityRoleRequests.$inferInsert;
 // EVENT SPONSORS - Junction table for sponsors (using organizations)
 // ============================================
 
-export const sponsorTierEnum = pgEnum("sponsor_tier", [
-	"platinum",
-	"gold",
-	"silver",
-	"bronze",
-	"partner",
-	"community",
-]);
-
 export const eventSponsors = pgTable("event_sponsors", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	eventId: uuid("event_id")
@@ -895,12 +886,7 @@ export const eventSponsors = pgTable("event_sponsors", {
 	organizationId: uuid("organization_id")
 		.references(() => organizations.id)
 		.notNull(),
-
-	// Tier/level
-	tier: sponsorTierEnum("tier").default("partner"),
-	orderIndex: integer("order_index").default(0), // For custom ordering within tier
-
-	// Timestamps
+	orderIndex: integer("order_index").default(0),
 	createdAt: timestamp("created_at", {
 		mode: "date",
 		withTimezone: true,
@@ -909,24 +895,6 @@ export const eventSponsors = pgTable("event_sponsors", {
 
 export type EventSponsor = typeof eventSponsors.$inferSelect;
 export type NewEventSponsor = typeof eventSponsors.$inferInsert;
-
-export const SPONSOR_TIERS = [
-	"platinum",
-	"gold",
-	"silver",
-	"bronze",
-	"partner",
-	"community",
-] as const;
-
-export const SPONSOR_TIER_LABELS: Record<string, string> = {
-	platinum: "Platino",
-	gold: "Oro",
-	silver: "Plata",
-	bronze: "Bronce",
-	partner: "Partner",
-	community: "Comunidad",
-};
 
 // ============================================
 // EVENT ORGANIZERS - Assign community members to specific events

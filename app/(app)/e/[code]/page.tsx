@@ -34,7 +34,6 @@ import {
 	getEventByShortCode,
 	getEventSponsors,
 } from "@/lib/actions/events";
-import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
 import {
 	formatEventDate,
 	formatEventDateFull,
@@ -682,60 +681,30 @@ export default async function EventPage({ params }: EventPageProps) {
 									<h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
 										Sponsors y Partners
 									</h2>
-									<div className="space-y-6">
-										{(
-											[
-												"platinum",
-												"gold",
-												"silver",
-												"bronze",
-												"partner",
-												"community",
-											] as const
-										).map((tier) => {
-											const tierSponsors = eventSponsors.filter(
-												(s) => s.tier === tier,
-											);
-											if (tierSponsors.length === 0) return null;
-											return (
-												<div key={tier} className="space-y-3">
-													<h3 className="text-xs font-medium text-muted-foreground">
-														{SPONSOR_TIER_LABELS[tier]}
-													</h3>
-													<div className="flex flex-wrap gap-3">
-														{tierSponsors.map((sponsor) => (
-															<a
-																key={sponsor.id}
-																href={sponsor.organization.websiteUrl || "#"}
-																target="_blank"
-																rel="noopener noreferrer"
-																className={`group flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-muted/50 ${
-																	tier === "platinum" || tier === "gold"
-																		? "border-amber-500/30 bg-amber-500/5"
-																		: ""
-																}`}
-															>
-																<Avatar className="h-10 w-10 rounded-lg">
-																	<AvatarImage
-																		src={
-																			sponsor.organization.logoUrl || undefined
-																		}
-																		alt={sponsor.organization.name}
-																		className="object-contain bg-white"
-																	/>
-																	<AvatarFallback className="rounded-lg text-sm font-medium">
-																		{getInitials(sponsor.organization.name)}
-																	</AvatarFallback>
-																</Avatar>
-																<span className="text-sm font-medium group-hover:underline underline-offset-2">
-																	{sponsor.organization.name}
-																</span>
-															</a>
-														))}
-													</div>
-												</div>
-											);
-										})}
+									<div className="flex flex-wrap gap-3">
+										{eventSponsors.map((sponsor) => (
+											<a
+												key={sponsor.id}
+												href={sponsor.organization.websiteUrl || "#"}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="group flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-muted/50"
+											>
+												<Avatar className="h-10 w-10 rounded-lg">
+													<AvatarImage
+														src={sponsor.organization.logoUrl || undefined}
+														alt={sponsor.organization.name}
+														className="object-contain bg-white"
+													/>
+													<AvatarFallback className="rounded-lg text-sm font-medium">
+														{getInitials(sponsor.organization.name)}
+													</AvatarFallback>
+												</Avatar>
+												<span className="text-sm font-medium group-hover:underline underline-offset-2">
+													{sponsor.organization.name}
+												</span>
+											</a>
+										))}
 									</div>
 								</div>
 							)}

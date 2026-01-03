@@ -12,31 +12,18 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import {
 	addEventSponsor,
 	type EventSponsorWithOrg,
 	removeEventSponsor,
-	updateEventSponsor,
 } from "@/lib/actions/events";
 import { searchOrganizations } from "@/lib/actions/organizations";
 import type { Organization } from "@/lib/db/schema";
-import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
 
 interface SponsorManagerProps {
 	eventId: string;
 	sponsors: EventSponsorWithOrg[];
 	onUpdate?: () => void;
 }
-
-const TIER_OPTIONS = Object.entries(SPONSOR_TIER_LABELS).map(
-	([value, label]) => ({ value, label }),
-);
 
 export function SponsorManager({
 	eventId,
@@ -49,7 +36,6 @@ export function SponsorManager({
 	const [searchResults, setSearchResults] = useState<Organization[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
 	const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
-	const [selectedTier, setSelectedTier] = useState<string>("partner");
 
 	const handleSearch = async (query: string) => {
 		setSearchQuery(query);
@@ -70,7 +56,6 @@ export function SponsorManager({
 		const result = await addEventSponsor({
 			eventId,
 			organizationId: selectedOrg.id,
-			tier: selectedTier as any,
 		});
 
 		if (result.success && result.eventSponsor) {
@@ -91,18 +76,6 @@ export function SponsorManager({
 		if (result.success) {
 			setSponsors(sponsors.filter((s) => s.id !== sponsorId));
 			toast.success("Sponsor eliminado");
-			onUpdate?.();
-		}
-	};
-
-	const handleUpdateTier = async (sponsorId: string, tier: string) => {
-		const result = await updateEventSponsor(sponsorId, { tier: tier as any });
-		if (result.success) {
-			setSponsors(
-				sponsors.map((s) =>
-					s.id === sponsorId ? { ...s, tier: tier as any } : s,
-				),
-			);
 			onUpdate?.();
 		}
 	};
@@ -134,21 +107,6 @@ export function SponsorManager({
 									{sponsor.organization.slug}
 								</p>
 							</div>
-							<Select
-								value={sponsor.tier || "partner"}
-								onValueChange={(value) => handleUpdateTier(sponsor.id, value)}
-							>
-								<SelectTrigger className="w-32">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{TIER_OPTIONS.map((option) => (
-										<SelectItem key={option.value} value={option.value}>
-											{option.label}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
 							<Button
 								type="button"
 								variant="ghost"
@@ -231,24 +189,6 @@ export function SponsorManager({
 									{selectedOrg.slug}
 								</p>
 							</div>
-
-							<Field>
-								<FieldLabel htmlFor="sponsorTier">
-									Nivel de sponsorship
-								</FieldLabel>
-								<Select value={selectedTier} onValueChange={setSelectedTier}>
-									<SelectTrigger id="sponsorTier">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										{TIER_OPTIONS.map((option) => (
-											<SelectItem key={option.value} value={option.value}>
-												{option.label}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</Field>
 
 							<Button
 								type="button"

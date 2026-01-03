@@ -5,7 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import type { EventFilters, EventWithOrg } from "@/lib/actions/events";
+import type {
+	CommunityEventRole,
+	EventFilters,
+	EventWithOrg,
+} from "@/lib/actions/events";
 import {
 	formatEventDateRange,
 	getEventStatus,
@@ -14,12 +18,17 @@ import {
 } from "@/lib/event-utils";
 import { LoadMoreButton } from "./load-more-button";
 
+type EventWithOptionalRole = EventWithOrg & {
+	communityRole?: CommunityEventRole;
+};
+
 interface EventsCardsProps {
-	events: EventWithOrg[];
+	events: EventWithOptionalRole[];
 	total?: number;
 	hasMore?: boolean;
 	filters?: EventFilters;
 	timeFilter?: "upcoming" | "all" | "past";
+	showCommunityRole?: boolean;
 }
 
 function getStatusColor(status: string) {
@@ -46,7 +55,13 @@ function isEventPast(event: EventWithOrg): boolean {
 	return new Date(event.endDate) < new Date();
 }
 
-function EventCard({ event }: { event: EventWithOrg }) {
+function EventCard({
+	event,
+	showCommunityRole,
+}: {
+	event: EventWithOptionalRole;
+	showCommunityRole?: boolean;
+}) {
 	const status = getEventStatus(event);
 	const isEnded = status.status === "ended";
 	const prize = formatPrize(event.prizePool, event.prizeCurrency);
@@ -102,6 +117,22 @@ function EventCard({ event }: { event: EventWithOrg }) {
 							</Badge>
 						</div>
 					)}
+					{showCommunityRole && event.communityRole && (
+						<div className="absolute bottom-2 left-2">
+							<Badge
+								variant="outline"
+								className={`text-[10px] backdrop-blur-sm ${
+									event.communityRole === "organizer"
+										? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+										: "bg-blue-500/10 text-blue-600 border-blue-500/20"
+								}`}
+							>
+								{event.communityRole === "organizer"
+									? "Organizador"
+									: "Sponsor"}
+							</Badge>
+						</div>
+					)}
 				</div>
 				<CardContent className="p-3 border-t space-y-2">
 					<div>
@@ -148,6 +179,7 @@ export function EventsCards({
 	hasMore = false,
 	filters = {},
 	timeFilter = "upcoming",
+	showCommunityRole = false,
 }: EventsCardsProps) {
 	if (events.length === 0) {
 		return (
@@ -170,7 +202,11 @@ export function EventsCards({
 						</h2>
 						<div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
 							{upcomingEvents.map((event) => (
-								<EventCard key={event.id} event={event} />
+								<EventCard
+									key={event.id}
+									event={event}
+									showCommunityRole={showCommunityRole}
+								/>
 							))}
 						</div>
 					</div>
@@ -182,7 +218,11 @@ export function EventsCards({
 						</h2>
 						<div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
 							{pastEvents.map((event) => (
-								<EventCard key={event.id} event={event} />
+								<EventCard
+									key={event.id}
+									event={event}
+									showCommunityRole={showCommunityRole}
+								/>
 							))}
 						</div>
 					</div>
@@ -201,7 +241,11 @@ export function EventsCards({
 		<div className="space-y-4">
 			<div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
 				{events.map((event) => (
-					<EventCard key={event.id} event={event} />
+					<EventCard
+						key={event.id}
+						event={event}
+						showCommunityRole={showCommunityRole}
+					/>
 				))}
 			</div>
 

@@ -802,7 +802,6 @@ export async function getEventSponsors(
 			id: eventSponsors.id,
 			eventId: eventSponsors.eventId,
 			organizationId: eventSponsors.organizationId,
-			tier: eventSponsors.tier,
 			orderIndex: eventSponsors.orderIndex,
 			createdAt: eventSponsors.createdAt,
 			organization: organizations,
@@ -813,19 +812,7 @@ export async function getEventSponsors(
 			eq(eventSponsors.organizationId, organizations.id),
 		)
 		.where(eq(eventSponsors.eventId, eventId))
-		.orderBy(
-			asc(sql`
-        CASE ${eventSponsors.tier}
-          WHEN 'platinum' THEN 1
-          WHEN 'gold' THEN 2
-          WHEN 'silver' THEN 3
-          WHEN 'bronze' THEN 4
-          WHEN 'partner' THEN 5
-          WHEN 'community' THEN 6
-        END
-      `),
-			asc(eventSponsors.orderIndex),
-		);
+		.orderBy(asc(eventSponsors.orderIndex));
 
 	return results;
 }
@@ -833,7 +820,6 @@ export async function getEventSponsors(
 export interface AddEventSponsorInput {
 	eventId: string;
 	organizationId: string;
-	tier?: "platinum" | "gold" | "silver" | "bronze" | "partner" | "community";
 	orderIndex?: number;
 }
 
@@ -844,7 +830,6 @@ export async function addEventSponsor(
 		const sponsorData: NewEventSponsor = {
 			eventId: input.eventId,
 			organizationId: input.organizationId,
-			tier: input.tier || "partner",
 			orderIndex: input.orderIndex || 0,
 		};
 
@@ -864,17 +849,14 @@ export async function addEventSponsor(
 	}
 }
 
-export async function updateEventSponsor(
+export async function updateEventSponsorOrder(
 	eventSponsorId: string,
-	input: Partial<Omit<AddEventSponsorInput, "eventId" | "organizationId">>,
+	orderIndex: number,
 ): Promise<{ success: boolean; error?: string }> {
 	try {
 		await db
 			.update(eventSponsors)
-			.set({
-				tier: input.tier,
-				orderIndex: input.orderIndex,
-			})
+			.set({ orderIndex })
 			.where(eq(eventSponsors.id, eventSponsorId));
 
 		return { success: true };
@@ -894,6 +876,118 @@ export async function removeEventSponsor(
 		console.error("Error removing event sponsor:", error);
 		return { success: false, error: "Error al eliminar el sponsor" };
 	}
+}
+
+// ============================================
+// COMMUNITY EVENTS WITH ROLE
+// ============================================
+
+export type CommunityEventRole = "organizer" | "sponsor";
+
+export interface EventWithOrgAndRole extends EventWithOrg {
+	communityRole: CommunityEventRole;
+}
+
+export async function getCommunityEventsWithRole(
+	organizationId: string,
+	options?: { search?: string; limit?: number },
+): Promise<EventWithOrgAndRole[]> {
+	const searchFilter = options?.search
+		? or(
+				ilike(events.name, `%${options.search}%`),
+				ilike(events.description, `%${options.search}%`),
+			)
+		: undefined;
+
+	const organizedResults = await db
+		.select({
+			event: events,
+			organization: organizations,
+		})
+		.from(events)
+		.leftJoin(organizations, eq(events.organizationId, organizations.id))
+		.where(
+			searchFilter
+				? and(eq(events.organizationId, organizationId), searchFilter)
+				: eq(events.organizationId, organizationId),
+		);
+
+	const sponsoredEventIds = await db
+		.select({ eventId: eventSponsors.eventId })
+		.from(eventSponsors)
+		.where(eq(eventSponsors.organizationId, organizationId));
+
+	const sponsoredResults =
+		sponsoredEventIds.length > 0
+			? await db
+					.select({
+						event: events,
+						organization: organizations,
+					})
+					.from(events)
+					.leftJoin(organizations, eq(events.organizationId, organizations.id))
+					.where(
+						searchFilter
+							? and(
+									inArray(
+										events.id,
+										sponsoredEventIds.map((e) => e.eventId),
+									),
+									searchFilter,
+								)
+							: inArray(
+									events.id,
+									sponsoredEventIds.map((e) => e.eventId),
+								),
+					)
+			: [];
+
+	const eventMap = new Map<string, EventWithOrgAndRole>();
+
+	for (const r of organizedResults) {
+		eventMap.set(r.event.id, {
+			...r.event,
+			organization: r.organization,
+			communityRole: "organizer",
+		});
+	}
+
+	for (const r of sponsoredResults) {
+		if (!eventMap.has(r.event.id)) {
+			eventMap.set(r.event.id, {
+				...r.event,
+				organization: r.organization,
+				communityRole: "sponsor",
+			});
+		}
+	}
+
+	const allEvents = Array.from(eventMap.values());
+
+	allEvents.sort((a, b) => {
+		const getStatusPriority = (e: Event) => {
+			const now = new Date();
+			const endDate = e.endDate ? new Date(e.endDate) : null;
+			const startDate = e.startDate ? new Date(e.startDate) : null;
+
+			if (endDate && endDate < now) return 4;
+			if (!endDate && startDate && startDate < now) return 4;
+			if (startDate && startDate <= now && endDate && endDate > now) return 1;
+			if (e.registrationDeadline && new Date(e.registrationDeadline) > now)
+				return 2;
+			return 3;
+		};
+
+		const priorityA = getStatusPriority(a);
+		const priorityB = getStatusPriority(b);
+		if (priorityA !== priorityB) return priorityA - priorityB;
+
+		const dateA = a.startDate ? new Date(a.startDate).getTime() : Infinity;
+		const dateB = b.startDate ? new Date(b.startDate).getTime() : Infinity;
+		return dateA - dateB;
+	});
+
+	return options?.limit ? allEvents.slice(0, options.limit) : allEvents;
 }
 
 export async function getDepartmentsWithEvents(): Promise<string[]> {

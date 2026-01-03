@@ -1,4 +1,4 @@
-import { asc, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import type { SearchParams } from "nuqs/server";
 import { Suspense } from "react";
@@ -8,8 +8,9 @@ import { EventsCalendar } from "@/components/events/events-calendar";
 import { EventsCards } from "@/components/events/events-cards";
 import { EventsMapView } from "@/components/events/events-map-view";
 import { EventsPreviewView } from "@/components/events/events-preview-view";
+import { getCommunityEventsWithRole } from "@/lib/actions/events";
 import { db } from "@/lib/db";
-import { events, organizations } from "@/lib/db/schema";
+import { organizations } from "@/lib/db/schema";
 import { getEventsViewPreference } from "@/lib/view-preferences";
 
 interface CommunityPageProps {
@@ -35,51 +36,10 @@ async function CommunityEvents({
 
 	if (!community) return null;
 
-	const statusPriority = sql<number>`
-    CASE
-      WHEN ${events.endDate} IS NOT NULL AND ${events.endDate} < NOW() THEN 4
-      WHEN ${events.endDate} IS NULL AND ${events.startDate} IS NOT NULL AND ${events.startDate} < CURRENT_DATE THEN 4
-      WHEN ${events.startDate} IS NOT NULL AND ${events.startDate} <= NOW()
-           AND ${events.endDate} IS NOT NULL AND ${events.endDate} > NOW() THEN 1
-      WHEN ${events.registrationDeadline} IS NOT NULL AND ${events.registrationDeadline} > NOW() THEN 2
-      ELSE 3
-    END
-  `;
-
-	const dateSortOrder = sql`
-    CASE
-      WHEN ${events.endDate} IS NOT NULL AND ${events.endDate} < NOW()
-        THEN -EXTRACT(EPOCH FROM ${events.endDate})
-      ELSE EXTRACT(EPOCH FROM COALESCE(${events.startDate}, '9999-12-31'))
-    END
-  `;
-
-	const searchFilter = search
-		? or(
-				ilike(events.name, `%${search}%`),
-				ilike(events.description, `%${search}%`),
-			)
-		: undefined;
-
-	const results = await db
-		.select({
-			event: events,
-			organization: organizations,
-		})
-		.from(events)
-		.leftJoin(organizations, eq(events.organizationId, organizations.id))
-		.where(
-			searchFilter
-				? sql`${eq(events.organizationId, community.id)} AND ${searchFilter}`
-				: eq(events.organizationId, community.id),
-		)
-		.orderBy(desc(events.isFeatured), asc(statusPriority), asc(dateSortOrder))
-		.limit(50);
-
-	const communityEvents = results.map((r) => ({
-		...r.event,
-		organization: r.organization,
-	}));
+	const communityEvents = await getCommunityEventsWithRole(community.id, {
+		search: search || undefined,
+		limit: 50,
+	});
 
 	if (viewMode === "calendar") {
 		return <EventsCalendar events={communityEvents} />;
@@ -122,6 +82,7 @@ async function CommunityEvents({
 			total={communityEvents.length}
 			hasMore={false}
 			filters={{}}
+			showCommunityRole
 		/>
 	);
 }

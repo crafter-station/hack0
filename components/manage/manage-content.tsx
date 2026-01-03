@@ -38,7 +38,6 @@ import type {
 	Organization,
 	WinnerClaim,
 } from "@/lib/db/schema";
-import { SPONSOR_TIER_LABELS } from "@/lib/db/schema";
 import {
 	formatEventDate,
 	formatEventDateTime,
@@ -366,7 +365,7 @@ export function ManageContent({
 														{sponsor.organization.name}
 													</p>
 													<p className="text-xs text-muted-foreground">
-														{SPONSOR_TIER_LABELS[sponsor.tier]}
+														{sponsor.organization.slug}
 													</p>
 												</div>
 												{sponsor.organization.websiteUrl && (
