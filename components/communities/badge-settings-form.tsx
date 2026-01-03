@@ -523,7 +523,7 @@ export function BadgeSettingsForm({ organization }: BadgeSettingsFormProps) {
 						)}
 					</div>
 
-					<div className="space-y-3">
+					<div className="space-y-3 lg:sticky lg:top-24 lg:self-start">
 						<div>
 							<Label className="text-sm font-medium">Preview</Label>
 							<p className="text-xs text-muted-foreground mt-0.5">
