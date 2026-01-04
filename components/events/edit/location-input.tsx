@@ -245,20 +245,30 @@ export function LocationInput({
 						{showResults && results.length > 0 && (
 							<div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg">
 								<ul className="max-h-60 overflow-auto py-1">
-									{results.map((result) => (
-										<li key={result.place_id}>
-											<button
-												type="button"
-												onClick={() => handleSelectResult(result)}
-												className="w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors flex items-start gap-2"
-											>
-												<MapPin className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
-												<span className="line-clamp-2">
-													{formatDisplayName(result)}
-												</span>
-											</button>
-										</li>
-									))}
+									{results.map((result) => {
+										const formatted = formatDisplayName(result);
+										return (
+											<li key={result.place_id}>
+												<button
+													type="button"
+													onClick={() => handleSelectResult(result)}
+													className="w-full px-3 py-2 text-left hover:bg-accent transition-colors flex items-start gap-2"
+												>
+													<MapPin className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
+													<div className="min-w-0 flex-1">
+														<p className="text-sm font-medium truncate">
+															{formatted.name}
+														</p>
+														{formatted.address && (
+															<p className="text-xs text-muted-foreground truncate">
+																{formatted.address}
+															</p>
+														)}
+													</div>
+												</button>
+											</li>
+										);
+									})}
 								</ul>
 							</div>
 						)}

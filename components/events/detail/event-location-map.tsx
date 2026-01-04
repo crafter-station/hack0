@@ -1,12 +1,11 @@
 "use client";
 
-import { ExternalLink, MapPin } from "lucide-react";
+import { MapPin, Navigation } from "lucide-react";
 import {
 	Map as MapComponent,
 	MapControls,
 	MapMarker,
 	MarkerContent,
-	MarkerPopup,
 } from "@/components/ui/map";
 import {
 	LIMA_COORDS,
@@ -91,53 +90,40 @@ export function EventLocationMap({
 
 	return (
 		<div className="rounded-lg border bg-card overflow-hidden">
-			<div className="px-5 py-4 border-b">
-				<div className="flex items-center gap-2">
-					<MapPin className="h-4 w-4 text-muted-foreground" />
-					<h3 className="text-sm font-semibold">Ubicación</h3>
-				</div>
-			</div>
-			<div className="h-[200px] w-full">
+			<div className="h-[180px] w-full relative">
 				<MapComponent center={coordinates} zoom={zoomLevel}>
 					<MapMarker longitude={coordinates[0]} latitude={coordinates[1]}>
 						<MarkerContent>
-							<div className="size-4 rounded-full bg-primary border-2 border-background shadow-lg" />
-						</MarkerContent>
-						<MarkerPopup className="w-56 p-0">
-							<div className="space-y-2">
-								<p className="font-medium text-sm line-clamp-2">{eventName}</p>
-								{venue && (
-									<p className="text-xs text-muted-foreground">{venue}</p>
-								)}
-								<p className="text-xs text-muted-foreground">
-									{city}
-									{city &&
-										department &&
-										city !== department &&
-										`, ${department}`}
-								</p>
-								<a
-									href={googleMapsUrl}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center gap-1.5 text-xs text-primary hover:underline"
-								>
-									<ExternalLink className="h-3 w-3" />
-									Ver en Google Maps
-								</a>
+							<div className="relative">
+								<div className="size-5 rounded-full bg-primary border-2 border-background shadow-lg flex items-center justify-center">
+									<MapPin className="h-3 w-3 text-primary-foreground" />
+								</div>
+								<div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary rotate-45" />
 							</div>
-						</MarkerPopup>
+						</MarkerContent>
 					</MapMarker>
 					<MapControls position="bottom-right" showZoom />
 				</MapComponent>
+				<a
+					href={googleMapsUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+					className="absolute top-2 right-2 flex items-center gap-1.5 text-xs bg-background/90 backdrop-blur-sm px-2.5 py-1.5 rounded-md border shadow-sm hover:bg-background transition-colors"
+				>
+					<Navigation className="h-3.5 w-3.5" />
+					Cómo llegar
+				</a>
 			</div>
-			{!hasExactLocation && (
-				<div className="px-5 py-2 border-t bg-muted/30">
-					<p className="text-xs text-muted-foreground">
-						Ubicación aproximada ({department || city})
-					</p>
-				</div>
-			)}
+			<div className="px-4 py-3 border-t">
+				{venue && <p className="font-medium text-sm">{venue}</p>}
+				<p className="text-xs text-muted-foreground">
+					{city}
+					{city && department && city !== department && `, ${department}`}
+				</p>
+				{!hasExactLocation && (
+					<p className="text-xs text-amber-600 mt-1">Ubicación aproximada</p>
+				)}
+			</div>
 		</div>
 	);
 }

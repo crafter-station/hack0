@@ -20,7 +20,10 @@ export interface NominatimResult {
 	osm_id: number;
 	lat: string;
 	lon: string;
+	name?: string;
 	display_name: string;
+	class?: string;
+	type?: string;
 	address: NominatimAddress;
 	boundingbox: [string, string, string, string];
 }
@@ -80,29 +83,51 @@ export function extractDepartment(address: NominatimAddress): string {
 	return address.state || address.region || "";
 }
 
-export function formatDisplayName(result: NominatimResult): string {
-	const parts: string[] = [];
+export interface FormattedLocation {
+	name: string;
+	address: string | null;
+}
+
+export function formatDisplayName(result: NominatimResult): FormattedLocation {
+	const addressParts: string[] = [];
 
 	if (result.address.road) {
-		parts.push(result.address.road);
+		addressParts.push(result.address.road);
 	}
 	if (result.address.neighbourhood || result.address.suburb) {
-		parts.push(result.address.neighbourhood || result.address.suburb || "");
+		addressParts.push(
+			result.address.neighbourhood || result.address.suburb || "",
+		);
 	}
 
 	const city = extractCity(result.address);
 	if (city) {
-		parts.push(city);
+		addressParts.push(city);
 	}
 
 	const department = extractDepartment(result.address);
-	if (department) {
-		parts.push(department);
+	if (department && department !== city) {
+		addressParts.push(department);
 	}
 
-	if (parts.length === 0) {
-		return result.display_name;
+	const fullAddress = addressParts.filter(Boolean).join(", ");
+
+	if (result.name) {
+		return {
+			name: result.name,
+			address: fullAddress || null,
+		};
 	}
 
-	return parts.filter(Boolean).join(", ");
+	if (result.address.road) {
+		return {
+			name: result.address.road,
+			address: addressParts.slice(1).filter(Boolean).join(", ") || null,
+		};
+	}
+
+	return {
+		name: fullAddress || result.display_name,
+		address: null,
+	};
 }
