@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type React from "react";
-import "../styles/globals.css";
+import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { shadcn } from "@clerk/themes";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
