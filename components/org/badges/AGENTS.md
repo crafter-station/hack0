@@ -8,6 +8,7 @@ Generación AI de badges, display y configuración de estilos.
 |-----------|--------|-------------|
 | BadgeDisplay | Public | Renderiza badge completo |
 | BadgeGenerator | Public | Flow de upload + generación |
+| BadgeSection | Public | Sección colapsable de badges por campaña |
 | GenerateBadgeCTA | Public | CTA para generar badge |
 | BadgeSettingsForm | Admin | Config de badges |
 | BadgePreviewPanel | Admin | Preview con efecto 3D |

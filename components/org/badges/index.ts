@@ -3,6 +3,7 @@ export { BadgeGalleryCard } from "./badge-gallery-card";
 export { BadgeGenerator } from "./badge-generator";
 export { BadgeLoading } from "./badge-loading";
 export { BadgePreviewPanel } from "./badge-preview-panel";
+export { BadgeSection } from "./badge-section";
 export { BadgeSettingsForm } from "./badge-settings-form";
 export { BrandColorPicker } from "./brand-color-picker";
 export { GenerateBadgeCTA } from "./generate-badge-cta";
