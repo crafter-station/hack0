@@ -13,6 +13,7 @@ import {
 } from "@/lib/actions/campaigns";
 import { db } from "@/lib/db";
 import { communityBadges, organizations } from "@/lib/db/schema";
+import { isGodMode } from "@/lib/god-mode";
 
 interface BadgePageProps {
 	params: Promise<{ slug: string }>;
@@ -85,8 +86,9 @@ export default async function BadgePage({
 	}
 
 	const memberRole = await getUserMembershipRole(community.id, userId);
+	const godMode = await isGodMode();
 
-	if (!memberRole || memberRole === "follower") {
+	if (!godMode && (!memberRole || memberRole === "follower")) {
 		return (
 			<div className="flex flex-col items-center justify-center py-16 text-center">
 				<h1 className="text-2xl font-bold mb-2">Acceso restringido</h1>
@@ -123,7 +125,7 @@ export default async function BadgePage({
 
 	const eligibility = await canGenerateBadgeForCampaign(campaign.id, userId);
 
-	if (!eligibility.allowed) {
+	if (!godMode && !eligibility.allowed) {
 		const [existingBadge] = await db
 			.select()
 			.from(communityBadges)
@@ -187,7 +189,7 @@ export default async function BadgePage({
 				communitySlug={slug}
 				communityName={community.displayName || community.name}
 				communityLogo={community.logoUrl}
-				memberRole={memberRole}
+				memberRole={godMode ? "admin" : memberRole || "member"}
 				defaultName={defaultName}
 				campaignId={campaign.id}
 				campaignName={campaign.type !== "default" ? campaign.name : undefined}
