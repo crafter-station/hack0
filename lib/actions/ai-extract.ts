@@ -7,8 +7,6 @@ import {
 	eventExtractionSchema,
 } from "@/lib/schemas/event-extraction";
 
-export type { ExtractedEventData };
-
 export async function extractEventFromText(text: string) {
 	const stream = createStreamableValue<Partial<ExtractedEventData>>();
 

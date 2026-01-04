@@ -21,7 +21,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import Markdown from "react-markdown";
+import { DeleteEventButton } from "@/components/events/edit/delete-event-button";
 import { LocationInput } from "@/components/events/edit/location-input";
+import { SponsorManager } from "@/components/events/edit/sponsor-manager";
 import { LumaIcon } from "@/components/icons/luma";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,9 +54,10 @@ import {
 } from "@/components/ui/responsive-modal";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Switch } from "@/components/ui/switch";
-import { createEvent } from "@/lib/actions/events";
+import { updateEvent } from "@/lib/actions/claims";
+import { createEvent, type EventSponsorWithOrg } from "@/lib/actions/events";
 import { startLumaImport } from "@/lib/actions/import";
-import type { Organization } from "@/lib/db/schema";
+import type { Event, Organization } from "@/lib/db/schema";
 import {
 	EVENT_TYPE_LIST,
 	getEventTypeConfig,
@@ -76,6 +79,9 @@ interface OrgEventFormMinimalProps {
 	communitySlug: string;
 	currentOrg?: Organization;
 	availableOrganizations?: OrganizationWithRole[];
+	mode?: "create" | "edit";
+	event?: Event;
+	sponsors?: EventSponsorWithOrg[];
 }
 
 interface ExtractedData {
@@ -102,34 +108,67 @@ export function OrgEventFormMinimal({
 	communitySlug,
 	currentOrg,
 	availableOrganizations,
+	mode = "create",
+	event,
+	sponsors: initialSponsors = [],
 }: OrgEventFormMinimalProps) {
 	const router = useRouter();
+	const isEditMode = mode === "edit";
+
+	const parseDateTime = (dateValue: Date | string | null | undefined) => {
+		if (!dateValue) return { date: "", time: "" };
+		try {
+			const date = new Date(dateValue);
+			const dateStr = date.toISOString().split("T")[0];
+			const timeStr = date.toTimeString().slice(0, 5);
+			return { date: dateStr, time: timeStr };
+		} catch {
+			return { date: "", time: "" };
+		}
+	};
+
+	const initialStart = parseDateTime(event?.startDate);
+	const initialEnd = parseDateTime(event?.endDate);
+
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [descriptionOpen, setDescriptionOpen] = useState(false);
+	const [sponsorsOpen, setSponsorsOpen] = useState(false);
 
-	const [name, setName] = useState("");
-	const [description, setDescription] = useState("");
-	const [startDate, setStartDate] = useState("");
-	const [startTime, setStartTime] = useState("");
-	const [endDate, setEndDate] = useState("");
-	const [endTime, setEndTime] = useState("");
+	const [name, setName] = useState(event?.name || "");
+	const [description, setDescription] = useState(event?.description || "");
+	const [startDate, setStartDate] = useState(initialStart.date);
+	const [startTime, setStartTime] = useState(initialStart.time);
+	const [endDate, setEndDate] = useState(initialEnd.date);
+	const [endTime, setEndTime] = useState(initialEnd.time);
 	const [format, setFormat] = useState<"virtual" | "in-person" | "hybrid">(
-		"in-person",
+		(event?.format as "virtual" | "in-person" | "hybrid") || "in-person",
 	);
-	const [department, setDepartment] = useState("");
-	const [city, setCity] = useState("");
-	const [venue, setVenue] = useState("");
-	const [geoLatitude, setGeoLatitude] = useState<string | null>(null);
-	const [geoLongitude, setGeoLongitude] = useState<string | null>(null);
-	const [meetingUrl, setMeetingUrl] = useState("");
-	const [prizePool, setPrizePool] = useState("");
-	const [prizeCurrency, setPrizeCurrency] = useState<"USD" | "PEN">("USD");
-	const [websiteUrl, setWebsiteUrl] = useState("");
-	const [registrationUrl, setRegistrationUrl] = useState("");
-	const [eventImageUrl, setEventImageUrl] = useState("");
-	const [eventType, setEventType] = useState("hackathon");
-	const [skillLevel, setSkillLevel] = useState("all");
+	const [department, setDepartment] = useState(event?.department || "");
+	const [city, setCity] = useState(event?.city || "");
+	const [venue, setVenue] = useState(event?.venue || "");
+	const [geoLatitude, setGeoLatitude] = useState<string | null>(
+		event?.geoLatitude || null,
+	);
+	const [geoLongitude, setGeoLongitude] = useState<string | null>(
+		event?.geoLongitude || null,
+	);
+	const [meetingUrl, setMeetingUrl] = useState(event?.meetingUrl || "");
+	const [prizePool, setPrizePool] = useState(
+		event?.prizePool?.toString() || "",
+	);
+	const [prizeCurrency, setPrizeCurrency] = useState<"USD" | "PEN">(
+		(event?.prizeCurrency as "USD" | "PEN") || "USD",
+	);
+	const [websiteUrl, setWebsiteUrl] = useState(event?.websiteUrl || "");
+	const [registrationUrl, setRegistrationUrl] = useState(
+		event?.registrationUrl || "",
+	);
+	const [eventImageUrl, setEventImageUrl] = useState(
+		event?.eventImageUrl || "",
+	);
+	const [eventType, setEventType] = useState(event?.eventType || "hackathon");
+	const [skillLevel, setSkillLevel] = useState(event?.skillLevel || "all");
 	const [linksOpen, setLinksOpen] = useState(false);
 	const [locationOpen, setLocationOpen] = useState(false);
 	const [optionsOpen, setOptionsOpen] = useState(false);
@@ -145,8 +184,9 @@ export function OrgEventFormMinimal({
 	const [isPending, startTransition] = useTransition();
 	const [orgSelectorOpen, setOrgSelectorOpen] = useState(false);
 	const [typeSelectorOpen, setTypeSelectorOpen] = useState(false);
-	const [publishToLuma, setPublishToLuma] = useState(true);
+	const [publishToLuma, setPublishToLuma] = useState(!isEditMode);
 	const [importedFromLuma, setImportedFromLuma] = useState<string | null>(null);
+	const [sponsors, setSponsors] = useState(initialSponsors);
 
 	const creatableOrgs = useMemo(() => {
 		const orgs: Array<{ organization: Organization; role: string }> = [];
@@ -175,37 +215,74 @@ export function OrgEventFormMinimal({
 		setError(null);
 		setLoading(true);
 
-		const result = await createEvent({
-			name,
-			description: description || undefined,
-			startDate: startDate ? `${startDate}T${startTime || "00:00"}` : undefined,
-			endDate: endDate ? `${endDate}T${endTime || "23:59"}` : undefined,
-			format,
-			department: department || undefined,
-			city: city || undefined,
-			venue: venue || undefined,
-			timezone: "America/Lima",
-			geoLatitude: geoLatitude || undefined,
-			geoLongitude: geoLongitude || undefined,
-			meetingUrl: meetingUrl || undefined,
-			prizePool: prizePool ? parseInt(prizePool, 10) : undefined,
-			prizeCurrency,
-			websiteUrl: websiteUrl || undefined,
-			registrationUrl: registrationUrl || undefined,
-			eventImageUrl: eventImageUrl || undefined,
-			eventType,
-			skillLevel,
-			organizationId: communityId,
-			country: "PE",
-			publishToLuma,
-		});
+		if (isEditMode && event) {
+			const result = await updateEvent({
+				eventId: event.id,
+				name,
+				description: description || undefined,
+				startDate: startDate
+					? new Date(`${startDate}T${startTime || "00:00"}`)
+					: null,
+				endDate: endDate ? new Date(`${endDate}T${endTime || "23:59"}`) : null,
+				format,
+				department: department || undefined,
+				city: city || undefined,
+				venue: venue || undefined,
+				timezone: "America/Lima",
+				geoLatitude: geoLatitude || undefined,
+				geoLongitude: geoLongitude || undefined,
+				meetingUrl: meetingUrl || undefined,
+				prizePool: prizePool ? Number.parseInt(prizePool, 10) : null,
+				prizeCurrency,
+				websiteUrl: websiteUrl || undefined,
+				registrationUrl: registrationUrl || undefined,
+				eventImageUrl: eventImageUrl || undefined,
+				eventType,
+				skillLevel,
+			});
 
-		setLoading(false);
+			setLoading(false);
 
-		if (result.success && result.event?.shortCode) {
-			router.push(`/e/${result.event.shortCode}`);
+			if (result.success) {
+				router.refresh();
+			} else {
+				setError(result.error || "Error al guardar los cambios");
+			}
 		} else {
-			setError(result.error || "Error al crear el evento");
+			const result = await createEvent({
+				name,
+				description: description || undefined,
+				startDate: startDate
+					? `${startDate}T${startTime || "00:00"}`
+					: undefined,
+				endDate: endDate ? `${endDate}T${endTime || "23:59"}` : undefined,
+				format,
+				department: department || undefined,
+				city: city || undefined,
+				venue: venue || undefined,
+				timezone: "America/Lima",
+				geoLatitude: geoLatitude || undefined,
+				geoLongitude: geoLongitude || undefined,
+				meetingUrl: meetingUrl || undefined,
+				prizePool: prizePool ? Number.parseInt(prizePool, 10) : undefined,
+				prizeCurrency,
+				websiteUrl: websiteUrl || undefined,
+				registrationUrl: registrationUrl || undefined,
+				eventImageUrl: eventImageUrl || undefined,
+				eventType,
+				skillLevel,
+				organizationId: communityId,
+				country: "PE",
+				publishToLuma,
+			});
+
+			setLoading(false);
+
+			if (result.success && result.event?.shortCode) {
+				router.push(`/e/${result.event.shortCode}`);
+			} else {
+				setError(result.error || "Error al crear el evento");
+			}
 		}
 	};
 
@@ -349,133 +426,144 @@ export function OrgEventFormMinimal({
 			{/* Header with Back and Import */}
 			<div className="mb-6 flex items-center justify-between">
 				<Link
-					href={`/c/${communitySlug}`}
+					href={
+						isEditMode && event
+							? `/e/${event.shortCode || event.slug}/manage`
+							: `/c/${communitySlug}`
+					}
 					className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
 				>
 					<ArrowLeft className="h-3.5 w-3.5" />
 					Volver
 				</Link>
-				<ResponsiveModal open={importOpen} onOpenChange={setImportOpen}>
-					<ResponsiveModalTrigger asChild>
-						<Button type="button" variant="outline" className="gap-2">
-							<Sparkles className="h-4 w-4" />
-							Autocompletar
-						</Button>
-					</ResponsiveModalTrigger>
-					<ResponsiveModalContent className="max-w-lg">
-						<ResponsiveModalHeader>
-							<ResponsiveModalTitle>Autocompletar</ResponsiveModalTitle>
-						</ResponsiveModalHeader>
-						<div className="p-4 space-y-3">
-							<button
-								type="button"
-								className="w-full p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors text-left"
-								onClick={() => {
-									setImportOpen(false);
-									setLumaImportOpen(true);
-								}}
-							>
-								<div className="flex items-center gap-3">
-									<div className="h-10 w-10 rounded-lg bg-foreground flex items-center justify-center">
-										<LumaIcon className="h-5 w-5 text-background" />
-									</div>
-									<div>
-										<div className="font-medium">Desde Luma</div>
-										<div className="text-sm text-muted-foreground">
-											Pega el link del evento en lu.ma
-										</div>
-									</div>
-								</div>
-							</button>
-							<button
-								type="button"
-								className="w-full p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors text-left"
-								onClick={() => {
-									setImportOpen(false);
-									setAiExtractOpen(true);
-								}}
-							>
-								<div className="flex items-center gap-3">
-									<div className="h-10 w-10 rounded-lg bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 flex items-center justify-center">
-										<Wand2 className="h-5 w-5 text-violet-500" />
-									</div>
-									<div>
-										<div className="font-medium">Desde texto o imagen</div>
-										<div className="text-sm text-muted-foreground">
-											Pega descripción o sube el flyer
-										</div>
-									</div>
-								</div>
-							</button>
-						</div>
-					</ResponsiveModalContent>
-				</ResponsiveModal>
-
-				{/* Luma Import Modal */}
-				<ResponsiveModal open={lumaImportOpen} onOpenChange={setLumaImportOpen}>
-					<ResponsiveModalContent className="max-w-lg">
-						<ResponsiveModalHeader>
-							<ResponsiveModalTitle>Desde Luma</ResponsiveModalTitle>
-						</ResponsiveModalHeader>
-						<div className="p-4 space-y-4">
-							<div>
-								<Label className="text-sm mb-2 block">
-									URL del evento en Luma
-								</Label>
-								<Input
-									type="url"
-									value={lumaUrl}
-									onChange={(e) => setLumaUrl(e.target.value)}
-									placeholder="https://lu.ma/..."
-									className="h-9"
-								/>
-								<p className="text-xs text-muted-foreground mt-2">
-									Pega el link del evento de lu.ma que quieres importar
-								</p>
-							</div>
-						</div>
-						<ResponsiveModalFooter>
-							<ResponsiveModalClose asChild>
-								<Button variant="outline" disabled={isPending}>
-									Cancelar
+				{!isEditMode && (
+					<>
+						<ResponsiveModal open={importOpen} onOpenChange={setImportOpen}>
+							<ResponsiveModalTrigger asChild>
+								<Button type="button" variant="outline" className="gap-2">
+									<Sparkles className="h-4 w-4" />
+									Autocompletar
 								</Button>
-							</ResponsiveModalClose>
-							<Button
-								onClick={handleImportFromLuma}
-								disabled={!lumaUrl || isPending}
-								className="gap-2"
-							>
-								{isPending ? (
-									<>
-										<Loader2 className="h-4 w-4 animate-spin" />
-										Procesando...
-									</>
-								) : (
-									<>
-										<Sparkles className="h-4 w-4" />
-										Autocompletar
-									</>
-								)}
-							</Button>
-						</ResponsiveModalFooter>
-					</ResponsiveModalContent>
-				</ResponsiveModal>
+							</ResponsiveModalTrigger>
+							<ResponsiveModalContent className="max-w-lg">
+								<ResponsiveModalHeader>
+									<ResponsiveModalTitle>Autocompletar</ResponsiveModalTitle>
+								</ResponsiveModalHeader>
+								<div className="p-4 space-y-3">
+									<button
+										type="button"
+										className="w-full p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors text-left"
+										onClick={() => {
+											setImportOpen(false);
+											setLumaImportOpen(true);
+										}}
+									>
+										<div className="flex items-center gap-3">
+											<div className="h-10 w-10 rounded-lg bg-foreground flex items-center justify-center">
+												<LumaIcon className="h-5 w-5 text-background" />
+											</div>
+											<div>
+												<div className="font-medium">Desde Luma</div>
+												<div className="text-sm text-muted-foreground">
+													Pega el link del evento en lu.ma
+												</div>
+											</div>
+										</div>
+									</button>
+									<button
+										type="button"
+										className="w-full p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors text-left"
+										onClick={() => {
+											setImportOpen(false);
+											setAiExtractOpen(true);
+										}}
+									>
+										<div className="flex items-center gap-3">
+											<div className="h-10 w-10 rounded-lg bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 flex items-center justify-center">
+												<Wand2 className="h-5 w-5 text-violet-500" />
+											</div>
+											<div>
+												<div className="font-medium">Desde texto o imagen</div>
+												<div className="text-sm text-muted-foreground">
+													Pega descripción o sube el flyer
+												</div>
+											</div>
+										</div>
+									</button>
+								</div>
+							</ResponsiveModalContent>
+						</ResponsiveModal>
 
-				{/* AI Extract Modal */}
-				<AIExtractModal
-					open={aiExtractOpen}
-					onOpenChange={setAiExtractOpen}
-					onExtract={handleAIExtract}
-					onStreamStart={handleAIStreamStart}
-					onStreamEnd={handleAIStreamEnd}
-				/>
+						{/* Luma Import Modal */}
+						<ResponsiveModal
+							open={lumaImportOpen}
+							onOpenChange={setLumaImportOpen}
+						>
+							<ResponsiveModalContent className="max-w-lg">
+								<ResponsiveModalHeader>
+									<ResponsiveModalTitle>Desde Luma</ResponsiveModalTitle>
+								</ResponsiveModalHeader>
+								<div className="p-4 space-y-4">
+									<div>
+										<Label className="text-sm mb-2 block">
+											URL del evento en Luma
+										</Label>
+										<Input
+											type="url"
+											value={lumaUrl}
+											onChange={(e) => setLumaUrl(e.target.value)}
+											placeholder="https://lu.ma/..."
+											className="h-9"
+										/>
+										<p className="text-xs text-muted-foreground mt-2">
+											Pega el link del evento de lu.ma que quieres importar
+										</p>
+									</div>
+								</div>
+								<ResponsiveModalFooter>
+									<ResponsiveModalClose asChild>
+										<Button variant="outline" disabled={isPending}>
+											Cancelar
+										</Button>
+									</ResponsiveModalClose>
+									<Button
+										onClick={handleImportFromLuma}
+										disabled={!lumaUrl || isPending}
+										className="gap-2"
+									>
+										{isPending ? (
+											<>
+												<Loader2 className="h-4 w-4 animate-spin" />
+												Procesando...
+											</>
+										) : (
+											<>
+												<Sparkles className="h-4 w-4" />
+												Autocompletar
+											</>
+										)}
+									</Button>
+								</ResponsiveModalFooter>
+							</ResponsiveModalContent>
+						</ResponsiveModal>
+
+						{/* AI Extract Modal */}
+						<AIExtractModal
+							open={aiExtractOpen}
+							onOpenChange={setAiExtractOpen}
+							onExtract={handleAIExtract}
+							onStreamStart={handleAIStreamStart}
+							onStreamEnd={handleAIStreamEnd}
+						/>
+					</>
+				)}
 			</div>
 
 			<div className="flex flex-col md:flex-row gap-6">
 				{/* Left Column - Org Selector + Image */}
 				<div className="w-full md:w-72 flex-shrink-0 space-y-3">
-					{/* Org Selector */}
-					{creatableOrgs.length > 0 && (
+					{/* Org Selector - only in create mode */}
+					{!isEditMode && creatableOrgs.length > 0 && (
 						<div>
 							<Label className="text-xs text-muted-foreground mb-2 block">
 								Publicar en
@@ -1108,50 +1196,101 @@ export function OrgEventFormMinimal({
 						</ResponsiveModalContent>
 					</ResponsiveModal>
 
-					{/* Luma Integration */}
-					{importedFromLuma ? (
-						<div className="flex items-center justify-between py-3 px-3 border border-border rounded-lg bg-muted/30">
-							<div className="flex items-center gap-3">
-								<LumaIcon className="h-5 w-5" />
-								<div>
-									<div className="text-sm font-medium flex items-center gap-1.5">
-										Vinculado a Luma
+					{/* Sponsors - only in edit mode */}
+					{isEditMode && event && (
+						<ResponsiveModal open={sponsorsOpen} onOpenChange={setSponsorsOpen}>
+							<ResponsiveModalTrigger asChild>
+								<button
+									type="button"
+									className="w-full border border-border rounded-lg p-3 text-left flex items-start gap-2 hover:bg-muted/50 transition-colors"
+								>
+									<Building2 className="h-4 w-4 text-muted-foreground mt-0.5" />
+									<div className="flex-1">
+										<div className="text-xs text-muted-foreground mb-1">
+											Sponsors
+										</div>
+										<div className="text-sm">
+											{sponsors.length > 0
+												? `${sponsors.length} sponsor${sponsors.length > 1 ? "es" : ""}`
+												: "Sin sponsors"}
+										</div>
 									</div>
-									<div className="text-xs text-muted-foreground truncate max-w-[180px]">
-										{importedFromLuma.replace("https://", "")}
-									</div>
+								</button>
+							</ResponsiveModalTrigger>
+							<ResponsiveModalContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+								<ResponsiveModalHeader>
+									<ResponsiveModalTitle>
+										Sponsors del evento
+									</ResponsiveModalTitle>
+								</ResponsiveModalHeader>
+								<div className="p-4">
+									<SponsorManager
+										eventId={event.id}
+										sponsors={sponsors}
+										onUpdate={() => {
+											setSponsors([...sponsors]);
+										}}
+									/>
 								</div>
-							</div>
-							<Button
-								type="button"
-								variant="ghost"
-								size="sm"
-								className="text-xs text-muted-foreground hover:text-foreground"
-								onClick={() => {
-									setImportedFromLuma(null);
-									setPublishToLuma(true);
-								}}
-							>
-								Desvincular
-							</Button>
-						</div>
-					) : (
-						<div className="flex items-center justify-between py-3 px-3 border border-border rounded-lg">
-							<div className="flex items-center gap-3">
-								<LumaIcon className="h-5 w-5" />
-								<div>
-									<div className="text-sm font-medium">Publicar en Luma</div>
-									<div className="text-xs text-muted-foreground">
-										Se creará también en lu.ma/hack0
+								<ResponsiveModalFooter>
+									<ResponsiveModalClose asChild>
+										<Button>Cerrar</Button>
+									</ResponsiveModalClose>
+								</ResponsiveModalFooter>
+							</ResponsiveModalContent>
+						</ResponsiveModal>
+					)}
+
+					{/* Luma Integration - only in create mode */}
+					{!isEditMode && (
+						<>
+							{importedFromLuma ? (
+								<div className="flex items-center justify-between py-3 px-3 border border-border rounded-lg bg-muted/30">
+									<div className="flex items-center gap-3">
+										<LumaIcon className="h-5 w-5" />
+										<div>
+											<div className="text-sm font-medium flex items-center gap-1.5">
+												Vinculado a Luma
+											</div>
+											<div className="text-xs text-muted-foreground truncate max-w-[180px]">
+												{importedFromLuma.replace("https://", "")}
+											</div>
+										</div>
 									</div>
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										className="text-xs text-muted-foreground hover:text-foreground"
+										onClick={() => {
+											setImportedFromLuma(null);
+											setPublishToLuma(true);
+										}}
+									>
+										Desvincular
+									</Button>
 								</div>
-							</div>
-							<Switch
-								checked={publishToLuma}
-								onCheckedChange={setPublishToLuma}
-								disabled={isImporting}
-							/>
-						</div>
+							) : (
+								<div className="flex items-center justify-between py-3 px-3 border border-border rounded-lg">
+									<div className="flex items-center gap-3">
+										<LumaIcon className="h-5 w-5" />
+										<div>
+											<div className="text-sm font-medium">
+												Publicar en Luma
+											</div>
+											<div className="text-xs text-muted-foreground">
+												Se creará también en lu.ma/hack0
+											</div>
+										</div>
+									</div>
+									<Switch
+										checked={publishToLuma}
+										onCheckedChange={setPublishToLuma}
+										disabled={isImporting}
+									/>
+								</div>
+							)}
+						</>
 					)}
 
 					{/* Submit */}
@@ -1163,8 +1302,33 @@ export function OrgEventFormMinimal({
 						{(loading || isImporting) && (
 							<Loader2 className="h-4 w-4 animate-spin" />
 						)}
-						{isImporting ? "Autocompletando..." : "Crear Evento"}
+						{isImporting
+							? "Autocompletando..."
+							: isEditMode
+								? "Guardar cambios"
+								: "Crear Evento"}
 					</Button>
+
+					{/* Danger Zone - only in edit mode */}
+					{isEditMode && event && (
+						<div className="pt-6 mt-6 border-t border-red-200 dark:border-red-900/30">
+							<div className="flex items-center justify-between">
+								<div>
+									<p className="text-sm font-medium text-red-600 dark:text-red-400">
+										Zona de peligro
+									</p>
+									<p className="text-xs text-muted-foreground">
+										Esta acción no se puede deshacer
+									</p>
+								</div>
+								<DeleteEventButton
+									eventId={event.id}
+									eventName={event.name}
+									communitySlug={communitySlug}
+								/>
+							</div>
+						</div>
+					)}
 				</div>
 			</div>
 		</form>
