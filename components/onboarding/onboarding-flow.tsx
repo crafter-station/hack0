@@ -109,6 +109,12 @@ const interests = [
 ];
 const experienceLevels = ["Principiante", "Intermedio", "Avanzado", "Experto"];
 
+const stepImages = [
+	"/onboarding/tech-community-hackathon-event-in-peru.jpg",
+	"/onboarding/developer-interests-coding-workshop-meetup.jpg",
+	"/onboarding/career-growth-experience-level-tech-professional.jpg",
+];
+
 interface OnboardingFlowProps {
 	redirectUrl?: string;
 }
@@ -238,9 +244,11 @@ export function OnboardingFlow({ redirectUrl }: OnboardingFlowProps) {
 				{/* Right side - Image */}
 				<div className="hidden lg:flex flex-1 bg-muted items-center justify-center p-8">
 					<div className="relative w-full max-w-lg aspect-square">
-						<div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 rounded-3xl flex items-center justify-center">
-							<Trophy className="w-32 h-32 text-primary/50" />
-						</div>
+						<img
+							src="/onboarding/tech-community-meetup-hackathon-peru-colorful-illu.jpg"
+							alt="Tech community illustration"
+							className="w-full h-full object-cover rounded-3xl"
+						/>
 						{/* Floating badges */}
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
@@ -486,7 +494,7 @@ export function OnboardingFlow({ redirectUrl }: OnboardingFlowProps) {
 				</div>
 			</div>
 
-			{/* Right side - Decorative */}
+			{/* Right side - Image */}
 			<div className="hidden lg:flex flex-1 bg-muted items-center justify-center p-8">
 				<AnimatePresence mode="wait">
 					<motion.div
@@ -497,17 +505,11 @@ export function OnboardingFlow({ redirectUrl }: OnboardingFlowProps) {
 						transition={{ duration: 0.3 }}
 						className="relative w-full max-w-lg aspect-square"
 					>
-						<div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 rounded-3xl flex items-center justify-center">
-							{currentStep === 1 && (
-								<Users className="w-32 h-32 text-primary/50" />
-							)}
-							{currentStep === 2 && (
-								<Calendar className="w-32 h-32 text-primary/50" />
-							)}
-							{currentStep === 3 && (
-								<Trophy className="w-32 h-32 text-primary/50" />
-							)}
-						</div>
+						<img
+							src={stepImages[currentStep - 1]}
+							alt={`Step ${currentStep} illustration`}
+							className="w-full h-full object-cover rounded-3xl"
+						/>
 					</motion.div>
 				</AnimatePresence>
 			</div>
