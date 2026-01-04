@@ -315,6 +315,51 @@ function AnalyticsSkeleton() {
 					))}
 				</div>
 			</div>
+
+			<div className="rounded-lg border border-border p-6 space-y-4 animate-pulse">
+				<div className="flex items-center gap-2">
+					<div className="h-5 w-5 bg-muted rounded" />
+					<div className="h-5 bg-muted rounded w-32" />
+				</div>
+				<div className="space-y-2">
+					<div className="h-10 bg-muted rounded w-40" />
+					<div className="h-4 bg-muted rounded w-72" />
+				</div>
+			</div>
+
+			<div className="space-y-4">
+				<div className="h-6 bg-muted rounded w-56 animate-pulse" />
+				<div className="rounded-lg border border-border overflow-hidden">
+					<div className="divide-y divide-border">
+						{Array.from({ length: 5 }).map((_, i) => (
+							<div
+								key={i}
+								className="px-5 py-4 flex items-center justify-between gap-4 animate-pulse"
+							>
+								<div className="min-w-0 flex-1 space-y-2">
+									<div className="h-5 bg-muted rounded w-48" />
+									<div className="h-4 bg-muted rounded w-32" />
+								</div>
+								<div className="flex items-center gap-2">
+									<div className="h-8 w-8 bg-muted rounded-md" />
+									<div className="h-8 w-8 bg-muted rounded-md" />
+								</div>
+							</div>
+						))}
+					</div>
+				</div>
+			</div>
+
+			<div className="rounded-lg border border-border p-6 bg-muted/30 animate-pulse">
+				<div className="flex items-center justify-center py-12">
+					<div className="text-center max-w-md space-y-3">
+						<div className="h-12 w-12 bg-muted rounded mx-auto" />
+						<div className="h-5 bg-muted rounded w-48 mx-auto" />
+						<div className="h-4 bg-muted rounded w-full" />
+						<div className="h-4 bg-muted rounded w-3/4 mx-auto" />
+					</div>
+				</div>
+			</div>
 		</div>
 	);
 }
