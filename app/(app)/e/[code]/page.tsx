@@ -46,7 +46,6 @@ import {
 	getDomainLabel,
 	getEventStatus,
 	getEventTypeLabel,
-	getFormatLabel,
 	getOrganizerTypeLabel,
 	getSkillLevelLabel,
 	isEventJuniorFriendly,
@@ -401,30 +400,53 @@ export default async function EventPage({ params }: EventPageProps) {
 									variant="card"
 								/>
 
-								{(hackathon.venue ||
-									hackathon.city ||
-									hackathon.format !== "virtual") && (
+								{hackathon.format === "virtual" ? (
 									<div className="flex items-center gap-3">
 										<div className="flex items-center justify-center w-12 h-12 rounded-xl bg-muted border border-border shrink-0">
-											<MapPin className="h-5 w-5 text-muted-foreground" />
+											<Globe className="h-5 w-5 text-muted-foreground" />
 										</div>
 										<div className="min-w-0 flex-1">
-											<p className="font-medium text-sm truncate">
-												{hackathon.venue ||
-													hackathon.city ||
-													getFormatLabel(hackathon.format)}
-											</p>
-											<p className="text-xs text-muted-foreground truncate">
-												{hackathon.venue && hackathon.city}
-												{hackathon.city &&
-													hackathon.department &&
-													hackathon.city !== hackathon.department &&
-													`, ${hackathon.department}`}
-												{(hackathon.city || hackathon.venue) &&
-													` · ${getFormatLabel(hackathon.format)}`}
-											</p>
+											<p className="font-medium text-sm">Evento Virtual</p>
+											{hackathon.meetingUrl ? (
+												<a
+													href={hackathon.meetingUrl}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="text-xs text-blue-500 hover:underline truncate block"
+												>
+													{new URL(hackathon.meetingUrl).hostname.replace(
+														"www.",
+														"",
+													)}
+												</a>
+											) : (
+												<p className="text-xs text-muted-foreground">
+													Link disponible próximamente
+												</p>
+											)}
 										</div>
 									</div>
+								) : (
+									(hackathon.venue || hackathon.city) && (
+										<div className="flex items-center gap-3">
+											<div className="flex items-center justify-center w-12 h-12 rounded-xl bg-muted border border-border shrink-0">
+												<MapPin className="h-5 w-5 text-muted-foreground" />
+											</div>
+											<div className="min-w-0 flex-1">
+												<p className="font-medium text-sm truncate">
+													{hackathon.venue || hackathon.city}
+												</p>
+												<p className="text-xs text-muted-foreground truncate">
+													{hackathon.venue && hackathon.city}
+													{hackathon.city &&
+														hackathon.department &&
+														hackathon.city !== hackathon.department &&
+														`, ${hackathon.department}`}
+													{hackathon.format === "hybrid" && " · Híbrido"}
+												</p>
+											</div>
+										</div>
+									)
 								)}
 
 								{hackathon.domains && hackathon.domains.length > 0 && (
