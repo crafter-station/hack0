@@ -1,11 +1,13 @@
 import type { SearchParams } from "nuqs/server";
 import { Suspense } from "react";
-import { AllEventsTable } from "@/components/events/all-events-table";
-import { EventsCalendar } from "@/components/events/events-calendar";
-import { EventsCards } from "@/components/events/events-cards";
-import { EventsMapView } from "@/components/events/events-map-view";
-import { EventsPreviewView } from "@/components/events/events-preview-view";
-import { EventsToolbar } from "@/components/events/events-toolbar";
+import { EventsToolbar } from "@/components/events/toolbar";
+import {
+	AllEventsTable,
+	EventsCalendar,
+	EventsCards,
+	EventsMapView,
+	EventsPreviewView,
+} from "@/components/events/views";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { type EventFilters, getEvents } from "@/lib/actions/events";

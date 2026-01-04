@@ -2,11 +2,13 @@ import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import type { SearchParams } from "nuqs/server";
 import { Suspense } from "react";
-import { AllEventsTable } from "@/components/events/all-events-table";
-import { EventsCalendar } from "@/components/events/events-calendar";
-import { EventsCards } from "@/components/events/events-cards";
-import { EventsMapView } from "@/components/events/events-map-view";
-import { EventsPreviewView } from "@/components/events/events-preview-view";
+import {
+	AllEventsTable,
+	EventsCalendar,
+	EventsCards,
+	EventsMapView,
+	EventsPreviewView,
+} from "@/components/events/views";
 import { OrgEventsToolbar } from "@/components/org/layout";
 import { getCommunityEventsWithRole } from "@/lib/actions/events";
 import { db } from "@/lib/db";

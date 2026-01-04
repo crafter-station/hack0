@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { Calendar, XCircle } from "lucide-react";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { AcceptCohostInviteButton } from "@/components/events/accept-cohost-invite-button";
+import { AcceptCohostInviteButton } from "@/components/events/detail";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Button } from "@/components/ui/button";
@@ -310,7 +310,9 @@ export default async function CohostInvitePage({
 								</p>
 							</div>
 							<Button asChild>
-								<a href={`/e/${code}/cohost-invite/${token}`}>Intentar de nuevo</a>
+								<a href={`/e/${code}/cohost-invite/${token}`}>
+									Intentar de nuevo
+								</a>
 							</Button>
 						</div>
 					</div>

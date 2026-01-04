@@ -2,15 +2,15 @@
 
 import { ExternalLink, MapPin } from "lucide-react";
 import {
-	Map,
+	Map as MapComponent,
+	MapControls,
 	MapMarker,
 	MarkerContent,
 	MarkerPopup,
-	MapControls,
 } from "@/components/ui/map";
 import {
-	PERU_DEPARTMENT_COORDS,
 	LIMA_COORDS,
+	PERU_DEPARTMENT_COORDS,
 } from "@/lib/geo/peru-departments";
 
 interface EventLocationMapProps {
@@ -28,7 +28,7 @@ function getEventCoordinates(
 	geoLatitude: string | null,
 	geoLongitude: string | null,
 	department: string | null,
-	country: string | null
+	country: string | null,
 ): [number, number] | null {
 	if (geoLatitude && geoLongitude) {
 		const lat = Number.parseFloat(geoLatitude);
@@ -53,7 +53,7 @@ function getEventCoordinates(
 function getGoogleMapsUrl(
 	coords: [number, number],
 	venue: string | null,
-	city: string | null
+	city: string | null,
 ): string {
 	const query =
 		[venue, city].filter(Boolean).join(", ") || `${coords[1]},${coords[0]}`;
@@ -78,7 +78,7 @@ export function EventLocationMap({
 		geoLatitude,
 		geoLongitude,
 		department,
-		country
+		country,
 	);
 
 	if (!coordinates) {
@@ -98,7 +98,7 @@ export function EventLocationMap({
 				</div>
 			</div>
 			<div className="h-[200px] w-full">
-				<Map center={coordinates} zoom={zoomLevel}>
+				<MapComponent center={coordinates} zoom={zoomLevel}>
 					<MapMarker longitude={coordinates[0]} latitude={coordinates[1]}>
 						<MarkerContent>
 							<div className="size-4 rounded-full bg-primary border-2 border-background shadow-lg" />
@@ -111,7 +111,10 @@ export function EventLocationMap({
 								)}
 								<p className="text-xs text-muted-foreground">
 									{city}
-									{city && department && city !== department && `, ${department}`}
+									{city &&
+										department &&
+										city !== department &&
+										`, ${department}`}
 								</p>
 								<a
 									href={googleMapsUrl}
@@ -126,7 +129,7 @@ export function EventLocationMap({
 						</MarkerPopup>
 					</MapMarker>
 					<MapControls position="bottom-right" showZoom />
-				</Map>
+				</MapComponent>
 			</div>
 			{!hasExactLocation && (
 				<div className="px-5 py-2 border-t bg-muted/30">

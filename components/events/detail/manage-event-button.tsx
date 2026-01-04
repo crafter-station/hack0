@@ -11,9 +11,7 @@ interface ManageEventButtonProps {
 	communitySlug?: string | null;
 }
 
-export function ManageEventButton({
-	event,
-}: ManageEventButtonProps) {
+export function ManageEventButton({ event }: ManageEventButtonProps) {
 	const [canManage, setCanManage] = useState(false);
 	const [loading, setLoading] = useState(true);
 

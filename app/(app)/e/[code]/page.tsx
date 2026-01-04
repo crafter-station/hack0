@@ -19,11 +19,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { AttendanceButton } from "@/components/events/attendance-button";
-import { EventCountdown } from "@/components/events/event-countdown";
-import { EventLocationMap } from "@/components/events/event-location-map";
-import { ManageEventButton } from "@/components/events/manage-event-button";
-import { WinnerSection } from "@/components/events/winner-section";
+import {
+	AttendanceButton,
+	EventCountdown,
+	EventLocationMap,
+	ManageEventButton,
+	WinnerSection,
+} from "@/components/events/detail";
 import { CalendarIcon } from "@/components/icons/calendar";
 import { TrophyIcon } from "@/components/icons/trophy";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -91,7 +93,6 @@ export async function generateMetadata({
 	}
 
 	const hackathon = result;
-	const community = result.organization;
 
 	const title = `${hackathon.name} - ${getEventTypeLabel(hackathon.eventType)} en Perú`;
 	const description = hackathon.description

@@ -70,7 +70,9 @@ function EventCard({ event }: { event: EventWithOrg }) {
 							sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
 						/>
 					) : (
-						<div className={`flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-muted/80 to-muted ${isEnded ? "grayscale" : ""}`}>
+						<div
+							className={`flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-muted/80 to-muted ${isEnded ? "grayscale" : ""}`}
+						>
 							<Calendar className="h-8 w-8 text-muted-foreground/40" />
 							<span className="text-xs text-muted-foreground/60 px-4 text-center line-clamp-1">
 								{event.name}

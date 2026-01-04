@@ -3,7 +3,7 @@
 import { ArrowRight, Edit3, Share2, Sparkles, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { EditEventDialog } from "@/components/events/edit-event-dialog";
+import { EditEventDialog } from "@/components/events/edit";
 import type { Event, Organization } from "@/lib/db/schema";
 import { InviteDialog } from "./invite-dialog";
 import { ShareEventDialog } from "./share-event-dialog";

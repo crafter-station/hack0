@@ -25,9 +25,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { CohostSelector } from "@/components/events/cohost-selector";
-import { DeleteEventButton } from "@/components/events/delete-event-button";
-import { EditEventForm } from "@/components/events/edit-event-form";
+import {
+	CohostSelector,
+	DeleteEventButton,
+	EditEventForm,
+} from "@/components/events/edit";
 import { Button } from "@/components/ui/button";
 import type { EventSponsorWithOrg } from "@/lib/actions/events";
 import type {

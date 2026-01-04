@@ -398,7 +398,9 @@ function ChildEventRow({
 	const isOngoing = status.status === "ongoing";
 	const isOpen = status.status === "open";
 
-	const childEventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
+	const childEventUrl = event.shortCode
+		? `/e/${event.shortCode}`
+		: `/${event.slug}`;
 
 	return (
 		<Link

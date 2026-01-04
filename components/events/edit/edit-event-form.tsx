@@ -3,12 +3,6 @@
 import { ImageIcon, Loader2, Pencil, Tag, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import { DateRangeInput } from "@/components/events/date-range-input";
-import { FormatSelector } from "@/components/events/format-selector";
-import { LinksInput } from "@/components/events/links-input";
-import { LocationInput } from "@/components/events/location-input";
-import { PrizeInput } from "@/components/events/prize-input";
-import { SponsorManager } from "@/components/events/sponsor-manager";
 import { Button } from "@/components/ui/button";
 import {
 	Field,
@@ -31,6 +25,12 @@ import { updateEvent } from "@/lib/actions/claims";
 import type { EventSponsorWithOrg } from "@/lib/actions/events";
 import type { Event } from "@/lib/db/schema";
 import { EVENT_TYPE_OPTIONS, SKILL_LEVEL_OPTIONS } from "@/lib/event-utils";
+import { DateRangeInput } from "./date-range-input";
+import { FormatSelector } from "./format-selector";
+import { LinksInput } from "./links-input";
+import { LocationInput } from "./location-input";
+import { PrizeInput } from "./prize-input";
+import { SponsorManager } from "./sponsor-manager";
 
 const utcToLimaDatetimeLocal = (utcDate: Date | string): string => {
 	const date = new Date(utcDate);
@@ -94,8 +94,12 @@ export function EditEventForm({
 		event.registrationUrl || "",
 	);
 	const [eventImageUrl, setEventImageUrl] = useState(event.eventImageUrl || "");
-	const [eventType, setEventType] = useState<string>(event.eventType || "hackathon");
-	const [skillLevel, setSkillLevel] = useState<string>(event.skillLevel || "all");
+	const [eventType, setEventType] = useState<string>(
+		event.eventType || "hackathon",
+	);
+	const [skillLevel, setSkillLevel] = useState<string>(
+		event.skillLevel || "all",
+	);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
