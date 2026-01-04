@@ -12,6 +12,7 @@ import {
 	Zap,
 } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { createOrUpdateUser } from "@/lib/actions/users";
 
 const transitionProps = {
@@ -38,23 +39,11 @@ function ChipButton({
 			disabled={disabled}
 			layout
 			initial={false}
-			animate={{
-				backgroundColor: isSelected ? "hsl(220, 70%, 55%)" : "hsl(0, 0%, 15%)",
-			}}
-			whileHover={{
-				backgroundColor: isSelected ? "hsl(220, 70%, 60%)" : "hsl(0, 0%, 20%)",
-			}}
-			whileTap={{
-				backgroundColor: isSelected ? "hsl(220, 70%, 50%)" : "hsl(0, 0%, 25%)",
-			}}
-			transition={{
-				...transitionProps,
-				backgroundColor: { duration: 0.1 },
-			}}
+			transition={transitionProps}
 			className={`
-        inline-flex items-center px-4 py-2.5 rounded-full text-base font-medium
-        whitespace-nowrap overflow-hidden ring-1 ring-inset
-        ${isSelected ? "text-white ring-white/20" : "text-zinc-400 ring-white/10"}
+        inline-flex items-center h-9 px-4 rounded-md text-sm font-medium
+        whitespace-nowrap overflow-hidden border
+        ${isSelected ? "bg-primary text-primary-foreground border-primary" : "bg-secondary text-secondary-foreground border-border hover:bg-secondary/80"}
         ${disabled ? "opacity-50 cursor-not-allowed" : ""}
       `}
 		>
@@ -229,15 +218,10 @@ export function OnboardingFlow({ redirectUrl }: OnboardingFlowProps) {
 						</p>
 
 						{/* Accept button */}
-						<motion.button
-							onClick={handleNext}
-							whileHover={{ scale: 1.02 }}
-							whileTap={{ scale: 0.98 }}
-							className="flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground rounded-full font-semibold text-lg hover:bg-primary/90 transition-colors"
-						>
+						<Button onClick={handleNext} size="lg">
 							Aceptar invitación
-							<ChevronRight className="w-5 h-5" />
-						</motion.button>
+							<ChevronRight className="w-4 h-4" />
+						</Button>
 					</div>
 				</div>
 
@@ -445,37 +429,27 @@ export function OnboardingFlow({ redirectUrl }: OnboardingFlowProps) {
 
 					{/* Navigation buttons */}
 					<div className="mt-12 flex justify-between items-center">
-						<button
+						<Button
+							variant="outline"
 							onClick={handleBack}
 							disabled={isSubmitting}
-							className="flex items-center gap-2 px-6 py-3 rounded-full font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors disabled:opacity-50"
 						>
 							<ChevronLeft className="w-4 h-4" />
 							Atrás
-						</button>
+						</Button>
 
 						{currentStep < 3 ? (
-							<button
+							<Button
 								onClick={handleNext}
 								disabled={!canProceed() || isSubmitting}
-								className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all ${
-									canProceed()
-										? "bg-primary text-primary-foreground hover:bg-primary/90"
-										: "bg-muted text-muted-foreground cursor-not-allowed"
-								}`}
 							>
 								Siguiente
 								<ChevronRight className="w-4 h-4" />
-							</button>
+							</Button>
 						) : (
-							<button
+							<Button
 								onClick={handleSubmit}
 								disabled={!canProceed() || isSubmitting}
-								className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all ${
-									canProceed() && !isSubmitting
-										? "bg-primary text-primary-foreground hover:bg-primary/90"
-										: "bg-muted text-muted-foreground cursor-not-allowed"
-								}`}
 							>
 								{isSubmitting ? (
 									<>
@@ -488,7 +462,7 @@ export function OnboardingFlow({ redirectUrl }: OnboardingFlowProps) {
 										<Trophy className="w-4 h-4" />
 									</>
 								)}
-							</button>
+							</Button>
 						)}
 					</div>
 				</div>
