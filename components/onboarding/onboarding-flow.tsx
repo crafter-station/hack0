@@ -284,9 +284,12 @@ export function OnboardingFlow({ redirectUrl }: OnboardingFlowProps) {
 				<div className="max-w-lg">
 					{/* Stepper indicator */}
 					<div className="mb-10">
-						<div className="flex items-center mb-4">
+						<div className="flex items-center justify-between mb-4">
 							{[1, 2, 3].map((step) => (
-								<div key={step} className="flex items-center">
+								<div
+									key={step}
+									className="flex items-center flex-1 last:flex-none"
+								>
 									<div
 										className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-colors ${
 											currentStep >= step
@@ -298,7 +301,7 @@ export function OnboardingFlow({ redirectUrl }: OnboardingFlowProps) {
 									</div>
 									{step < 3 && (
 										<div
-											className={`w-16 lg:w-20 h-1 mx-2 rounded-full transition-colors ${
+											className={`flex-1 h-1 mx-3 rounded-full transition-colors ${
 												currentStep > step ? "bg-primary" : "bg-muted"
 											}`}
 										/>
