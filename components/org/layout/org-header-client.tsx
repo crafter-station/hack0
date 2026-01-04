@@ -181,7 +181,7 @@ export function OrgHeaderClient({
 						</div>
 
 						{community.description && (
-							<p className="text-sm text-muted-foreground mt-1 line-clamp-2 max-w-2xl">
+							<p className="text-sm text-muted-foreground mt-1 line-clamp-3 max-w-3xl">
 								{community.description}
 							</p>
 						)}

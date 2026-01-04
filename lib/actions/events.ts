@@ -267,10 +267,11 @@ export async function getEvents(
 	// Build where clause
 	const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-	// Get total count
+	// Get total count (need LEFT JOIN for search on org name)
 	const countResult = await db
 		.select({ count: sql<number>`count(*)` })
 		.from(events)
+		.leftJoin(organizations, eq(events.organizationId, organizations.id))
 		.where(whereClause);
 	const total = Number(countResult[0]?.count || 0);
 
