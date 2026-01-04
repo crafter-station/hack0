@@ -122,6 +122,9 @@ export interface UpdateEventInput {
 	city?: string;
 	venue?: string;
 	timezone?: string;
+	geoLatitude?: string | null;
+	geoLongitude?: string | null;
+	meetingUrl?: string | null;
 	prizePool?: number | null;
 	prizeCurrency?: "USD" | "PEN";
 	prizeDescription?: string;

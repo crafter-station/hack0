@@ -14,12 +14,14 @@ import {
 	MapPin,
 	Sparkles,
 	User,
+	Video,
 	Wand2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import Markdown from "react-markdown";
+import { LocationInput } from "@/components/events/edit/location-input";
 import { LumaIcon } from "@/components/icons/luma";
 import { Button } from "@/components/ui/button";
 import {
@@ -118,6 +120,9 @@ export function OrgEventFormMinimal({
 	const [department, setDepartment] = useState("");
 	const [city, setCity] = useState("");
 	const [venue, setVenue] = useState("");
+	const [geoLatitude, setGeoLatitude] = useState<string | null>(null);
+	const [geoLongitude, setGeoLongitude] = useState<string | null>(null);
+	const [meetingUrl, setMeetingUrl] = useState("");
 	const [prizePool, setPrizePool] = useState("");
 	const [prizeCurrency, setPrizeCurrency] = useState<"USD" | "PEN">("USD");
 	const [websiteUrl, setWebsiteUrl] = useState("");
@@ -180,6 +185,9 @@ export function OrgEventFormMinimal({
 			city: city || undefined,
 			venue: venue || undefined,
 			timezone: "America/Lima",
+			geoLatitude: geoLatitude || undefined,
+			geoLongitude: geoLongitude || undefined,
+			meetingUrl: meetingUrl || undefined,
 			prizePool: prizePool ? parseInt(prizePool, 10) : undefined,
 			prizeCurrency,
 			websiteUrl: websiteUrl || undefined,
@@ -252,7 +260,7 @@ export function OrgEventFormMinimal({
 			setImportState(null);
 			setLumaUrl("");
 		}
-	}, [step, metadata]);
+	}, [step, metadata, lumaUrl]);
 
 	// Handle import errors
 	useEffect(() => {
@@ -820,11 +828,14 @@ export function OrgEventFormMinimal({
 											: format === "virtual"
 												? "Virtual"
 												: "Híbrido"}
+										{geoLatitude && geoLongitude && (
+											<span className="text-xs text-emerald-500 ml-1">✓</span>
+										)}
 									</div>
 								</div>
 							</button>
 						</ResponsiveModalTrigger>
-						<ResponsiveModalContent className="max-w-2xl">
+						<ResponsiveModalContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
 							<ResponsiveModalHeader>
 								<ResponsiveModalTitle>
 									Ubicación del evento
@@ -855,43 +866,39 @@ export function OrgEventFormMinimal({
 									</div>
 								</div>
 
-								{format !== "virtual" && (
+								{(format === "virtual" || format === "hybrid") && (
 									<div className="space-y-3">
-										<div>
-											<Label className="text-sm mb-2 block">
-												Lugar o link virtual
-											</Label>
-											<Input
-												type="text"
-												value={venue}
-												onChange={(e) => setVenue(e.target.value)}
-												placeholder="Ej: Universidad Nacional, Zoom link, etc."
-												className="h-9"
-											/>
+										<div className="flex items-center gap-2 text-sm font-medium">
+											<Video className="h-4 w-4" />
+											Link de la reunión
 										</div>
-										<div className="grid grid-cols-2 gap-3">
-											<div>
-												<Label className="text-sm mb-2 block">Ciudad</Label>
-												<Input
-													type="text"
-													value={city}
-													onChange={(e) => setCity(e.target.value)}
-													placeholder="Lima"
-													className="h-9"
-												/>
-											</div>
-											<div>
-												<Label className="text-sm mb-2 block">Región</Label>
-												<Input
-													type="text"
-													value={department}
-													onChange={(e) => setDepartment(e.target.value)}
-													placeholder="Lima"
-													className="h-9"
-												/>
-											</div>
-										</div>
+										<Input
+											value={meetingUrl}
+											onChange={(e) => setMeetingUrl(e.target.value)}
+											placeholder="https://zoom.us/j/... o https://meet.google.com/..."
+											type="url"
+										/>
+										<p className="text-xs text-muted-foreground">
+											Link de Zoom, Google Meet, Teams, etc.
+										</p>
 									</div>
+								)}
+
+								{format !== "virtual" && (
+									<LocationInput
+										department={department}
+										city={city}
+										venue={venue}
+										geoLatitude={geoLatitude}
+										geoLongitude={geoLongitude}
+										onDepartmentChange={setDepartment}
+										onCityChange={setCity}
+										onVenueChange={setVenue}
+										onCoordinatesChange={(lat, lng) => {
+											setGeoLatitude(lat);
+											setGeoLongitude(lng);
+										}}
+									/>
 								)}
 							</div>
 							<ResponsiveModalFooter>

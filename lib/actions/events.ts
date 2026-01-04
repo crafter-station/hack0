@@ -59,6 +59,7 @@ interface OrganizationInfo {
 	name: string;
 	displayName: string | null;
 	isVerified: boolean | null;
+	logoUrl: string | null;
 }
 
 export type EventWithOrg = Event & { organization: OrganizationInfo | null };
@@ -500,6 +501,9 @@ export interface CreateEventInput {
 	city?: string;
 	venue?: string;
 	timezone?: string;
+	geoLatitude?: string;
+	geoLongitude?: string;
+	meetingUrl?: string;
 	startDate?: string;
 	endDate?: string;
 	registrationDeadline?: string;
@@ -579,6 +583,9 @@ export async function createEvent(
 			city: input.city,
 			venue: input.venue,
 			timezone: input.timezone || "America/Lima",
+			geoLatitude: input.geoLatitude,
+			geoLongitude: input.geoLongitude,
+			meetingUrl: input.meetingUrl,
 			startDate: input.startDate ? new Date(input.startDate) : undefined,
 			endDate: input.endDate ? new Date(input.endDate) : undefined,
 			registrationDeadline: input.registrationDeadline

@@ -1,6 +1,6 @@
 "use client";
 
-import { ImageIcon, Loader2, Pencil, Tag, X } from "lucide-react";
+import { ImageIcon, Loader2, Pencil, Tag, Video, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -82,6 +82,13 @@ export function EditEventForm({
 	const [department, setDepartment] = useState(event.department || "");
 	const [city, setCity] = useState(event.city || "");
 	const [venue, setVenue] = useState(event.venue || "");
+	const [geoLatitude, setGeoLatitude] = useState<string | null>(
+		event.geoLatitude || null,
+	);
+	const [geoLongitude, setGeoLongitude] = useState<string | null>(
+		event.geoLongitude || null,
+	);
+	const [meetingUrl, setMeetingUrl] = useState(event.meetingUrl || "");
 	const [prizePool, setPrizePool] = useState(event.prizePool?.toString() || "");
 	const [prizeCurrency, setPrizeCurrency] = useState<"USD" | "PEN">(
 		event.prizeCurrency || "USD",
@@ -121,6 +128,9 @@ export function EditEventForm({
 			city: city || undefined,
 			venue: venue || undefined,
 			timezone: "America/Lima",
+			geoLatitude: geoLatitude || null,
+			geoLongitude: geoLongitude || null,
+			meetingUrl: meetingUrl || null,
 			prizePool: prizePool ? parseInt(prizePool, 10) : null,
 			prizeCurrency,
 			prizeDescription: prizeDescription || undefined,
@@ -251,14 +261,40 @@ export function EditEventForm({
 
 					<FormatSelector value={format} onChange={setFormat} />
 
+					{(format === "virtual" || format === "hybrid") && (
+						<div className="space-y-3">
+							<div className="flex items-center gap-2 text-sm font-medium">
+								<Video className="h-4 w-4" />
+								Link de la reunión
+							</div>
+							<div className="rounded-lg border bg-card p-4 space-y-3">
+								<Input
+									value={meetingUrl}
+									onChange={(e) => setMeetingUrl(e.target.value)}
+									placeholder="https://zoom.us/j/... o https://meet.google.com/..."
+									type="url"
+								/>
+								<p className="text-xs text-muted-foreground">
+									Link de Zoom, Google Meet, Teams, etc.
+								</p>
+							</div>
+						</div>
+					)}
+
 					{format !== "virtual" && (
 						<LocationInput
 							department={department}
 							city={city}
 							venue={venue}
+							geoLatitude={geoLatitude}
+							geoLongitude={geoLongitude}
 							onDepartmentChange={setDepartment}
 							onCityChange={setCity}
 							onVenueChange={setVenue}
+							onCoordinatesChange={(lat, lng) => {
+								setGeoLatitude(lat);
+								setGeoLongitude(lng);
+							}}
 						/>
 					)}
 
