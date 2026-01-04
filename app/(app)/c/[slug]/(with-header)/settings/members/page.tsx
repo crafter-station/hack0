@@ -55,19 +55,12 @@ export default async function MembersSettingsPage({
 	const currentMember = community.members.find((m) => m.userId === userId);
 	const isAdmin = currentMember?.role === "admin";
 
-	const GHOST_ADMIN_ID = "user_36EEeOvb4zfhKhIVSfK46or5pkC";
-	const isCrafterStation = slug === "crafter-station";
-
 	const clerk = await clerkClient();
 	const uniqueMemberIds = community.members
 		.map((m) => m.userId)
 		.filter((id) => id !== community.ownerUserId);
 
-	let memberUserIds = [community.ownerUserId, ...uniqueMemberIds];
-
-	if (!isCrafterStation) {
-		memberUserIds = memberUserIds.filter((id) => id !== GHOST_ADMIN_ID);
-	}
+	const memberUserIds = [community.ownerUserId, ...uniqueMemberIds];
 
 	const users = await Promise.all(
 		memberUserIds.map(async (memberId) => {
@@ -85,11 +78,9 @@ export default async function MembersSettingsPage({
 
 	const invites = await getOrganizationInvites(community.id);
 
-	const filteredMembers = community.members.filter((m) => {
-		if (m.userId === community.ownerUserId) return false;
-		if (!isCrafterStation && m.userId === GHOST_ADMIN_ID) return false;
-		return true;
-	});
+	const filteredMembers = community.members.filter(
+		(m) => m.userId !== community.ownerUserId,
+	);
 
 	return (
 		<div className="space-y-4">

@@ -903,8 +903,10 @@ export const COMMUNITY_ROLE_LABELS: Record<string, string> = {
 };
 
 // ============================================
-// COMMUNITY INVITES - Shareable invite links
+// COMMUNITY INVITES - Shareable invite links & email invites
 // ============================================
+
+export const inviteTypeEnum = pgEnum("invite_type", ["link", "email"]);
 
 export const communityInvites = pgTable("community_invites", {
 	id: uuid("id").primaryKey().defaultRandom(),
@@ -912,6 +914,12 @@ export const communityInvites = pgTable("community_invites", {
 		.references(() => organizations.id)
 		.notNull(),
 	createdBy: varchar("created_by", { length: 255 }).notNull(), // Clerk user ID
+
+	// Invite type: "link" (shareable) or "email" (direct invite)
+	inviteType: inviteTypeEnum("invite_type").default("link"),
+
+	// Email (only for email invites)
+	email: varchar("email", { length: 255 }),
 
 	// Invite token (for URL)
 	inviteToken: varchar("invite_token", { length: 255 }).unique().notNull(),
