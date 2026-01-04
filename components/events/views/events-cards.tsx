@@ -139,11 +139,32 @@ function EventCard({
 						<h3 className="font-medium text-sm line-clamp-2 group-hover:text-foreground transition-colors">
 							{event.name}
 						</h3>
-						<p className="text-xs text-muted-foreground mt-0.5">
-							{event.organization?.displayName ||
-								event.organization?.name ||
-								getEventTypeLabel(event.eventType)}
-						</p>
+						<div className="flex items-center gap-1.5 mt-1">
+							{event.organization?.logoUrl ? (
+								<Image
+									src={event.organization.logoUrl}
+									alt={
+										event.organization.displayName || event.organization.name
+									}
+									width={14}
+									height={14}
+									className="rounded-[3px] object-cover flex-shrink-0"
+								/>
+							) : event.organization ? (
+								<div className="size-3.5 rounded-[3px] bg-muted flex items-center justify-center flex-shrink-0">
+									<span className="text-[8px] font-medium text-muted-foreground">
+										{(event.organization.displayName || event.organization.name)
+											.charAt(0)
+											.toUpperCase()}
+									</span>
+								</div>
+							) : null}
+							<span className="text-xs text-muted-foreground truncate">
+								{event.organization?.displayName ||
+									event.organization?.name ||
+									getEventTypeLabel(event.eventType)}
+							</span>
+						</div>
 					</div>
 					<div className="text-xs text-muted-foreground">
 						{formatEventDateRange(event.startDate, event.endDate)}

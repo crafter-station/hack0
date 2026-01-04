@@ -52,7 +52,9 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 						const isEnded = status.status === "ended";
 						const prize = formatPrize(event.prizePool, event.prizeCurrency);
 
-						const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
+						const eventUrl = event.shortCode
+							? `/e/${event.shortCode}`
+							: `/${event.slug}`;
 
 						return (
 							<Link key={event.id} href={eventUrl}>
@@ -110,11 +112,36 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 											<h3 className="font-medium text-sm line-clamp-2 group-hover:text-foreground transition-colors">
 												{event.name}
 											</h3>
-											<p className="text-xs text-muted-foreground">
-												{event.organization?.displayName ||
-													event.organization?.name ||
-													getEventTypeLabel(event.eventType)}
-											</p>
+											<div className="flex items-center gap-1.5 mt-0.5">
+												{event.organization?.logoUrl ? (
+													<Image
+														src={event.organization.logoUrl}
+														alt={
+															event.organization.displayName ||
+															event.organization.name
+														}
+														width={14}
+														height={14}
+														className="rounded-[3px] object-cover flex-shrink-0"
+													/>
+												) : event.organization ? (
+													<div className="size-3.5 rounded-[3px] bg-muted flex items-center justify-center flex-shrink-0">
+														<span className="text-[8px] font-medium text-muted-foreground">
+															{(
+																event.organization.displayName ||
+																event.organization.name
+															)
+																.charAt(0)
+																.toUpperCase()}
+														</span>
+													</div>
+												) : null}
+												<span className="text-xs text-muted-foreground truncate">
+													{event.organization?.displayName ||
+														event.organization?.name ||
+														getEventTypeLabel(event.eventType)}
+												</span>
+											</div>
 										</div>
 										<div className="text-xs text-muted-foreground">
 											{formatEventDateRange(event.startDate, event.endDate)}
@@ -149,37 +176,40 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 						const eventCount = Math.min(events.length, 8);
 						const targetCount = eventCount <= 4 ? 4 : 8;
 						const placeholderCount = targetCount - eventCount;
-						return placeholderCount > 0 && Array.from({ length: placeholderCount }).map((_, i) => (
-							<Link key={`placeholder-${i}`} href="/onboarding">
-								<Card className="group h-full overflow-hidden p-0 gap-0 border-dashed hover:border-foreground/20 transition-all">
-									<div className="relative aspect-square w-full overflow-hidden bg-muted/30 border-b">
-										<div className="flex h-full w-full flex-col items-center justify-center gap-2 p-4">
-											<div className="h-10 w-10 rounded-full border-2 border-dashed border-muted-foreground/20 flex items-center justify-center">
-												<span className="text-muted-foreground/40 text-xl">
-													+
+						return (
+							placeholderCount > 0 &&
+							Array.from({ length: placeholderCount }).map((_, i) => (
+								<Link key={`placeholder-${i}`} href="/onboarding">
+									<Card className="group h-full overflow-hidden p-0 gap-0 border-dashed hover:border-foreground/20 transition-all">
+										<div className="relative aspect-square w-full overflow-hidden bg-muted/30 border-b">
+											<div className="flex h-full w-full flex-col items-center justify-center gap-2 p-4">
+												<div className="h-10 w-10 rounded-full border-2 border-dashed border-muted-foreground/20 flex items-center justify-center">
+													<span className="text-muted-foreground/40 text-xl">
+														+
+													</span>
+												</div>
+												<span className="text-xs text-muted-foreground/60 text-center">
+													¿Tienes un evento?
 												</span>
 											</div>
-											<span className="text-xs text-muted-foreground/60 text-center">
-												¿Tienes un evento?
-											</span>
 										</div>
-									</div>
-									<CardContent className="p-3 space-y-1">
-										<div>
-											<h3 className="font-medium text-sm text-muted-foreground/60 group-hover:text-muted-foreground transition-colors">
-												Publica tu evento
-											</h3>
-											<p className="text-xs text-muted-foreground/40">
-												Es gratis y toma 2 minutos
-											</p>
-										</div>
-										<div className="text-xs text-muted-foreground/40">
-											Crea tu comunidad →
-										</div>
-									</CardContent>
-								</Card>
-							</Link>
-						));
+										<CardContent className="p-3 space-y-1">
+											<div>
+												<h3 className="font-medium text-sm text-muted-foreground/60 group-hover:text-muted-foreground transition-colors">
+													Publica tu evento
+												</h3>
+												<p className="text-xs text-muted-foreground/40">
+													Es gratis y toma 2 minutos
+												</p>
+											</div>
+											<div className="text-xs text-muted-foreground/40">
+												Crea tu comunidad →
+											</div>
+										</CardContent>
+									</Card>
+								</Link>
+							))
+						);
 					})()}
 				</div>
 

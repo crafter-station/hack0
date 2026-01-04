@@ -774,7 +774,7 @@ export default async function EventPage({ params }: EventPageProps) {
 												className="flex w-full h-9 items-center justify-center gap-2 rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
 											>
 												<Building2 className="h-4 w-4" />
-												Ver comunidad
+												Ver Organización
 											</Link>
 										</div>
 
