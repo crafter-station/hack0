@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { AchievementGrid } from "@/components/achievements/achievement-grid";
 import { db } from "@/lib/db";
 import { achievements, organizations, userAchievements } from "@/lib/db/schema";
@@ -28,11 +29,23 @@ export async function generateMetadata({
 	};
 }
 
-export default async function AchievementsPage({
-	params,
-}: AchievementsPageProps) {
-	const { slug } = await params;
+function AchievementsSkeleton() {
+	return (
+		<div className="space-y-6">
+			<div className="h-4 bg-muted rounded w-64 animate-pulse" />
+			<div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
+				{Array.from({ length: 8 }).map((_, i) => (
+					<div key={i} className="space-y-2 animate-pulse">
+						<div className="aspect-square bg-muted rounded-lg" />
+						<div className="h-4 bg-muted rounded w-3/4" />
+					</div>
+				))}
+			</div>
+		</div>
+	);
+}
 
+async function AchievementsContent({ slug }: { slug: string }) {
 	const community = await db.query.organizations.findFirst({
 		where: eq(organizations.slug, slug),
 	});
@@ -71,5 +84,17 @@ export default async function AchievementsPage({
 				userAchievements={userAchievementsList}
 			/>
 		</div>
+	);
+}
+
+export default async function AchievementsPage({
+	params,
+}: AchievementsPageProps) {
+	const { slug } = await params;
+
+	return (
+		<Suspense fallback={<AchievementsSkeleton />}>
+			<AchievementsContent slug={slug} />
+		</Suspense>
 	);
 }
