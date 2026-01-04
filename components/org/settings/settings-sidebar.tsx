@@ -1,6 +1,6 @@
 "use client";
 
-import { Award, Settings, Sparkles } from "lucide-react";
+import { Award, Settings, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,12 @@ const sidebarItems = [
 		label: "General",
 		icon: Settings,
 		href: (slug: string) => `/c/${slug}/settings`,
+	},
+	{
+		id: "members",
+		label: "Miembros",
+		icon: Users,
+		href: (slug: string) => `/c/${slug}/settings/members`,
 	},
 	{
 		id: "badge",
@@ -38,7 +44,9 @@ export function SettingsSidebar({ slug }: SettingsSidebarProps) {
 		? "campaigns"
 		: pathname.includes("/settings/badge")
 			? "badge"
-			: "general";
+			: pathname.includes("/settings/members")
+				? "members"
+				: "general";
 
 	return (
 		<aside className="w-full md:w-56 shrink-0 space-y-4">

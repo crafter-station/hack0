@@ -29,7 +29,7 @@ async function CommunityHeaderWrapper({ slug }: { slug: string }) {
 		{ id: "events" as const, label: "Eventos", icon: "Calendar" },
 		...(community.isPersonalOrg
 			? [{ id: "achievements" as const, label: "Logros", icon: "Trophy" }]
-			: [{ id: "members" as const, label: "Miembros", icon: "Users" }]),
+			: [{ id: "comunidad" as const, label: "Comunidad", icon: "Users" }]),
 		...(canManage
 			? [
 					{ id: "analytics" as const, label: "Analytics", icon: "BarChart3" },

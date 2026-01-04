@@ -17,7 +17,7 @@ import { OrgActions } from "./org-actions";
 interface OrgHeaderProps {
 	community: Organization;
 	slug: string;
-	currentTab: "events" | "members" | "badges" | "analytics" | "settings";
+	currentTab: "events" | "comunidad" | "badges" | "analytics" | "settings";
 }
 
 export async function OrgHeader({
@@ -40,8 +40,8 @@ export async function OrgHeader({
 			requiresAdmin: false,
 		},
 		{
-			id: "members" as const,
-			label: "Miembros",
+			id: "comunidad" as const,
+			label: "Comunidad",
 			icon: Users,
 			requiresAdmin: false,
 		},

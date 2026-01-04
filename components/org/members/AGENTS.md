@@ -16,3 +16,7 @@ Display público de miembros y gestión administrativa.
 
 ## Roles
 owner > admin > member > follower
+
+## Page Locations
+- /c/[slug]/comunidad → Galería de badges (público)
+- /c/[slug]/settings/members → Gestión de miembros (Admin-only)

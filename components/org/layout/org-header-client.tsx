@@ -67,7 +67,7 @@ function extractUsername(url: string, platform: string): string {
 interface Tab {
 	id:
 		| "events"
-		| "members"
+		| "comunidad"
 		| "achievements"
 		| "badges"
 		| "analytics"
@@ -109,8 +109,8 @@ export function OrgHeaderClient({
 		[community.displayName, community.name],
 	);
 
-	const currentTab = pathname.includes("/members")
-		? "members"
+	const currentTab = pathname.includes("/comunidad")
+		? "comunidad"
 		: pathname.includes("/achievements")
 			? "achievements"
 			: pathname.includes("/badges")

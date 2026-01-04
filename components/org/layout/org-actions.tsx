@@ -115,11 +115,6 @@ export function OrgActions({
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
-						<DropdownMenuItem
-							onClick={() => router.push(`/c/${communitySlug}/members`)}
-						>
-							Ver miembros
-						</DropdownMenuItem>
 						<DropdownMenuItem onClick={() => handleOpenDialog("request-admin")}>
 							<Shield className="h-4 w-4 mr-2" />
 							Solicitar admin
@@ -153,11 +148,6 @@ export function OrgActions({
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
-						<DropdownMenuItem
-							onClick={() => router.push(`/c/${communitySlug}/members`)}
-						>
-							Ver miembros
-						</DropdownMenuItem>
 						<DropdownMenuItem
 							onClick={() => handleOpenDialog("request-member")}
 						>
