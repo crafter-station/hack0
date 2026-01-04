@@ -20,7 +20,9 @@ Schema Drizzle ORM y queries para Neon PostgreSQL.
 | userPreferences | Preferencias y rol de usuario |
 | eventSponsors | Sponsors de eventos |
 | eventHostOrganizations | Co-hosts de eventos |
+| eventHosts | Hosts individuales de eventos (Luma/manual) |
 | winnerClaims | Claims de ganadores |
+| hostClaims | Claims de hosts de eventos |
 | organizerClaims | Claims de organizadores |
 | subscriptions | Suscripciones email |
 | badgeCampaigns | Campañas de badges |

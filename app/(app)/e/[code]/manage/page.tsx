@@ -17,6 +17,7 @@ import {
 } from "@/lib/actions/analytics";
 import { getEventWinnerClaims } from "@/lib/actions/claims";
 import { getEventCohost } from "@/lib/actions/cohost-invites";
+import { getEventHostsWithUsers } from "@/lib/actions/event-hosts";
 import { getEventByShortCode, getEventSponsors } from "@/lib/actions/events";
 import { canManageEventByShortCode } from "@/lib/actions/permissions";
 
@@ -149,8 +150,11 @@ export default async function ManageEventPage({
 		redirect("/");
 	}
 
-	const sponsors = await getEventSponsors(event.id);
-	const cohosts = await getEventCohost(event.id);
+	const [sponsors, cohosts, eventHosts] = await Promise.all([
+		getEventSponsors(event.id),
+		getEventCohost(event.id),
+		getEventHostsWithUsers(event.id),
+	]);
 
 	const isHackathon =
 		event.eventType === "hackathon" ||
@@ -174,6 +178,7 @@ export default async function ManageEventPage({
 					tab={tab}
 					sponsors={sponsors}
 					cohosts={cohosts}
+					eventHosts={eventHosts}
 					winnerClaims={winnerClaims}
 					importJobs={importJobs}
 					notificationLogs={notificationLogs}

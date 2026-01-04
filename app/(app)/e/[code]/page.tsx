@@ -6,7 +6,6 @@ import {
 	Building2,
 	Calendar,
 	CheckCircle2,
-	Clock,
 	ExternalLink,
 	Globe,
 	GraduationCap,
@@ -24,10 +23,10 @@ import {
 	AttendanceButton,
 	EventCountdown,
 	EventLocationMap,
+	HostClaimDialog,
 	ManageEventCard,
 	WinnerSection,
 } from "@/components/events/detail";
-import { CalendarIcon } from "@/components/icons/calendar";
 import { TrophyIcon } from "@/components/icons/trophy";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getUserAttendanceClaim } from "@/lib/actions/attendance";
@@ -37,6 +36,7 @@ import {
 	getEventByShortCode,
 	getEventSponsors,
 } from "@/lib/actions/events";
+import { getEventHosts } from "@/lib/actions/host-claims";
 import {
 	formatEventDate,
 	formatEventDateFull,
@@ -49,7 +49,6 @@ import {
 	getFormatLabel,
 	getOrganizerTypeLabel,
 	getSkillLevelLabel,
-	isDateInFuture,
 	isEventJuniorFriendly,
 } from "@/lib/event-utils";
 import { isGodMode } from "@/lib/god-mode";
@@ -155,12 +154,13 @@ export default async function EventPage({ params }: EventPageProps) {
 		notFound();
 	}
 
-	const [childEvents, eventSponsors, cohosts, attendanceClaim] =
+	const [childEvents, eventSponsors, cohosts, attendanceClaim, eventHosts] =
 		await Promise.all([
 			getChildEvents(hackathon.id),
 			getEventSponsors(hackathon.id),
 			getEventCohost(hackathon.id),
 			getUserAttendanceClaim(hackathon.id),
+			getEventHosts(hackathon.id),
 		]);
 
 	const hasChildEvents = childEvents.length > 0;
@@ -168,6 +168,7 @@ export default async function EventPage({ params }: EventPageProps) {
 	const approvedCohosts = cohosts.filter(
 		(c) => c.status === "approved" && !c.isPrimary,
 	);
+	const hasHosts = eventHosts.length > 0;
 	const hasCohosts = approvedCohosts.length > 0;
 
 	const status = getEventStatus(hackathon);
@@ -515,7 +516,7 @@ export default async function EventPage({ params }: EventPageProps) {
 													</h4>
 												),
 												p: ({ children }) => (
-													<p className="text-foreground leading-relaxed">
+													<p className="text-foreground text-base leading-relaxed">
 														{children}
 													</p>
 												),
@@ -525,7 +526,9 @@ export default async function EventPage({ params }: EventPageProps) {
 													</ul>
 												),
 												li: ({ children }) => (
-													<li className="text-foreground">{children}</li>
+													<li className="text-foreground text-base">
+														{children}
+													</li>
 												),
 												strong: ({ children }) => (
 													<strong className="font-semibold text-foreground">
@@ -823,6 +826,52 @@ export default async function EventPage({ params }: EventPageProps) {
 												))}
 											</div>
 										)}
+
+										{hasHosts && (
+											<div className="space-y-3 pt-4 border-t">
+												<p className="text-xs font-medium text-muted-foreground">
+													Hosts del evento
+												</p>
+												{eventHosts.map((host) => (
+													<div
+														key={host.id}
+														className="flex items-center gap-3"
+													>
+														<Avatar className="h-8 w-8">
+															{host.avatarUrl && (
+																<AvatarImage
+																	src={host.avatarUrl}
+																	alt={host.name}
+																/>
+															)}
+															<AvatarFallback className="text-xs">
+																{getInitials(host.name)}
+															</AvatarFallback>
+														</Avatar>
+														<div className="flex-1 min-w-0">
+															<div className="flex items-center gap-2">
+																<span className="text-sm font-medium truncate">
+																	{host.name}
+																</span>
+																{host.userId && (
+																	<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+																)}
+															</div>
+														</div>
+														{userId && !host.userId && (
+															<HostClaimDialog
+																eventHostId={host.id}
+																hostName={host.name}
+															>
+																<button className="text-xs text-blue-500 hover:underline shrink-0">
+																	¿Eres tú?
+																</button>
+															</HostClaimDialog>
+														)}
+													</div>
+												))}
+											</div>
+										)}
 									</div>
 								</div>
 							)}
@@ -955,54 +1004,6 @@ export default async function EventPage({ params }: EventPageProps) {
 												</Markdown>
 											</div>
 										)}
-									</div>
-								</div>
-							)}
-
-							{deadline && isDateInFuture(deadline) && (
-								<div className="rounded-lg border bg-card">
-									<div className="px-5 py-4 border-b">
-										<div className="flex items-center gap-2">
-											<Clock className="h-4 w-4 text-muted-foreground" />
-											<h3 className="text-sm font-semibold">
-												Cierre de inscripciones
-											</h3>
-										</div>
-									</div>
-									<div className="p-5">
-										<p className="text-sm font-medium">
-											{formatEventDate(deadline, "d 'de' MMMM, yyyy")}
-										</p>
-										<p className="text-xs text-muted-foreground mt-1">
-											{formatEventTime(deadline)}
-										</p>
-									</div>
-								</div>
-							)}
-
-							{startDate && (
-								<div className="rounded-lg border bg-card">
-									<div className="px-5 py-4 border-b">
-										<div className="flex items-center gap-2">
-											<CalendarIcon className="h-4 w-4 text-muted-foreground" />
-											<h3 className="text-sm font-semibold">
-												Fechas del evento
-											</h3>
-										</div>
-									</div>
-									<div className="p-5">
-										<p className="text-sm font-medium">
-											{formatEventDate(startDate, "d MMM")}
-											{endDate &&
-												startDate.toDateString() !== endDate.toDateString() && (
-													<> – {formatEventDate(endDate, "d MMM yyyy")}</>
-												)}
-											{(!endDate ||
-												startDate.toDateString() ===
-													endDate.toDateString()) && (
-												<>, {formatEventDate(startDate, "yyyy")}</>
-											)}
-										</p>
 									</div>
 								</div>
 							)}

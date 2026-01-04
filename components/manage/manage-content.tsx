@@ -29,6 +29,7 @@ import {
 	CohostSelector,
 	DeleteEventButton,
 	EditEventForm,
+	HostAssignment,
 } from "@/components/events/edit";
 import { Button } from "@/components/ui/button";
 import type { EventSponsorWithOrg } from "@/lib/actions/events";
@@ -49,6 +50,14 @@ import {
 	getSkillLevelLabel,
 } from "@/lib/event-utils";
 
+interface EventHostWithUser {
+	id: string;
+	name: string;
+	avatarUrl: string | null;
+	source: "luma" | "manual";
+	userId: string | null;
+}
+
 interface ManageContentProps {
 	event: Event;
 	community: Organization;
@@ -57,6 +66,7 @@ interface ManageContentProps {
 	tab: string;
 	sponsors: EventSponsorWithOrg[];
 	cohosts: (EventHostOrganization & { organization: Organization })[];
+	eventHosts: EventHostWithUser[];
 	winnerClaims: WinnerClaim[];
 	importJobs: ImportJob[];
 	notificationLogs: NotificationLog[];
@@ -70,6 +80,7 @@ export function ManageContent({
 	tab,
 	sponsors,
 	cohosts,
+	eventHosts,
 	winnerClaims,
 	importJobs,
 	notificationLogs,
@@ -580,12 +591,15 @@ export function ManageContent({
 		}));
 
 		return (
-			<CohostSelector
-				eventId={event.id}
-				organizationId={community.id}
-				currentUserId={community.ownerUserId}
-				existingCohosts={transformedCohosts}
-			/>
+			<div className="space-y-8">
+				<HostAssignment eventId={event.id} initialHosts={eventHosts} />
+				<CohostSelector
+					eventId={event.id}
+					organizationId={community.id}
+					currentUserId={community.ownerUserId}
+					existingCohosts={transformedCohosts}
+				/>
+			</div>
 		);
 	}
 

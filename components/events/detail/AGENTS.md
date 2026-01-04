@@ -12,6 +12,7 @@ Componentes para la página de detalle de evento `/e/[code]`.
 | ManageEventButton | Botón de gestión (admin/owner) |
 | WinnerSection | Display de ganadores post-evento |
 | WinnerClaimDialog | Dialog para reclamar premio |
+| HostClaimDialog | Dialog para reclamar perfil de host |
 | AcceptCohostInviteButton | Aceptar invitación de co-host |
 
 ## Attendance States

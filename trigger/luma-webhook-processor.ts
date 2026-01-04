@@ -1,10 +1,14 @@
 import Firecrawl from "@mendable/firecrawl-js";
 import { metadata, task } from "@trigger.dev/sdk/v3";
-import { eq, ilike, sql } from "drizzle-orm";
+import { and, eq, ilike, notInArray, sql } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { db } from "@/lib/db";
-import { events, organizations } from "@/lib/db/schema";
-import type { LumaApiEvent, LumaWebhookTaskPayload } from "@/lib/luma/types";
+import { eventHosts, events, organizations } from "@/lib/db/schema";
+import type {
+	LumaApiEvent,
+	LumaHost,
+	LumaWebhookTaskPayload,
+} from "@/lib/luma/types";
 import { createUniqueSlug, ensureUniqueShortCode } from "@/lib/slug-utils";
 
 async function fetchLumaEventDetails(
@@ -117,6 +121,57 @@ async function scrapeEventWithFirecrawl(
 		metadata.set("firecrawlStep", "error");
 		return null;
 	}
+}
+
+async function processEventHosts(
+	eventId: string,
+	hosts: LumaHost[],
+	isUpdate: boolean,
+) {
+	if (!hosts || hosts.length === 0) {
+		metadata.set("hostsCount", "0");
+		return;
+	}
+
+	metadata.set("step", "processing_hosts");
+	metadata.set("hostsCount", hosts.length.toString());
+
+	for (const host of hosts) {
+		await db
+			.insert(eventHosts)
+			.values({
+				eventId,
+				source: "luma",
+				lumaHostId: host.id,
+				name: host.name,
+				avatarUrl: host.avatar_url,
+			})
+			.onConflictDoUpdate({
+				target: [eventHosts.eventId, eventHosts.lumaHostId],
+				set: {
+					name: host.name,
+					avatarUrl: host.avatar_url,
+					updatedAt: new Date(),
+				},
+			});
+	}
+
+	if (isUpdate) {
+		const currentLumaIds = hosts.map((h) => h.id);
+		if (currentLumaIds.length > 0) {
+			await db
+				.delete(eventHosts)
+				.where(
+					and(
+						eq(eventHosts.eventId, eventId),
+						eq(eventHosts.source, "luma"),
+						notInArray(eventHosts.lumaHostId, currentLumaIds),
+					),
+				);
+		}
+	}
+
+	metadata.set("hostsProcessed", hosts.length.toString());
 }
 
 export const lumaWebhookProcessorTask = task({
@@ -319,6 +374,8 @@ async function handleEventCreated(
 		})
 		.returning();
 
+	await processEventHosts(newEvent.id, data.hosts || [], false);
+
 	metadata.set("step", "completed");
 	metadata.set("newEventId", newEvent.id);
 	metadata.set("newEventSlug", newEvent.slug);
@@ -410,6 +467,8 @@ async function handleEventUpdated(
 			updatedAt: new Date(),
 		})
 		.where(eq(events.id, existingEvent.id));
+
+	await processEventHosts(existingEvent.id, data.hosts || [], true);
 
 	metadata.set("step", "completed");
 	metadata.set("updatedEventId", existingEvent.id);

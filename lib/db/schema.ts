@@ -320,6 +320,83 @@ export type WinnerClaim = typeof winnerClaims.$inferSelect;
 export type NewWinnerClaim = typeof winnerClaims.$inferInsert;
 
 // ============================================
+// EVENT HOSTS - Individual hosts for events (from Luma or manual)
+// ============================================
+
+export const hostSourceEnum = pgEnum("host_source", ["luma", "manual"]);
+
+export const eventHosts = pgTable(
+	"event_hosts",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		eventId: uuid("event_id")
+			.references(() => events.id, { onDelete: "cascade" })
+			.notNull(),
+
+		source: hostSourceEnum("source").notNull().default("manual"),
+
+		lumaHostId: varchar("luma_host_id", { length: 100 }),
+
+		name: varchar("name", { length: 255 }).notNull(),
+		avatarUrl: varchar("avatar_url", { length: 500 }),
+
+		userId: varchar("user_id", { length: 255 }),
+
+		representingOrgId: uuid("representing_org_id").references(
+			() => organizations.id,
+		),
+
+		assignedBy: varchar("assigned_by", { length: 255 }),
+
+		createdAt: timestamp("created_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+		updatedAt: timestamp("updated_at", {
+			mode: "date",
+			withTimezone: true,
+		}).defaultNow(),
+	},
+	(t) => [
+		uniqueIndex("event_host_luma_idx").on(t.eventId, t.lumaHostId),
+		index("event_host_event_idx").on(t.eventId),
+		index("event_host_user_idx").on(t.userId),
+		index("event_host_org_idx").on(t.representingOrgId),
+	],
+);
+
+export type EventHost = typeof eventHosts.$inferSelect;
+export type NewEventHost = typeof eventHosts.$inferInsert;
+
+// ============================================
+// HOST CLAIMS - For manual host verification requests
+// ============================================
+
+export const hostClaims = pgTable("host_claims", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	eventHostId: uuid("event_host_id")
+		.references(() => eventHosts.id, { onDelete: "cascade" })
+		.notNull(),
+	userId: varchar("user_id", { length: 255 }).notNull(),
+
+	proofUrl: varchar("proof_url", { length: 500 }).notNull(),
+	proofDescription: text("proof_description"),
+
+	status: varchar("status", { length: 20 }).default("pending"),
+	reviewedAt: timestamp("reviewed_at", { mode: "date", withTimezone: true }),
+	reviewedBy: varchar("reviewed_by", { length: 255 }),
+	rejectionReason: text("rejection_reason"),
+
+	createdAt: timestamp("created_at", {
+		mode: "date",
+		withTimezone: true,
+	}).defaultNow(),
+});
+
+export type HostClaim = typeof hostClaims.$inferSelect;
+export type NewHostClaim = typeof hostClaims.$inferInsert;
+
+// ============================================
 // CONSTANTS - For filters and UI
 // ============================================
 
@@ -1335,6 +1412,26 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
 	organizers: many(eventOrganizers),
 	hostOrganizations: many(eventHostOrganizations),
 	attendanceClaims: many(attendanceClaims),
+	hosts: many(eventHosts),
+}));
+
+export const eventHostsRelations = relations(eventHosts, ({ one, many }) => ({
+	event: one(events, {
+		fields: [eventHosts.eventId],
+		references: [events.id],
+	}),
+	representingOrg: one(organizations, {
+		fields: [eventHosts.representingOrgId],
+		references: [organizations.id],
+	}),
+	claims: many(hostClaims),
+}));
+
+export const hostClaimsRelations = relations(hostClaims, ({ one }) => ({
+	eventHost: one(eventHosts, {
+		fields: [hostClaims.eventHostId],
+		references: [eventHosts.id],
+	}),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({

@@ -14,6 +14,8 @@ Todas las server actions de la aplicación. Core de la lógica de negocio.
 | cohost-invites.ts | Invitaciones de co-host para eventos |
 | community-members.ts | Gestión de miembros de comunidad |
 | claims.ts | Claims de organizadores/ganadores |
+| host-claims.ts | Claims de hosts de eventos |
+| event-hosts.ts | Asignación manual de hosts |
 | permissions.ts | Verificación de permisos de usuario |
 | analytics.ts | Analytics de comunidad |
 | attendance.ts | Asistencia a eventos |
