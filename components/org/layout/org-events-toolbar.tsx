@@ -22,9 +22,15 @@ function saveViewPreference(view: ViewMode) {
 	document.cookie = `${COOKIE_NAME}=${view}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
 }
 
-export function OrgEventsToolbar() {
+interface OrgEventsToolbarProps {
+	initialView?: ViewMode;
+}
+
+export function OrgEventsToolbar({
+	initialView = "cards",
+}: OrgEventsToolbarProps) {
 	const [view, setView] = useQueryState("view", {
-		defaultValue: "cards",
+		defaultValue: initialView,
 		shallow: false,
 	});
 	const [search, setSearch] = useQueryState("search", {

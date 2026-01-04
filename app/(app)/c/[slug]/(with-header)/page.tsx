@@ -149,7 +149,7 @@ export default async function CommunityPage({
 			<Suspense
 				fallback={<div className="h-7 w-full bg-muted rounded animate-pulse" />}
 			>
-				<OrgEventsToolbar />
+				<OrgEventsToolbar initialView={viewMode} />
 			</Suspense>
 
 			<Suspense fallback={<EventsSkeleton />}>
