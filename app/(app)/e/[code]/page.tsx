@@ -12,6 +12,7 @@ import {
 	GraduationCap,
 	MapPin,
 	Sparkles,
+	Tag,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -23,7 +24,7 @@ import {
 	AttendanceButton,
 	EventCountdown,
 	EventLocationMap,
-	ManageEventButton,
+	ManageEventCard,
 	WinnerSection,
 } from "@/components/events/detail";
 import { CalendarIcon } from "@/components/icons/calendar";
@@ -50,7 +51,6 @@ import {
 	getSkillLevelLabel,
 	isDateInFuture,
 	isEventJuniorFriendly,
-	PERU_TIMEZONE,
 } from "@/lib/event-utils";
 import { isGodMode } from "@/lib/god-mode";
 
@@ -305,12 +305,6 @@ export default async function EventPage({ params }: EventPageProps) {
 							}}
 						/>
 					)}
-					<div className="absolute top-3 right-3">
-						<ManageEventButton
-							event={hackathon}
-							communitySlug={community?.slug}
-						/>
-					</div>
 				</div>
 
 				<section className="mx-auto max-w-screen-xl px-8 py-4 md:py-6">
@@ -338,17 +332,9 @@ export default async function EventPage({ params }: EventPageProps) {
 						</div>
 
 						<div className="space-y-3">
-							<div className="flex items-start justify-between gap-4">
-								<h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-									{hackathon.name}
-								</h1>
-								<div className="hidden md:block">
-									<ManageEventButton
-										event={hackathon}
-										communitySlug={community?.slug}
-									/>
-								</div>
-							</div>
+							<h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+								{hackathon.name}
+							</h1>
 
 							{!hackathon.isApproved && (
 								<div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
@@ -367,70 +353,42 @@ export default async function EventPage({ params }: EventPageProps) {
 								</div>
 							)}
 
-							{startDate && (
-								<div className="flex items-center gap-4">
-									<div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-muted border border-border shrink-0">
-										<span className="text-[10px] uppercase font-medium text-muted-foreground leading-none">
-											{formatEventMonth(startDate)}
-										</span>
-										<span className="text-xl font-bold leading-none mt-0.5">
-											{formatEventDay(startDate)}
-										</span>
-									</div>
-									<div>
-										<p className="font-medium">
-											{formatEventDateFull(startDate)}
-											{endDate &&
-												startDate.toDateString() !== endDate.toDateString() && (
-													<span className="text-muted-foreground">
-														{" "}
-														– {formatEventDate(endDate, "d 'de' MMMM")}
-													</span>
-												)}
-										</p>
-										{hasValidTime ? (
-											<p className="text-sm text-muted-foreground">
-												{formatEventTime(startDate)}
-												{endDate && <> – {formatEventTime(endDate)}</>}
-												<span className="text-muted-foreground/60">
-													{" "}
-													· {PERU_TIMEZONE}
-												</span>
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+								{startDate && (
+									<div className="flex items-center gap-3">
+										<div className="flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-muted border border-border shrink-0">
+											<span className="text-[9px] uppercase font-medium text-muted-foreground leading-none">
+												{formatEventMonth(startDate)}
+											</span>
+											<span className="text-lg font-bold leading-none mt-0.5">
+												{formatEventDay(startDate)}
+											</span>
+										</div>
+										<div className="min-w-0 flex-1">
+											<p className="font-medium text-sm truncate">
+												{formatEventDateFull(startDate)}
+												{endDate &&
+													startDate.toDateString() !==
+														endDate.toDateString() && (
+														<span className="text-muted-foreground">
+															{" "}
+															– {formatEventDate(endDate, "d MMM")}
+														</span>
+													)}
 											</p>
-										) : (
-											<p className="text-sm text-muted-foreground">
-												Evento de día completo
-											</p>
-										)}
+											{hasValidTime ? (
+												<p className="text-xs text-muted-foreground truncate">
+													{formatEventTime(startDate)}
+													{endDate && <> – {formatEventTime(endDate)}</>}
+												</p>
+											) : (
+												<p className="text-xs text-muted-foreground">
+													Día completo
+												</p>
+											)}
+										</div>
 									</div>
-								</div>
-							)}
-
-							<div className="space-y-3">
-								<div className="flex items-start gap-2 text-muted-foreground">
-									<MapPin className="h-4 w-4 mt-0.5 shrink-0" />
-									<div>
-										{hackathon.venue && (
-											<p className="text-foreground">{hackathon.venue}</p>
-										)}
-										<p
-											className={
-												hackathon.venue ? "text-sm" : "text-foreground"
-											}
-										>
-											{hackathon.city}
-											{hackathon.city &&
-												hackathon.department &&
-												hackathon.city !== hackathon.department &&
-												`, ${hackathon.department}`}
-											{!hackathon.city &&
-												!hackathon.venue &&
-												getFormatLabel(hackathon.format, hackathon.department)}
-											{(hackathon.city || hackathon.venue) &&
-												`, ${getFormatLabel(hackathon.format)}`}
-										</p>
-									</div>
-								</div>
+								)}
 
 								<EventCountdown
 									event={{
@@ -439,8 +397,55 @@ export default async function EventPage({ params }: EventPageProps) {
 										registrationDeadline: deadline,
 										status: status.status,
 									}}
-									variant="hero"
+									variant="card"
 								/>
+
+								{(hackathon.venue ||
+									hackathon.city ||
+									hackathon.format !== "virtual") && (
+									<div className="flex items-center gap-3">
+										<div className="flex items-center justify-center w-12 h-12 rounded-xl bg-muted border border-border shrink-0">
+											<MapPin className="h-5 w-5 text-muted-foreground" />
+										</div>
+										<div className="min-w-0 flex-1">
+											<p className="font-medium text-sm truncate">
+												{hackathon.venue ||
+													hackathon.city ||
+													getFormatLabel(hackathon.format)}
+											</p>
+											<p className="text-xs text-muted-foreground truncate">
+												{hackathon.venue && hackathon.city}
+												{hackathon.city &&
+													hackathon.department &&
+													hackathon.city !== hackathon.department &&
+													`, ${hackathon.department}`}
+												{(hackathon.city || hackathon.venue) &&
+													` · ${getFormatLabel(hackathon.format)}`}
+											</p>
+										</div>
+									</div>
+								)}
+
+								{hackathon.domains && hackathon.domains.length > 0 && (
+									<div className="flex items-center gap-3">
+										<div className="flex items-center justify-center w-12 h-12 rounded-xl bg-muted border border-border shrink-0">
+											<Tag className="h-5 w-5 text-muted-foreground" />
+										</div>
+										<div className="min-w-0 flex-1">
+											<p className="font-medium text-sm truncate">
+												{getEventTypeLabel(hackathon.eventType)}
+											</p>
+											<p className="text-xs text-muted-foreground truncate">
+												{hackathon.domains
+													.slice(0, 2)
+													.map(getDomainLabel)
+													.join(", ")}
+												{hackathon.domains.length > 2 &&
+													` +${hackathon.domains.length - 2}`}
+											</p>
+										</div>
+									</div>
+								)}
 							</div>
 
 							<div className="flex flex-wrap items-center gap-2">
@@ -469,10 +474,6 @@ export default async function EventPage({ params }: EventPageProps) {
 									{status.label}
 								</span>
 
-								<span className="inline-flex h-6 items-center rounded-md border border-border px-2 text-xs text-muted-foreground">
-									{getEventTypeLabel(hackathon.eventType)}
-								</span>
-
 								{isJuniorFriendly && (
 									<span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-500">
 										<Sparkles className="h-3 w-3" />
@@ -486,17 +487,6 @@ export default async function EventPage({ params }: EventPageProps) {
 										{getSkillLevelLabel(hackathon.skillLevel)}
 									</span>
 								)}
-
-								{hackathon.domains &&
-									hackathon.domains.length > 0 &&
-									hackathon.domains.slice(0, 3).map((domain) => (
-										<span
-											key={domain}
-											className="inline-flex h-6 items-center rounded-md border border-border px-2 text-xs text-muted-foreground"
-										>
-											{getDomainLabel(domain)}
-										</span>
-									))}
 							</div>
 						</div>
 					</div>
@@ -719,6 +709,8 @@ export default async function EventPage({ params }: EventPageProps) {
 						</div>
 
 						<aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
+							<ManageEventCard event={hackathon} />
+
 							{community && (
 								<div className="rounded-lg border bg-card">
 									<div className="px-5 py-4 border-b">

@@ -16,7 +16,7 @@ interface EventCountdownProps {
 		registrationDeadline: Date | null;
 		status: "upcoming" | "open" | "ongoing" | "ended";
 	};
-	variant?: "hero" | "compact";
+	variant?: "hero" | "compact" | "card";
 }
 
 function getCountdownTarget(
@@ -125,6 +125,34 @@ export function EventCountdown({
 			>
 				<Clock className="h-3 w-3" />
 				{target.label} en {formatTimeRemaining(timeRemaining)}
+			</div>
+		);
+	}
+
+	if (variant === "card") {
+		const iconColor = urgencyColor.split(" ")[0];
+		return (
+			<div className="flex items-center gap-3">
+				<div
+					className={`flex items-center justify-center w-12 h-12 rounded-xl border border-border shrink-0 ${urgencyColor.split(" ")[1]}`}
+				>
+					<Clock className={`h-5 w-5 ${iconColor}`} />
+				</div>
+				<div className="min-w-0 flex-1">
+					<p className="font-medium text-sm">
+						{target.label} en{" "}
+						<span className={iconColor}>
+							{formatTimeRemaining(timeRemaining)}
+						</span>
+					</p>
+					<p className="text-xs text-muted-foreground">
+						{target.type === "registration"
+							? "Inscripción"
+							: target.type === "start"
+								? "Inicio del evento"
+								: "Fin del evento"}
+					</p>
+				</div>
 			</div>
 		);
 	}
