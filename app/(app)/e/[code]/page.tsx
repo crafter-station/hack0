@@ -28,6 +28,7 @@ import {
 	WinnerSection,
 } from "@/components/events/detail";
 import { TrophyIcon } from "@/components/icons/trophy";
+import { VerifiedBadge } from "@/components/icons/verified-badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getUserAttendanceClaim } from "@/lib/actions/attendance";
 import { getEventCohost } from "@/lib/actions/cohost-invites";
@@ -771,7 +772,7 @@ export default async function EventPage({ params }: EventPageProps) {
 															{community.displayName || community.name}
 														</Link>
 														{community.isVerified && (
-															<CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+															<VerifiedBadge className="h-4 w-4 text-blue-500 shrink-0" />
 														)}
 													</div>
 													<div className="flex items-center gap-2 mt-0.5">
@@ -833,7 +834,7 @@ export default async function EventPage({ params }: EventPageProps) {
 																		cohost.organization.name}
 																</Link>
 																{cohost.organization.isVerified && (
-																	<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+																	<VerifiedBadge className="h-3.5 w-3.5 text-blue-500 shrink-0" />
 																)}
 															</div>
 															{cohost.organization.type && (
