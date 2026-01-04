@@ -18,6 +18,7 @@ interface BadgeGeneratorProps {
 	defaultName?: string;
 	campaignId?: string;
 	campaignName?: string;
+	shortCode?: string;
 }
 
 export function BadgeGenerator({
@@ -28,6 +29,7 @@ export function BadgeGenerator({
 	defaultName = "",
 	campaignId,
 	campaignName,
+	shortCode,
 }: BadgeGeneratorProps) {
 	const router = useRouter();
 	const [image, setImage] = useState<string | null>(null);
@@ -75,7 +77,10 @@ export function BadgeGenerator({
 				throw new Error(data.error || "Error al generar el badge");
 			}
 
-			router.push(`/c/${communitySlug}/badge/loading/${data.token}`);
+			const redirectUrl = shortCode
+				? `/b/${shortCode}/loading/${data.token}`
+				: `/c/${communitySlug}/comunidad/badge/loading/${data.token}`;
+			router.push(redirectUrl);
 		} catch (err) {
 			setError(
 				err instanceof Error ? err.message : "Error al generar el badge",

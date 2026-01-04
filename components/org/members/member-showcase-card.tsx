@@ -27,7 +27,7 @@ export function MemberShowcaseCard({
 
 	return (
 		<Link
-			href={`/c/${communitySlug}/badge/${shareToken}`}
+			href={`/c/${communitySlug}/comunidad/badge/${shareToken}`}
 			className={cn(
 				"group relative aspect-square rounded-xl overflow-hidden border border-border bg-muted/30 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-foreground/20",
 				className,

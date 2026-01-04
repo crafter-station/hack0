@@ -231,7 +231,7 @@ export default async function BadgePreviewPage({
 					<div className="flex gap-3">
 						<Button asChild variant="outline">
 							<Link
-								href={`/c/${community.slug}/badge/${existingBadge.shareToken}`}
+								href={`/c/${community.slug}/comunidad/badge/${existingBadge.shareToken}`}
 							>
 								Ver mi badge
 							</Link>
@@ -276,6 +276,7 @@ export default async function BadgePreviewPage({
 				defaultName={defaultName}
 				campaignId={campaign.id}
 				campaignName={campaign.type !== "default" ? campaign.name : undefined}
+				shortCode={community.shortCode!}
 			/>
 		</main>
 	);

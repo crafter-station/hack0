@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { Award, Loader2 } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -18,12 +19,19 @@ const PHASES = [
 
 const ESTIMATED_DURATION = 50;
 
-interface BadgeLoadingProps {
+interface BadgeLoadingViralProps {
 	token: string;
-	communitySlug: string;
+	shortCode: string;
+	communityName: string;
+	communityLogo: string | null;
 }
 
-export function BadgeLoading({ token, communitySlug }: BadgeLoadingProps) {
+export function BadgeLoadingViral({
+	token,
+	shortCode,
+	communityName,
+	communityLogo,
+}: BadgeLoadingViralProps) {
 	const router = useRouter();
 	const [elapsedSeconds, setElapsedSeconds] = useState(0);
 	const [isCompleting, setIsCompleting] = useState(false);
@@ -42,10 +50,10 @@ export function BadgeLoading({ token, communitySlug }: BadgeLoadingProps) {
 		if (data?.status === "completed") {
 			setIsCompleting(true);
 			setTimeout(() => {
-				router.push(`/c/${communitySlug}/comunidad/badge/${token}`);
+				router.push(`/b/${shortCode}/${token}`);
 			}, 600);
 		}
-	}, [data?.status, router, token, communitySlug]);
+	}, [data?.status, router, token, shortCode]);
 
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -81,7 +89,7 @@ export function BadgeLoading({ token, communitySlug }: BadgeLoadingProps) {
 					</p>
 				</div>
 				<Button
-					onClick={() => router.push(`/c/${communitySlug}/comunidad/badge`)}
+					onClick={() => router.push(`/b/${shortCode}`)}
 					variant="outline"
 				>
 					Intentar de nuevo
@@ -92,6 +100,19 @@ export function BadgeLoading({ token, communitySlug }: BadgeLoadingProps) {
 
 	return (
 		<div className="flex flex-col items-center justify-center min-h-[50vh] gap-8 px-4">
+			<div className="flex items-center gap-3">
+				{communityLogo && (
+					<Image
+						src={communityLogo}
+						alt={communityName}
+						width={40}
+						height={40}
+						className="rounded-lg"
+					/>
+				)}
+				<span className="text-lg font-semibold">{communityName}</span>
+			</div>
+
 			<motion.div
 				className="relative"
 				animate={{

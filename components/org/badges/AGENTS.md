@@ -6,8 +6,12 @@ Generación AI de badges, display y configuración de estilos.
 ## Components
 | Component | Access | Description |
 |-----------|--------|-------------|
+| BadgeDetailView | Public | Vista con Atropos 3D (navegación interna) |
+| BadgeViralView | Public | Vista viral con CTA "Genera el tuyo" |
 | BadgeDisplay | Public | Renderiza badge completo |
 | BadgeGenerator | Public | Flow de upload + generación |
+| BadgeLoading | Public | Loading para /c/ routes |
+| BadgeLoadingViral | Public | Loading para /b/ viral routes |
 | BadgeSection | Public | Sección colapsable de badges por campaña |
 | GenerateBadgeCTA | Public | CTA para generar badge |
 | BadgeSettingsForm | Admin | Config de badges |

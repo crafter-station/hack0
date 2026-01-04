@@ -1,10 +1,13 @@
+export { BadgeDetailView } from "./badge-detail-view";
 export { BadgeDisplay } from "./badge-display";
 export { BadgeGalleryCard } from "./badge-gallery-card";
 export { BadgeGenerator } from "./badge-generator";
 export { BadgeLoading } from "./badge-loading";
+export { BadgeLoadingViral } from "./badge-loading-viral";
 export { BadgePreviewPanel } from "./badge-preview-panel";
 export { BadgeSection } from "./badge-section";
 export { BadgeSettingsForm } from "./badge-settings-form";
+export { BadgeViralView } from "./badge-viral-view";
 export { BrandColorPicker } from "./brand-color-picker";
 export { GenerateBadgeCTA } from "./generate-badge-cta";
 export { StylePresetSelector } from "./style-preset-selector";

@@ -1,5 +1,6 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { and, eq } from "drizzle-orm";
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -48,8 +49,8 @@ export default async function BadgePage({
 
 	if (!userId) {
 		const redirectUrl = campaignSlug
-			? `/c/${slug}/badge?campaign=${campaignSlug}`
-			: `/c/${slug}/badge`;
+			? `/c/${slug}/comunidad/badge?campaign=${campaignSlug}`
+			: `/c/${slug}/comunidad/badge`;
 		redirect(`/sign-in?redirect=${encodeURIComponent(redirectUrl)}`);
 	}
 
@@ -78,8 +79,11 @@ export default async function BadgePage({
 				<p className="text-muted-foreground mb-4">
 					Esta comunidad aún no ha habilitado la generación de badges
 				</p>
-				<Button asChild variant="outline">
-					<Link href={`/c/${slug}`}>Volver a la comunidad</Link>
+				<Button asChild variant="outline" className="gap-2">
+					<Link href={`/c/${slug}/comunidad`}>
+						<ArrowLeft className="h-4 w-4" />
+						Volver a comunidad
+					</Link>
 				</Button>
 			</div>
 		);
@@ -98,8 +102,11 @@ export default async function BadgePage({
 						? " Solicita ser miembro para acceder."
 						: " Únete a la comunidad primero."}
 				</p>
-				<Button asChild variant="outline">
-					<Link href={`/c/${slug}`}>Volver a la comunidad</Link>
+				<Button asChild variant="outline" className="gap-2">
+					<Link href={`/c/${slug}/comunidad`}>
+						<ArrowLeft className="h-4 w-4" />
+						Volver a comunidad
+					</Link>
 				</Button>
 			</div>
 		);
@@ -116,8 +123,11 @@ export default async function BadgePage({
 				<p className="text-muted-foreground mb-4">
 					La campaña que buscas no existe o ha finalizado
 				</p>
-				<Button asChild variant="outline">
-					<Link href={`/c/${slug}`}>Volver a la comunidad</Link>
+				<Button asChild variant="outline" className="gap-2">
+					<Link href={`/c/${slug}/comunidad`}>
+						<ArrowLeft className="h-4 w-4" />
+						Volver a comunidad
+					</Link>
 				</Button>
 			</div>
 		);
@@ -149,12 +159,17 @@ export default async function BadgePage({
 					</p>
 					<div className="flex gap-3">
 						<Button asChild variant="outline">
-							<Link href={`/c/${slug}/badge/${existingBadge.shareToken}`}>
+							<Link
+								href={`/c/${slug}/comunidad/badge/${existingBadge.shareToken}`}
+							>
 								Ver mi badge
 							</Link>
 						</Button>
-						<Button asChild variant="ghost">
-							<Link href={`/c/${slug}`}>Volver a la comunidad</Link>
+						<Button asChild variant="ghost" className="gap-2">
+							<Link href={`/c/${slug}/comunidad`}>
+								<ArrowLeft className="h-4 w-4" />
+								Volver a comunidad
+							</Link>
 						</Button>
 					</div>
 				</div>
@@ -167,8 +182,11 @@ export default async function BadgePage({
 				<p className="text-muted-foreground mb-4">
 					{eligibility.reason || "No puedes generar un badge en este momento"}
 				</p>
-				<Button asChild variant="outline">
-					<Link href={`/c/${slug}`}>Volver a la comunidad</Link>
+				<Button asChild variant="outline" className="gap-2">
+					<Link href={`/c/${slug}/comunidad`}>
+						<ArrowLeft className="h-4 w-4" />
+						Volver a comunidad
+					</Link>
 				</Button>
 			</div>
 		);
@@ -184,7 +202,15 @@ export default async function BadgePage({
 	}
 
 	return (
-		<div className="flex flex-col items-center justify-center py-8">
+		<div className="flex flex-col items-center py-8 gap-4">
+			<div className="w-full flex justify-start">
+				<Button asChild variant="ghost" size="sm" className="gap-2">
+					<Link href={`/c/${slug}/comunidad`}>
+						<ArrowLeft className="h-4 w-4" />
+						Comunidad
+					</Link>
+				</Button>
+			</div>
 			<BadgeGenerator
 				communitySlug={slug}
 				communityName={community.displayName || community.name}

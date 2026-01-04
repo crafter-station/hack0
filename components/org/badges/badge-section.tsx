@@ -55,8 +55,8 @@ export function BadgeSection({
 	const badgeCount = completedBadges.length;
 
 	const generateUrl = campaignSlug
-		? `/c/${communitySlug}/badge?campaign=${campaignSlug}`
-		: `/c/${communitySlug}/badge`;
+		? `/c/${communitySlug}/comunidad/badge?campaign=${campaignSlug}`
+		: `/c/${communitySlug}/comunidad/badge`;
 
 	const showGenerateButton =
 		badgeEnabled && isAuthenticated && canGenerate && !existingBadgeToken;
@@ -114,7 +114,9 @@ export function BadgeSection({
 								}}
 								asChild
 							>
-								<Link href={`/c/${communitySlug}/badge/${existingBadgeToken}`}>
+								<Link
+									href={`/c/${communitySlug}/comunidad/badge/${existingBadgeToken}`}
+								>
 									Ver mi badge
 								</Link>
 							</Button>

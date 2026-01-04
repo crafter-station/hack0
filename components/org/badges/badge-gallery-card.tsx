@@ -19,7 +19,7 @@ export function BadgeGalleryCard({
 
 	return (
 		<Link
-			href={`/c/${communitySlug}/badge/${badge.shareToken}`}
+			href={`/c/${communitySlug}/comunidad/badge/${badge.shareToken}`}
 			className={cn(
 				"group relative aspect-[3/4] rounded-lg overflow-hidden border border-border bg-muted/30 transition-all duration-200 hover:shadow-lg hover:scale-[1.02] hover:border-muted-foreground/50",
 				className,

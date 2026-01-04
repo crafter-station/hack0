@@ -28,8 +28,8 @@ export function GenerateBadgeCTA({
 	}
 
 	const badgeUrl = campaignSlug
-		? `/c/${communitySlug}/badge?campaign=${campaignSlug}`
-		: `/c/${communitySlug}/badge`;
+		? `/c/${communitySlug}/comunidad/badge?campaign=${campaignSlug}`
+		: `/c/${communitySlug}/comunidad/badge`;
 
 	if (existingBadgeToken) {
 		return (
@@ -48,7 +48,9 @@ export function GenerateBadgeCTA({
 					</div>
 				</div>
 				<Button asChild variant="outline" size="sm" className="gap-2 shrink-0">
-					<Link href={`/c/${communitySlug}/badge/${existingBadgeToken}`}>
+					<Link
+						href={`/c/${communitySlug}/comunidad/badge/${existingBadgeToken}`}
+					>
 						<Award className="h-4 w-4" />
 						Ver mi badge
 					</Link>
