@@ -171,3 +171,78 @@ if (result.ok) {
 - `triggerAndWait()` returns `Result` object - check `result.ok` before accessing `result.output`
 - Never wrap `triggerAndWait` in `Promise.all` (not supported)
 - Config in `trigger.config.ts`: project ref, runtime, dirs, retries, maxDuration
+
+---
+
+## Intent Layer: AGENTS.md Documentation
+
+### Qué es AGENTS.md
+
+Archivos `AGENTS.md` proporcionan contexto específico de directorio para instancias de Claude. Contienen:
+- Propósito del módulo
+- Lista de componentes/archivos
+- Patrones y convenciones
+- Dependencias
+- Anti-patrones (qué evitar)
+
+### Reglas para Claude
+
+**Al entrar a un directorio:**
+1. Buscar `AGENTS.md` en el directorio actual
+2. Leerlo ANTES de hacer cambios
+3. Seguir los patrones documentados
+
+**Al finalizar cambios significativos:**
+1. Evaluar si los cambios ameritan actualizar `AGENTS.md`
+2. Actualizar si:
+   - Se agregó/eliminó un componente/archivo
+   - Cambió la estructura del módulo
+   - Se agregaron nuevas dependencias
+   - Se descubrió un nuevo anti-patrón
+3. Mantener el formato existente del archivo
+
+### Directorios con AGENTS.md
+
+```
+components/
+├── events/           # ✓ + views/, toolbar/, detail/, edit/
+├── org/              # ✓ + badges/, campaigns/, members/, settings/, discovery/, creation/, layout/, my-orgs/
+├── gift/             # ✓
+├── manage/           # ✓
+└── god-mode/         # ✓
+
+lib/
+├── actions/          # ✓
+├── db/               # ✓
+└── scraper/          # ✓
+
+trigger/              # ✓
+```
+
+### Formato de AGENTS.md
+
+```markdown
+# Nombre del Módulo
+
+Propósito en una línea.
+
+## Componentes/Archivos
+
+| Nombre | Descripción |
+|--------|-------------|
+| file.ts | Qué hace |
+
+## Patrones
+
+- Patrón 1
+- Patrón 2
+
+## Dependencias
+
+- `@/lib/xxx` - Para qué
+
+## Anti-patrones (opcional)
+
+- NO hacer X
+- Evitar Y
+```
