@@ -992,6 +992,10 @@ export async function getCommunityEventsWithRole(
 
 		const dateA = a.startDate ? new Date(a.startDate).getTime() : Infinity;
 		const dateB = b.startDate ? new Date(b.startDate).getTime() : Infinity;
+
+		if (priorityA === 4) {
+			return dateB - dateA;
+		}
 		return dateA - dateB;
 	});
 

@@ -700,7 +700,7 @@ export default async function EventPage({ params }: EventPageProps) {
 								</div>
 							)}
 
-							{isEnded && (
+							{isEnded && hackathon.eventType === "hackathon" && (
 								<WinnerSection
 									eventId={hackathon.id}
 									eventName={hackathon.name}
