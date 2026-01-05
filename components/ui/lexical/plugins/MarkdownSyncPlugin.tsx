@@ -32,6 +32,7 @@ import {
 interface MarkdownSyncPluginProps {
 	value: string;
 	onChange: (markdown: string) => void;
+	forceUpdate?: number; // Timestamp to force re-import
 }
 
 /**
@@ -41,26 +42,38 @@ interface MarkdownSyncPluginProps {
  * - Import markdown ONLY ONCE on mount (Lexical is NOT a controlled input)
  * - Export markdown on every change
  * - NEVER re-import while user is typing (would wipe out formatting)
+ * - EXCEPT when forceUpdate prop changes (e.g., from AI improvement)
  *
  * Why this matters:
  * - Lexical owns its internal state (formatted TextNodes)
  * - External `value` is for initialization only
  * - Re-importing on every `value` change would destroy live formatting
+ * - forceUpdate allows external updates (like AI) without breaking typing
  */
 export function MarkdownSyncPlugin({
 	value,
 	onChange,
+	forceUpdate,
 }: MarkdownSyncPluginProps) {
 	const [editor] = useLexicalComposerContext();
 	const hasImportedRef = useRef(false);
+	const lastForceUpdateRef = useRef<number | undefined>(forceUpdate);
 
-	// IMPORT: Only once on mount
+	// IMPORT: Only once on mount OR when forceUpdate changes
 	useEffect(() => {
-		// Guard: Only import if we haven't imported yet
-		if (hasImportedRef.current) return;
+		// Skip if no value
 		if (!value) return;
 
+		// Import on first mount
+		const isFirstMount = !hasImportedRef.current;
+		// Import when forceUpdate timestamp changes
+		const forceUpdateChanged =
+			forceUpdate !== undefined && forceUpdate !== lastForceUpdateRef.current;
+
+		if (!isFirstMount && !forceUpdateChanged) return;
+
 		hasImportedRef.current = true;
+		lastForceUpdateRef.current = forceUpdate;
 
 		editor.update(() => {
 			const root = $getRoot();
@@ -73,7 +86,7 @@ export function MarkdownSyncPlugin({
 				root.append(node);
 			}
 		});
-	}, []); // Only on mount - ignores `value` changes!
+	}, [value, forceUpdate, editor]); // Re-import when forceUpdate changes
 
 	// EXPORT: On every editor change
 	useEffect(() => {
@@ -109,34 +122,34 @@ function parseLine(line: string): ElementNode | DecoratorNode<null> {
 	// Headings (check longer patterns first)
 	if (line.startsWith("##### ")) {
 		const heading = $createHeadingNode("h5");
-		heading.append(parseInlineMarkdown(line.slice(6)));
+		parseInlineMarkdown(line.slice(6)).forEach((node) => heading.append(node));
 		return heading;
 	}
 	if (line.startsWith("#### ")) {
 		const heading = $createHeadingNode("h4");
-		heading.append(parseInlineMarkdown(line.slice(5)));
+		parseInlineMarkdown(line.slice(5)).forEach((node) => heading.append(node));
 		return heading;
 	}
 	if (line.startsWith("### ")) {
 		const heading = $createHeadingNode("h3");
-		heading.append(parseInlineMarkdown(line.slice(4)));
+		parseInlineMarkdown(line.slice(4)).forEach((node) => heading.append(node));
 		return heading;
 	}
 	if (line.startsWith("## ")) {
 		const heading = $createHeadingNode("h2");
-		heading.append(parseInlineMarkdown(line.slice(3)));
+		parseInlineMarkdown(line.slice(3)).forEach((node) => heading.append(node));
 		return heading;
 	}
 	if (line.startsWith("# ")) {
 		const heading = $createHeadingNode("h1");
-		heading.append(parseInlineMarkdown(line.slice(2)));
+		parseInlineMarkdown(line.slice(2)).forEach((node) => heading.append(node));
 		return heading;
 	}
 
 	// Blockquote
 	if (line.startsWith("> ")) {
 		const quote = $createQuoteNode();
-		quote.append(parseInlineMarkdown(line.slice(2)));
+		parseInlineMarkdown(line.slice(2)).forEach((node) => quote.append(node));
 		return quote;
 	}
 
@@ -144,7 +157,7 @@ function parseLine(line: string): ElementNode | DecoratorNode<null> {
 	if (line.startsWith("- ") || line.startsWith("* ")) {
 		const list = $createListNode("bullet");
 		const listItem = $createListItemNode();
-		listItem.append(parseInlineMarkdown(line.slice(2)));
+		parseInlineMarkdown(line.slice(2)).forEach((node) => listItem.append(node));
 		list.append(listItem);
 		return list;
 	}
@@ -154,25 +167,89 @@ function parseLine(line: string): ElementNode | DecoratorNode<null> {
 	if (numberedMatch) {
 		const list = $createListNode("number");
 		const listItem = $createListItemNode();
-		listItem.append(parseInlineMarkdown(numberedMatch[2]));
+		parseInlineMarkdown(numberedMatch[2]).forEach((node) =>
+			listItem.append(node),
+		);
 		list.append(listItem);
 		return list;
 	}
 
 	// Regular paragraph
 	const paragraph = $createParagraphNode();
-	paragraph.append(parseInlineMarkdown(line));
+	const nodes = parseInlineMarkdown(line);
+	nodes.forEach((node) => paragraph.append(node));
 	return paragraph;
 }
 
 /**
- * Parse inline markdown into TextNode
+ * Parse inline markdown into TextNode(s) with formatting
  *
- * Note: InlineMarkdownDecoratorPlugin will handle the actual formatting.
- * We just need to preserve the raw markdown text here.
+ * Supports: **bold**, *italic*, ~~strikethrough~~, `code`
+ * Handles mixed formatting like "text **bold** and *italic* here"
  */
-function parseInlineMarkdown(text: string): TextNode {
-	return $createTextNode(text);
+function parseInlineMarkdown(text: string): TextNode[] {
+	const nodes: TextNode[] = [];
+
+	// Regex to match inline markdown patterns
+	// Matches: **bold**, *italic*, ~~strike~~, `code`
+	const inlinePattern =
+		/(\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|`[^`]+`)/g;
+
+	let lastIndex = 0;
+	let match: RegExpExecArray | null;
+
+	while ((match = inlinePattern.exec(text)) !== null) {
+		// Add plain text before the match
+		if (match.index > lastIndex) {
+			const plainText = text.slice(lastIndex, match.index);
+			nodes.push($createTextNode(plainText));
+		}
+
+		// Parse the matched formatted text
+		const formatted = match[0];
+		let content = formatted;
+		const formats: Array<"bold" | "italic" | "strikethrough" | "code"> = [];
+
+		// Check for code first (no nesting)
+		if (formatted.startsWith("`") && formatted.endsWith("`")) {
+			content = formatted.slice(1, -1);
+			formats.push("code");
+		}
+		// Bold (**text**)
+		else if (formatted.startsWith("**") && formatted.endsWith("**")) {
+			content = formatted.slice(2, -2);
+			formats.push("bold");
+		}
+		// Italic (*text*)
+		else if (formatted.startsWith("*") && formatted.endsWith("*")) {
+			content = formatted.slice(1, -1);
+			formats.push("italic");
+		}
+		// Strikethrough (~~text~~)
+		else if (formatted.startsWith("~~") && formatted.endsWith("~~")) {
+			content = formatted.slice(2, -2);
+			formats.push("strikethrough");
+		}
+
+		// Create node with formats
+		const node = $createTextNode(content);
+		formats.forEach((format) => node.toggleFormat(format));
+		nodes.push(node);
+
+		lastIndex = match.index + formatted.length;
+	}
+
+	// Add remaining plain text
+	if (lastIndex < text.length) {
+		nodes.push($createTextNode(text.slice(lastIndex)));
+	}
+
+	// If no formatting found, return single plain text node
+	if (nodes.length === 0) {
+		nodes.push($createTextNode(text));
+	}
+
+	return nodes;
 }
 
 /**

@@ -66,6 +66,7 @@ import {
 import { SKILL_LEVEL_OPTIONS } from "@/lib/event-utils";
 import type { ExtractedEventData } from "@/lib/schemas/event-extraction";
 import { AIExtractModal } from "./ai-extract-modal";
+import { ImproveDescriptionModal } from "./improve-description-modal";
 
 interface OrganizationWithRole {
 	organization: Organization;
@@ -137,6 +138,8 @@ export function OrgEventFormMinimal({
 
 	const [name, setName] = useState(event?.name || "");
 	const [description, setDescription] = useState(event?.description || "");
+	const [descriptionForceUpdate, setDescriptionForceUpdate] = useState<number>();
+	const [improveModalOpen, setImproveModalOpen] = useState(false);
 	const [startDate, setStartDate] = useState(initialStart.date);
 	const [startTime, setStartTime] = useState(initialStart.time);
 	const [endDate, setEndDate] = useState(initialEnd.date);
@@ -884,18 +887,49 @@ export function OrgEventFormMinimal({
 								<LexicalLiveEditor
 									value={description}
 									onChange={setDescription}
+									forceUpdate={descriptionForceUpdate}
 									placeholder="Describe tu evento... Puedes usar Markdown."
 									className="w-full h-full"
 									autoFocus={true}
 								/>
 							</div>
-							<ResponsiveModalFooter className="shrink-0">
+							<ResponsiveModalFooter className="shrink-0 flex justify-between">
+								<Button
+									variant="outline"
+									className="gap-2"
+									onClick={() => {
+										setDescriptionOpen(false);
+										setTimeout(() => setImproveModalOpen(true), 150);
+									}}
+								>
+									<Sparkles className="h-4 w-4" />
+									Mejorar con IA
+								</Button>
 								<ResponsiveModalClose asChild>
 									<Button>Guardar</Button>
 								</ResponsiveModalClose>
 							</ResponsiveModalFooter>
 						</ResponsiveModalContent>
 					</ResponsiveModal>
+
+					{/* AI Modal - Sibling of description modal */}
+					<ImproveDescriptionModal
+						open={improveModalOpen}
+						onOpenChange={(open) => {
+							setImproveModalOpen(open);
+							if (!open) {
+								// On close without accepting, reopen description
+								setTimeout(() => setDescriptionOpen(true), 150);
+							}
+						}}
+						currentDescription={description}
+						onImprove={(improved, timestamp) => {
+							setDescription(improved);
+							setDescriptionForceUpdate(timestamp);
+							setImproveModalOpen(false);
+							// Don't reopen - user accepted
+						}}
+					/>
 
 					{/* Location Button */}
 					<ResponsiveModal open={locationOpen} onOpenChange={setLocationOpen}>
