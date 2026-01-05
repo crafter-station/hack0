@@ -24,6 +24,7 @@ interface LexicalLiveEditorProps {
 	className?: string;
 	disabled?: boolean;
 	autoFocus?: boolean;
+	forceUpdate?: number; // Timestamp to force external update
 }
 
 export function LexicalLiveEditor({
@@ -33,6 +34,7 @@ export function LexicalLiveEditor({
 	className,
 	disabled = false,
 	autoFocus = false,
+	forceUpdate,
 }: LexicalLiveEditorProps) {
 	const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -134,7 +136,7 @@ export function LexicalLiveEditor({
 				/>
 				<HistoryPlugin />
 				<ListPlugin />
-				<MarkdownSyncPlugin value={value} onChange={onChange} />
+				<MarkdownSyncPlugin value={value} onChange={onChange} forceUpdate={forceUpdate} />
 				<MarkdownPastePlugin />
 				<InlineMarkdownDecoratorPlugin />
 				<BlockMarkdownPlugin />
