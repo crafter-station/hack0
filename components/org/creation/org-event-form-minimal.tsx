@@ -25,6 +25,7 @@ import { DeleteEventButton } from "@/components/events/edit/delete-event-button"
 import { LocationInput } from "@/components/events/edit/location-input";
 import { SponsorManager } from "@/components/events/edit/sponsor-manager";
 import { LumaIcon } from "@/components/icons/luma";
+import { CampaignForm } from "@/components/org/campaigns/campaign-form";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
@@ -187,6 +188,8 @@ export function OrgEventFormMinimal({
 	const [publishToLuma, setPublishToLuma] = useState(!isEditMode);
 	const [importedFromLuma, setImportedFromLuma] = useState<string | null>(null);
 	const [sponsors, setSponsors] = useState(initialSponsors);
+	const [showBadgeForm, setShowBadgeForm] = useState(false);
+	const [createdEventId, setCreatedEventId] = useState<string | null>(null);
 
 	const creatableOrgs = useMemo(() => {
 		const orgs: Array<{ organization: Organization; role: string }> = [];
@@ -278,8 +281,13 @@ export function OrgEventFormMinimal({
 
 			setLoading(false);
 
-			if (result.success && result.event?.shortCode) {
-				router.push(`/e/${result.event.shortCode}`);
+			if (result.success && result.event?.id) {
+				if (showBadgeForm) {
+					// Save eventId and switch to badge form
+					setCreatedEventId(result.event.id);
+				} else if (result.event.shortCode) {
+					router.push(`/e/${result.event.shortCode}`);
+				}
 			} else {
 				setError(result.error || "Error al crear el evento");
 			}
@@ -414,6 +422,48 @@ export function OrgEventFormMinimal({
 	const handleAIStreamEnd = () => {
 		setIsImporting(false);
 	};
+
+	// Get the community organization for CampaignForm
+	const communityOrg =
+		currentOrg ||
+		({
+			id: communityId,
+			slug: communitySlug,
+			name: communityName,
+			displayName: communityName,
+		} as Organization);
+
+	// Show badge form if enabled (only in create mode)
+	if (showBadgeForm && !isEditMode) {
+		return (
+			<div className="max-w-3xl mx-auto px-4">
+				<div className="mb-6 flex items-center justify-between">
+					<Link
+						href={`/c/${communitySlug}`}
+						className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+					>
+						<ArrowLeft className="h-3.5 w-3.5" />
+						Volver
+					</Link>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => setShowBadgeForm(false)}
+						className="gap-2"
+					>
+						<ArrowLeft className="h-4 w-4" />
+						Crear Evento
+					</Button>
+				</div>
+				<CampaignForm
+					communityId={communityId}
+					communitySlug={communitySlug}
+					community={communityOrg}
+					eventId={createdEventId || undefined}
+				/>
+			</div>
+		);
+	}
 
 	return (
 		<form onSubmit={handleSubmit} className="max-w-3xl mx-auto px-4">
@@ -1294,20 +1344,40 @@ export function OrgEventFormMinimal({
 					)}
 
 					{/* Submit */}
-					<Button
-						type="submit"
-						disabled={loading || !name || isImporting}
-						className={`w-full h-10 text-sm gap-2 ${isImporting ? "input-shimmer" : ""}`}
-					>
-						{(loading || isImporting) && (
-							<Loader2 className="h-4 w-4 animate-spin" />
-						)}
-						{isImporting
-							? "Autocompletando..."
-							: isEditMode
-								? "Guardar cambios"
-								: "Crear Evento"}
-					</Button>
+					{!isEditMode ? (
+						<div className="flex gap-3">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setShowBadgeForm(true)}
+								disabled={loading || isImporting}
+								className={`flex-1 h-10 text-sm gap-2 ${isImporting ? "input-shimmer" : ""}`}
+							>
+								Personalizar Badge
+							</Button>
+							<Button
+								type="submit"
+								disabled={loading || !name || isImporting}
+								className={`flex-1 h-10 text-sm gap-2 ${isImporting ? "input-shimmer" : ""}`}
+							>
+								{(loading || isImporting) && (
+									<Loader2 className="h-4 w-4 animate-spin" />
+								)}
+								{isImporting ? "Autocompletando..." : "Crear Evento"}
+							</Button>
+						</div>
+					) : (
+						<Button
+							type="submit"
+							disabled={loading || !name || isImporting}
+							className={`w-full h-10 text-sm gap-2 ${isImporting ? "input-shimmer" : ""}`}
+						>
+							{(loading || isImporting) && (
+								<Loader2 className="h-4 w-4 animate-spin" />
+							)}
+							{isImporting ? "Autocompletando..." : "Guardar cambios"}
+						</Button>
+					)}
 
 					{/* Danger Zone - only in edit mode */}
 					{isEditMode && event && (

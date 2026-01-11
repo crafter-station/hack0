@@ -43,6 +43,7 @@ interface CampaignFormProps {
 	communitySlug: string;
 	community: Organization;
 	campaign?: BadgeCampaign;
+	eventId?: string;
 }
 
 export function CampaignForm({
@@ -50,6 +51,7 @@ export function CampaignForm({
 	communitySlug,
 	community,
 	campaign,
+	eventId,
 }: CampaignFormProps) {
 	const router = useRouter();
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,7 +63,9 @@ export function CampaignForm({
 	const [formData, setFormData] = useState({
 		name: campaign?.name ?? "",
 		description: campaign?.description ?? "",
-		type: (campaign?.type ?? "seasonal") as "seasonal" | "event",
+		type: (campaign?.type ?? (eventId ? "event" : "seasonal")) as
+			| "seasonal"
+			| "event",
 		badgeLabel: campaign?.badgeLabel ?? "",
 		badgeIcon: campaign?.badgeIcon ?? "",
 		stylePreset: campaign?.stylePreset ?? DEFAULT_STYLE_ID,
@@ -150,7 +154,8 @@ export function CampaignForm({
 				const result = await createCampaign(communityId, {
 					name: formData.name,
 					description: formData.description || undefined,
-					type: formData.type,
+					type: eventId ? "event" : formData.type,
+					eventId: eventId || undefined,
 					badgeLabel: formData.badgeLabel || undefined,
 					badgeIcon: formData.badgeIcon || undefined,
 					stylePreset: formData.stylePreset || undefined,
@@ -181,7 +186,7 @@ export function CampaignForm({
 	const canTest = isCustomStyle ? !!formData.portraitPrompt : true;
 
 	return (
-		<form onSubmit={handleSubmit} className="space-y-6">
+		<form onSubmit={handleSubmit} className="space-y-6 container mx-auto px-4">
 			{error && (
 				<div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3">
 					<p className="text-sm text-red-600 dark:text-red-400">{error}</p>
@@ -216,7 +221,7 @@ export function CampaignForm({
 										onValueChange={(value: "seasonal" | "event") =>
 											setFormData((prev) => ({ ...prev, type: value }))
 										}
-										disabled={isEditing || isGenerating}
+										disabled={isEditing || isGenerating || !!eventId}
 									>
 										<SelectTrigger>
 											<SelectValue />
