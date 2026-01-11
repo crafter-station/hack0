@@ -1,36 +1,56 @@
 import { CTASection } from "@/components/landing/cta-section";
-import { EventsPreviewSection } from "@/components/landing/events-preview-section";
 import { FAQSection } from "@/components/landing/faq-section";
-import { HeroSection } from "@/components/landing/hero-section";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import {
-	getCountriesWithEvents,
-	getDepartmentsWithEvents,
-	getEvents,
-	getPlatformStats,
-} from "@/lib/actions/events";
+import { CampaignForm } from "@/components/org";
 
 export default async function HomePage() {
-	const [stats, eventsResult, departmentsWithEvents, countriesWithEvents] =
-		await Promise.all([
-			getPlatformStats(),
-			getEvents({ limit: 8, status: ["ongoing", "open", "upcoming"] }),
-			getDepartmentsWithEvents(),
-			getCountriesWithEvents(),
-		]);
-
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
 			<SiteHeader />
 
-			<HeroSection
-				stats={stats}
-				departmentsWithEvents={departmentsWithEvents}
-				countriesWithEvents={countriesWithEvents}
+			<CampaignForm
+				communityId="1"
+				communitySlug="1"
+				community={{
+					id: "00000000-0000-0000-0000-000000000001",
+					slug: "test-community",
+					name: "Test Community",
+					displayName: "Test Community",
+					description: "A test community for development",
+					type: "community",
+					email: "test@example.com",
+					country: "PE",
+					department: "Lima",
+					city: "Lima",
+					websiteUrl: "https://example.com",
+					logoUrl: "/placeholder-logo.png",
+					coverUrl: null,
+					twitterUrl: null,
+					linkedinUrl: null,
+					instagramUrl: null,
+					facebookUrl: null,
+					githubUrl: null,
+					ownerUserId: "user_123",
+					isPublic: true,
+					isPersonalOrg: false,
+					isVerified: false,
+					tags: null,
+					badgeEnabled: true,
+					badgeStylePrompt: null,
+					badgeBackgroundPrompt: null,
+					badgeAccentColor: null,
+					badgeAiStyle: null,
+					badgeCustomTestPortraitUrl: null,
+					badgeCustomTestBackgroundUrl: null,
+					badgeCustomTestReferenceUrl: null,
+					badgeCustomBackgroundImageUrl: null,
+					badgeStyleTestImages: null,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+					shortCode: null,
+				}}
 			/>
-
-			<EventsPreviewSection events={eventsResult.events} />
 
 			{/*<MissionSection />*/}
 
