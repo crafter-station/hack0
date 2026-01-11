@@ -296,7 +296,7 @@ export function CampaignForm({
 						<div className="rounded-lg border border-border p-6 space-y-6">
 							<h4 className="font-medium">Período de la campaña</h4>
 
-							<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+							<div className="flex flex-col gap-6">
 								<div className="space-y-2">
 									<Label>Fecha de inicio</Label>
 									<Popover>
