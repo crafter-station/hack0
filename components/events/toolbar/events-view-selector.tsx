@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Eye, LayoutGrid, List, Map as MapIcon } from "lucide-react";
+import { Calendar, LayoutGrid, List } from "lucide-react";
 import {
 	Select,
 	SelectContent,
@@ -25,8 +25,6 @@ const VIEW_OPTIONS: {
 	{ value: "cards", label: "Cards", icon: LayoutGrid },
 	{ value: "table", label: "Tabla", icon: List },
 	{ value: "calendar", label: "Calendario", icon: Calendar },
-	{ value: "map", label: "Mapa", icon: MapIcon },
-	{ value: "preview", label: "Preview", icon: Eye },
 ];
 
 interface EventsViewSelectorProps {

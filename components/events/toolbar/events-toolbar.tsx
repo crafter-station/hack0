@@ -42,7 +42,7 @@ export function EventsToolbar() {
 			department: [],
 			juniorFriendly: false,
 			mine: false,
-			timeFilter: "all",
+			timeFilter: "upcoming",
 			page: 1,
 		});
 	};
@@ -53,26 +53,24 @@ export function EventsToolbar() {
 
 	return (
 		<div className="flex items-center gap-2 w-full">
-			<div className="relative w-full max-w-xs">
-				<Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+			<div className="relative flex-1 max-w-md">
+				<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 				<input
 					type="text"
 					placeholder="Buscar eventos..."
 					value={search}
 					onChange={(e) => setFilters({ search: e.target.value, page: 1 })}
-					className="h-7 w-full border border-border/50 bg-background pl-8 pr-8 text-xs placeholder:text-muted-foreground focus:border-foreground/30 focus:outline-none transition-colors"
+					className="h-9 w-full rounded-md border border-border/50 bg-background pl-10 pr-10 text-sm placeholder:text-muted-foreground focus:border-foreground/30 focus:outline-none focus:ring-1 focus:ring-foreground/10 transition-all"
 				/>
 				{search && (
 					<button
 						onClick={() => setFilters({ search: "", page: 1 })}
-						className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+						className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
 					>
-						<X className="h-3.5 w-3.5" />
+						<X className="h-4 w-4" />
 					</button>
 				)}
 			</div>
-
-			<div className="flex-1" />
 
 			<EventsFiltersPopover
 				open={filtersOpen}

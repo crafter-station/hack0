@@ -40,38 +40,17 @@ const POPULAR_EVENT_TYPES = [
 	"hackathon",
 	"conference",
 	"workshop",
-	"bootcamp",
-	"competition",
-	"olympiad",
-	"meetup",
-] as const;
-
-const POPULAR_ORGANIZERS = [
-	"university",
-	"company",
-	"community",
-	"government",
-	"startup",
 ] as const;
 
 const POPULAR_DOMAINS = [
 	"ai",
 	"web3",
-	"fintech",
-	"healthtech",
-	"edtech",
-	"cybersecurity",
-	"data-science",
 	"general",
 ] as const;
 
 const POPULAR_DEPARTMENTS = [
 	"Lima",
 	"Arequipa",
-	"Cusco",
-	"Lambayeque",
-	"Junín",
-	"Puno",
 ];
 
 interface FiltersState {
@@ -129,17 +108,17 @@ export function EventsFiltersPopover({
 		<Popover open={open} onOpenChange={onOpenChange}>
 			<PopoverTrigger asChild>
 				<button
-					className={`inline-flex h-7 w-[100px] items-center justify-center gap-1.5 border px-2 text-xs font-medium transition-colors ${
+					className={`inline-flex h-9 items-center justify-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors ${
 						activeFiltersCount > 0
-							? "border-foreground/20 bg-foreground text-background"
-							: "border-border/50 text-muted-foreground hover:text-foreground"
+							? "border-foreground/20 bg-foreground text-background hover:bg-foreground/90"
+							: "border-border/50 text-muted-foreground hover:bg-muted hover:text-foreground"
 					}`}
 				>
-					<SlidersHorizontal className="h-3.5 w-3.5" />
+					<SlidersHorizontal className="h-4 w-4" />
 					<span className="hidden sm:inline">Filtros</span>
 					{activeFiltersCount > 0 && (
 						<span
-							className={`px-1 text-[10px] font-semibold ${
+							className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold ${
 								activeFiltersCount > 0
 									? "bg-background text-foreground"
 									: "bg-foreground/10"
@@ -154,15 +133,15 @@ export function EventsFiltersPopover({
 				align="end"
 				className="w-80 p-0 border-border/50 max-h-[80vh] overflow-hidden flex flex-col"
 			>
-				<div className="px-3 py-2 border-b border-border/50 bg-muted/20 shrink-0">
+				<div className="px-4 py-3 border-b border-border/50 bg-muted/20 shrink-0">
 					<div className="flex items-center justify-between">
-						<h4 className="font-medium text-xs">Filtros</h4>
+						<h4 className="font-medium text-sm">Filtros</h4>
 						{activeFiltersCount > 0 && (
 							<button
 								onClick={onClearAll}
-								className="text-[10px] text-muted-foreground hover:text-foreground transition-colors font-medium"
+								className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
 							>
-								Limpiar ({activeFiltersCount})
+								Limpiar todo
 							</button>
 						)}
 					</div>
@@ -210,9 +189,6 @@ export function EventsFiltersPopover({
 
 					{isSignedIn && (
 						<div className="space-y-1.5">
-							<label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-								Mis eventos
-							</label>
 							<button
 								onClick={() => onFiltersChange({ mine: !mine, page: 1 })}
 								className={`flex w-full items-center gap-2 border px-2.5 py-1.5 text-xs font-medium transition-colors ${
@@ -229,9 +205,6 @@ export function EventsFiltersPopover({
 					)}
 
 					<div className="space-y-1.5">
-						<label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-							Nivel
-						</label>
 						<button
 							onClick={() =>
 								onFiltersChange({ juniorFriendly: !juniorFriendly, page: 1 })
@@ -250,7 +223,7 @@ export function EventsFiltersPopover({
 
 					<div className="space-y-1.5">
 						<label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-							Tipo
+							Tipo de evento
 						</label>
 						<div className="flex flex-wrap gap-1">
 							{POPULAR_EVENT_TYPES.map((type) => (
@@ -269,61 +242,6 @@ export function EventsFiltersPopover({
 									}`}
 								>
 									{EVENT_TYPE_LABELS[type]}
-								</button>
-							))}
-						</div>
-					</div>
-
-					<div className="space-y-1.5">
-						<label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-							Organizador
-						</label>
-						<div className="flex flex-wrap gap-1">
-							{POPULAR_ORGANIZERS.map((type) => (
-								<button
-									key={type}
-									onClick={() => {
-										const newOrganizerType = organizerType.includes(type)
-											? organizerType.filter((v) => v !== type)
-											: [...organizerType, type];
-										onFiltersChange({
-											organizerType: newOrganizerType,
-											page: 1,
-										});
-									}}
-									className={`border px-2 py-1 text-[10px] font-medium transition-colors ${
-										organizerType.includes(type)
-											? "border-foreground/20 bg-foreground text-background"
-											: "border-border/50 text-muted-foreground hover:text-foreground"
-									}`}
-								>
-									{ORGANIZER_TYPE_LABELS[type]}
-								</button>
-							))}
-						</div>
-					</div>
-
-					<div className="space-y-1.5">
-						<label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-							Habilidad
-						</label>
-						<div className="flex flex-wrap gap-1">
-							{SKILL_LEVELS.map((level) => (
-								<button
-									key={level}
-									onClick={() => {
-										const newSkillLevel = skillLevel.includes(level)
-											? skillLevel.filter((v) => v !== level)
-											: [...skillLevel, level];
-										onFiltersChange({ skillLevel: newSkillLevel, page: 1 });
-									}}
-									className={`border px-2 py-1 text-[10px] font-medium transition-colors ${
-										skillLevel.includes(level)
-											? "border-foreground/20 bg-foreground text-background"
-											: "border-border/50 text-muted-foreground hover:text-foreground"
-									}`}
-								>
-									{SKILL_LEVEL_LABELS[level]}
 								</button>
 							))}
 						</div>
