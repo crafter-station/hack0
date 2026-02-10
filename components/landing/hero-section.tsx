@@ -13,7 +13,11 @@ interface HeroSectionProps {
 	countriesWithEvents?: string[];
 }
 
-export function HeroSection({ stats, departmentsWithEvents = [], countriesWithEvents = [] }: HeroSectionProps) {
+export function HeroSection({
+	stats,
+	departmentsWithEvents = [],
+	countriesWithEvents = [],
+}: HeroSectionProps) {
 	return (
 		<section className="border-b">
 			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
@@ -75,7 +79,10 @@ export function HeroSection({ stats, departmentsWithEvents = [], countriesWithEv
 
 					{/* Right side - Map */}
 					<div className="hidden lg:block h-[550px] xl:h-[600px]">
-						<LatamMap departmentsWithEvents={departmentsWithEvents} countriesWithEvents={countriesWithEvents} />
+						<LatamMap
+							departmentsWithEvents={departmentsWithEvents}
+							countriesWithEvents={countriesWithEvents}
+						/>
 					</div>
 				</div>
 			</div>

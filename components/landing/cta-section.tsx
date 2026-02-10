@@ -6,9 +6,7 @@ export function CTASection() {
 	return (
 		<section className="border-t py-16 md:py-20">
 			<div className="mx-auto max-w-screen-xl px-4 lg:px-8 text-center">
-				<h2 className="text-2xl font-semibold">
-					¿Tienes una comunidad tech?
-				</h2>
+				<h2 className="text-2xl font-semibold">¿Tienes una comunidad tech?</h2>
 				<p className="text-muted-foreground mt-2 max-w-md mx-auto">
 					Publica tus eventos gratis y dale visibilidad a tu comunidad. Sin
 					límites, sin costos, sin complicaciones.

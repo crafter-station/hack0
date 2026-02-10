@@ -13,8 +13,8 @@ import {
 	PERU_DEPARTMENT_NAME_MAP,
 } from "@/lib/geo/peru-departments";
 import worldData from "@/public/countries-110m.json";
-import peruDeptData from "@/public/peru_departamental_simple.json";
 import latamDotsData from "@/public/latam-dots.json";
+import peruDeptData from "@/public/peru_departamental_simple.json";
 import peruDotsData from "@/public/peru-dots.json";
 
 interface GeoFeature {
@@ -62,10 +62,15 @@ interface LatamMapProps {
 	countriesWithEvents?: string[];
 }
 
-export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] }: LatamMapProps) {
+export function LatamMap({
+	departmentsWithEvents = [],
+	countriesWithEvents = [],
+}: LatamMapProps) {
 	const router = useRouter();
 	const [hoveredCountryId, setHoveredCountryId] = useState<string | null>(null);
-	const [hoveredDepartment, setHoveredDepartment] = useState<string | null>(null);
+	const [hoveredDepartment, setHoveredDepartment] = useState<string | null>(
+		null,
+	);
 	const [zoomedCountryId, setZoomedCountryId] = useState<string | null>(null);
 
 	const countriesData = useMemo(() => {
@@ -170,7 +175,9 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 							{latamDotsData.map((country) => {
 								const isHovered = hoveredCountryId === country.countryId;
 								const isPeru = country.countryId === PERU_COUNTRY_ID;
-								const hasEvents = countriesWithEvents.includes(country.countryId);
+								const hasEvents = countriesWithEvents.includes(
+									country.countryId,
+								);
 								const countryFeature = countriesData.find(
 									(c) => c.id === country.countryId,
 								);
@@ -187,8 +194,16 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 											<path
 												d={geoPath(countryFeature as any) || ""}
 												fill="transparent"
-												stroke={isHovered && hasEvents ? "#888" : hasEvents ? "#666" : "#444"}
-												strokeWidth={isHovered && hasEvents ? 2 : hasEvents ? 1.5 : 1}
+												stroke={
+													isHovered && hasEvents
+														? "#888"
+														: hasEvents
+															? "#666"
+															: "#444"
+												}
+												strokeWidth={
+													isHovered && hasEvents ? 2 : hasEvents ? 1.5 : 1
+												}
 												opacity={isHovered ? 0.8 : hasEvents ? 0.6 : 0.35}
 												style={{ transition: "all 0.2s ease" }}
 											/>
@@ -196,7 +211,14 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 
 										{country.dots.map((dot, index) => {
 											const shouldAnimate = index % 5 === 0;
-											const baseOpacity = isHovered && hasEvents ? 0.85 : isHovered ? 0.6 : hasEvents ? 0.6 : 0.35;
+											const baseOpacity =
+												isHovered && hasEvents
+													? 0.85
+													: isHovered
+														? 0.6
+														: hasEvents
+															? 0.6
+															: 0.35;
 
 											if (shouldAnimate) {
 												return (
@@ -208,7 +230,11 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 														className="fill-foreground"
 														initial={{ opacity: baseOpacity }}
 														animate={{
-															opacity: [baseOpacity, baseOpacity + 0.3, baseOpacity],
+															opacity: [
+																baseOpacity,
+																baseOpacity + 0.3,
+																baseOpacity,
+															],
 															scale: [1, 1.3, 1],
 														}}
 														transition={{
@@ -255,7 +281,8 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 						>
 							{peruDepartments.map((dept, deptIndex) => {
 								const deptName = dept.properties?.NOMBDEP || "";
-								const normalizedName = PERU_DEPARTMENT_NAME_MAP[deptName] || deptName;
+								const normalizedName =
+									PERU_DEPARTMENT_NAME_MAP[deptName] || deptName;
 								const hasEvent = departmentsWithEvents.includes(normalizedName);
 								const isHovered = hoveredDepartment === normalizedName;
 
@@ -264,15 +291,26 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 										key={dept.properties?.NOMBDEP || deptIndex}
 										d={peruGeoPath(dept as any) || ""}
 										fill="transparent"
-										stroke={isHovered && hasEvent ? "#888" : hasEvent ? "#666" : "#444"}
+										stroke={
+											isHovered && hasEvent
+												? "#888"
+												: hasEvent
+													? "#666"
+													: "#444"
+										}
 										strokeWidth={isHovered && hasEvent ? 2 : hasEvent ? 1.5 : 1}
 										opacity={isHovered ? 0.8 : hasEvent ? 0.6 : 0.35}
-										style={{ cursor: hasEvent ? "pointer" : "default", transition: "all 0.2s ease" }}
+										style={{
+											cursor: hasEvent ? "pointer" : "default",
+											transition: "all 0.2s ease",
+										}}
 										onMouseEnter={() => setHoveredDepartment(normalizedName)}
 										onMouseLeave={() => setHoveredDepartment(null)}
 										onClick={() => {
 											if (hasEvent) {
-												router.push(`/events?department=${encodeURIComponent(normalizedName)}`);
+												router.push(
+													`/events?department=${encodeURIComponent(normalizedName)}`,
+												);
 											}
 										}}
 									/>
@@ -283,7 +321,14 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 								const hasEvent = departmentsWithEvents.includes(dot.dept);
 								const isHovered = hoveredDepartment === dot.dept;
 								const shouldAnimate = index % 5 === 0;
-								const baseOpacity = isHovered && hasEvent ? 0.85 : isHovered ? 0.6 : hasEvent ? 0.6 : 0.35;
+								const baseOpacity =
+									isHovered && hasEvent
+										? 0.85
+										: isHovered
+											? 0.6
+											: hasEvent
+												? 0.6
+												: 0.35;
 
 								if (shouldAnimate) {
 									return (
@@ -317,7 +362,10 @@ export function LatamMap({ departmentsWithEvents = [], countriesWithEvents = [] 
 										r={1.5}
 										className="fill-foreground"
 										opacity={baseOpacity}
-										style={{ pointerEvents: "none", transition: "opacity 0.2s ease" }}
+										style={{
+											pointerEvents: "none",
+											transition: "opacity 0.2s ease",
+										}}
 									/>
 								);
 							})}
