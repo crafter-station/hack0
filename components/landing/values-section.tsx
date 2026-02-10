@@ -4,7 +4,8 @@ const values = [
 	{
 		icon: Code,
 		title: "Indie Hacker Mindset",
-		description: "Crear con poco, escalar con ingenio. Construimos productos, no slides.",
+		description:
+			"Crear con poco, escalar con ingenio. Construimos productos, no slides.",
 	},
 	{
 		icon: HandHeart,
@@ -20,9 +21,9 @@ const values = [
 	},
 	{
 		icon: Users,
-		title: "Colaboracion Real",
+		title: "Colaboración Real",
 		description:
-			"Sin gurus, sin gatekeeping. Colaboracion genuina entre pares.",
+			"Sin gurús, sin gatekeeping. Colaboración genuina entre pares.",
 	},
 ];
 
@@ -34,7 +35,7 @@ export function ValuesSection() {
 					<p className="text-xs text-muted-foreground uppercase tracking-wide">
 						Valores
 					</p>
-					<h2 className="text-xl font-semibold mt-2">Como construimos</h2>
+					<h2 className="text-xl font-semibold mt-2">Cómo construimos</h2>
 				</div>
 
 				<div className="grid grid-cols-2 md:grid-cols-4 gap-4">

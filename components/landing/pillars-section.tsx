@@ -9,7 +9,7 @@ export function PillarsSection() {
 						Dos pilares
 					</p>
 					<h2 className="text-xl font-semibold mt-2">
-						Comunidad + Espacio fisico
+						Comunidad + Espacio físico
 					</h2>
 				</div>
 
@@ -25,13 +25,13 @@ export function PillarsSection() {
 						</div>
 						<h3 className="text-lg font-medium">Red distribuida de builders</h3>
 						<p className="text-sm text-muted-foreground mt-2">
-							Sistema distribuido de aprendizaje, conexion y lanzamiento. Opera
-							bajo logica descentralizada y de alta frecuencia.
+							Sistema distribuido de aprendizaje, conexión y lanzamiento. Opera
+							bajo lógica descentralizada y de alta frecuencia.
 						</p>
 						<ul className="mt-4 space-y-2 text-sm text-muted-foreground">
 							<li className="flex items-center gap-2">
 								<span className="h-1 w-1 rounded-full bg-emerald-500" />
-								Eventos en todo Peru
+								Eventos en todo Perú
 							</li>
 							<li className="flex items-center gap-2">
 								<span className="h-1 w-1 rounded-full bg-emerald-500" />
@@ -53,9 +53,9 @@ export function PillarsSection() {
 								Hacker House
 							</span>
 						</div>
-						<h3 className="text-lg font-medium">Espacio fisico para crear</h3>
+						<h3 className="text-lg font-medium">Espacio físico para crear</h3>
 						<p className="text-sm text-muted-foreground mt-2">
-							Nucleo intensivo del ecosistema. Un espacio fisico, experimental y
+							Núcleo intensivo del ecosistema. Un espacio físico, experimental y
 							habitado donde convergen builders comprometidos.
 						</p>
 						<ul className="mt-4 space-y-2 text-sm text-muted-foreground">

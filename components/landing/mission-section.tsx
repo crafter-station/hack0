@@ -7,9 +7,11 @@ export function MissionSection() {
 			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
 				<div className="text-center mb-8">
 					<p className="text-xs text-muted-foreground uppercase tracking-wide">
-						Nuestra mision
+						Nuestra misión
 					</p>
-					<h2 className="text-xl font-semibold mt-2">Dos caminos, un objetivo</h2>
+					<h2 className="text-xl font-semibold mt-2">
+						Dos caminos, un objetivo
+					</h2>
 				</div>
 
 				<div className="grid md:grid-cols-2 gap-4">
@@ -32,9 +34,9 @@ export function MissionSection() {
 								Acelerar el primer unicornio peruano
 							</h3>
 							<p className="text-sm text-muted-foreground mt-2">
-								Si logramos activar a miles de nuevos builders en el pais,
-								podriamos acelerar el surgimiento del primer unicornio peruano y
-								fomentar un ecosistema tecnologico autosuficiente desde abajo
+								Si logramos activar a miles de nuevos builders en el país,
+								podríamos acelerar el surgimiento del primer unicornio peruano y
+								fomentar un ecosistema tecnológico autosuficiente desde abajo
 								hacia arriba.
 							</p>
 						</div>
@@ -46,12 +48,12 @@ export function MissionSection() {
 							<Badge variant="outline">Realista</Badge>
 						</div>
 						<h3 className="text-lg font-medium">
-							Mejores oportunidades para jovenes
+							Mejores oportunidades para jóvenes
 						</h3>
 						<p className="text-sm text-muted-foreground mt-2">
-							Brindar a jovenes las herramientas y la comunidad para aprender
-							rapido, lanzar productos y conseguir mejores oportunidades
-							laborales, freelance o de emprendimiento desde Peru o hacia el
+							Brindar a jóvenes las herramientas y la comunidad para aprender
+							rápido, lanzar productos y conseguir mejores oportunidades
+							laborales, freelance o de emprendimiento desde Perú o hacia el
 							mundo.
 						</p>
 					</div>

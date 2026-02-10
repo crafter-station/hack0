@@ -10,7 +10,7 @@ export function EventFormatsSection() {
 						Formatos de eventos
 					</p>
 					<h2 className="text-xl font-semibold mt-2">
-						Ritmo constante de activacion
+						Ritmo constante de activación
 					</h2>
 				</div>
 
@@ -24,8 +24,8 @@ export function EventFormatsSection() {
 						</div>
 						<h3 className="font-medium">Hacker House Sessions</h3>
 						<p className="text-xs text-muted-foreground mt-1">
-							Build nights, pair programming, office hours. Practica semanal sin
-							friccion.
+							Build nights, pair programming, office hours. Práctica semanal sin
+							fricción.
 						</p>
 					</div>
 
@@ -36,10 +36,10 @@ export function EventFormatsSection() {
 								Mensual
 							</Badge>
 						</div>
-						<h3 className="font-medium">Meetups Tecnicos</h3>
+						<h3 className="font-medium">Meetups Técnicos</h3>
 						<p className="text-xs text-muted-foreground mt-1">
 							Workshops, demos, talks y networking en diferentes ciudades del
-							pais.
+							país.
 						</p>
 					</div>
 
@@ -52,7 +52,7 @@ export function EventFormatsSection() {
 						</div>
 						<h3 className="font-medium">Hackatones 72h</h3>
 						<p className="text-xs text-muted-foreground mt-1">
-							Construccion intensa, premios, mentoria. Activar proyectos reales
+							Construcción intensa, premios, mentoría. Activar proyectos reales
 							y lanzar MVPs.
 						</p>
 					</div>
