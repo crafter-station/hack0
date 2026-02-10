@@ -1,7 +1,12 @@
 import { CTASection } from "@/components/landing/cta-section";
+import { EventFormatsSection } from "@/components/landing/event-formats-section";
 import { EventsPreviewSection } from "@/components/landing/events-preview-section";
 import { FAQSection } from "@/components/landing/faq-section";
 import { HeroSection } from "@/components/landing/hero-section";
+import { MissionSection } from "@/components/landing/mission-section";
+import { PillarsSection } from "@/components/landing/pillars-section";
+import { ToolsSection } from "@/components/landing/tools-section";
+import { ValuesSection } from "@/components/landing/values-section";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import {
@@ -32,15 +37,15 @@ export default async function HomePage() {
 
 			<EventsPreviewSection events={eventsResult.events} />
 
-			{/*<MissionSection />*/}
+			<MissionSection />
 
-			{/*<PillarsSection />*/}
+			<PillarsSection />
 
-			{/*<EventFormatsSection />*/}
+			<EventFormatsSection />
 
-			{/*<ValuesSection />*/}
+			<ValuesSection />
 
-			{/*<ToolsSection />*/}
+			<ToolsSection />
 
 			<FAQSection />
 
