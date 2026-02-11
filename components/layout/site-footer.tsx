@@ -1,8 +1,11 @@
 import { Github, Heart } from "lucide-react";
 import Link from "next/link";
 import { CrafterStationLogo } from "@/components/logos/crafter-station";
+import { formatEventDate } from "@/lib/event-utils";
 
 export function SiteFooter() {
+	const lastUpdated = formatEventDate(new Date(), "d MMM yyyy");
+
 	return (
 		<footer className="border-t border-border/50">
 			<div className="mx-auto max-w-screen-xl px-8 py-6">
@@ -87,22 +90,25 @@ export function SiteFooter() {
 						</div>
 					</div>
 
-					<div className="flex items-center justify-between pt-4 border-t border-border/50 text-xs text-muted-foreground">
-						<p>© {new Date().getFullYear()} hack0.dev</p>
-						<p className="inline-flex items-center gap-1">
-							Hecho con{" "}
-							<Heart className="h-3 w-3 fill-red-500 text-red-500 animate-pulse" />{" "}
-							en Perú por{" "}
-							<a
-								href="https://www.crafterstation.com/"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="hover:opacity-80 transition-opacity"
-								aria-label="Crafter Station"
-							>
-								<CrafterStationLogo className="h-4 w-4" />
-							</a>
-						</p>
+					<div className="flex flex-col gap-2 pt-4 border-t border-border/50 text-xs text-muted-foreground">
+						<div className="flex items-center justify-between">
+							<p>© {new Date().getFullYear()} hack0.dev</p>
+							<p className="inline-flex items-center gap-1">
+								Hecho con{" "}
+								<Heart className="h-3 w-3 fill-red-500 text-red-500 animate-pulse" />{" "}
+								en Perú por{" "}
+								<a
+									href="https://www.crafterstation.com/"
+									target="_blank"
+									rel="noopener noreferrer"
+									className="hover:opacity-80 transition-opacity"
+									aria-label="Crafter Station"
+								>
+									<CrafterStationLogo className="h-4 w-4" />
+								</a>
+							</p>
+						</div>
+						<p className="text-center">Última actualización: {lastUpdated}</p>
 					</div>
 				</div>
 			</div>
