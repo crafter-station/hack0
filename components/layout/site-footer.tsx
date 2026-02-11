@@ -81,6 +81,7 @@ export function SiteFooter() {
 										target="_blank"
 										rel="noopener noreferrer"
 										className="hover:text-foreground transition-colors inline-flex items-center gap-1.5"
+										aria-label="GitHub"
 									>
 										<Github className="h-3 w-3" />
 										GitHub
