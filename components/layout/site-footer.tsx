@@ -91,6 +91,9 @@ export function SiteFooter() {
 					</div>
 
 					<div className="flex flex-col gap-2 pt-4 border-t border-border/50 text-xs text-muted-foreground">
+						<p className="text-center">
+							Built with Next.js · Clerk · Neon · Vercel
+						</p>
 						<div className="flex items-center justify-between">
 							<p>© {new Date().getFullYear()} hack0.dev</p>
 							<p className="inline-flex items-center gap-1">
