@@ -1,0 +1,13 @@
+/* TEAM */
+Team: Crafter Station
+Site: hack0.dev
+Built with: Next.js, Clerk, Neon
+
+/* THANKS */
+Thanks for visiting!
+
+/* SITE */
+Last update: 2026-02-12
+Standards: HTML5, CSS3, TypeScript
+Components: React, shadcn/ui
+Software: Next.js 15, Bun
