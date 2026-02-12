@@ -150,7 +150,18 @@ export function LatamMap({
 				viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
 				className="w-full h-full bg-transparent"
 				preserveAspectRatio="xMidYMid meet"
+				role="img"
+				aria-label={
+					isZoomedIntoPeru
+						? "Mapa interactivo de Perú mostrando departamentos con eventos tech"
+						: "Mapa interactivo de Latinoamérica mostrando países con eventos tech"
+				}
 			>
+				<title>
+					{isZoomedIntoPeru
+						? "Mapa de Perú con departamentos destacados que tienen eventos tecnológicos"
+						: "Mapa de Latinoamérica con países destacados que tienen eventos tecnológicos"}
+				</title>
 				{isZoomedIntoPeru && (
 					<rect
 						x={0}
@@ -160,6 +171,7 @@ export function LatamMap({
 						fill="transparent"
 						onClick={handleBackClick}
 						style={{ cursor: "zoom-out" }}
+						aria-label="Hacer clic para volver al mapa de Latinoamérica"
 					/>
 				)}
 
@@ -189,6 +201,13 @@ export function LatamMap({
 										onMouseLeave={() => setHoveredCountryId(null)}
 										onClick={() => handleCountryClick(country.countryId)}
 										style={{ cursor: isPeru ? "pointer" : "default" }}
+										aria-label={
+											isPeru
+												? "Hacer clic para ampliar mapa de Perú"
+												: hasEvents
+													? `País con eventos tecnológicos`
+													: undefined
+										}
 									>
 										{countryFeature && (
 											<path
@@ -243,6 +262,7 @@ export function LatamMap({
 															ease: "easeInOut",
 															delay: (index % 20) * 0.1,
 														}}
+														aria-hidden="true"
 													/>
 												);
 											}
@@ -256,6 +276,7 @@ export function LatamMap({
 													className="fill-foreground"
 													opacity={baseOpacity}
 													style={{ transition: "opacity 0.2s ease" }}
+													aria-hidden="true"
 												/>
 											);
 										})}
@@ -264,10 +285,12 @@ export function LatamMap({
 							})}
 
 							{limaProjectedCoords && (
-								<EventLocationDot
-									x={limaProjectedCoords.x}
-									y={limaProjectedCoords.y}
-								/>
+								<g aria-hidden="true">
+									<EventLocationDot
+										x={limaProjectedCoords.x}
+										y={limaProjectedCoords.y}
+									/>
+								</g>
 							)}
 						</motion.g>
 					) : (
@@ -313,6 +336,11 @@ export function LatamMap({
 												);
 											}
 										}}
+										aria-label={
+											hasEvent
+												? `${normalizedName}: departamento con eventos. Hacer clic para ver eventos`
+												: undefined
+										}
 									/>
 								);
 							})}
@@ -350,6 +378,7 @@ export function LatamMap({
 												ease: "easeInOut",
 												delay: (index % 20) * 0.1,
 											}}
+											aria-hidden="true"
 										/>
 									);
 								}
@@ -366,18 +395,21 @@ export function LatamMap({
 											pointerEvents: "none",
 											transition: "opacity 0.2s ease",
 										}}
+										aria-hidden="true"
 									/>
 								);
 							})}
 
-							{departmentEventCoords.map((coord, index) => (
-								<EventLocationDot
-									key={coord.department}
-									x={coord.x}
-									y={coord.y}
-									delay={index * 0.15}
-								/>
-							))}
+							<g aria-hidden="true">
+								{departmentEventCoords.map((coord, index) => (
+									<EventLocationDot
+										key={coord.department}
+										x={coord.x}
+										y={coord.y}
+										delay={index * 0.15}
+									/>
+								))}
+							</g>
 						</motion.g>
 					)}
 				</AnimatePresence>
