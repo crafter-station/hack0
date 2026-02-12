@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://hack0.dev/sitemap.xml
