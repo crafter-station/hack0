@@ -174,6 +174,7 @@ export default function RootLayout({
 		>
 			<html lang="es" suppressHydrationWarning>
 				<head>
+					<link rel="manifest" href="/site.webmanifest" />
 					<link rel="preconnect" href="https://utfs.io" />
 					<link rel="dns-prefetch" href="https://utfs.io" />
 					<link rel="preconnect" href="https://images.clerk.dev" />
