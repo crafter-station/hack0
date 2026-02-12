@@ -1,5 +1,9 @@
+import { Suspense } from "react";
 import { CTASection } from "@/components/landing/cta-section";
-import { EventsPreviewSection } from "@/components/landing/events-preview-section";
+import {
+	EventsPreviewSection,
+	EventsPreviewSkeleton,
+} from "@/components/landing/events-preview-section";
 import { FAQSection } from "@/components/landing/faq-section";
 import { HeroSection } from "@/components/landing/hero-section";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -11,14 +15,22 @@ import {
 	getPlatformStats,
 } from "@/lib/actions/events";
 
+async function EventsPreview() {
+	const eventsResult = await getEvents({
+		limit: 8,
+		status: ["ongoing", "open", "upcoming"],
+	});
+	return <EventsPreviewSection events={eventsResult.events} />;
+}
+
 export default async function HomePage() {
-	const [stats, eventsResult, departmentsWithEvents, countriesWithEvents] =
-		await Promise.all([
+	const [stats, departmentsWithEvents, countriesWithEvents] = await Promise.all(
+		[
 			getPlatformStats(),
-			getEvents({ limit: 8, status: ["ongoing", "open", "upcoming"] }),
 			getDepartmentsWithEvents(),
 			getCountriesWithEvents(),
-		]);
+		],
+	);
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
@@ -30,7 +42,9 @@ export default async function HomePage() {
 				countriesWithEvents={countriesWithEvents}
 			/>
 
-			<EventsPreviewSection events={eventsResult.events} />
+			<Suspense fallback={<EventsPreviewSkeleton />}>
+				<EventsPreview />
+			</Suspense>
 
 			{/*<MissionSection />*/}
 
