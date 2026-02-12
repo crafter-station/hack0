@@ -34,6 +34,50 @@ function formatPrize(amount: number | null, currency: string | null) {
 	return `${symbol}${amount.toLocaleString()}`;
 }
 
+function EventCardSkeleton() {
+	return (
+		<Card className="h-full overflow-hidden p-0 gap-0">
+			<div className="relative aspect-square w-full overflow-hidden border-b bg-muted animate-pulse" />
+			<CardContent className="p-3 space-y-1">
+				<div className="space-y-0.5">
+					<div className="h-4 bg-muted rounded animate-pulse w-3/4" />
+					<div className="flex items-center gap-1.5 mt-0.5">
+						<div className="h-3.5 w-3.5 bg-muted rounded-[3px] animate-pulse" />
+						<div className="h-3 bg-muted rounded animate-pulse w-24" />
+					</div>
+				</div>
+				<div className="h-3 bg-muted rounded animate-pulse w-1/2" />
+				<div className="flex items-center justify-between gap-2">
+					<div className="h-3 bg-muted rounded animate-pulse w-16" />
+					<div className="h-3 bg-muted rounded animate-pulse w-12" />
+				</div>
+			</CardContent>
+		</Card>
+	);
+}
+
+export function EventsPreviewSkeleton() {
+	return (
+		<section className="py-8">
+			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
+				<h2 className="text-lg font-semibold text-center mb-6">
+					¿Qué se viene?
+				</h2>
+
+				<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+					{Array.from({ length: 8 }).map((_, i) => (
+						<EventCardSkeleton key={i} />
+					))}
+				</div>
+
+				<div className="mt-8 text-center">
+					<div className="inline-flex h-10 w-48 bg-muted rounded-lg animate-pulse" />
+				</div>
+			</div>
+		</section>
+	);
+}
+
 export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 	if (events.length === 0) {
 		return null;
