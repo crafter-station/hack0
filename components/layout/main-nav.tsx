@@ -24,6 +24,7 @@ export function MainNav() {
 					<Link
 						key={item.href}
 						href={item.href}
+						aria-current={isActive ? "page" : undefined}
 						className={`transition-colors ${
 							isActive
 								? "text-foreground"

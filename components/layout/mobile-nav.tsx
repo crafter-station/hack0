@@ -67,6 +67,7 @@ export function MobileNav() {
 										key={item.href}
 										href={item.href}
 										onClick={() => setOpen(false)}
+										aria-current={isActive ? "page" : undefined}
 										className={`
 											block py-3 text-xl font-medium tracking-tight transition-colors
 											${isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"}
@@ -82,8 +83,9 @@ export function MobileNav() {
 							<p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
 								Recursos
 							</p>
-							{secondaryItems.map((item) =>
-								item.external ? (
+							{secondaryItems.map((item) => {
+								const isActive = !item.external && pathname === item.href;
+								return item.external ? (
 									<a
 										key={item.href}
 										href={item.href}
@@ -97,12 +99,13 @@ export function MobileNav() {
 										key={item.href}
 										href={item.href}
 										onClick={() => setOpen(false)}
+										aria-current={isActive ? "page" : undefined}
 										className="block py-2 text-base text-muted-foreground hover:text-foreground transition-colors"
 									>
 										{item.label}
 									</Link>
-								),
-							)}
+								);
+							})}
 						</div>
 					</nav>
 
