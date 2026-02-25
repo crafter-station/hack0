@@ -27,6 +27,7 @@ import {
 	formatEventDateRange,
 	formatEventDateRangeWithDay,
 	formatEventTime,
+	getCountryFlag,
 	getEventStatus,
 	getEventTypeLabel,
 	getFormatLabel,
@@ -135,12 +136,16 @@ function EventListItem({
 					<div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
 						<span className="flex items-center gap-1">
 							<Calendar className="h-3 w-3" />
-							{formatEventDateRange(event.startDate, event.endDate)}
+							{formatEventDateRange(
+								event.startDate,
+								event.endDate,
+								event.timezone || undefined,
+							)}
 						</span>
 						{event.city && (
 							<span className="flex items-center gap-1">
 								<MapPin className="h-3 w-3" />
-								{event.city}
+								{getCountryFlag(event.country)} {event.city}
 							</span>
 						)}
 						{prize && (
@@ -257,7 +262,11 @@ function EventDetailPanel({ event }: { event: EventWithOrg }) {
 							<div>
 								<p className="text-xs text-muted-foreground">Fecha</p>
 								<p className="text-sm font-medium">
-									{formatEventDateRangeWithDay(event.startDate, event.endDate)}
+									{formatEventDateRangeWithDay(
+										event.startDate,
+										event.endDate,
+										event.timezone || undefined,
+									)}
 								</p>
 							</div>
 						</div>
@@ -269,7 +278,10 @@ function EventDetailPanel({ event }: { event: EventWithOrg }) {
 								<div>
 									<p className="text-xs text-muted-foreground">Hora</p>
 									<p className="text-sm font-medium">
-										{formatEventTime(event.startDate)}
+										{formatEventTime(
+											event.startDate,
+											event.timezone || undefined,
+										)}
 									</p>
 								</div>
 							</div>
@@ -282,7 +294,9 @@ function EventDetailPanel({ event }: { event: EventWithOrg }) {
 								<div>
 									<p className="text-xs text-muted-foreground">Ubicación</p>
 									<p className="text-sm font-medium">
-										{event.city || getFormatLabel(event.format)}
+										{event.city
+											? `${getCountryFlag(event.country)} ${event.city}`
+											: getFormatLabel(event.format)}
 									</p>
 									{event.format && event.city && (
 										<p className="text-xs text-muted-foreground">

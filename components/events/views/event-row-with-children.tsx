@@ -314,7 +314,13 @@ export function EventRowWithChildren({
 
 					<div className="hidden lg:block text-xs text-muted-foreground relative z-10">
 						{startDate ? (
-							<span>{formatEventDateRange(startDate, endDate)}</span>
+							<span>
+								{formatEventDateRange(
+									startDate,
+									endDate,
+									event.timezone || undefined,
+								)}
+							</span>
 						) : (
 							<span className="text-muted-foreground/40">—</span>
 						)}

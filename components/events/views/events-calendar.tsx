@@ -320,7 +320,11 @@ export function EventsCalendar({
 						<div className="flex items-center gap-1">
 							<Calendar className="w-2.5 h-2.5 shrink-0" />
 							<span className="truncate">
-								{formatEventDateRange(event.startDate, event.endDate)}
+								{formatEventDateRange(
+									event.startDate,
+									event.endDate,
+									event.timezone || undefined,
+								)}
 							</span>
 						</div>
 						{event.city && (

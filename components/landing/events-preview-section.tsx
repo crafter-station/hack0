@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import type { EventWithOrg } from "@/lib/actions/events";
 import {
 	formatEventDateRange,
+	getCountryFlag,
 	getEventStatus,
 	getEventTypeLabel,
 	getFormatLabel,
@@ -188,10 +189,17 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 											</div>
 										</div>
 										<div className="text-xs text-muted-foreground">
-											{formatEventDateRange(event.startDate, event.endDate)}
+											{formatEventDateRange(
+												event.startDate,
+												event.endDate,
+												event.timezone || undefined,
+											)}
 										</div>
 										<div className="flex items-center justify-between gap-2 text-xs">
 											<div className="flex items-center gap-2 text-muted-foreground">
+												{event.country && (
+													<span>{getCountryFlag(event.country)}</span>
+												)}
 												{event.format && (
 													<span>
 														{getFormatLabel(event.format, event.department)}

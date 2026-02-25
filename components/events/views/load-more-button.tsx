@@ -118,7 +118,11 @@ function EventCard({ event }: { event: EventWithOrg }) {
 						</p>
 					</div>
 					<div className="text-xs text-muted-foreground">
-						{formatEventDateRange(event.startDate, event.endDate)}
+						{formatEventDateRange(
+							event.startDate,
+							event.endDate,
+							event.timezone || undefined,
+						)}
 					</div>
 					<div className="flex items-center justify-between gap-2 text-xs">
 						<div className="flex items-center gap-2 text-muted-foreground">

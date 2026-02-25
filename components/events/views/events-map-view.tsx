@@ -221,7 +221,11 @@ function EventListItem({
 						<div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
 							<span className="flex items-center gap-1">
 								<Calendar className="h-3 w-3" />
-								{formatEventDateRange(event.startDate, event.endDate)}
+								{formatEventDateRange(
+									event.startDate,
+									event.endDate,
+									event.timezone || undefined,
+								)}
 							</span>
 							{event.city && (
 								<span className="flex items-center gap-1">

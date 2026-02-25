@@ -21,6 +21,7 @@ import {
 	ORGANIZER_TYPE_LABELS,
 	SKILL_LEVELS,
 } from "@/lib/db/schema";
+import { getCountryFlag, getCountryName } from "@/lib/event-utils";
 import type { TimeFilter } from "@/lib/search-params";
 
 const SKILL_LEVEL_LABELS: Record<string, string> = {
@@ -65,6 +66,17 @@ const POPULAR_DOMAINS = [
 	"general",
 ] as const;
 
+const POPULAR_COUNTRIES = [
+	"PE",
+	"GT",
+	"CO",
+	"MX",
+	"AR",
+	"CL",
+	"BR",
+	"EC",
+] as const;
+
 const POPULAR_DEPARTMENTS = [
 	"Lima",
 	"Arequipa",
@@ -80,6 +92,7 @@ interface FiltersState {
 	skillLevel: string[];
 	format: string[];
 	domain: string[];
+	country: string[];
 	department: string[];
 	juniorFriendly: boolean;
 	mine: boolean;
@@ -108,6 +121,7 @@ export function EventsFiltersPopover({
 		skillLevel,
 		format,
 		domain,
+		country,
 		department,
 		juniorFriendly,
 		mine,
@@ -120,6 +134,7 @@ export function EventsFiltersPopover({
 		skillLevel.length +
 		format.length +
 		domain.length +
+		country.length +
 		department.length +
 		(juniorFriendly ? 1 : 0) +
 		(mine ? 1 : 0) +
@@ -376,6 +391,32 @@ export function EventsFiltersPopover({
 									}`}
 								>
 									{DOMAIN_LABELS[dom]}
+								</button>
+							))}
+						</div>
+					</div>
+
+					<div className="space-y-1.5">
+						<label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+							País
+						</label>
+						<div className="flex flex-wrap gap-1">
+							{POPULAR_COUNTRIES.map((code) => (
+								<button
+									key={code}
+									onClick={() => {
+										const newCountry = country.includes(code)
+											? country.filter((v) => v !== code)
+											: [...country, code];
+										onFiltersChange({ country: newCountry, page: 1 });
+									}}
+									className={`border px-2 py-1 text-[10px] font-medium transition-colors ${
+										country.includes(code)
+											? "border-foreground/20 bg-foreground text-background"
+											: "border-border/50 text-muted-foreground hover:text-foreground"
+									}`}
+								>
+									{getCountryFlag(code)} {getCountryName(code)}
 								</button>
 							))}
 						</div>
