@@ -2,7 +2,7 @@ export interface LumaCalendar {
 	id: string;
 	url: string;
 	name: string;
-	slug: string;
+	slug: string | null;
 	website: string | null;
 	avatar_url: string | null;
 	description: string | null;
@@ -30,8 +30,8 @@ export interface LumaEventData {
 	end_at: string;
 	timezone: string;
 	cover_url: string | null;
-	calendar: LumaCalendar;
-	hosts: LumaHost[];
+	calendar?: LumaCalendar;
+	hosts?: LumaHost[];
 	platform: string;
 	geo_address_json?: {
 		city?: string;
