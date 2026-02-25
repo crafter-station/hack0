@@ -9,7 +9,12 @@ import type {
 	LumaHost,
 	LumaWebhookTaskPayload,
 } from "@/lib/luma/types";
-import { createUniqueSlug, ensureUniqueShortCode } from "@/lib/slug-utils";
+import {
+	createUniqueSlug,
+	ensureUniqueOrgShortCode,
+	ensureUniqueShortCode,
+	generateSlug,
+} from "@/lib/slug-utils";
 
 async function fetchLumaEventDetails(
 	eventId: string,
@@ -174,29 +179,20 @@ async function processEventHosts(
 	metadata.set("hostsProcessed", hosts.length.toString());
 }
 
-export const lumaWebhookProcessorTask = task({
-	id: "luma-webhook-processor",
-	maxDuration: 120,
-	run: async (payload: LumaWebhookTaskPayload) => {
-		const { event_type, data } = payload;
+async function resolveOrCreateOrganization(
+	data: LumaWebhookTaskPayload["data"],
+) {
+	const calendar = data.calendar;
+	const calendarSlug = calendar?.slug;
+	const calendarName = calendar?.name;
+	const systemOwnerId =
+		process.env.SYSTEM_OWNER_USER_ID || "system_luma_import";
 
-		metadata.set("eventType", event_type);
-		metadata.set("lumaEventId", data.api_id);
-		metadata.set("lumaEventName", data.name);
-		metadata.set("calendarSlug", data.calendar?.slug || "unknown");
+	let org: typeof organizations.$inferSelect | undefined;
 
-		if (!data.calendar?.slug) {
-			metadata.set("step", "error");
-			metadata.set("error", "No calendar slug in webhook data");
-			return { success: false, error: "No calendar slug" };
-		}
-
-		metadata.set("step", "finding_organization");
-
-		const calendarSlug = data.calendar.slug;
-		const calendarName = data.calendar.name;
-
-		let org = await db.query.organizations.findFirst({
+	if (calendarSlug) {
+		metadata.set("step", "finding_organization_by_slug");
+		org = await db.query.organizations.findFirst({
 			where: eq(organizations.slug, calendarSlug),
 		});
 
@@ -213,16 +209,93 @@ export const lumaWebhookProcessorTask = task({
 				where: sql`${organizations.slug} LIKE ${`%${calendarSlug}%`} OR ${organizations.slug} LIKE ${`${calendarSlug}-%`}`,
 			});
 		}
+	} else if (calendarName && calendarName !== "Personal") {
+		metadata.set("step", "finding_organization_by_calendar_name");
+		org = await db.query.organizations.findFirst({
+			where: ilike(organizations.name, calendarName),
+		});
+	}
+
+	if (!org) {
+		const hostName = data.hosts?.[0]?.name;
+
+		if (calendarName && calendarName !== "Personal" && !calendar?.is_personal) {
+			metadata.set("step", "finding_organization_by_host_name");
+			if (hostName) {
+				org = await db.query.organizations.findFirst({
+					where: ilike(organizations.name, hostName),
+				});
+			}
+		}
+	}
+
+	if (org) return org;
+
+	metadata.set("step", "auto_creating_organization");
+
+	const derivedName =
+		calendarName && calendarName !== "Personal"
+			? calendarName
+			: data.hosts?.[0]?.name || `Luma Calendar ${calendar?.id || "unknown"}`;
+
+	const derivedSlug = calendarSlug || generateSlug(derivedName);
+	const orgSlug = generateSlug(derivedSlug);
+	const orgShortCode = await ensureUniqueOrgShortCode();
+
+	const existingBySlug = await db.query.organizations.findFirst({
+		where: eq(organizations.slug, orgSlug),
+	});
+	if (existingBySlug) return existingBySlug;
+
+	const [newOrg] = await db
+		.insert(organizations)
+		.values({
+			slug: orgSlug,
+			shortCode: orgShortCode,
+			name: derivedName,
+			description: calendar?.description,
+			type: "community",
+			websiteUrl: calendar?.website || calendar?.url,
+			logoUrl: calendar?.avatar_url || data.hosts?.[0]?.avatar_url,
+			coverUrl: calendar?.cover_image_url,
+			twitterUrl: calendar?.twitter_handle
+				? `https://x.com/${calendar.twitter_handle}`
+				: null,
+			instagramUrl: calendar?.instagram_handle
+				? `https://instagram.com/${calendar.instagram_handle}`
+				: null,
+			ownerUserId: systemOwnerId,
+			isPublic: true,
+			isPersonalOrg: calendar?.is_personal ?? false,
+			isVerified: false,
+			country: "PE",
+		})
+		.returning();
+
+	metadata.set("autoCreatedOrg", "true");
+	metadata.set("newOrgSlug", orgSlug);
+	return newOrg;
+}
+
+export const lumaWebhookProcessorTask = task({
+	id: "luma-webhook-processor",
+	maxDuration: 120,
+	run: async (payload: LumaWebhookTaskPayload) => {
+		const { event_type, data } = payload;
+
+		metadata.set("eventType", event_type);
+		metadata.set("lumaEventId", data.api_id);
+		metadata.set("lumaEventName", data.name);
+		metadata.set("calendarSlug", data.calendar?.slug || "unknown");
+
+		const org = await resolveOrCreateOrganization(data);
 
 		if (!org) {
-			metadata.set("step", "org_not_found");
-			metadata.set(
-				"error",
-				`Organization not found for slug: ${calendarSlug} or name: ${calendarName}`,
-			);
+			metadata.set("step", "org_resolution_failed");
+			metadata.set("error", "Could not resolve or create organization");
 			return {
 				success: false,
-				error: `Organization not found: ${calendarSlug}`,
+				error: "Could not resolve or create organization",
 			};
 		}
 
@@ -247,7 +320,8 @@ export const lumaWebhookProcessorTask = task({
 
 		switch (event_type) {
 			case "calendar.event.added":
-			case "calendar.event.created": {
+			case "calendar.event.created":
+			case "event.created": {
 				return await handleEventCreated(
 					data,
 					org.id,
@@ -255,10 +329,12 @@ export const lumaWebhookProcessorTask = task({
 					fullEventData,
 				);
 			}
-			case "calendar.event.updated": {
+			case "calendar.event.updated":
+			case "event.updated": {
 				return await handleEventUpdated(data, org.id, fullEventData);
 			}
-			case "calendar.event.deleted": {
+			case "calendar.event.deleted":
+			case "event.deleted": {
 				return await handleEventDeleted(data);
 			}
 			default: {
