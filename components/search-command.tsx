@@ -83,7 +83,7 @@ export function SearchCommand({ hackathons }: SearchCommandProps) {
 			open={open}
 			onOpenChange={setOpen}
 			title="Buscar eventos"
-			description="Busca hackathons, conferencias y eventos tech en Perú"
+			description="Busca hackathons, conferencias y eventos tech en LATAM"
 		>
 			<CommandInput placeholder="Buscar eventos..." />
 			<CommandList>

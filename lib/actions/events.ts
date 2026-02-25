@@ -1007,11 +1007,7 @@ export async function getDepartmentsWithEvents(): Promise<string[]> {
 		.selectDistinct({ department: events.department })
 		.from(events)
 		.where(
-			and(
-				eq(events.isApproved, true),
-				eq(events.country, "PE"),
-				sql`${events.department} IS NOT NULL`,
-			),
+			and(eq(events.isApproved, true), sql`${events.department} IS NOT NULL`),
 		);
 	return result.map((r) => r.department).filter(Boolean) as string[];
 }

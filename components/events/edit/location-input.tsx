@@ -234,7 +234,7 @@ export function LocationInput({
 								value={searchQuery}
 								onChange={(e) => handleQueryChange(e.target.value)}
 								onFocus={() => results.length > 0 && setShowResults(true)}
-								placeholder="Buscar ubicación en Perú..."
+								placeholder="Buscar ubicación..."
 								className="pl-9 pr-9"
 							/>
 							{isSearching && (

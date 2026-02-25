@@ -61,7 +61,7 @@ export async function GET() {
 						maxWidth: "900px",
 					}}
 				>
-					Hackathons y eventos tech en Perú 🇵🇪
+					Hackathons y eventos tech en LATAM 🌎
 				</div>
 
 				{/* Stats */}

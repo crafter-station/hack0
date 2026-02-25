@@ -24,7 +24,7 @@ export default async function SubscribeSuccessPage({
 					<p className="text-muted-foreground">
 						{already
 							? "Tu email ya estaba verificado. Recibirás notificaciones cuando publiquemos nuevos eventos."
-							: "Recibirás notificaciones por email cuando publiquemos nuevos eventos tech en Perú."}
+							: "Recibirás notificaciones por email cuando publiquemos nuevos eventos tech en LATAM."}
 					</p>
 				</div>
 

@@ -12,7 +12,7 @@ const faqs = [
 	{
 		question: "¿Qué es hack0.dev?",
 		answer:
-			"hack0.dev es un calendario de eventos tech para Latinoamérica. Centralizamos hackathones, conferencias, workshops, meetups y más. Nuestro objetivo es mapear el ecosistema tech y dar visibilidad a las comunidades que organizan eventos.",
+			"hack0.dev es la plataforma de eventos tech para Latinoamérica. Centralizamos hackathones, conferencias, workshops, meetups y más de toda la región. Nuestro objetivo es mapear el ecosistema tech de LATAM y dar visibilidad a las comunidades que organizan eventos.",
 	},
 	{
 		question: "¿Cómo puedo enterarme de nuevos eventos?",
@@ -25,9 +25,9 @@ const faqs = [
 			"¡Sí! Si tienes una comunidad u organizas eventos tech, puedes crear tu organización gratis y publicar todos tus eventos. No hay límites ni costos. Queremos que todas las comunidades tech tengan visibilidad.",
 	},
 	{
-		question: "¿hack0 es solo para Perú?",
+		question: "¿En qué países está hack0?",
 		answer:
-			"Actualmente nuestras fuerzas están concentradas en Perú, pero la visión es para toda Latinoamérica. El proyecto es open source, así que si quieres expandir la iniciativa a tu país, eres bienvenido a colaborar.",
+			"hack0 cubre toda Latinoamérica. Actualmente tenemos eventos activos en Perú, Guatemala, Colombia y más países se suman cada semana. El proyecto es open source — si quieres impulsar la iniciativa en tu país, eres bienvenido a colaborar.",
 	},
 	{
 		question: "¿Cuál es el objetivo a largo plazo?",

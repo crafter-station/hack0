@@ -134,14 +134,14 @@ export function HeroSection({
 								className="border-dashed font-normal text-muted-foreground"
 							>
 								<TrendingUp className="h-3 w-3 mr-1" />
-								Empezando por Perú
+								Creciendo en LATAM
 							</Badge>
 							<span>·</span>
 							<Link
 								href="/roadmap#latam"
 								className="underline underline-offset-4 hover:text-foreground transition-colors"
 							>
-								Próximamente más países
+								Ver países activos
 							</Link>
 						</div>
 					</div>

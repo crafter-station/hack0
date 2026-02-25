@@ -96,7 +96,7 @@ export function SiteFooter() {
 							<p className="inline-flex items-center gap-1">
 								Hecho con{" "}
 								<Heart className="h-3 w-3 fill-red-500 text-red-500 animate-pulse" />{" "}
-								en Perú por{" "}
+								en LATAM por{" "}
 								<a
 									href="https://www.crafterstation.com/"
 									target="_blank"

@@ -143,5 +143,5 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
 export const metadata = {
 	title: "Todos los Eventos | hack0.dev",
 	description:
-		"Explora el calendario completo de eventos tecnológicos en Perú. Hackathones, conferencias, workshops y más.",
+		"Explora el calendario completo de eventos tecnológicos en Latinoamérica. Hackathones, conferencias, workshops y más en LATAM.",
 };

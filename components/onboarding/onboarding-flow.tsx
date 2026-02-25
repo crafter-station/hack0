@@ -213,7 +213,7 @@ export function OnboardingFlow({ redirectUrl }: OnboardingFlowProps) {
 							invitando a formar parte de algo increíble
 						</h1>
 						<p className="text-muted-foreground text-lg mb-8 leading-relaxed">
-							Únete a la comunidad tech más grande de Perú. Eventos,
+							Únete a la comunidad tech más grande de LATAM. Eventos,
 							hackathones, networking y mucho más te esperan.
 						</p>
 
@@ -335,7 +335,7 @@ export function OnboardingFlow({ redirectUrl }: OnboardingFlowProps) {
 												</div>
 												<div>
 													<h2 className="font-semibold text-foreground mb-2">
-														La plataforma que centraliza eventos tech en Perú
+														La plataforma que centraliza eventos tech en LATAM
 													</h2>
 													<p className="text-muted-foreground leading-relaxed">
 														Hackathones, meetups, conferencias, workshops y más.

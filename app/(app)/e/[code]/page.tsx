@@ -44,11 +44,14 @@ import {
 	formatEventDay,
 	formatEventMonth,
 	formatEventTime,
+	getCountryName,
 	getDomainLabel,
+	getEventDate,
 	getEventStatus,
 	getEventTypeLabel,
 	getOrganizerTypeLabel,
 	getSkillLevelLabel,
+	getTimezoneAbbreviation,
 	isEventJuniorFriendly,
 } from "@/lib/event-utils";
 import { isGodMode } from "@/lib/god-mode";
@@ -93,10 +96,12 @@ export async function generateMetadata({
 
 	const hackathon = result;
 
-	const title = `${hackathon.name} - ${getEventTypeLabel(hackathon.eventType)} en Perú`;
+	const locationLabel =
+		hackathon.city || getCountryName(hackathon.country) || "LATAM";
+	const title = `${hackathon.name} - ${getEventTypeLabel(hackathon.eventType)} en ${locationLabel}`;
 	const description = hackathon.description
 		? stripMarkdown(hackathon.description).slice(0, 160)
-		: `${getEventTypeLabel(hackathon.eventType)} ${hackathon.format === "virtual" ? "virtual" : `en ${hackathon.city || "Perú"}`}. ${hackathon.prizePool ? `Premio: ${hackathon.prizeCurrency === "PEN" ? "S/" : "$"}${hackathon.prizePool.toLocaleString()}` : ""}`;
+		: `${getEventTypeLabel(hackathon.eventType)} ${hackathon.format === "virtual" ? "virtual" : `en ${locationLabel}`}. ${hackathon.prizePool ? `Premio: ${hackathon.prizeCurrency === "PEN" ? "S/" : "$"}${hackathon.prizePool.toLocaleString()}` : ""}`;
 
 	const ogImageUrl = `https://hack0.dev/api/og?code=${code}`;
 
@@ -106,11 +111,11 @@ export async function generateMetadata({
 		keywords: [
 			hackathon.name,
 			getEventTypeLabel(hackathon.eventType),
-			"peru",
+			locationLabel.toLowerCase(),
 			hackathon.city || "",
 			...(hackathon.domains || []).map((d) => getDomainLabel(d)),
-			"hackathon peru",
-			"eventos tech peru",
+			`hackathon ${locationLabel.toLowerCase()}`,
+			"eventos tech latam",
 		].filter(Boolean),
 		openGraph: {
 			title,
@@ -145,6 +150,8 @@ export default async function EventPage({ params }: EventPageProps) {
 
 	const hackathon = result;
 	const community = result.organization;
+	const locationLabel =
+		hackathon.city || getCountryName(hackathon.country) || "LATAM";
 
 	const godMode = await isGodMode();
 	const isOwner = userId && community?.ownerUserId === userId;
@@ -177,17 +184,20 @@ export default async function EventPage({ params }: EventPageProps) {
 	const isOpen = status.status === "open";
 	const isJuniorFriendly = isEventJuniorFriendly(hackathon.skillLevel);
 
+	const eventTz = hackathon.timezone || "America/Lima";
 	const startDate = hackathon.startDate ? new Date(hackathon.startDate) : null;
 	const endDate = hackathon.endDate ? new Date(hackathon.endDate) : null;
 	const deadline = hackathon.registrationDeadline
 		? new Date(hackathon.registrationDeadline)
 		: null;
 
+	const startZoned = startDate ? getEventDate(startDate, eventTz) : null;
+	const endZoned = endDate ? getEventDate(endDate, eventTz) : null;
 	const hasValidTime =
-		startDate &&
-		(startDate.getHours() !== 0 ||
-			startDate.getMinutes() !== 0 ||
-			(endDate && (endDate.getHours() !== 0 || endDate.getMinutes() !== 0)));
+		startZoned &&
+		(startZoned.getHours() !== 0 ||
+			startZoned.getMinutes() !== 0 ||
+			(endZoned && (endZoned.getHours() !== 0 || endZoned.getMinutes() !== 0)));
 
 	const stripePattern = `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23888' fill-opacity='0.15'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E")`;
 
@@ -226,7 +236,7 @@ export default async function EventPage({ params }: EventPageProps) {
 		name: hackathon.name,
 		description: hackathon.description
 			? stripMarkdown(hackathon.description).slice(0, 300)
-			: `${getEventTypeLabel(hackathon.eventType)} en Perú`,
+			: `${getEventTypeLabel(hackathon.eventType)} en ${locationLabel}`,
 		startDate: startDate?.toISOString(),
 		endDate: endDate?.toISOString(),
 		eventStatus: "https://schema.org/EventScheduled",
@@ -244,12 +254,12 @@ export default async function EventPage({ params }: EventPageProps) {
 					}
 				: {
 						"@type": "Place",
-						name: hackathon.venue || hackathon.city || "Perú",
+						name: hackathon.venue || hackathon.city || locationLabel,
 						address: {
 							"@type": "PostalAddress",
 							addressLocality: hackathon.city,
 							addressRegion: hackathon.department,
-							addressCountry: "PE",
+							addressCountry: hackathon.country || "PE",
 						},
 					},
 		image: hackathon.eventImageUrl,
@@ -359,28 +369,36 @@ export default async function EventPage({ params }: EventPageProps) {
 									<div className="flex items-center gap-3">
 										<div className="flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-muted border border-border shrink-0">
 											<span className="text-[9px] uppercase font-medium text-muted-foreground leading-none">
-												{formatEventMonth(startDate)}
+												{formatEventMonth(startDate, undefined, eventTz)}
 											</span>
 											<span className="text-lg font-bold leading-none mt-0.5">
-												{formatEventDay(startDate)}
+												{formatEventDay(startDate, eventTz)}
 											</span>
 										</div>
 										<div className="min-w-0 flex-1">
 											<p className="font-medium text-sm truncate">
-												{formatEventDateFull(startDate)}
+												{formatEventDateFull(startDate, undefined, eventTz)}
 												{endDate &&
 													startDate.toDateString() !==
 														endDate.toDateString() && (
 														<span className="text-muted-foreground">
 															{" "}
-															– {formatEventDate(endDate, "d MMM")}
+															– {formatEventDate(endDate, "d MMM", eventTz)}
 														</span>
 													)}
 											</p>
 											{hasValidTime ? (
 												<p className="text-xs text-muted-foreground truncate">
-													{formatEventTime(startDate)}
-													{endDate && <> – {formatEventTime(endDate)}</>}
+													{formatEventTime(startDate, undefined, eventTz)}
+													{endDate && (
+														<>
+															{" "}
+															– {formatEventTime(endDate, undefined, eventTz)}
+														</>
+													)}{" "}
+													<span className="text-muted-foreground/60">
+														({getTimezoneAbbreviation(eventTz)})
+													</span>
 												</p>
 											) : (
 												<p className="text-xs text-muted-foreground">
