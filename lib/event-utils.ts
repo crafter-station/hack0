@@ -90,11 +90,15 @@ const STATUS_LABELS: Record<(typeof STATUSES)[number], string> = {
 	ended: "Terminado",
 };
 
+function isValidField(v: string | null | undefined): v is string {
+	return !!v && v !== "N/A" && v !== "n/a";
+}
+
 export function getFormatLabel(
 	format: string | null,
 	department?: string | null,
 ): string {
-	if (format === "in-person" && department) {
+	if (format === "in-person" && isValidField(department)) {
 		return department;
 	}
 	return FORMAT_LABELS[format || "virtual"] || "Virtual";

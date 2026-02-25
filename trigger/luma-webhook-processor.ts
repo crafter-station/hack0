@@ -397,10 +397,12 @@ async function handleEventCreated(
 	const endDate = data.end_at ? new Date(data.end_at) : null;
 
 	const geoData = fullEventData?.geo_address_json || data.geo_address_json;
-	const city = geoData?.city || null;
+	const sanitize = (v: string | undefined | null) =>
+		v && v !== "N/A" && v !== "n/a" ? v : null;
+	const city = sanitize(geoData?.city);
 	const country = normalizeCountryCode(geoData?.country ?? null) || "PE";
-	const department = geoData?.region || null;
-	const venue = geoData?.description || geoData?.address || null;
+	const department = sanitize(geoData?.region);
+	const venue = sanitize(geoData?.description || geoData?.address);
 
 	const meetingUrl = fullEventData?.meeting_url || data.meeting_url;
 	const isVirtual = !geoData && !!meetingUrl;
