@@ -28,6 +28,7 @@ import {
 	formatEventDateRangeWithDay,
 	formatEventTime,
 	getCountryFlag,
+	getCountryName,
 	getEventStatus,
 	getEventTypeLabel,
 	getFormatLabel,
@@ -142,10 +143,11 @@ function EventListItem({
 								event.timezone || undefined,
 							)}
 						</span>
-						{event.city && (
+						{(event.country || event.city) && (
 							<span className="flex items-center gap-1">
 								<MapPin className="h-3 w-3" />
-								{getCountryFlag(event.country)} {event.city}
+								{getCountryFlag(event.country)}{" "}
+								{event.city || getCountryName(event.country)}
 							</span>
 						)}
 						{prize && (
@@ -295,8 +297,10 @@ function EventDetailPanel({ event }: { event: EventWithOrg }) {
 									<p className="text-xs text-muted-foreground">Ubicación</p>
 									<p className="text-sm font-medium">
 										{event.city
-											? `${getCountryFlag(event.country)} ${event.city}`
-											: getFormatLabel(event.format)}
+											? `${getCountryFlag(event.country)} ${event.city}, ${getCountryName(event.country)}`
+											: event.country
+												? `${getCountryFlag(event.country)} ${getCountryName(event.country)}`
+												: getFormatLabel(event.format)}
 									</p>
 									{event.format && event.city && (
 										<p className="text-xs text-muted-foreground">

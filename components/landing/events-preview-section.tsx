@@ -7,6 +7,7 @@ import type { EventWithOrg } from "@/lib/actions/events";
 import {
 	formatEventDateRange,
 	getCountryFlag,
+	getCountryName,
 	getEventStatus,
 	getEventTypeLabel,
 	getFormatLabel,
@@ -196,16 +197,19 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 											)}
 										</div>
 										<div className="flex items-center justify-between gap-2 text-xs">
-											<div className="flex items-center gap-2 text-muted-foreground">
+											<div className="flex items-center gap-2 text-muted-foreground truncate">
 												{event.country && (
-													<span>{getCountryFlag(event.country)}</span>
+													<span className="flex items-center gap-0.5 shrink-0">
+														{getCountryFlag(event.country)}{" "}
+														{event.city || getCountryName(event.country)}
+													</span>
 												)}
-												{event.format && (
+												{!event.country && event.format && (
 													<span>
 														{getFormatLabel(event.format, event.department)}
 													</span>
 												)}
-												{event.city && (
+												{!event.country && event.city && (
 													<span className="flex items-center gap-0.5">
 														<MapPin className="h-3 w-3" />
 														{event.city}

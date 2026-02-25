@@ -152,14 +152,40 @@ const COUNTRY_NAMES: Record<string, string> = {
 	GLOBAL: "Global",
 };
 
+const NAME_TO_ISO: Record<string, string> = {};
+for (const [code, name] of Object.entries(COUNTRY_NAMES)) {
+	NAME_TO_ISO[name.toLowerCase()] = code;
+}
+NAME_TO_ISO["brazil"] = "BR";
+NAME_TO_ISO["peru"] = "PE";
+NAME_TO_ISO["mexico"] = "MX";
+NAME_TO_ISO["panama"] = "PA";
+NAME_TO_ISO["dominican republic"] = "DO";
+NAME_TO_ISO["puerto rico"] = "PR";
+
+export function normalizeCountryCode(value: string | null): string | null {
+	if (!value) return null;
+	const upper = value.toUpperCase();
+	if (COUNTRY_NAMES[upper]) return upper;
+	if (upper === "GLOBAL" || upper === "LATAM") return upper;
+	const fromName = NAME_TO_ISO[value.toLowerCase()];
+	if (fromName) return fromName;
+	if (value.length === 2) return upper;
+	return null;
+}
+
 export function getCountryName(code: string | null): string {
 	if (!code || code === "GLOBAL") return "Global";
-	return COUNTRY_NAMES[code] || code;
+	const normalized = normalizeCountryCode(code);
+	if (normalized && COUNTRY_NAMES[normalized]) return COUNTRY_NAMES[normalized];
+	return code;
 }
 
 export function getCountryFlag(countryCode: string | null): string {
 	if (!countryCode || countryCode === "GLOBAL") return "🌎";
-	const codePoints = countryCode
+	const iso = normalizeCountryCode(countryCode);
+	if (!iso || iso.length !== 2) return "";
+	const codePoints = iso
 		.toUpperCase()
 		.split("")
 		.map((char) => 127397 + char.charCodeAt(0));

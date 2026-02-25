@@ -1,7 +1,9 @@
-import { Calendar, TrendingUp, Trophy, Users } from "lucide-react";
+import { Calendar, Globe, TrendingUp, Trophy } from "lucide-react";
 import Link from "next/link";
 import { LumaIcon } from "@/components/icons/luma";
 import { Badge } from "@/components/ui/badge";
+import { getCountryFlag } from "@/lib/event-utils";
+import { ISO_TO_MAP_ID } from "@/lib/geo/peru-departments";
 import { LatamMap } from "./latam-map";
 
 interface HeroSectionProps {
@@ -93,16 +95,20 @@ export function HeroSection({
 
 								<div className="flex items-center gap-2">
 									<div className="h-8 w-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
-										<Users className="h-4 w-4 text-violet-500" />
+										<Globe className="h-4 w-4 text-violet-500" />
 									</div>
 									<div className="text-left">
 										<div className="text-xl font-bold">
 											{countriesWithEvents.length > 0
-												? countriesWithEvents.length
-												: 1}
+												? countriesWithEvents
+														.map((c) => getCountryFlag(c))
+														.join(" ")
+												: getCountryFlag("PE")}
 										</div>
 										<div className="text-xs text-muted-foreground">
-											{countriesWithEvents.length > 1 ? "países" : "país"}
+											{countriesWithEvents.length > 1
+												? `${countriesWithEvents.length} países`
+												: "1 país"}
 										</div>
 									</div>
 								</div>
@@ -150,7 +156,9 @@ export function HeroSection({
 					<div className="hidden lg:block h-[550px] xl:h-[600px]">
 						<LatamMap
 							departmentsWithEvents={departmentsWithEvents}
-							countriesWithEvents={countriesWithEvents}
+							countriesWithEvents={countriesWithEvents
+								.map((c) => ISO_TO_MAP_ID[c])
+								.filter(Boolean)}
 						/>
 					</div>
 				</div>

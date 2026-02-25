@@ -1013,14 +1013,15 @@ export async function getDepartmentsWithEvents(): Promise<string[]> {
 }
 
 export async function getCountriesWithEvents(): Promise<string[]> {
-	const { ISO_TO_MAP_ID } = await import("@/lib/geo/peru-departments");
+	const { normalizeCountryCode } = await import("@/lib/event-utils");
 	const result = await db
 		.selectDistinct({ country: events.country })
 		.from(events)
 		.where(
 			and(eq(events.isApproved, true), sql`${events.country} IS NOT NULL`),
 		);
-	return result
-		.map((r) => (r.country ? ISO_TO_MAP_ID[r.country] : null))
+	const codes = result
+		.map((r) => (r.country ? normalizeCountryCode(r.country) : null))
 		.filter(Boolean) as string[];
+	return [...new Set(codes)];
 }

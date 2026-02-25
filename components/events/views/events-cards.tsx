@@ -13,6 +13,7 @@ import type {
 import {
 	formatEventDateRange,
 	getCountryFlag,
+	getCountryName,
 	getEventStatus,
 	getEventTypeLabel,
 	getFormatLabel,
@@ -175,12 +176,17 @@ function EventCard({
 						)}
 					</div>
 					<div className="flex items-center justify-between gap-2 text-xs">
-						<div className="flex items-center gap-2 text-muted-foreground">
-							{event.country && <span>{getCountryFlag(event.country)}</span>}
-							{event.format && (
+						<div className="flex items-center gap-2 text-muted-foreground truncate">
+							{event.country && (
+								<span className="flex items-center gap-0.5 shrink-0">
+									{getCountryFlag(event.country)}{" "}
+									{event.city || getCountryName(event.country)}
+								</span>
+							)}
+							{!event.country && event.format && (
 								<span>{getFormatLabel(event.format, event.department)}</span>
 							)}
-							{event.city && (
+							{!event.country && event.city && (
 								<span className="flex items-center gap-0.5">
 									<MapPin className="h-3 w-3" />
 									{event.city}

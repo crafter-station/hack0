@@ -4,6 +4,7 @@ import { and, eq, ilike, notInArray, sql } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { db } from "@/lib/db";
 import { eventHosts, events, organizations } from "@/lib/db/schema";
+import { normalizeCountryCode } from "@/lib/event-utils";
 import type {
 	LumaApiEvent,
 	LumaHost,
@@ -397,7 +398,7 @@ async function handleEventCreated(
 
 	const geoData = fullEventData?.geo_address_json || data.geo_address_json;
 	const city = geoData?.city || null;
-	const country = geoData?.country || "PE";
+	const country = normalizeCountryCode(geoData?.country ?? null) || "PE";
 	const department = geoData?.region || null;
 	const venue = geoData?.description || geoData?.address || null;
 

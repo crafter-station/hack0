@@ -13,6 +13,8 @@ import Link from "next/link";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Badge } from "@/components/ui/badge";
+import { getCountriesWithEvents } from "@/lib/actions/events";
+import { getCountryFlag, getCountryName } from "@/lib/event-utils";
 
 export const metadata: Metadata = {
 	title: "Roadmap",
@@ -34,13 +36,15 @@ const phases = [
 		],
 	},
 	{
-		title: "Fase 2: Comunidades",
+		title: "Fase 2: Comunidades + Multi-país",
 		status: "in_progress" as const,
-		description: "Empoderar a los organizadores",
+		description: "Empoderar organizadores y expandir a LATAM",
 		items: [
 			{ text: "Perfiles de comunidad personalizables", done: true },
 			{ text: "Integración con Luma Calendar", done: true },
 			{ text: "Co-hosts y colaboradores en eventos", done: true },
+			{ text: "Soporte multi-país con timezones reales", done: true },
+			{ text: "Filtro por país y banderas correctas", done: true },
 			{ text: "Dashboard para organizadores", done: false },
 			{ text: "Analytics básicos de eventos", done: false },
 		],
@@ -52,7 +56,7 @@ const phases = [
 		items: [
 			{ text: "Notificaciones por email personalizadas", done: false },
 			{ text: "Recomendaciones basadas en intereses", done: false },
-			{ text: "Vista de mapa geográfico", done: false },
+			{ text: "Vista de mapa geográfico interactivo", done: false },
 			{ text: "Calendario personal sincronizable", done: false },
 			{ text: "API pública para desarrolladores", done: false },
 		],
@@ -71,16 +75,34 @@ const phases = [
 	},
 ];
 
-const countries = [
-	{ name: "Perú", flag: "🇵🇪", status: "active" as const },
-	{ name: "Chile", flag: "🇨🇱", status: "interested" as const },
-	{ name: "Colombia", flag: "🇨🇴", status: "future" as const },
-	{ name: "México", flag: "🇲🇽", status: "future" as const },
-	{ name: "Argentina", flag: "🇦🇷", status: "future" as const },
-	{ name: "Ecuador", flag: "🇪🇨", status: "future" as const },
+const ALL_LATAM_COUNTRIES = [
+	"PE",
+	"GT",
+	"CO",
+	"CL",
+	"MX",
+	"AR",
+	"BR",
+	"EC",
+	"BO",
+	"UY",
+	"PY",
+	"VE",
+	"CR",
+	"PA",
+	"DO",
+	"SV",
+	"HN",
+	"NI",
+	"CU",
+	"PR",
 ];
 
-function StatusBadge({ status }: { status: "completed" | "in_progress" | "planned" }) {
+function StatusBadge({
+	status,
+}: {
+	status: "completed" | "in_progress" | "planned";
+}) {
 	if (status === "completed") {
 		return (
 			<Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
@@ -95,14 +117,24 @@ function StatusBadge({ status }: { status: "completed" | "in_progress" | "planne
 			</Badge>
 		);
 	}
-	return (
-		<Badge className="bg-muted text-muted-foreground">
-			Planeado
-		</Badge>
-	);
+	return <Badge className="bg-muted text-muted-foreground">Planeado</Badge>;
 }
 
-export default function RoadmapPage() {
+export default async function RoadmapPage() {
+	const activeCountries = await getCountriesWithEvents();
+	const countries = ALL_LATAM_COUNTRIES.map((code) => ({
+		code,
+		name: getCountryName(code),
+		flag: getCountryFlag(code),
+		status: activeCountries.includes(code)
+			? ("active" as const)
+			: ("future" as const),
+	}));
+	const sortedCountries = [
+		...countries.filter((c) => c.status === "active"),
+		...countries.filter((c) => c.status === "future"),
+	];
+
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
 			<SiteHeader />
@@ -120,8 +152,8 @@ export default function RoadmapPage() {
 							</h1>
 							<p className="text-muted-foreground mt-4 text-lg">
 								Nuestra misión es dar visibilidad a todas las comunidades y
-								eventos tech de Latinoamérica. Empezamos por Perú, pero la visión
-								es regional.
+								eventos tech de Latinoamérica. Empezamos por Perú, pero la
+								visión es regional.
 							</p>
 						</div>
 					</div>
@@ -136,10 +168,7 @@ export default function RoadmapPage() {
 
 						<div className="grid gap-6 md:grid-cols-2">
 							{phases.map((phase, index) => (
-								<div
-									key={index}
-									className="rounded-lg border p-6 space-y-4"
-								>
+								<div key={index} className="rounded-lg border p-6 space-y-4">
 									<div className="flex items-start justify-between gap-4">
 										<div>
 											<h3 className="font-semibold">{phase.title}</h3>
@@ -162,7 +191,9 @@ export default function RoadmapPage() {
 												)}
 												<span
 													className={
-														item.done ? "text-foreground" : "text-muted-foreground"
+														item.done
+															? "text-foreground"
+															: "text-muted-foreground"
 													}
 												>
 													{item.text}
@@ -186,10 +217,13 @@ export default function RoadmapPage() {
 						<div className="grid gap-8 md:grid-cols-2">
 							<div className="space-y-4">
 								<p className="text-muted-foreground">
-									hack0.dev es un proyecto open source. Actualmente nuestras
-									fuerzas están concentradas en <strong className="text-foreground">Perú</strong>,
-									pero la arquitectura está diseñada para escalar a cualquier
-									país de Latinoamérica.
+									hack0.dev es un proyecto open source con eventos activos en{" "}
+									<strong className="text-foreground">
+										{activeCountries.length}{" "}
+										{activeCountries.length === 1 ? "país" : "países"}
+									</strong>{" "}
+									de Latinoamérica. La arquitectura está diseñada para escalar a
+									toda la región.
 								</p>
 								<p className="text-muted-foreground">
 									Si quieres llevar esta iniciativa a tu país, eres bienvenido.
@@ -210,9 +244,9 @@ export default function RoadmapPage() {
 							</div>
 
 							<div className="space-y-3">
-								{countries.map((country) => (
+								{sortedCountries.map((country) => (
 									<div
-										key={country.name}
+										key={country.code}
 										className="flex items-center justify-between p-3 rounded-lg border"
 									>
 										<div className="flex items-center gap-3">
@@ -223,12 +257,11 @@ export default function RoadmapPage() {
 											<Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
 												Activo
 											</Badge>
-										) : country.status === "interested" ? (
-											<Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20">
-												Interesados
-											</Badge>
 										) : (
-											<Badge variant="outline" className="text-muted-foreground">
+											<Badge
+												variant="outline"
+												className="text-muted-foreground"
+											>
 												Próximamente
 											</Badge>
 										)}
