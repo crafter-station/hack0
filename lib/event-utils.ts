@@ -148,6 +148,7 @@ const COUNTRY_NAMES: Record<string, string> = {
 	PE: "Perú",
 	PR: "Puerto Rico",
 	UY: "Uruguay",
+	US: "Estados Unidos",
 	VE: "Venezuela",
 	GLOBAL: "Global",
 };
@@ -162,6 +163,8 @@ NAME_TO_ISO["mexico"] = "MX";
 NAME_TO_ISO["panama"] = "PA";
 NAME_TO_ISO["dominican republic"] = "DO";
 NAME_TO_ISO["puerto rico"] = "PR";
+NAME_TO_ISO["united states"] = "US";
+NAME_TO_ISO["usa"] = "US";
 
 export function normalizeCountryCode(value: string | null): string | null {
 	if (!value) return null;
