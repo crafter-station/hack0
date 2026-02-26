@@ -26,6 +26,7 @@ Todas las server actions de la aplicación. Core de la lógica de negocio.
 | event-organizers.ts | Gestión de organizadores |
 | organization-relationships.ts | Relaciones entre organizaciones |
 | users.ts | Gestión de usuarios |
+| submissions.ts | Sistema de entregas: templates, submissions, equipos, evaluación, rankings |
 
 ## Patrones
 
