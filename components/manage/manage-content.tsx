@@ -4,6 +4,8 @@ import { Database, ExternalLink, Globe, Trophy } from "lucide-react";
 import { CohostSelector, HostAssignment } from "@/components/events/edit";
 import { OverviewTab } from "@/components/manage/overview/overview-tab";
 import { OrgEventFormMinimal } from "@/components/org/creation/org-event-form-minimal";
+import { ManageJudgingTab } from "@/components/submissions/manage-judging-tab";
+import { ManageSubmissionsTab } from "@/components/submissions/manage-submissions-tab";
 import type { EventSponsorWithOrg } from "@/lib/actions/events";
 import type {
 	Event,
@@ -11,6 +13,7 @@ import type {
 	ImportJob,
 	NotificationLog,
 	Organization,
+	SubmissionTemplate,
 	WinnerClaim,
 } from "@/lib/db/schema";
 import { formatEventDateTime } from "@/lib/event-utils";
@@ -33,6 +36,7 @@ interface ManageContentProps {
 	cohosts: (EventHostOrganization & { organization: Organization })[];
 	eventHosts: EventHostWithUser[];
 	winnerClaims: WinnerClaim[];
+	submissionTemplate: SubmissionTemplate | null;
 	importJobs: ImportJob[];
 	notificationLogs: NotificationLog[];
 }
@@ -47,6 +51,7 @@ export function ManageContent({
 	cohosts,
 	eventHosts,
 	winnerClaims,
+	submissionTemplate,
 	importJobs,
 	notificationLogs,
 }: ManageContentProps) {
@@ -94,6 +99,14 @@ export function ManageContent({
 				/>
 			</div>
 		);
+	}
+
+	if (tab === "submissions") {
+		return <ManageSubmissionsTab event={event} template={submissionTemplate} />;
+	}
+
+	if (tab === "judging") {
+		return <ManageJudgingTab event={event} template={submissionTemplate} />;
 	}
 
 	if (tab === "winners") {
