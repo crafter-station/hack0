@@ -2,6 +2,8 @@ import {
 	Award,
 	BarChart3,
 	Calendar,
+	ClipboardCheck,
+	FileText,
 	LayoutDashboard,
 	Settings,
 	Users,
@@ -20,6 +22,7 @@ import { getEventCohost } from "@/lib/actions/cohost-invites";
 import { getEventHostsWithUsers } from "@/lib/actions/event-hosts";
 import { getEventByShortCode, getEventSponsors } from "@/lib/actions/events";
 import { canManageEventByShortCode } from "@/lib/actions/permissions";
+import { getSubmissionTemplate } from "@/lib/actions/submissions";
 
 interface ManageEventPageProps {
 	params: Promise<{
@@ -53,7 +56,11 @@ async function EventManageHero({
 		{ id: "overview", label: "Vista general", icon: LayoutDashboard },
 		{ id: "team", label: "Equipo", icon: Users },
 		...(isHackathon
-			? [{ id: "winners", label: "Ganadores", icon: Award }]
+			? [
+					{ id: "submissions", label: "Entregas", icon: FileText },
+					{ id: "winners", label: "Ganadores", icon: Award },
+					{ id: "judging", label: "Evaluación", icon: ClipboardCheck },
+				]
 			: []),
 		{ id: "analytics", label: "Analytics", icon: BarChart3 },
 		{ id: "edit", label: "Configuración", icon: Settings },
@@ -162,6 +169,10 @@ export default async function ManageEventPage({
 		event.eventType === "olympiad";
 	const winnerClaims = isHackathon ? await getEventWinnerClaims(event.id) : [];
 
+	const submissionTemplate = isHackathon
+		? await getSubmissionTemplate(event.id)
+		: null;
+
 	const importJobs = await getEventImportJobs(event.id);
 	const notificationLogs = await getEventNotificationLogs(event.id);
 
@@ -180,6 +191,7 @@ export default async function ManageEventPage({
 					cohosts={cohosts}
 					eventHosts={eventHosts}
 					winnerClaims={winnerClaims}
+					submissionTemplate={submissionTemplate ?? null}
 					importJobs={importJobs}
 					notificationLogs={notificationLogs}
 				/>

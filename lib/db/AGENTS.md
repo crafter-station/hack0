@@ -30,6 +30,11 @@ Schema Drizzle ORM y queries para Neon PostgreSQL.
 | communityMembers | Miembros de comunidad |
 | importJobs | Jobs de importación |
 | notificationLogs | Logs de notificaciones |
+| submissionTemplates | Plantillas de formulario de entregas por evento |
+| submissions | Proyectos enviados por participantes |
+| submissionTeamMembers | Miembros de equipo por submission |
+| judgeAssignments | Asignación de jueces a eventos |
+| judgeScores | Puntajes individuales por criterio |
 
 ## Convenciones
 
