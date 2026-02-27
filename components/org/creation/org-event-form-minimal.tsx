@@ -138,7 +138,8 @@ export function OrgEventFormMinimal({
 
 	const [name, setName] = useState(event?.name || "");
 	const [description, setDescription] = useState(event?.description || "");
-	const [descriptionForceUpdate, setDescriptionForceUpdate] = useState<number>();
+	const [descriptionForceUpdate, setDescriptionForceUpdate] =
+		useState<number>();
 	const [improveModalOpen, setImproveModalOpen] = useState(false);
 	const [startDate, setStartDate] = useState(initialStart.date);
 	const [startTime, setStartTime] = useState(initialStart.time);
@@ -781,8 +782,8 @@ export function OrgEventFormMinimal({
 						onChange={(e) => setName(e.target.value)}
 						required
 						placeholder="Nombre del evento"
-						rows={2}
-						className={`w-full text-2xl font-semibold bg-transparent border-none outline-none focus:outline-none placeholder:text-muted-foreground/40 p-0 resize-none ${isImporting ? "input-shimmer" : ""}`}
+						rows={1}
+						className={`w-full text-2xl font-semibold bg-transparent border-none outline-none focus:outline-none placeholder:text-muted-foreground/40 p-0 resize-none field-sizing-content ${isImporting ? "input-shimmer" : ""}`}
 						disabled={isImporting}
 					/>
 
