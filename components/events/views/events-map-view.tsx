@@ -570,17 +570,17 @@ function DotPatternMap({
 											fill="transparent"
 											className={
 												hasEvents
-													? "stroke-foreground/40"
-													: "stroke-foreground/10"
+													? "stroke-foreground/50"
+													: "stroke-foreground/20"
 											}
 											strokeWidth={
 												isCountryHovered && hasEvents
 													? 2
 													: hasEvents
 														? 1.5
-														: 0.5
+														: 0.75
 											}
-											opacity={isCountryHovered ? 1 : hasEvents ? 0.85 : 0.3}
+											opacity={isCountryHovered ? 1 : hasEvents ? 0.85 : 0.4}
 										/>
 									)}
 
@@ -659,12 +659,12 @@ function DotPatternMap({
 										d={zoomedGeoPath(dept as any) || ""}
 										fill="transparent"
 										className={
-											hasEvent ? "stroke-foreground/40" : "stroke-foreground/10"
+											hasEvent ? "stroke-foreground/50" : "stroke-foreground/20"
 										}
 										strokeWidth={
-											isHovered && hasEvent ? 2 : hasEvent ? 1.5 : 0.5
+											isHovered && hasEvent ? 2 : hasEvent ? 1.5 : 0.75
 										}
-										opacity={isHovered ? 1 : hasEvent ? 0.85 : 0.3}
+										opacity={isHovered ? 1 : hasEvent ? 0.85 : 0.4}
 									/>
 								);
 							})}
@@ -732,7 +732,7 @@ function DotPatternMap({
 							<path
 								d={zoomedGeoPath(zoomedCountryFeature as any) || ""}
 								fill="transparent"
-								className="stroke-foreground/40"
+								className="stroke-foreground/50"
 								strokeWidth={1.5}
 								opacity={0.85}
 							/>

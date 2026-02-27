@@ -247,13 +247,13 @@ export function LatamMap({
 												fill="transparent"
 												className={
 													hasEvents
-														? "stroke-foreground/40"
-														: "stroke-foreground/10"
+														? "stroke-foreground/50"
+														: "stroke-foreground/20"
 												}
 												strokeWidth={
-													isHovered && hasEvents ? 2 : hasEvents ? 1.5 : 0.5
+													isHovered && hasEvents ? 2 : hasEvents ? 1.5 : 0.75
 												}
-												opacity={isHovered ? 1 : hasEvents ? 0.85 : 0.3}
+												opacity={isHovered ? 1 : hasEvents ? 0.85 : 0.4}
 												style={{ transition: "all 0.2s ease" }}
 											/>
 										)}
@@ -347,12 +347,12 @@ export function LatamMap({
 										d={peruGeoPath(dept as any) || ""}
 										fill="transparent"
 										className={
-											hasEvent ? "stroke-foreground/40" : "stroke-foreground/10"
+											hasEvent ? "stroke-foreground/50" : "stroke-foreground/20"
 										}
 										strokeWidth={
-											isHovered && hasEvent ? 2 : hasEvent ? 1.5 : 0.5
+											isHovered && hasEvent ? 2 : hasEvent ? 1.5 : 0.75
 										}
-										opacity={isHovered ? 1 : hasEvent ? 0.85 : 0.3}
+										opacity={isHovered ? 1 : hasEvent ? 0.85 : 0.4}
 										style={{
 											cursor: hasEvent ? "pointer" : "default",
 											transition: "all 0.2s ease",
