@@ -11,6 +11,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 import {
 	getCountriesWithEvents,
 	getDepartmentsWithEvents,
+	getEventLocations,
 	getEvents,
 	getPlatformStats,
 } from "@/lib/actions/events";
@@ -24,13 +25,13 @@ async function EventsPreview() {
 }
 
 export default async function HomePage() {
-	const [stats, departmentsWithEvents, countriesWithEvents] = await Promise.all(
-		[
+	const [stats, departmentsWithEvents, countriesWithEvents, eventLocations] =
+		await Promise.all([
 			getPlatformStats(),
 			getDepartmentsWithEvents(),
 			getCountriesWithEvents(),
-		],
-	);
+			getEventLocations(),
+		]);
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
@@ -40,6 +41,7 @@ export default async function HomePage() {
 				stats={stats}
 				departmentsWithEvents={departmentsWithEvents}
 				countriesWithEvents={countriesWithEvents}
+				eventLocations={eventLocations}
 			/>
 
 			<Suspense fallback={<EventsPreviewSkeleton />}>

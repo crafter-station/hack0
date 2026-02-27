@@ -568,17 +568,19 @@ function DotPatternMap({
 										<path
 											d={latamGeoPath(countryFeature as any) || ""}
 											fill="transparent"
-											stroke={
-												isCountryHovered && hasEvents
-													? "#888"
-													: hasEvents
-														? "#666"
-														: "#444"
+											className={
+												hasEvents
+													? "stroke-foreground/40"
+													: "stroke-foreground/10"
 											}
 											strokeWidth={
-												isCountryHovered && hasEvents ? 2 : hasEvents ? 1.5 : 1
+												isCountryHovered && hasEvents
+													? 2
+													: hasEvents
+														? 1.5
+														: 0.5
 											}
-											opacity={isCountryHovered ? 0.8 : hasEvents ? 0.6 : 0.35}
+											opacity={isCountryHovered ? 1 : hasEvents ? 0.85 : 0.3}
 										/>
 									)}
 
@@ -591,12 +593,12 @@ function DotPatternMap({
 											className="fill-foreground"
 											opacity={
 												isCountryHovered && hasEvents
-													? 0.85
+													? 0.9
 													: isCountryHovered
-														? 0.6
+														? 0.5
 														: hasEvents
-															? 0.6
-															: 0.35
+															? 0.75
+															: 0.25
 											}
 										/>
 									))}
@@ -656,15 +658,13 @@ function DotPatternMap({
 										key={dept.properties?.NOMBDEP || deptIndex}
 										d={zoomedGeoPath(dept as any) || ""}
 										fill="transparent"
-										stroke={
-											isHovered && hasEvent
-												? "#888"
-												: hasEvent
-													? "#666"
-													: "#444"
+										className={
+											hasEvent ? "stroke-foreground/40" : "stroke-foreground/10"
 										}
-										strokeWidth={isHovered && hasEvent ? 2 : hasEvent ? 1.5 : 1}
-										opacity={isHovered ? 0.8 : hasEvent ? 0.6 : 0.35}
+										strokeWidth={
+											isHovered && hasEvent ? 2 : hasEvent ? 1.5 : 0.5
+										}
+										opacity={isHovered ? 1 : hasEvent ? 0.85 : 0.3}
 									/>
 								);
 							})}
@@ -680,12 +680,12 @@ function DotPatternMap({
 								opacity={
 									hoveredLocation?.department === dot.dept &&
 									departmentsWithEvents.includes(dot.dept)
-										? 0.85
+										? 0.9
 										: hoveredLocation?.department === dot.dept
-											? 0.6
+											? 0.5
 											: departmentsWithEvents.includes(dot.dept)
-												? 0.6
-												: 0.35
+												? 0.75
+												: 0.25
 								}
 								style={{ pointerEvents: "none" }}
 							/>
@@ -732,9 +732,9 @@ function DotPatternMap({
 							<path
 								d={zoomedGeoPath(zoomedCountryFeature as any) || ""}
 								fill="transparent"
-								stroke="#666"
+								className="stroke-foreground/40"
 								strokeWidth={1.5}
-								opacity={0.6}
+								opacity={0.85}
 							/>
 						)}
 
@@ -745,7 +745,7 @@ function DotPatternMap({
 								cy={dot.y}
 								r={1.5}
 								className="fill-foreground"
-								opacity={0.6}
+								opacity={0.75}
 								style={{ pointerEvents: "none" }}
 							/>
 						))}

@@ -1025,3 +1025,34 @@ export async function getCountriesWithEvents(): Promise<string[]> {
 		.filter(Boolean) as string[];
 	return [...new Set(codes)];
 }
+
+export interface EventLocation {
+	country: string;
+	city: string | null;
+	lat: number | null;
+	lon: number | null;
+}
+
+export async function getEventLocations(): Promise<EventLocation[]> {
+	const { normalizeCountryCode } = await import("@/lib/event-utils");
+	const result = await db
+		.selectDistinct({
+			country: events.country,
+			city: events.city,
+			lat: events.geoLatitude,
+			lon: events.geoLongitude,
+		})
+		.from(events)
+		.where(
+			and(eq(events.isApproved, true), sql`${events.country} IS NOT NULL`),
+		);
+
+	return result
+		.map((r) => ({
+			country: r.country ? normalizeCountryCode(r.country) : "",
+			city: r.city || null,
+			lat: r.lat ? Number.parseFloat(r.lat) : null,
+			lon: r.lon ? Number.parseFloat(r.lon) : null,
+		}))
+		.filter((r): r is EventLocation => r.country !== "");
+}

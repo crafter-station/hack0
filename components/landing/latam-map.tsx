@@ -5,9 +5,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { feature } from "topojson-client";
+import type { EventLocation } from "@/lib/actions/events";
 import {
+	KNOWN_CITY_COORDS,
+	LATAM_CAPITAL_COORDS,
 	LATAM_COUNTRY_IDS,
-	LIMA_COORDS,
 	PERU_COUNTRY_ID,
 	PERU_DEPARTMENT_COORDS,
 	PERU_DEPARTMENT_NAME_MAP,
@@ -60,11 +62,13 @@ function EventLocationDot({
 interface LatamMapProps {
 	departmentsWithEvents?: string[];
 	countriesWithEvents?: string[];
+	eventLocations?: EventLocation[];
 }
 
 export function LatamMap({
 	departmentsWithEvents = [],
 	countriesWithEvents = [],
+	eventLocations = [],
 }: LatamMapProps) {
 	const router = useRouter();
 	const [hoveredCountryId, setHoveredCountryId] = useState<string | null>(null);
@@ -125,10 +129,38 @@ export function LatamMap({
 		setZoomedCountryId(null);
 	}, []);
 
-	const limaProjectedCoords = useMemo(() => {
-		const coords = projection(LIMA_COORDS);
-		return coords ? { x: coords[0], y: coords[1] } : null;
-	}, [projection]);
+	const eventMarkerCoords = useMemo(() => {
+		const seen = new Set<string>();
+		const markers: Array<{ x: number; y: number; key: string }> = [];
+
+		for (const loc of eventLocations) {
+			let coords: [number, number] | null = null;
+
+			if (loc.lat && loc.lon) {
+				coords = [loc.lon, loc.lat];
+			} else if (loc.city) {
+				const cityKey = `${loc.city.toLowerCase()}-${loc.country}`;
+				coords = KNOWN_CITY_COORDS[cityKey] || null;
+			}
+
+			if (!coords) {
+				coords = LATAM_CAPITAL_COORDS[loc.country] || null;
+			}
+
+			if (!coords) continue;
+
+			const dedupKey = `${coords[0].toFixed(2)},${coords[1].toFixed(2)}`;
+			if (seen.has(dedupKey)) continue;
+			seen.add(dedupKey);
+
+			const projected = projection(coords);
+			if (!projected) continue;
+
+			markers.push({ x: projected[0], y: projected[1], key: dedupKey });
+		}
+
+		return markers;
+	}, [eventLocations, projection]);
 
 	const departmentEventCoords = useMemo(() => {
 		return departmentsWithEvents
@@ -213,17 +245,15 @@ export function LatamMap({
 											<path
 												d={geoPath(countryFeature as any) || ""}
 												fill="transparent"
-												stroke={
-													isHovered && hasEvents
-														? "#888"
-														: hasEvents
-															? "#666"
-															: "#444"
+												className={
+													hasEvents
+														? "stroke-foreground/40"
+														: "stroke-foreground/10"
 												}
 												strokeWidth={
-													isHovered && hasEvents ? 2 : hasEvents ? 1.5 : 1
+													isHovered && hasEvents ? 2 : hasEvents ? 1.5 : 0.5
 												}
-												opacity={isHovered ? 0.8 : hasEvents ? 0.6 : 0.35}
+												opacity={isHovered ? 1 : hasEvents ? 0.85 : 0.3}
 												style={{ transition: "all 0.2s ease" }}
 											/>
 										)}
@@ -232,12 +262,12 @@ export function LatamMap({
 											const shouldAnimate = index % 5 === 0;
 											const baseOpacity =
 												isHovered && hasEvents
-													? 0.85
+													? 0.9
 													: isHovered
-														? 0.6
+														? 0.5
 														: hasEvents
-															? 0.6
-															: 0.35;
+															? 0.75
+															: 0.25;
 
 											if (shouldAnimate) {
 												return (
@@ -262,7 +292,6 @@ export function LatamMap({
 															ease: "easeInOut",
 															delay: (index % 20) * 0.1,
 														}}
-														aria-hidden="true"
 													/>
 												);
 											}
@@ -276,7 +305,6 @@ export function LatamMap({
 													className="fill-foreground"
 													opacity={baseOpacity}
 													style={{ transition: "opacity 0.2s ease" }}
-													aria-hidden="true"
 												/>
 											);
 										})}
@@ -284,12 +312,16 @@ export function LatamMap({
 								);
 							})}
 
-							{limaProjectedCoords && (
-								<g aria-hidden="true">
-									<EventLocationDot
-										x={limaProjectedCoords.x}
-										y={limaProjectedCoords.y}
-									/>
+							{eventMarkerCoords.length > 0 && (
+								<g>
+									{eventMarkerCoords.map((marker, index) => (
+										<EventLocationDot
+											key={marker.key}
+											x={marker.x}
+											y={marker.y}
+											delay={index * 0.2}
+										/>
+									))}
 								</g>
 							)}
 						</motion.g>
@@ -314,15 +346,13 @@ export function LatamMap({
 										key={dept.properties?.NOMBDEP || deptIndex}
 										d={peruGeoPath(dept as any) || ""}
 										fill="transparent"
-										stroke={
-											isHovered && hasEvent
-												? "#888"
-												: hasEvent
-													? "#666"
-													: "#444"
+										className={
+											hasEvent ? "stroke-foreground/40" : "stroke-foreground/10"
 										}
-										strokeWidth={isHovered && hasEvent ? 2 : hasEvent ? 1.5 : 1}
-										opacity={isHovered ? 0.8 : hasEvent ? 0.6 : 0.35}
+										strokeWidth={
+											isHovered && hasEvent ? 2 : hasEvent ? 1.5 : 0.5
+										}
+										opacity={isHovered ? 1 : hasEvent ? 0.85 : 0.3}
 										style={{
 											cursor: hasEvent ? "pointer" : "default",
 											transition: "all 0.2s ease",
@@ -351,12 +381,12 @@ export function LatamMap({
 								const shouldAnimate = index % 5 === 0;
 								const baseOpacity =
 									isHovered && hasEvent
-										? 0.85
+										? 0.9
 										: isHovered
-											? 0.6
+											? 0.5
 											: hasEvent
-												? 0.6
-												: 0.35;
+												? 0.75
+												: 0.25;
 
 								if (shouldAnimate) {
 									return (
@@ -378,7 +408,6 @@ export function LatamMap({
 												ease: "easeInOut",
 												delay: (index % 20) * 0.1,
 											}}
-											aria-hidden="true"
 										/>
 									);
 								}
@@ -395,12 +424,11 @@ export function LatamMap({
 											pointerEvents: "none",
 											transition: "opacity 0.2s ease",
 										}}
-										aria-hidden="true"
 									/>
 								);
 							})}
 
-							<g aria-hidden="true">
+							<g>
 								{departmentEventCoords.map((coord, index) => (
 									<EventLocationDot
 										key={coord.department}

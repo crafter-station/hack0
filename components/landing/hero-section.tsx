@@ -2,6 +2,7 @@ import { Calendar, Globe, TrendingUp, Trophy } from "lucide-react";
 import Link from "next/link";
 import { LumaIcon } from "@/components/icons/luma";
 import { Badge } from "@/components/ui/badge";
+import type { EventLocation } from "@/lib/actions/events";
 import { getCountryFlag } from "@/lib/event-utils";
 import { ISO_TO_MAP_ID } from "@/lib/geo/peru-departments";
 import { LatamMap } from "./latam-map";
@@ -14,6 +15,7 @@ interface HeroSectionProps {
 	};
 	departmentsWithEvents?: string[];
 	countriesWithEvents?: string[];
+	eventLocations?: EventLocation[];
 }
 
 function formatPrizePool(amount: number): string {
@@ -30,6 +32,7 @@ export function HeroSection({
 	stats,
 	departmentsWithEvents = [],
 	countriesWithEvents = [],
+	eventLocations = [],
 }: HeroSectionProps) {
 	return (
 		<section className="border-b py-12 lg:py-16">
@@ -159,6 +162,7 @@ export function HeroSection({
 							countriesWithEvents={countriesWithEvents
 								.map((c) => ISO_TO_MAP_ID[c])
 								.filter(Boolean)}
+							eventLocations={eventLocations}
 						/>
 					</div>
 				</div>

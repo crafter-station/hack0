@@ -24,7 +24,7 @@ export const PERU_DEPARTMENT_COORDS: Record<string, [number, number]> = {
 	Pasco: [-76.2565, -10.3932],
 	Tumbes: [-80.4515, -3.5669],
 	Callao: [-77.1181, -12.05],
-}
+};
 
 export const PERU_DEPARTMENT_NAME_MAP: Record<string, string> = {
 	LIMA: "Lima",
@@ -52,7 +52,7 @@ export const PERU_DEPARTMENT_NAME_MAP: Record<string, string> = {
 	PASCO: "Pasco",
 	TUMBES: "Tumbes",
 	CALLAO: "Callao",
-}
+};
 
 export const LATAM_COUNTRY_NAMES: Record<string, string> = {
 	"032": "Argentina",
@@ -74,7 +74,7 @@ export const LATAM_COUNTRY_NAMES: Record<string, string> = {
 	"604": "Perú",
 	"858": "Uruguay",
 	"862": "Venezuela",
-}
+};
 
 export const LATAM_COUNTRY_IDS = [
 	"032",
@@ -96,10 +96,70 @@ export const LATAM_COUNTRY_IDS = [
 	"604",
 	"858",
 	"862",
-]
+];
 
-export const PERU_COUNTRY_ID = "604"
-export const LIMA_COORDS: [number, number] = [-77.0428, -12.0464]
+export const PERU_COUNTRY_ID = "604";
+export const LIMA_COORDS: [number, number] = [-77.0428, -12.0464];
+
+export const LATAM_CAPITAL_COORDS: Record<string, [number, number]> = {
+	AR: [-58.3816, -34.6037],
+	BO: [-68.1193, -16.4897],
+	BR: [-47.8825, -15.7942],
+	CL: [-70.6693, -33.4489],
+	CO: [-74.0721, 4.711],
+	CR: [-84.0907, 9.9281],
+	CU: [-82.3666, 23.1136],
+	DO: [-69.9312, 18.4861],
+	EC: [-78.4678, -0.1807],
+	SV: [-89.2182, 13.6929],
+	GT: [-90.5069, 14.6349],
+	HN: [-87.2075, 14.065],
+	MX: [-99.1332, 19.4326],
+	NI: [-86.2362, 12.1149],
+	PA: [-79.5199, 8.9824],
+	PY: [-57.5759, -25.2637],
+	PE: [-77.0428, -12.0464],
+	UY: [-56.1645, -34.9011],
+	VE: [-66.9036, 10.4806],
+};
+
+export const KNOWN_CITY_COORDS: Record<string, [number, number]> = {
+	"trujillo-PE": [-79.044, -8.112],
+	"arequipa-PE": [-71.537, -16.409],
+	"cusco-PE": [-71.967, -13.532],
+	"piura-PE": [-80.632, -5.194],
+	"chiclayo-PE": [-79.841, -6.771],
+	"huancayo-PE": [-75.211, -12.065],
+	"iquitos-PE": [-73.247, -3.749],
+	"santiago-CL": [-70.669, -33.449],
+	"valparaiso-CL": [-71.612, -33.046],
+	"concepcion-CL": [-73.05, -36.827],
+	"bogota-CO": [-74.072, 4.711],
+	"medellin-CO": [-75.564, 6.217],
+	"cali-CO": [-76.532, 3.451],
+	"barranquilla-CO": [-74.781, 10.964],
+	"buenos aires-AR": [-58.382, -34.604],
+	"cordoba-AR": [-64.181, -31.42],
+	"rosario-AR": [-60.639, -32.946],
+	"mendoza-AR": [-68.844, -32.889],
+	"sao paulo-BR": [-46.634, -23.55],
+	"rio de janeiro-BR": [-43.172, -22.907],
+	"brasilia-BR": [-47.883, -15.794],
+	"belo horizonte-BR": [-43.938, -19.921],
+	"guadalajara-MX": [-103.349, 20.677],
+	"monterrey-MX": [-100.316, 25.687],
+	"ciudad de mexico-MX": [-99.133, 19.433],
+	"mexico city-MX": [-99.133, 19.433],
+	"quito-EC": [-78.468, -0.181],
+	"guayaquil-EC": [-79.922, -2.17],
+	"montevideo-UY": [-56.165, -34.901],
+	"asuncion-PY": [-57.576, -25.264],
+	"la paz-BO": [-68.119, -16.49],
+	"santa cruz-BO": [-63.182, -17.784],
+	"panama city-PA": [-79.52, 8.982],
+	"san jose-CR": [-84.091, 9.928],
+	"caracas-VE": [-66.904, 10.481],
+};
 
 export const ISO_TO_MAP_ID: Record<string, string> = {
 	AR: "032",
@@ -121,4 +181,4 @@ export const ISO_TO_MAP_ID: Record<string, string> = {
 	PE: "604",
 	UY: "858",
 	VE: "862",
-}
+};
