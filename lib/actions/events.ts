@@ -1022,7 +1022,7 @@ export async function getCountriesWithEvents(): Promise<string[]> {
 		);
 	const codes = result
 		.map((r) => (r.country ? normalizeCountryCode(r.country) : null))
-		.filter(Boolean) as string[];
+		.filter((c): c is string => Boolean(c) && c !== "GLOBAL" && c !== "LATAM");
 	return [...new Set(codes)];
 }
 
