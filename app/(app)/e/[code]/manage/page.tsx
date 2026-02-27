@@ -167,14 +167,27 @@ export default async function ManageEventPage({
 		event.eventType === "hackathon" ||
 		event.eventType === "competition" ||
 		event.eventType === "olympiad";
-	const winnerClaims = isHackathon ? await getEventWinnerClaims(event.id) : [];
 
-	const submissionTemplate = isHackathon
-		? await getSubmissionTemplate(event.id)
-		: null;
+	let winnerClaims: Awaited<ReturnType<typeof getEventWinnerClaims>> = [];
+	let submissionTemplate: Awaited<
+		ReturnType<typeof getSubmissionTemplate>
+	> | null = null;
+	if (isHackathon) {
+		try {
+			[winnerClaims, submissionTemplate] = await Promise.all([
+				getEventWinnerClaims(event.id),
+				getSubmissionTemplate(event.id),
+			]);
+		} catch {
+			winnerClaims = [];
+			submissionTemplate = null;
+		}
+	}
 
-	const importJobs = await getEventImportJobs(event.id);
-	const notificationLogs = await getEventNotificationLogs(event.id);
+	const [importJobs, notificationLogs] = await Promise.all([
+		getEventImportJobs(event.id),
+		getEventNotificationLogs(event.id),
+	]);
 
 	return (
 		<>
