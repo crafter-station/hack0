@@ -1,6 +1,7 @@
 import {
 	boolean,
 	integer,
+	jsonb,
 	pgTable,
 	text,
 	timestamp,
@@ -10,6 +11,7 @@ import {
 import {
 	approvalStatusEnum,
 	currencyEnum,
+	eventScopeEnum,
 	eventTypeEnum,
 	formatEnum,
 	shareAssetTypeEnum,
@@ -73,6 +75,9 @@ export const events = pgTable("events", {
 	// Media
 	eventImageUrl: varchar("event_image_url", { length: 500 }),
 
+	// Scope
+	scope: eventScopeEnum("scope").default("latam").notNull(),
+
 	// Status
 	status: statusEnum("status").default("upcoming"),
 	isFeatured: boolean("is_featured").default(false),
@@ -85,6 +90,12 @@ export const events = pgTable("events", {
 	// Organizer verification (legacy - for claimed events)
 	isOrganizerVerified: boolean("is_organizer_verified").default(false),
 	verifiedOrganizerId: varchar("verified_organizer_id", { length: 255 }), // Clerk user ID
+
+	// Scraper metadata
+	scrapeSource: varchar("scrape_source", { length: 50 }), // devpost, meetup, eventbrite, mlh, linkedin, universities, social, perplexity, exa, haiku, hackathon_com
+	scrapeSourceUrl: varchar("scrape_source_url", { length: 500 }), // URL original del scraper
+	scrapeConfidence: integer("scrape_confidence"), // LATAM score 0-100
+	scrapeRawData: jsonb("scrape_raw_data"), // Datos originales del scraper
 
 	// Timestamps
 	createdAt: timestamp("created_at", {
