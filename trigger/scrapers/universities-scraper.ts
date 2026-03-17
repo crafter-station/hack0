@@ -9,6 +9,12 @@ import { scrapeUniversities } from "@/lib/scraper/sources/universities";
 export const universitiesScraperTask = task({
 	id: "universities-scraper",
 	maxDuration: 600,
+	retry: {
+		maxAttempts: 2,
+		factor: 2,
+		minTimeoutInMs: 5000,
+		maxTimeoutInMs: 30000,
+	},
 	run: async () => {
 		metadata.set("step", "scraping");
 		const raw = await scrapeUniversities();
@@ -19,8 +25,10 @@ export const universitiesScraperTask = task({
 			hackathons: filtered,
 			droppedNonLatam,
 			droppedNonHackathon,
+			log,
 		} = await runPostProcessor(raw);
 		metadata.set("filtered", filtered.length);
+		metadata.set("pipelineLog", JSON.parse(JSON.stringify(log)));
 
 		metadata.set("step", "normalizing");
 		const normalized = filtered.map(normalizeHackathon);

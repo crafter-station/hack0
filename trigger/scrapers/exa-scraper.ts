@@ -9,6 +9,12 @@ import { scrapeExa } from "@/lib/scraper/sources/exa";
 export const exaScraperTask = task({
 	id: "exa-scraper",
 	maxDuration: 300,
+	retry: {
+		maxAttempts: 2,
+		factor: 2,
+		minTimeoutInMs: 5000,
+		maxTimeoutInMs: 30000,
+	},
 	run: async () => {
 		metadata.set("step", "scraping");
 		const raw = await scrapeExa();
@@ -22,7 +28,7 @@ export const exaScraperTask = task({
 			log,
 		} = await runPostProcessor(raw);
 		metadata.set("filtered", filtered.length);
-		metadata.set("pipelineLog", log);
+		metadata.set("pipelineLog", JSON.parse(JSON.stringify(log)));
 
 		metadata.set("step", "normalizing");
 		const normalized = filtered.map(normalizeHackathon);

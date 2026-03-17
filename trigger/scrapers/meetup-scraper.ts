@@ -22,7 +22,7 @@ export const meetupScraperTask = task({
 			log,
 		} = await runPostProcessor(raw);
 		metadata.set("filtered", filtered.length);
-		metadata.set("pipelineLog", log);
+		metadata.set("pipelineLog", JSON.parse(JSON.stringify(log)));
 
 		metadata.set("step", "normalizing");
 		const normalized = filtered.map(normalizeHackathon);

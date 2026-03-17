@@ -12,10 +12,17 @@ export const hack0DailyOrchestrator = schedules.task({
 	cron: "0 5 * * *",
 	maxDuration: 60,
 	run: async () => {
-		await Promise.all([
-			devpostScraperTask.trigger({}),
-			mlhScraperTask.trigger({}),
-			eventbriteScraperTask.trigger({}),
+		const [devpost, mlh, eventbrite] = await Promise.all([
+			devpostScraperTask.trigger(),
+			mlhScraperTask.trigger(),
+			eventbriteScraperTask.trigger(),
 		]);
+		return {
+			triggered: {
+				devpost: devpost.id,
+				mlh: mlh.id,
+				eventbrite: eventbrite.id,
+			},
+		};
 	},
 });
