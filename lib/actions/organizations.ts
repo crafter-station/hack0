@@ -351,8 +351,12 @@ export async function getOrCreatePersonalOrg() {
 			})
 			.returning();
 
-		revalidatePath(`/c/${org.slug}`);
-		revalidatePath("/c");
+		try {
+			revalidatePath(`/c/${org.slug}`);
+			revalidatePath("/c");
+		} catch {
+			// revalidatePath is not allowed during render; safe to ignore
+		}
 
 		return org;
 	} catch (error) {
