@@ -1,9 +1,13 @@
 import Firecrawl from "@mendable/firecrawl-js";
 import type { EVENT_TYPES, ORGANIZER_TYPES } from "@/lib/db/schema";
 
-const firecrawl = new Firecrawl({
-	apiKey: process.env.FIRECRAWL_API_KEY!,
-});
+let _firecrawl: Firecrawl | null = null;
+function getFirecrawl(): Firecrawl {
+	if (!_firecrawl) {
+		_firecrawl = new Firecrawl({ apiKey: process.env.FIRECRAWL_API_KEY! });
+	}
+	return _firecrawl;
+}
 
 export type EventType = (typeof EVENT_TYPES)[number];
 export type OrganizerType = (typeof ORGANIZER_TYPES)[number];
@@ -47,7 +51,7 @@ export async function scrapeDevpostPage(
 	try {
 		console.log(`  📡 Fetching: ${url}`);
 
-		const result = await firecrawl.extract({
+		const result = await getFirecrawl().extract({
 			urls: [url],
 			schema: {
 				type: "object",
@@ -395,6 +399,17 @@ export function inferDomains(
  */
 export function inferEventType(name: string, description: string): EventType {
 	const text = `${name} ${description}`.toLowerCase();
+	const nameLower = name.toLowerCase();
+
+	// If the event NAME explicitly contains hackathon vocabulary, classify as
+	// hackathon immediately — before checking description for workshop/fellowship/
+	// conference keywords that may appear in the surrounding text but don't define
+	// the event type (e.g. "Hackathon X — beca disponible" should stay hackathon).
+	const HACKATHON_NAME_KEYWORDS =
+		/\b(hackathon|hackaton|hackat[oó]n|datathon|buildathon|appathon|devathon|ideathon|innovathon|coderathon|hackday|hackfest|maratona de programac|reto de c[oó]digo)\b/i;
+	if (HACKATHON_NAME_KEYWORDS.test(nameLower)) {
+		return "hackathon";
+	}
 
 	// Check for specific event types (order matters - more specific first)
 	const typeKeywords: [EventType, string[]][] = [
