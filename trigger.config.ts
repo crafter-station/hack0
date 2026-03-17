@@ -1,7 +1,7 @@
 import { defineConfig } from "@trigger.dev/sdk/v3";
 
 export default defineConfig({
-	project: "proj_pebsxfniggisvfuccvce",
+	project: "proj_mqfsnpyxoxkjdoxpjwds",
 	runtime: "node",
 	logLevel: "log",
 	maxDuration: 120,
@@ -13,5 +13,5 @@ export default defineConfig({
 			maxTimeoutInMs: 10000,
 		},
 	},
-	dirs: ["./trigger"],
+	dirs: ["./trigger", "./trigger/scrapers"],
 });
