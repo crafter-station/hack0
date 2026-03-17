@@ -1,71 +1,12 @@
 "use client";
 
 import { Check, CheckCircle2, Pencil, X } from "lucide-react";
+import {
+	getMissingFields,
+	SOURCE_COLORS,
+} from "@/components/admin/scraper-constants";
 import type { Event } from "@/lib/db/schema";
-import { getEventTypeLabel } from "@/lib/event-utils";
-
-function countryFlag(iso: string): string {
-	if (!iso || iso.length !== 2) return "\u{1F30E}";
-	return iso
-		.toUpperCase()
-		.split("")
-		.map((c) => String.fromCodePoint(c.charCodeAt(0) + 127397))
-		.join("");
-}
-
-const SOURCE_COLORS: Record<string, string> = {
-	devpost: "bg-red-500/10 text-red-600",
-	meetup: "bg-purple-500/10 text-purple-600",
-	eventbrite: "bg-orange-500/10 text-orange-600",
-	mlh: "bg-blue-500/10 text-blue-600",
-	linkedin: "bg-sky-500/10 text-sky-600",
-	perplexity: "bg-green-500/10 text-green-600",
-	exa: "bg-indigo-500/10 text-indigo-600",
-	haiku: "bg-amber-500/10 text-amber-600",
-	universities: "bg-cyan-500/10 text-cyan-600",
-	social: "bg-gray-500/10 text-gray-600",
-	hackathon_com: "bg-violet-500/10 text-violet-600",
-	websearch: "bg-teal-500/10 text-teal-600",
-};
-
-const REQUIRED_FIELDS: (keyof Event)[] = [
-	"name",
-	"startDate",
-	"endDate",
-	"country",
-	"city",
-	"eventType",
-	"format",
-	"description",
-	"eventImageUrl",
-	"websiteUrl",
-	"prizePool",
-];
-
-const FIELD_LABELS: Record<string, string> = {
-	name: "nombre",
-	startDate: "fecha inicio",
-	endDate: "fecha fin",
-	country: "país",
-	city: "ciudad",
-	eventType: "tipo",
-	format: "formato",
-	description: "desc",
-	eventImageUrl: "imagen",
-	websiteUrl: "URL",
-	prizePool: "premio",
-};
-
-function getMissingCount(event: Event): { missing: number; labels: string[] } {
-	const labels: string[] = [];
-	for (const key of REQUIRED_FIELDS) {
-		const val = event[key];
-		if (val === null || val === undefined || val === "" || val === 0) {
-			labels.push(FIELD_LABELS[key] ?? key);
-		}
-	}
-	return { missing: labels.length, labels };
-}
+import { getCountryFlag, getEventTypeLabel } from "@/lib/event-utils";
 
 interface PendingEventTableProps {
 	events: Event[];
@@ -167,7 +108,8 @@ export function PendingEventTable({
 											: "bg-red-500";
 							const isLoading = loading === event.id;
 							const isSelected = selected.has(event.id);
-							const { missing, labels } = getMissingCount(event);
+							const labels = getMissingFields(event);
+							const missing = labels.length;
 
 							const formattedDate = event.startDate
 								? new Date(event.startDate).toLocaleDateString("es-PE", {
@@ -200,7 +142,7 @@ export function PendingEventTable({
 									</td>
 									<td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">
 										{event.country
-											? `${countryFlag(event.country)} ${event.country}`
+											? `${getCountryFlag(event.country)} ${event.country}`
 											: "\u2014"}
 									</td>
 									<td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">

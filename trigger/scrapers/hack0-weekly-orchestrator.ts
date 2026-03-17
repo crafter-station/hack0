@@ -20,7 +20,9 @@ export const hack0WeeklyOrchestrator = schedules.task({
 	cron: "0 8 * * 1",
 	maxDuration: 60,
 	run: async () => {
-		await meetupScraperTask.trigger({});
-		await exaScraperTask.trigger({});
+		await Promise.all([
+			meetupScraperTask.trigger({}),
+			exaScraperTask.trigger({}),
+		]);
 	},
 });

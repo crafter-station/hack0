@@ -218,11 +218,14 @@ export function PendingInbox({
 		const ids = Array.from(selected);
 		const result = await bulkApprove(ids);
 		if (result.success) {
-			for (const id of ids)
-				updateEventInList(id, {
-					isApproved: true,
-					approvalStatus: "approved",
-				});
+			const idSet = new Set(ids);
+			setEvents((prev) =>
+				prev.map((e) =>
+					idSet.has(e.id)
+						? { ...e, isApproved: true, approvalStatus: "approved" as const }
+						: e,
+				),
+			);
 			setLiveStats((s) => ({
 				...s,
 				pending: Math.max(0, s.pending - ids.length),
@@ -238,11 +241,14 @@ export function PendingInbox({
 		const ids = Array.from(selected);
 		const result = await bulkReject(ids);
 		if (result.success) {
-			for (const id of ids)
-				updateEventInList(id, {
-					isApproved: false,
-					approvalStatus: "rejected",
-				});
+			const idSet = new Set(ids);
+			setEvents((prev) =>
+				prev.map((e) =>
+					idSet.has(e.id)
+						? { ...e, isApproved: false, approvalStatus: "rejected" as const }
+						: e,
+				),
+			);
 			setLiveStats((s) => ({
 				...s,
 				pending: Math.max(0, s.pending - ids.length),
@@ -253,15 +259,14 @@ export function PendingInbox({
 		setBulkLoading(false);
 	};
 
-	const pendingFilteredCount = filteredEvents.filter(
-		(e) => e.approvalStatus === "pending",
-	).length;
+	const pendingFiltered = useMemo(
+		() => filteredEvents.filter((e) => e.approvalStatus === "pending"),
+		[filteredEvents],
+	);
+	const pendingFilteredCount = pendingFiltered.length;
 
 	const handleBulkApproveByFilter = async () => {
 		setConfirmBulkApprove(false);
-		const pendingFiltered = filteredEvents.filter(
-			(e) => e.approvalStatus === "pending",
-		);
 		if (pendingFiltered.length === 0) return;
 
 		setBulkLoading(true);
