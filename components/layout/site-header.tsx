@@ -1,4 +1,3 @@
-import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { SearchTrigger } from "@/components/search-command";
@@ -96,24 +95,26 @@ export async function SiteHeader({
 					<div className="flex items-center gap-2">
 						<GithubStars />
 						<SearchTrigger />
-						<SignedOut>
+						{!userId && (
 							<Link
 								href="/sign-in"
 								className="inline-flex h-7 items-center border border-border/50 px-2.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
 							>
 								Iniciar sesión
 							</Link>
-						</SignedOut>
-						<SignedIn>
-							{personalOrg && (
-								<CreateButtonGroup personalOrgSlug={personalOrg.slug} />
-							)}
-							<UserDropdown
-								isGodMode={godMode}
-								adminCommunities={adminCommunities}
-								hideThemeToggle={hideThemeToggle}
-							/>
-						</SignedIn>
+						)}
+						{userId && (
+							<>
+								{personalOrg && (
+									<CreateButtonGroup personalOrgSlug={personalOrg.slug} />
+								)}
+								<UserDropdown
+									isGodMode={godMode}
+									adminCommunities={adminCommunities}
+									hideThemeToggle={hideThemeToggle}
+								/>
+							</>
+						)}
 					</div>
 				</div>
 			</div>
