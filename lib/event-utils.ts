@@ -485,3 +485,14 @@ export const ORGANIZER_TYPE_OPTIONS = Object.entries(ORGANIZER_TYPE_LABELS).map(
 export const DOMAIN_OPTIONS = Object.entries(DOMAIN_LABELS).map(
 	([value, label]) => ({ value, label }),
 );
+
+// =============================================================================
+// URL HELPERS
+// =============================================================================
+
+export function getEventUrl(event: {
+	shortCode?: string | null;
+	slug: string;
+}): string {
+	return `/e/${event.shortCode ?? event.slug}`;
+}

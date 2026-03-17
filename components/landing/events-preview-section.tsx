@@ -10,6 +10,7 @@ import {
 	getCountryName,
 	getEventStatus,
 	getEventTypeLabel,
+	getEventUrl,
 	getFormatLabel,
 } from "@/lib/event-utils";
 
@@ -98,9 +99,7 @@ export function EventsPreviewSection({ events }: EventsPreviewSectionProps) {
 						const isEnded = status.status === "ended";
 						const prize = formatPrize(event.prizePool, event.prizeCurrency);
 
-						const eventUrl = event.shortCode
-							? `/e/${event.shortCode}`
-							: `/${event.slug}`;
+						const eventUrl = getEventUrl(event);
 
 						return (
 							<Link key={event.id} href={eventUrl}>
