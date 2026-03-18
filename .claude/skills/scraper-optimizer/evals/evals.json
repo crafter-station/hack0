@@ -1,0 +1,44 @@
+{
+	"skill_name": "scraper-optimizer",
+	"evals": [
+		{
+			"id": 1,
+			"prompt": "el scraper de mlh no está encontrando suficientes hackathons de latinoamérica. optimízalo",
+			"expected_output": "Optimizer agent reads mlh.ts, classifies it as Type A, runs 2-3 improvement batches with self-scored F1 deltas, edits the file if improvements are found, and outputs a JSON summary. Evaluator then scores all scrapers and writes SCRAPER_EVALUATION.md. No specific event names appear in any added queries.",
+			"files": [],
+			"assertions": [
+				"Optimizer produces a JSON summary block with fields: scraper, scraperType, initialState, finalState, f1Delta, changesApplied",
+				"mlh.ts still exports the original scrapeMLH function — function signature not broken",
+				"No specific hackathon event names appear in any queries added to mlh.ts (e.g. HackMIT, ETHDenver, Hack the North, ICPC, NASA Space Apps)",
+				"SCRAPER_EVALUATION.md is written or updated with a ranked table of all scrapers",
+				"The evaluation report contains Recall, Precision, and F1 estimates for mlh"
+			]
+		},
+		{
+			"id": 2,
+			"prompt": "corre el scraper-optimizer en modo eval-only para ver cómo están los scrapers actualmente, sin modificar nada",
+			"expected_output": "Evaluator agent reads all 11 scraper files, scores each on Quantity/Quality/Cost/Uniqueness, estimates confusion matrix, produces a ranked table, and writes SCRAPER_EVALUATION.md. No scraper files are modified.",
+			"files": [],
+			"assertions": [
+				"SCRAPER_EVALUATION.md is written with scores for all 11 scrapers",
+				"No scraper source files are modified (devpost.ts, eventbrite.ts, mlh.ts etc. remain unchanged)",
+				"The report contains a ranked summary table ordered by Overall score descending",
+				"All 11 scrapers appear in the evaluation: devpost, eventbrite, mlh, meetup, perplexity, haiku, exa, hackathon-com, linkedin, social, universities",
+				"Each scraper has Quantity, Quality, Cost, and Uniqueness scores (all between 0-10)"
+			]
+		},
+		{
+			"id": 3,
+			"prompt": "el scraper de devpost está trayendo muchos eventos que no son hackathons (conferencias, meetups regulares). optimiza específicamente para reducir los falsos positivos",
+			"expected_output": "Optimizer agent focuses on improving noise filters in devpost.ts. Precision estimate improves. No specific event names added as queries. Evaluator updates SCRAPER_EVALUATION.md with new scores.",
+			"files": [],
+			"assertions": [
+				"Optimizer focuses on precision improvement — changesApplied entries show positive precisionDelta or describe noise filter improvements",
+				"devpost.ts has additional noise exclusion terms or regex patterns compared to original",
+				"No specific hackathon names added to query arrays in devpost.ts (e.g. HackMIT, ETHDenver, NASA Space Apps)",
+				"devpost.ts still exports scrapeDevpost() returning Promise<RawHackathon[]> — function signature preserved",
+				"SCRAPER_EVALUATION.md is written with devpost's Quality score reflecting the noise filter improvements"
+			]
+		}
+	]
+}

@@ -1,5 +1,6 @@
 import { Zap } from "lucide-react";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { GodModeNav } from "@/components/god-mode/god-mode-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -29,7 +30,9 @@ export default async function GodLayout({ children }: GodLayoutProps) {
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
-			<SiteHeader />
+			<Suspense>
+				<SiteHeader />
+			</Suspense>
 
 			<div className="border-b bg-muted/30">
 				<div className="mx-auto max-w-7xl px-4 lg:px-8">

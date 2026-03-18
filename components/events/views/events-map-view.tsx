@@ -16,7 +16,11 @@ import { feature } from "topojson-client";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { EventFilters, EventWithOrg } from "@/lib/actions/events";
-import { formatEventDateRange, getEventStatus } from "@/lib/event-utils";
+import {
+	formatEventDateRange,
+	getEventStatus,
+	getEventUrl,
+} from "@/lib/event-utils";
 import {
 	ISO_TO_MAP_ID,
 	LATAM_COUNTRY_IDS,
@@ -153,7 +157,7 @@ function EventListItem({
 	const itemRef = useRef<HTMLDivElement>(null);
 	const status = getEventStatus(event);
 	const isEnded = status.status === "ended";
-	const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
+	const eventUrl = getEventUrl(event);
 
 	const prize =
 		event.prizePool && event.prizePool > 0

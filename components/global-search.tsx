@@ -29,7 +29,11 @@ import {
 } from "@/components/ui/command";
 import { useMounted } from "@/hooks/use-mounted";
 import type { Event, Organization } from "@/lib/db/schema";
-import { formatEventDateShort, getCountryFlag } from "@/lib/event-utils";
+import {
+	formatEventDateShort,
+	getCountryFlag,
+	getEventUrl,
+} from "@/lib/event-utils";
 
 type EventWithOrganization = Event & { organization: Organization | null };
 
@@ -245,9 +249,7 @@ export function GlobalSearch() {
 				{ongoingEvents.length > 0 && (
 					<CommandGroup heading="En curso">
 						{ongoingEvents.slice(0, 3).map((event) => {
-							const eventUrl = event.shortCode
-								? `/e/${event.shortCode}`
-								: `/${event.slug}`;
+							const eventUrl = getEventUrl(event);
 							return (
 								<CommandItem
 									key={event.id}
@@ -284,9 +286,7 @@ export function GlobalSearch() {
 				{upcomingEvents.length > 0 && (
 					<CommandGroup heading="Próximos eventos">
 						{upcomingEvents.slice(0, 5).map((event) => {
-							const eventUrl = event.shortCode
-								? `/e/${event.shortCode}`
-								: `/${event.slug}`;
+							const eventUrl = getEventUrl(event);
 							return (
 								<CommandItem
 									key={event.id}

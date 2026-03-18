@@ -137,7 +137,11 @@ function ClaimRow({ claim }: { claim: WinnerClaim }) {
 						{/* Event link */}
 						<div className="flex items-center gap-2 mb-1">
 							<Link
-								href={claim.eventShortCode ? `/e/${claim.eventShortCode}` : `/${claim.eventSlug}`}
+								href={
+									claim.eventShortCode
+										? `/e/${claim.eventShortCode}`
+										: `/e/${claim.eventSlug}`
+								}
 								className="font-medium hover:underline truncate"
 							>
 								{claim.eventName}

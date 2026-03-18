@@ -19,6 +19,7 @@ import {
 	formatEventDateSmart,
 	getEventStatus,
 	getEventTypeLabel,
+	getEventUrl,
 	getFormatLabel,
 	getSkillLevelLabel,
 	isEventJuniorFriendly,
@@ -97,7 +98,7 @@ export function EventRowWithChildren({
 			? "lg:grid-cols-[1fr_140px_100px_100px_100px]"
 			: "lg:grid-cols-[1fr_140px_100px_100px]";
 
-	const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
+	const eventUrl = getEventUrl(event);
 
 	return (
 		<div>
@@ -404,9 +405,7 @@ function ChildEventRow({
 	const isOngoing = status.status === "ongoing";
 	const isOpen = status.status === "open";
 
-	const childEventUrl = event.shortCode
-		? `/e/${event.shortCode}`
-		: `/${event.slug}`;
+	const childEventUrl = getEventUrl(event);
 
 	return (
 		<Link

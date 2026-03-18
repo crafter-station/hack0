@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
@@ -22,7 +21,8 @@ import {
 } from "@/components/ui/popover";
 import { assignOrganizationToEvent } from "@/lib/actions/pending-events";
 import type { EventHost } from "@/lib/db/schema";
-import { cn } from "@/lib/utils";
+import { getEventUrl } from "@/lib/event-utils";
+import { sanitizeImageUrl } from "@/lib/utils";
 
 interface PendingEvent {
 	id: string;
@@ -86,7 +86,7 @@ function EventRow({
 			<div className="h-12 w-12 rounded-md bg-muted overflow-hidden flex-shrink-0">
 				{event.eventImageUrl ? (
 					<Image
-						src={event.eventImageUrl}
+						src={sanitizeImageUrl(event.eventImageUrl) ?? ""}
 						alt={event.name}
 						width={48}
 						height={48}
@@ -101,14 +101,14 @@ function EventRow({
 
 			<div className="flex-1 min-w-0">
 				<Link
-					href={event.shortCode ? `/e/${event.shortCode}` : `/events/${event.slug}`}
+					href={getEventUrl(event)}
 					className="font-medium hover:underline truncate block"
 				>
 					{event.name}
 				</Link>
 				<div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
 					<span>{formatDate(event.startDate)}</span>
-					{event.lumaHosts.length > 0 && (
+					{(event.lumaHosts?.length ?? 0) > 0 && (
 						<div className="flex items-center gap-1">
 							<User className="h-3 w-3" />
 							<span>
@@ -120,10 +120,13 @@ function EventRow({
 			</div>
 
 			<div className="flex items-center gap-2 flex-shrink-0">
-				{event.lumaHosts.length > 0 && (
+				{(event.lumaHosts?.length ?? 0) > 0 && (
 					<div className="flex -space-x-2">
 						{event.lumaHosts.slice(0, 3).map((host) => (
-							<Avatar key={host.id} className="h-6 w-6 border-2 border-background">
+							<Avatar
+								key={host.id}
+								className="h-6 w-6 border-2 border-background"
+							>
 								<AvatarImage src={host.avatarUrl || undefined} />
 								<AvatarFallback className="text-[10px]">
 									{host.name?.charAt(0) || "?"}
@@ -178,7 +181,10 @@ function EventRow({
 	);
 }
 
-export function PendingOrgEvents({ events, organizations }: PendingOrgEventsProps) {
+export function PendingOrgEvents({
+	events,
+	organizations,
+}: PendingOrgEventsProps) {
 	if (events.length === 0) {
 		return (
 			<div className="text-center py-12 text-muted-foreground">

@@ -16,8 +16,10 @@ import {
 	getCountryName,
 	getEventStatus,
 	getEventTypeLabel,
+	getEventUrl,
 	getFormatLabel,
 } from "@/lib/event-utils";
+import { sanitizeImageUrl } from "@/lib/utils";
 import { LoadMoreButton } from "./load-more-button";
 
 type EventWithOptionalRole = EventWithOrg & {
@@ -67,7 +69,7 @@ function EventCard({
 	const status = getEventStatus(event);
 	const isEnded = status.status === "ended";
 	const prize = formatPrize(event.prizePool, event.prizeCurrency);
-	const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
+	const eventUrl = getEventUrl(event);
 
 	return (
 		<Link href={eventUrl}>
@@ -77,7 +79,7 @@ function EventCard({
 				<div className="relative aspect-square w-full overflow-hidden">
 					{event.eventImageUrl ? (
 						<Image
-							src={event.eventImageUrl}
+							src={sanitizeImageUrl(event.eventImageUrl) ?? ""}
 							alt={event.name}
 							fill
 							className={`object-cover transition-transform group-hover:scale-105 ${isEnded ? "grayscale" : ""}`}

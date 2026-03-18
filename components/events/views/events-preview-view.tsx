@@ -31,6 +31,7 @@ import {
 	getCountryName,
 	getEventStatus,
 	getEventTypeLabel,
+	getEventUrl,
 	getFormatLabel,
 	getSkillLevelLabel,
 	isEventJuniorFriendly,
@@ -182,7 +183,7 @@ function EventDetailPanel({ event }: { event: EventWithOrg }) {
 			? `${event.prizeCurrency === "PEN" ? "S/" : "$"}${event.prizePool.toLocaleString()}`
 			: null;
 
-	const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
+	const eventUrl = getEventUrl(event);
 
 	return (
 		<motion.div
@@ -498,9 +499,7 @@ export function EventsPreviewView({
 				setSelectedIndex(-1);
 				setHoveredEventId(null);
 			} else if (e.key === "Enter" && hoveredEvent) {
-				const eventUrl = hoveredEvent.shortCode
-					? `/e/${hoveredEvent.shortCode}`
-					: `/${hoveredEvent.slug}`;
+				const eventUrl = getEventUrl(hoveredEvent);
 				window.location.href = eventUrl;
 			}
 		};

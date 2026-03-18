@@ -1,6 +1,6 @@
 "use client";
 
-import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { TrophyIcon } from "@/components/icons/trophy";
@@ -14,6 +14,7 @@ interface WinnerSectionProps {
 }
 
 export function WinnerSection({ eventId, eventName }: WinnerSectionProps) {
+	const { isSignedIn } = useAuth();
 	const [claim, setClaim] = useState<WinnerClaim | null>(null);
 	const [loading, setLoading] = useState(true);
 
@@ -60,7 +61,7 @@ export function WinnerSection({ eventId, eventName }: WinnerSectionProps) {
 					¿Quedaste en el podio de este evento?
 				</p>
 
-				<SignedOut>
+				{!isSignedIn && (
 					<Link
 						href="/sign-in"
 						className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
@@ -68,40 +69,44 @@ export function WinnerSection({ eventId, eventName }: WinnerSectionProps) {
 						<TrophyIcon className="h-4 w-4" />
 						Registrar mi victoria
 					</Link>
-				</SignedOut>
+				)}
 
-				<SignedIn>
-					{loading ? (
-						<span className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground">
-							Cargando...
-						</span>
-					) : claim ? (
-						<div className="space-y-2">
-							<span
-								className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm ${getStatusColor(
-									claim.status || "pending",
-								)}`}
-							>
-								{claim.position === 1
-									? "🥇"
-									: claim.position === 2
-										? "🥈"
-										: "🥉"}
-								{getStatusLabel(claim.status || "pending")}
+				{isSignedIn && (
+					<>
+						{loading ? (
+							<span className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground">
+								Cargando...
 							</span>
-							{claim.status === "rejected" && claim.rejectionReason && (
-								<p className="text-xs text-red-500">{claim.rejectionReason}</p>
-							)}
-						</div>
-					) : (
-						<WinnerClaimDialog eventId={eventId} eventName={eventName}>
-							<button className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-								<TrophyIcon className="h-4 w-4" />
-								Registrar mi victoria
-							</button>
-						</WinnerClaimDialog>
-					)}
-				</SignedIn>
+						) : claim ? (
+							<div className="space-y-2">
+								<span
+									className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm ${getStatusColor(
+										claim.status || "pending",
+									)}`}
+								>
+									{claim.position === 1
+										? "🥇"
+										: claim.position === 2
+											? "🥈"
+											: "🥉"}
+									{getStatusLabel(claim.status || "pending")}
+								</span>
+								{claim.status === "rejected" && claim.rejectionReason && (
+									<p className="text-xs text-red-500">
+										{claim.rejectionReason}
+									</p>
+								)}
+							</div>
+						) : (
+							<WinnerClaimDialog eventId={eventId} eventName={eventName}>
+								<button className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+									<TrophyIcon className="h-4 w-4" />
+									Registrar mi victoria
+								</button>
+							</WinnerClaimDialog>
+						)}
+					</>
+				)}
 			</div>
 		</div>
 	);

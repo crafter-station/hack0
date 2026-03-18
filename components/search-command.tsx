@@ -12,7 +12,11 @@ import {
 	CommandList,
 } from "@/components/ui/command";
 import type { Event } from "@/lib/db/schema";
-import { formatEventDateShort, getCountryFlag } from "@/lib/event-utils";
+import {
+	formatEventDateShort,
+	getCountryFlag,
+	getEventUrl,
+} from "@/lib/event-utils";
 
 // Trigger component for the header
 export function SearchTrigger() {
@@ -108,7 +112,9 @@ export function SearchCommand({ hackathons }: SearchCommandProps) {
 							<CommandItem
 								key={event.id}
 								value={event.name}
-								onSelect={() => runCommand(() => router.push(`/${event.slug}`))}
+								onSelect={() =>
+									runCommand(() => router.push(getEventUrl(event)))
+								}
 							>
 								<div className="flex items-center gap-3 w-full">
 									{event.eventImageUrl ? (
@@ -143,7 +149,9 @@ export function SearchCommand({ hackathons }: SearchCommandProps) {
 							<CommandItem
 								key={event.id}
 								value={event.name}
-								onSelect={() => runCommand(() => router.push(`/${event.slug}`))}
+								onSelect={() =>
+									runCommand(() => router.push(getEventUrl(event)))
+								}
 							>
 								<div className="flex items-center gap-3 w-full">
 									{event.eventImageUrl ? (

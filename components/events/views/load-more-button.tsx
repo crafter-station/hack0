@@ -16,6 +16,7 @@ import {
 	formatEventDateRange,
 	getEventStatus,
 	getEventTypeLabel,
+	getEventUrl,
 	getFormatLabel,
 } from "@/lib/event-utils";
 import { EventRowWithChildren } from "./event-row-with-children";
@@ -53,7 +54,7 @@ function EventCard({ event }: { event: EventWithOrg }) {
 	const isEnded = status.status === "ended";
 	const prize = formatPrize(event.prizePool, event.prizeCurrency);
 
-	const eventUrl = event.shortCode ? `/e/${event.shortCode}` : `/${event.slug}`;
+	const eventUrl = getEventUrl(event);
 
 	return (
 		<Link href={eventUrl}>

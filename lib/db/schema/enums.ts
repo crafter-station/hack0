@@ -193,6 +193,11 @@ export const giftCardStyleEnum = pgEnum("gift_card_style", [
 	"soft_pixel",
 ]);
 
+export const eventScopeEnum = pgEnum("event_scope", [
+	"latam",
+	"global_latam_eligible",
+]);
+
 export const giftCardStatusEnum = pgEnum("gift_card_status", [
 	"pending",
 	"generating",
