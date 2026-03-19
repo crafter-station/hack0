@@ -59,6 +59,10 @@ const siteConfig = {
 
 export const metadata: Metadata = {
 	metadataBase: new URL(siteConfig.url),
+	icons: {
+		icon: "/favicon.svg",
+		shortcut: "/favicon.svg",
+	},
 	title: {
 		default: `${siteConfig.name} - ${siteConfig.title}`,
 		template: `%s | ${siteConfig.name}`,
