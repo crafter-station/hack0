@@ -6,6 +6,7 @@ import { shadcn } from "@clerk/themes";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { extractRouterConfig } from "uploadthing/server";
@@ -213,6 +214,11 @@ export default function RootLayout({
 					</ThemeProvider>
 				</ClerkProvider>
 				<Analytics />
+				<Script
+					defer
+					src="https://counterscale.raillyhugo.workers.dev/tracker.js"
+					data-site-id="hack0"
+				/>
 			</body>
 		</html>
 	);
