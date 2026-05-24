@@ -11,7 +11,7 @@ cp .env.example .env
 bun run dev
 ```
 
-Required environment variables: `DATABASE_URL`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `TRIGGER_SECRET_KEY`
+Required environment variables: `DATABASE_URL`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `TRIGGER_PROJECT_ID`, `TRIGGER_SECRET_KEY`
 
 ## Code Style
 

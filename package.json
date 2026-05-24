@@ -142,7 +142,7 @@
 		"db:seed": "bun run lib/db/seed.ts",
 		"db:studio": "drizzle-kit studio",
 		"dev": "next dev",
-		"trigger:dev": "NODE_OPTIONS='--no-deprecation' npx trigger.dev@latest dev",
+		"trigger:dev": "NODE_OPTIONS='--no-deprecation' bunx trigger.dev@4.4.3 dev --skip-update-check",
 		"format": "biome format --write",
 		"lint": "biome lint",
 		"lint:fix": "biome lint --write",
@@ -153,6 +153,7 @@
 		"scrape": "bun run scripts/scrape-devpost.ts",
 		"seed:ecosistema": "bun run scripts/seed-ecosistema-orgs.ts",
 		"seed:ecosistema:with-logos": "bun run scripts/seed-ecosistema-orgs.ts --upload-logos",
+		"sync:luma": "bun run scripts/sync-luma-calendar.ts",
 		"start": "next start"
 	},
 	"simple-git-hooks": {

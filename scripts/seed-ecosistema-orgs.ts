@@ -4,15 +4,12 @@ import { UTApi } from "uploadthing/server";
 import { type NewOrganization, organizations } from "@/lib/db/schema";
 import extractedData from "@/public/extract-data-2025-12-23.json";
 
-const DEV_DATABASE_URL =
-	"postgresql://neondb_owner:npg_4FXYQLJszBZ5@ep-morning-smoke-ad5hhywz-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
-
-const PROD_DATABASE_URL =
-	"postgresql://neondb_owner:npg_4FXYQLJszBZ5@ep-green-pond-adl5gijz-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
-
 const useProd = process.argv.includes("--prod");
-const DATABASE_URL =
-	process.env.DATABASE_URL || (useProd ? PROD_DATABASE_URL : DEV_DATABASE_URL);
+const DATABASE_URL = process.env.DATABASE_URL;
+
+if (!DATABASE_URL) {
+	throw new Error("DATABASE_URL is required");
+}
 
 const sql = neon(DATABASE_URL);
 const db = drizzle(sql);
@@ -239,7 +236,9 @@ async function seedEcosistemaOrgs() {
 
 	if (errors.length > 0) {
 		console.log(`\n❌ Errors:`);
-		errors.slice(0, 10).forEach((e) => console.log(`   ${e}`));
+		for (const error of errors.slice(0, 10)) {
+			console.log(`   ${error}`);
+		}
 		if (errors.length > 10) {
 			console.log(`   ... and ${errors.length - 10} more`);
 		}

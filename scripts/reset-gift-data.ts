@@ -3,10 +3,12 @@ import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 import { giftCards, userAchievements } from "@/lib/db/schema";
 
-const DEV_URL =
-	"postgresql://neondb_owner:npg_4FXYQLJszBZ5@ep-morning-smoke-ad5hhywz-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require";
-const PROD_URL =
-	"postgresql://neondb_owner:npg_4FXYQLJszBZ5@ep-green-pond-adl5gijz-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require";
+const DEV_URL = process.env.DEV_DATABASE_URL;
+const PROD_URL = process.env.PROD_DATABASE_URL;
+
+if (!DEV_URL || !PROD_URL) {
+	throw new Error("DEV_DATABASE_URL and PROD_DATABASE_URL are required");
+}
 
 async function resetDatabase(name: string, url: string) {
 	console.log(`\n🧹 Limpiando ${name}...`);

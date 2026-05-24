@@ -9,17 +9,14 @@ import {
 	organizationRelationships,
 } from "@/lib/db/schema";
 
-const DEV_DATABASE_URL =
-	"postgresql://neondb_owner:npg_4FXYQLJszBZ5@ep-morning-smoke-ad5hhywz-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
-
-const PROD_DATABASE_URL =
-	"postgresql://neondb_owner:npg_4FXYQLJszBZ5@ep-green-pond-adl5gijz-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
-
 const useProd = process.argv.includes("--prod");
 const dryRun = process.argv.includes("--dry-run");
 
-const DATABASE_URL =
-	process.env.DATABASE_URL || (useProd ? PROD_DATABASE_URL : DEV_DATABASE_URL);
+const DATABASE_URL = process.env.DATABASE_URL;
+
+if (!DATABASE_URL) {
+	throw new Error("DATABASE_URL is required");
+}
 
 const sqlClient = neon(DATABASE_URL);
 const db = drizzle(sqlClient);
@@ -47,7 +44,7 @@ async function inferCoHostingRelationships() {
 	const relationships: NewOrganizationRelationship[] = [];
 	const seen = new Set<string>();
 
-	for (const [eventId, orgIds] of eventHostsMap) {
+	for (const [, orgIds] of eventHostsMap) {
 		if (orgIds.length < 2) continue;
 
 		for (let i = 0; i < orgIds.length; i++) {

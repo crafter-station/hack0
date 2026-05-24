@@ -3,15 +3,12 @@ import { eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 import { organizations } from "@/lib/db/schema";
 
-const DEV_DATABASE_URL =
-	"postgresql://neondb_owner:npg_4FXYQLJszBZ5@ep-morning-smoke-ad5hhywz-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
-
-const PROD_DATABASE_URL =
-	"postgresql://neondb_owner:npg_4FXYQLJszBZ5@ep-green-pond-adl5gijz-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
-
 const useProd = process.argv.includes("--prod");
-const DATABASE_URL =
-	process.env.DATABASE_URL || (useProd ? PROD_DATABASE_URL : DEV_DATABASE_URL);
+const DATABASE_URL = process.env.DATABASE_URL;
+
+if (!DATABASE_URL) {
+	throw new Error("DATABASE_URL is required");
+}
 
 const sqlClient = neon(DATABASE_URL);
 const db = drizzle(sqlClient);
@@ -57,7 +54,9 @@ async function rollbackEcosistemaOrgs() {
 			.limit(10);
 
 		console.log("\n📋 Sample organizations that would be deleted:");
-		orgs.forEach((o) => console.log(`   - ${o.slug}: ${o.name}`));
+		for (const org of orgs) {
+			console.log(`   - ${org.slug}: ${org.name}`);
+		}
 		if (count > 10) console.log(`   ... and ${count - 10} more`);
 
 		console.log(`\n⚠️  To execute the rollback, run:`);
@@ -67,7 +66,7 @@ async function rollbackEcosistemaOrgs() {
 
 	console.log(`\n🗑️  Deleting ${count} organizations...`);
 
-	const result = await db
+	await db
 		.delete(organizations)
 		.where(eq(organizations.ownerUserId, SYSTEM_OWNER_USER_ID));
 
