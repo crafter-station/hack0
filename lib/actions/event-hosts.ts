@@ -13,6 +13,16 @@ import {
 } from "@/lib/db/schema";
 import { canManageEventById } from "./permissions";
 
+export async function getEventHosts(eventId: string) {
+	const hosts = await db
+		.select()
+		.from(eventHosts)
+		.where(eq(eventHosts.eventId, eventId))
+		.orderBy(eventHosts.createdAt);
+
+	return hosts;
+}
+
 export async function getAssignableMembers(eventId: string) {
 	const event = await db.query.events.findFirst({
 		where: eq(events.id, eventId),

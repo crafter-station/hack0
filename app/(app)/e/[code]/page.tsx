@@ -2,7 +2,6 @@ import { currentUser } from "@clerk/nextjs/server";
 import {
 	AlertCircle,
 	ArrowUpRight,
-	Bell,
 	Building2,
 	Calendar,
 	CheckCircle2,
@@ -12,6 +11,7 @@ import {
 	MapPin,
 	Sparkles,
 	Tag,
+	Trophy,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -20,24 +20,19 @@ import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
-	AttendanceButton,
 	EventCountdown,
 	EventLocationMap,
-	HostClaimDialog,
 	ManageEventCard,
-	WinnerSection,
 } from "@/components/events/detail";
-import { TrophyIcon } from "@/components/icons/trophy";
 import { VerifiedBadge } from "@/components/icons/verified-badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getUserAttendanceClaim } from "@/lib/actions/attendance";
 import { getEventCohost } from "@/lib/actions/cohost-invites";
+import { getEventHosts } from "@/lib/actions/event-hosts";
 import {
 	getChildEvents,
 	getEventByShortCode,
 	getEventSponsors,
 } from "@/lib/actions/events";
-import { getEventHosts } from "@/lib/actions/host-claims";
 import {
 	formatEventDate,
 	formatEventDateFull,
@@ -161,14 +156,12 @@ export default async function EventPage({ params }: EventPageProps) {
 		notFound();
 	}
 
-	const [childEvents, eventSponsors, cohosts, attendanceClaim, eventHosts] =
-		await Promise.all([
-			getChildEvents(hackathon.id),
-			getEventSponsors(hackathon.id),
-			getEventCohost(hackathon.id),
-			getUserAttendanceClaim(hackathon.id),
-			getEventHosts(hackathon.id),
-		]);
+	const [childEvents, eventSponsors, cohosts, eventHosts] = await Promise.all([
+		getChildEvents(hackathon.id),
+		getEventSponsors(hackathon.id),
+		getEventCohost(hackathon.id),
+		getEventHosts(hackathon.id),
+	]);
 
 	const hasChildEvents = childEvents.length > 0;
 	const hasSponsors = eventSponsors.length > 0;
@@ -743,13 +736,6 @@ export default async function EventPage({ params }: EventPageProps) {
 									</div>
 								</div>
 							)}
-
-							{isEnded && hackathon.eventType === "hackathon" && (
-								<WinnerSection
-									eventId={hackathon.id}
-									eventName={hackathon.name}
-								/>
-							)}
 						</div>
 
 						<aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
@@ -899,16 +885,6 @@ export default async function EventPage({ params }: EventPageProps) {
 																)}
 															</div>
 														</div>
-														{userId && !host.userId && (
-															<HostClaimDialog
-																eventHostId={host.id}
-																hostName={host.name}
-															>
-																<button className="text-xs text-blue-500 hover:underline shrink-0">
-																	¿Eres tú?
-																</button>
-															</HostClaimDialog>
-														)}
 													</div>
 												))}
 											</div>
@@ -959,19 +935,6 @@ export default async function EventPage({ params }: EventPageProps) {
 										</>
 									)}
 
-									<button className="flex w-full h-9 items-center justify-center gap-2 rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-										<Bell className="h-4 w-4" />
-										Seguir evento
-									</button>
-
-									<AttendanceButton
-										eventId={hackathon.id}
-										eventEndDate={endDate}
-										initialClaimed={attendanceClaim.hasClaimed}
-										initialVerification={attendanceClaim.verification}
-										className="w-full h-9"
-									/>
-
 									<div className="flex gap-2">
 										{hackathon.websiteUrl && (
 											<a
@@ -1003,7 +966,7 @@ export default async function EventPage({ params }: EventPageProps) {
 								<div className="rounded-lg border bg-card overflow-hidden">
 									<div className="px-5 py-4 border-b bg-emerald-500/5">
 										<div className="flex items-center gap-2">
-											<TrophyIcon className="h-4 w-4 text-emerald-500" />
+											<Trophy className="h-4 w-4 text-emerald-500" />
 											<h3 className="text-sm font-semibold">Premio Total</h3>
 										</div>
 									</div>

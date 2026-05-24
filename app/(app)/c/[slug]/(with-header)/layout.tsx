@@ -27,14 +27,8 @@ async function CommunityHeaderWrapper({ slug }: { slug: string }) {
 
 	const tabs = [
 		{ id: "events" as const, label: "Eventos", icon: "Calendar" },
-		...(community.isPersonalOrg
-			? [{ id: "achievements" as const, label: "Logros", icon: "Trophy" }]
-			: [{ id: "comunidad" as const, label: "Comunidad", icon: "Users" }]),
 		...(canManage
-			? [
-					{ id: "analytics" as const, label: "Analytics", icon: "BarChart3" },
-					{ id: "settings" as const, label: "Configuración", icon: "Settings" },
-				]
+			? [{ id: "settings" as const, label: "Configuración", icon: "Settings" }]
 			: []),
 	];
 
@@ -72,7 +66,7 @@ function CommunityHeaderSkeleton() {
 				</div>
 
 				<nav className="flex items-center gap-1 border-t -mb-px">
-					{Array.from({ length: 4 }).map((_, i) => (
+					{Array.from({ length: 2 }).map((_, i) => (
 						<div key={i} className="h-10 w-24 bg-muted/50 animate-pulse" />
 					))}
 				</nav>
