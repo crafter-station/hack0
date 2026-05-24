@@ -2,7 +2,6 @@ import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { SearchTrigger } from "@/components/search-command";
 import { isGodMode } from "@/lib/god-mode";
-import { CreateButtonGroup } from "./create-button-group";
 import { GithubStars } from "./github-stars";
 import { MainNav } from "./main-nav";
 import { MobileNav } from "./mobile-nav";
@@ -19,20 +18,7 @@ export async function SiteHeader({
 }: SiteHeaderProps) {
 	const { userId } = await auth();
 
-	const [personalOrg, godMode, adminCommunities] = await Promise.all([
-		userId
-			? (async () => {
-					try {
-						const { getOrCreatePersonalOrg } = await import(
-							"@/lib/actions/organizations"
-						);
-						return await getOrCreatePersonalOrg();
-					} catch (error) {
-						console.error("Failed to get/create personal org:", error);
-						return null;
-					}
-				})()
-			: null,
+	const [godMode, adminCommunities] = await Promise.all([
 		isGodMode(),
 		userId
 			? (async () => {
@@ -41,9 +27,25 @@ export async function SiteHeader({
 							"@/lib/actions/organizations"
 						);
 						const allOrgs = await getAllUserOrganizations();
-						return allOrgs.filter(
-							(org) => org.role === "owner" || org.role === "admin",
-						);
+						return allOrgs.flatMap((org) => {
+							if (org.role !== "owner" && org.role !== "admin") {
+								return [];
+							}
+
+							return [
+								{
+									organization: {
+										id: org.organization.id,
+										slug: org.organization.slug,
+										name: org.organization.name,
+										displayName: org.organization.displayName,
+										logoUrl: org.organization.logoUrl,
+										isPersonalOrg: org.organization.isPersonalOrg,
+									},
+									role: org.role,
+								},
+							];
+						});
 					} catch (error) {
 						console.error("Failed to get user organizations:", error);
 						return [];
@@ -104,16 +106,11 @@ export async function SiteHeader({
 							</Link>
 						)}
 						{userId && (
-							<>
-								{personalOrg && (
-									<CreateButtonGroup personalOrgSlug={personalOrg.slug} />
-								)}
-								<UserDropdown
-									isGodMode={godMode}
-									adminCommunities={adminCommunities}
-									hideThemeToggle={hideThemeToggle}
-								/>
-							</>
+							<UserDropdown
+								isGodMode={godMode}
+								adminCommunities={adminCommunities}
+								hideThemeToggle={hideThemeToggle}
+							/>
 						)}
 					</div>
 				</div>

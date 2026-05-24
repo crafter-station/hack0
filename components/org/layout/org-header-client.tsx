@@ -1,15 +1,6 @@
 "use client";
 
-import {
-	Award,
-	BarChart3,
-	Calendar,
-	Globe,
-	MapPin,
-	Settings,
-	Trophy,
-	Users,
-} from "lucide-react";
+import { Calendar, Globe, MapPin, Settings } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -27,7 +18,6 @@ import {
 } from "@/components/ui/tooltip";
 import type { Organization } from "@/lib/db/schema";
 import { OrgActions } from "./org-actions";
-import { OrgSubscribeButton } from "./org-subscribe-button";
 
 function hashString(str: string): number {
 	let hash = 0;
@@ -65,13 +55,7 @@ function extractUsername(url: string, platform: string): string {
 }
 
 interface Tab {
-	id:
-		| "events"
-		| "comunidad"
-		| "achievements"
-		| "badges"
-		| "analytics"
-		| "settings";
+	id: "events" | "settings";
 	label: string;
 	icon: string;
 }
@@ -82,16 +66,11 @@ interface OrgHeaderClientProps {
 	userRole: "owner" | "admin" | "member" | "follower" | null;
 	isAuthenticated: boolean;
 	tabs: Tab[];
-	hasLumaIntegration?: boolean;
 }
 
 const iconMap = {
 	Calendar,
-	Users,
 	Settings,
-	BarChart3,
-	Trophy,
-	Award,
 } as const;
 
 export function OrgHeaderClient({
@@ -100,7 +79,6 @@ export function OrgHeaderClient({
 	userRole,
 	isAuthenticated,
 	tabs,
-	hasLumaIntegration = false,
 }: OrgHeaderClientProps) {
 	const pathname = usePathname();
 
@@ -109,17 +87,7 @@ export function OrgHeaderClient({
 		[community.displayName, community.name],
 	);
 
-	const currentTab = pathname.includes("/comunidad")
-		? "comunidad"
-		: pathname.includes("/achievements")
-			? "achievements"
-			: pathname.includes("/badges")
-				? "badges"
-				: pathname.includes("/analytics")
-					? "analytics"
-					: pathname.includes("/settings")
-						? "settings"
-						: "events";
+	const currentTab = pathname.includes("/settings") ? "settings" : "events";
 
 	return (
 		<div className="border-b">
@@ -310,17 +278,12 @@ export function OrgHeaderClient({
 					</div>
 
 					<div className="shrink-0 flex items-center gap-2">
-						<OrgSubscribeButton
-							communityId={community.id}
-							communitySlug={slug}
-						/>
 						<OrgActions
 							communityId={community.id}
 							communitySlug={slug}
 							communityName={community.displayName || community.name}
 							userRole={userRole}
 							isAuthenticated={isAuthenticated}
-							hasLumaIntegration={hasLumaIntegration}
 						/>
 					</div>
 				</div>
