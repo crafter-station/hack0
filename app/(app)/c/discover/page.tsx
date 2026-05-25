@@ -365,15 +365,17 @@ function CountryCommunityOverview({
 				</div>
 			</div>
 
-			<div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-				{countryCoverage.map((country) => (
-					<CountryCommunityTile
-						key={country.code}
-						country={country}
-						maxCommunities={maxCommunities}
-						isSelected={selectedCountries.includes(country.code)}
-					/>
-				))}
+			<div className="-mx-4 mt-5 overflow-x-auto px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] lg:-mx-8 lg:px-8 [&::-webkit-scrollbar]:hidden">
+				<div className="flex gap-2">
+					{countryCoverage.map((country) => (
+						<CountryCommunityTile
+							key={country.code}
+							country={country}
+							maxCommunities={maxCommunities}
+							isSelected={selectedCountries.includes(country.code)}
+						/>
+					))}
+				</div>
 			</div>
 		</section>
 	);
@@ -409,7 +411,7 @@ function CountryCommunityTile({
 	return (
 		<Link
 			href={`/c/discover?countries=${country.code}`}
-			className={`group border bg-card p-3 transition-colors hover:border-brand-green/40 hover:bg-muted/20 ${
+			className={`group min-h-[6.75rem] w-[82vw] max-w-[21rem] shrink-0 snap-start border bg-card p-3 transition-colors hover:border-brand-green/40 hover:bg-muted/20 sm:w-[18rem] lg:w-[19rem] ${
 				isSelected ? "border-brand-green/60 bg-brand-green/10" : ""
 			}`}
 		>
