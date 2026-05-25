@@ -22,6 +22,7 @@ type LumaCoordinate = {
 };
 
 export type LumaLocationInput = {
+	eventName?: string | null;
 	geoAddress?: LumaGeoAddress | null;
 	geoAddressInfo?: LumaGeoAddress | null;
 	coordinate?: LumaCoordinate | null;
@@ -85,6 +86,7 @@ const PERU_PLACE_MATCHERS = [
 			"santiago de surco",
 			"surco",
 			"surquillo",
+			"utec ventures",
 			"villa el salvador",
 		],
 	},
@@ -94,7 +96,11 @@ const PERU_PLACE_MATCHERS = [
 	{ city: "Trujillo", department: "La Libertad", patterns: ["trujillo"] },
 	{ city: "Chiclayo", department: "Lambayeque", patterns: ["chiclayo"] },
 	{ city: "Piura", department: "Piura", patterns: ["piura"] },
-	{ city: "Huancayo", department: "Junín", patterns: ["huancayo"] },
+	{
+		city: "Huancayo",
+		department: "Junín",
+		patterns: ["huancayo", "plaza mantaro"],
+	},
 	{ city: "Iquitos", department: "Loreto", patterns: ["iquitos"] },
 	{ city: "Tacna", department: "Tacna", patterns: ["tacna"] },
 ];
@@ -144,6 +150,29 @@ function inferPeruPlace(...values: Array<string | null | undefined>) {
 	return null;
 }
 
+function hasVirtualLocationSignal(...values: Array<string | null | undefined>) {
+	const haystack = values
+		.map((value) => (value ? normalizeToken(value) : ""))
+		.filter(Boolean)
+		.join(" ");
+
+	if (!haystack) return false;
+
+	return [
+		"discord",
+		"google meet",
+		"livestream",
+		"meet.google",
+		"online",
+		"stream",
+		"teams",
+		"twitch",
+		"virtual",
+		"youtube",
+		"zoom",
+	].some((pattern) => haystack.includes(pattern));
+}
+
 function normalizeCity(
 	value: string | null | undefined,
 	fallback?: string | null,
@@ -178,9 +207,12 @@ function resolveFormat(
 	locationType: string,
 	meetingUrl: string | null,
 	hasPhysicalLocation: boolean,
+	hasVirtualLocation: boolean,
 ): LumaLocationResult["format"] {
 	const isVirtual =
-		VIRTUAL_LOCATION_TYPES.has(locationType) || Boolean(meetingUrl);
+		hasVirtualLocation ||
+		VIRTUAL_LOCATION_TYPES.has(locationType) ||
+		Boolean(meetingUrl);
 	const isPhysical =
 		hasPhysicalLocation || PHYSICAL_LOCATION_TYPES.has(locationType);
 
@@ -200,6 +232,7 @@ export function resolveLumaEventLocation(
 		geo?.full_address,
 	);
 	const inferredPlace = inferPeruPlace(
+		input.eventName,
 		geo?.city,
 		geo?.region,
 		geo?.city_state,
@@ -212,18 +245,32 @@ export function resolveLumaEventLocation(
 	);
 	const meetingUrl = cleanText(input.meetingUrl);
 	const locationType = locationTypeFrom(input, geo);
-	const hasPhysicalLocation = Boolean(venue || city || department);
+	const hasVirtualLocation = hasVirtualLocationSignal(
+		input.eventName,
+		locationType,
+		meetingUrl,
+		venue,
+	);
+	const hasPhysicalLocation = Boolean(
+		(venue && !hasVirtualLocationSignal(venue)) || city || department,
+	);
 	const country =
 		normalizeCountryCode(geo?.country_code || geo?.country || null) ||
 		input.countryFallback ||
 		"PE";
+	const format = resolveFormat(
+		locationType,
+		meetingUrl,
+		hasPhysicalLocation,
+		hasVirtualLocation,
+	);
 
 	return {
-		format: resolveFormat(locationType, meetingUrl, hasPhysicalLocation),
+		format,
 		country,
 		department,
 		city,
-		venue,
+		venue: format === "virtual" ? null : venue,
 		geoLatitude: coordinateValue(
 			input.geoLatitude,
 			geo?.latitude,

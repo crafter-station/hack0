@@ -367,6 +367,7 @@ async function syncEvent(
 		: durationEndDate(startDate, detailedEvent.duration_interval);
 	const meetingUrl = detailedEvent.meeting_url || null;
 	const location = resolveLumaEventLocation({
+		eventName: detailedEvent.name,
 		geoAddress: detailedEvent.geo_address_json,
 		geoAddressInfo: detailedEvent.geo_address_info,
 		coordinate: detailedEvent.coordinate,
