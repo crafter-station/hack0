@@ -6,7 +6,10 @@ let redis: Redis | null = null;
 function getRedis() {
 	if (redis) return redis;
 
-	if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+	if (
+		!process.env.UPSTASH_REDIS_REST_URL ||
+		!process.env.UPSTASH_REDIS_REST_TOKEN
+	) {
 		return null;
 	}
 
@@ -19,46 +22,6 @@ function getRedis() {
 }
 
 export const rateLimiters = {
-	subscribe: () => {
-		const r = getRedis();
-		if (!r) return null;
-		return new Ratelimit({
-			redis: r,
-			limiter: Ratelimit.slidingWindow(3, "1 h"),
-			prefix: "ratelimit:subscribe",
-		});
-	},
-
-	giftGenerate: () => {
-		const r = getRedis();
-		if (!r) return null;
-		return new Ratelimit({
-			redis: r,
-			limiter: Ratelimit.slidingWindow(5, "1 h"),
-			prefix: "ratelimit:gift-generate",
-		});
-	},
-
-	giftUpload: () => {
-		const r = getRedis();
-		if (!r) return null;
-		return new Ratelimit({
-			redis: r,
-			limiter: Ratelimit.slidingWindow(10, "1 h"),
-			prefix: "ratelimit:gift-upload",
-		});
-	},
-
-	badgeGenerate: () => {
-		const r = getRedis();
-		if (!r) return null;
-		return new Ratelimit({
-			redis: r,
-			limiter: Ratelimit.slidingWindow(1, "1 h"),
-			prefix: "ratelimit:badge-generate",
-		});
-	},
-
 	api: () => {
 		const r = getRedis();
 		if (!r) return null;
@@ -72,7 +35,7 @@ export const rateLimiters = {
 
 export async function checkRateLimit(
 	limiter: Ratelimit | null,
-	identifier: string
+	identifier: string,
 ): Promise<{ success: boolean; reset?: number; remaining?: number }> {
 	if (!limiter) {
 		return { success: true };

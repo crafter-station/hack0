@@ -62,7 +62,6 @@ export const users = pgTable("users", {
 	hackathonsCount: integer("hackathons_count").default(0),
 	hackathonWinsCount: integer("hackathon_wins_count").default(0),
 	communitiesCount: integer("communities_count").default(0),
-	achievementsCount: integer("achievements_count").default(0),
 	totalPoints: integer("total_points").default(0),
 
 	createdAt: timestamp("created_at", {

@@ -1,9 +1,6 @@
 import {
-	Award,
 	BarChart3,
 	Calendar,
-	ClipboardCheck,
-	FileText,
 	LayoutDashboard,
 	Settings,
 	Users,
@@ -13,16 +10,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ManageContent } from "@/components/manage/manage-content";
 import { Button } from "@/components/ui/button";
-import {
-	getEventImportJobs,
-	getEventNotificationLogs,
-} from "@/lib/actions/analytics";
-import { getEventWinnerClaims } from "@/lib/actions/claims";
+import { getEventImportJobs } from "@/lib/actions/analytics";
 import { getEventCohost } from "@/lib/actions/cohost-invites";
 import { getEventHostsWithUsers } from "@/lib/actions/event-hosts";
 import { getEventByShortCode, getEventSponsors } from "@/lib/actions/events";
 import { canManageEventByShortCode } from "@/lib/actions/permissions";
-import { getSubmissionTemplate } from "@/lib/actions/submissions";
 
 interface ManageEventPageProps {
 	params: Promise<{
@@ -46,23 +38,10 @@ async function EventManageHero({
 
 	const event = result;
 	const community = result.organization;
-
-	const isHackathon =
-		event.eventType === "hackathon" ||
-		event.eventType === "competition" ||
-		event.eventType === "olympiad";
-
 	const tabs = [
 		{ id: "overview", label: "Vista general", icon: LayoutDashboard },
 		{ id: "team", label: "Equipo", icon: Users },
-		...(isHackathon
-			? [
-					{ id: "submissions", label: "Entregas", icon: FileText },
-					{ id: "winners", label: "Ganadores", icon: Award },
-					{ id: "judging", label: "Evaluación", icon: ClipboardCheck },
-				]
-			: []),
-		{ id: "analytics", label: "Analytics", icon: BarChart3 },
+		{ id: "analytics", label: "Imports", icon: BarChart3 },
 		{ id: "edit", label: "Configuración", icon: Settings },
 	];
 
@@ -157,36 +136,11 @@ export default async function ManageEventPage({
 		redirect("/");
 	}
 
-	const [sponsors, cohosts, eventHosts] = await Promise.all([
+	const [sponsors, cohosts, eventHosts, importJobs] = await Promise.all([
 		getEventSponsors(event.id),
 		getEventCohost(event.id),
 		getEventHostsWithUsers(event.id),
-	]);
-
-	const isHackathon =
-		event.eventType === "hackathon" ||
-		event.eventType === "competition" ||
-		event.eventType === "olympiad";
-
-	let winnerClaims: Awaited<ReturnType<typeof getEventWinnerClaims>> = [];
-	let submissionTemplate: Awaited<
-		ReturnType<typeof getSubmissionTemplate>
-	> | null = null;
-	if (isHackathon) {
-		try {
-			[winnerClaims, submissionTemplate] = await Promise.all([
-				getEventWinnerClaims(event.id),
-				getSubmissionTemplate(event.id),
-			]);
-		} catch {
-			winnerClaims = [];
-			submissionTemplate = null;
-		}
-	}
-
-	const [importJobs, notificationLogs] = await Promise.all([
 		getEventImportJobs(event.id),
-		getEventNotificationLogs(event.id),
 	]);
 
 	return (
@@ -197,16 +151,11 @@ export default async function ManageEventPage({
 				<ManageContent
 					event={event}
 					community={community}
-					slug={community.slug}
-					eventSlug={event.slug}
 					tab={tab}
 					sponsors={sponsors}
 					cohosts={cohosts}
 					eventHosts={eventHosts}
-					winnerClaims={winnerClaims}
-					submissionTemplate={submissionTemplate ?? null}
 					importJobs={importJobs}
-					notificationLogs={notificationLogs}
 				/>
 			</main>
 		</>

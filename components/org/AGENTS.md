@@ -4,8 +4,6 @@
 Componentes para gestión de comunidades/organizaciones en hack0.dev.
 
 ## Modules
-- `badges/` - Generación y display de badges AI
-- `campaigns/` - Gestión de campañas de badges
 - `members/` - Showcase y gestión de miembros
 - `settings/` - Configuración de organización
 - `discovery/` - Listado público de organizaciones
@@ -15,8 +13,8 @@ Componentes para gestión de comunidades/organizaciones en hack0.dev.
 
 ## Import Pattern
 ```tsx
-import { BadgeDisplay } from "@/components/org/badges"
-import { OrgHeader } from "@/components/org/layout"
+import { MembersManagement } from "@/components/org/members"
+import { OrgNav } from "@/components/org/layout"
 ```
 
 ## Anti-patterns

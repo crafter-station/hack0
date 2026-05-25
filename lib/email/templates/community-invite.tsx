@@ -69,7 +69,9 @@ export function CommunityInviteEmail({
 						)}
 						{roleGranted === "member" && (
 							<>
-								<Text style={benefitItem}>✓ Generar tu badge de miembro</Text>
+								<Text style={benefitItem}>
+									✓ Aparecer en el directorio de miembros
+								</Text>
 								<Text style={benefitItem}>
 									✓ Participar en eventos exclusivos
 								</Text>

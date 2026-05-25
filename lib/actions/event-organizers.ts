@@ -5,7 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { communityMembers, eventOrganizers, events } from "@/lib/db/schema";
-import { isAdmin } from "./claims";
+import { isGodMode } from "@/lib/god-mode";
 
 // ============================================
 // GET EVENT ORGANIZERS
@@ -45,7 +45,7 @@ export async function addEventOrganizer(
 	}
 
 	// Check permission: must be admin or community owner/admin
-	const admin = await isAdmin();
+	const admin = await isGodMode();
 	if (!admin) {
 		const membership = await db.query.communityMembers.findFirst({
 			where: and(
@@ -136,7 +136,7 @@ export async function removeEventOrganizer(organizerId: string) {
 	}
 
 	// Check permission: must be admin or community owner/admin
-	const admin = await isAdmin();
+	const admin = await isGodMode();
 	if (!admin) {
 		const membership = await db.query.communityMembers.findFirst({
 			where: and(
@@ -196,7 +196,7 @@ export async function updateOrganizerRole(
 	}
 
 	// Check permission: must be admin or community owner/admin
-	const admin = await isAdmin();
+	const admin = await isGodMode();
 	if (!admin) {
 		const membership = await db.query.communityMembers.findFirst({
 			where: and(

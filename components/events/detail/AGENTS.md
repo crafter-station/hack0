@@ -8,18 +8,8 @@ Componentes para la página de detalle de evento `/e/[code]`.
 |-----------|-------------|
 | EventCountdown | Countdown timer hasta inicio/fin |
 | EventLocationMap | Mapa embebido de ubicación |
-| AttendanceButton | Botón para marcar asistencia |
 | ManageEventButton | Botón de gestión (admin/owner) |
-| WinnerSection | Display de ganadores post-evento |
-| WinnerClaimDialog | Dialog para reclamar premio |
-| HostClaimDialog | Dialog para reclamar perfil de host |
 | AcceptCohostInviteButton | Aceptar invitación de co-host |
-
-## Attendance States
-- Claim attendance (no marcado)
-- Self-reported (usuario marcó)
-- Organizer-verified (verificado por organizador)
 
 ## Permissions
 - ManageEventButton solo visible para owner/admin
-- WinnerSection solo post-evento con ganadores

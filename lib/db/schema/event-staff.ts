@@ -3,7 +3,6 @@ import {
 	index,
 	integer,
 	pgTable,
-	text,
 	timestamp,
 	uniqueIndex,
 	uuid,
@@ -64,45 +63,13 @@ export const eventHosts = pgTable(
 export type EventHost = typeof eventHosts.$inferSelect;
 export type NewEventHost = typeof eventHosts.$inferInsert;
 
-// ============================================
-// HOST CLAIMS - For manual host verification requests
-// ============================================
-
-export const hostClaims = pgTable("host_claims", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	eventHostId: uuid("event_host_id")
-		.references(() => eventHosts.id, { onDelete: "cascade" })
-		.notNull(),
-	userId: varchar("user_id", { length: 255 }).notNull(),
-
-	proofUrl: varchar("proof_url", { length: 500 }).notNull(),
-	proofDescription: text("proof_description"),
-
-	status: varchar("status", { length: 20 }).default("pending"),
-	reviewedAt: timestamp("reviewed_at", { mode: "date", withTimezone: true }),
-	reviewedBy: varchar("reviewed_by", { length: 255 }),
-	rejectionReason: text("rejection_reason"),
-
-	createdAt: timestamp("created_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-});
-
-export type HostClaim = typeof hostClaims.$inferSelect;
-export type NewHostClaim = typeof hostClaims.$inferInsert;
-
-// ============================================
-// EVENT SPONSORS - Junction table for sponsors (using organizations)
-// ============================================
-
 export const eventSponsors = pgTable("event_sponsors", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	eventId: uuid("event_id")
-		.references(() => events.id)
+		.references(() => events.id, { onDelete: "cascade" })
 		.notNull(),
 	organizationId: uuid("organization_id")
-		.references(() => organizations.id)
+		.references(() => organizations.id, { onDelete: "cascade" })
 		.notNull(),
 	orderIndex: integer("order_index").default(0),
 	createdAt: timestamp("created_at", {
@@ -121,7 +88,7 @@ export type NewEventSponsor = typeof eventSponsors.$inferInsert;
 export const eventOrganizers = pgTable("event_organizers", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	eventId: uuid("event_id")
-		.references(() => events.id)
+		.references(() => events.id, { onDelete: "cascade" })
 		.notNull(),
 	userId: varchar("user_id", { length: 255 }).notNull(), // Clerk user ID (must be community member)
 
@@ -150,10 +117,10 @@ export type NewEventOrganizer = typeof eventOrganizers.$inferInsert;
 export const eventHostOrganizations = pgTable("event_host_organizations", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	eventId: uuid("event_id")
-		.references(() => events.id)
+		.references(() => events.id, { onDelete: "cascade" })
 		.notNull(),
 	organizationId: uuid("organization_id")
-		.references(() => organizations.id)
+		.references(() => organizations.id, { onDelete: "cascade" })
 		.notNull(),
 
 	// Primary host (only one per event - the creator)

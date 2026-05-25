@@ -54,8 +54,11 @@ import {
 } from "@/components/ui/responsive-modal";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Switch } from "@/components/ui/switch";
-import { updateEvent } from "@/lib/actions/claims";
-import { createEvent, type EventSponsorWithOrg } from "@/lib/actions/events";
+import {
+	createEvent,
+	type EventSponsorWithOrg,
+	updateEvent,
+} from "@/lib/actions/events";
 import { startLumaImport } from "@/lib/actions/import";
 import type { Event, Organization } from "@/lib/db/schema";
 import {
@@ -1277,56 +1280,51 @@ export function OrgEventFormMinimal({
 					)}
 
 					{/* Luma Integration - only in create mode */}
-					{!isEditMode && (
-						<>
-							{importedFromLuma ? (
-								<div className="flex items-center justify-between py-3 px-3 border border-border rounded-lg bg-muted/30">
-									<div className="flex items-center gap-3">
-										<LumaIcon className="h-5 w-5" />
-										<div>
-											<div className="text-sm font-medium flex items-center gap-1.5">
-												Vinculado a Luma
-											</div>
-											<div className="text-xs text-muted-foreground truncate max-w-[180px]">
-												{importedFromLuma.replace("https://", "")}
-											</div>
+					{!isEditMode &&
+						(importedFromLuma ? (
+							<div className="flex items-center justify-between py-3 px-3 border border-border rounded-lg bg-muted/30">
+								<div className="flex items-center gap-3">
+									<LumaIcon className="h-5 w-5" />
+									<div>
+										<div className="text-sm font-medium flex items-center gap-1.5">
+											Vinculado a Luma
+										</div>
+										<div className="text-xs text-muted-foreground truncate max-w-[180px]">
+											{importedFromLuma.replace("https://", "")}
 										</div>
 									</div>
-									<Button
-										type="button"
-										variant="ghost"
-										size="sm"
-										className="text-xs text-muted-foreground hover:text-foreground"
-										onClick={() => {
-											setImportedFromLuma(null);
-											setPublishToLuma(true);
-										}}
-									>
-										Desvincular
-									</Button>
 								</div>
-							) : (
-								<div className="flex items-center justify-between py-3 px-3 border border-border rounded-lg">
-									<div className="flex items-center gap-3">
-										<LumaIcon className="h-5 w-5" />
-										<div>
-											<div className="text-sm font-medium">
-												Publicar en Luma
-											</div>
-											<div className="text-xs text-muted-foreground">
-												Se creará también en lu.ma/hack0
-											</div>
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									className="text-xs text-muted-foreground hover:text-foreground"
+									onClick={() => {
+										setImportedFromLuma(null);
+										setPublishToLuma(true);
+									}}
+								>
+									Desvincular
+								</Button>
+							</div>
+						) : (
+							<div className="flex items-center justify-between py-3 px-3 border border-border rounded-lg">
+								<div className="flex items-center gap-3">
+									<LumaIcon className="h-5 w-5" />
+									<div>
+										<div className="text-sm font-medium">Publicar en Luma</div>
+										<div className="text-xs text-muted-foreground">
+											Se creará también en lu.ma/hack0
 										</div>
 									</div>
-									<Switch
-										checked={publishToLuma}
-										onCheckedChange={setPublishToLuma}
-										disabled={isImporting}
-									/>
 								</div>
-							)}
-						</>
-					)}
+								<Switch
+									checked={publishToLuma}
+									onCheckedChange={setPublishToLuma}
+									disabled={isImporting}
+								/>
+							</div>
+						))}
 
 					{/* Submit */}
 					<Button

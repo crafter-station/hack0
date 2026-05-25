@@ -21,20 +21,9 @@ Schema Drizzle ORM y queries para Neon PostgreSQL.
 | eventSponsors | Sponsors de eventos |
 | eventHostOrganizations | Co-hosts de eventos |
 | eventHosts | Hosts individuales de eventos (Luma/manual) |
-| winnerClaims | Claims de ganadores |
-| hostClaims | Claims de hosts de eventos |
 | organizerClaims | Claims de organizadores |
-| subscriptions | Suscripciones email |
-| badgeCampaigns | Campañas de badges |
-| badgeCampaignMembers | Miembros de campañas |
 | communityMembers | Miembros de comunidad |
 | importJobs | Jobs de importación |
-| notificationLogs | Logs de notificaciones |
-| submissionTemplates | Plantillas de formulario de entregas por evento |
-| submissions | Proyectos enviados por participantes |
-| submissionTeamMembers | Miembros de equipo por submission |
-| judgeAssignments | Asignación de jueces a eventos |
-| judgeScores | Puntajes individuales por criterio |
 
 ## Convenciones
 

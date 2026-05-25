@@ -32,8 +32,7 @@ components/manage/
 | overview | OverviewTab - Hero card, quick actions, detalles, sponsors |
 | edit | OrgEventFormMinimal mode="edit" (misma UX que crear evento) |
 | team | CohostSelector para co-organizadores |
-| winners | Gestión de claims de ganadores |
-| analytics | Import jobs y notification logs |
+| imports | Import jobs y fuentes externas |
 
 ## Ruta
 
@@ -43,7 +42,6 @@ components/manage/
 
 - `@/components/org/creation` - OrgEventFormMinimal para edición
 - `@/components/events/edit` - CohostSelector, HostAssignment
-- `@/lib/actions/claims` - Acciones de claims
 - `@/lib/actions/events` - Acciones de eventos
 
 ## Permisos

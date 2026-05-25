@@ -6,8 +6,6 @@ Display público de miembros y gestión administrativa estilo Vercel.
 ## Components
 | Component | Access | Description |
 |-----------|--------|-------------|
-| MemberShowcaseGrid | Public | Galería de badges por campaña |
-| MemberShowcaseCard | Public | Card individual con badge |
 | MembersManagement | Admin | Panel completo de gestión (Vercel-style) |
 | InviteManager | Admin | Gestión de invite links |
 | AcceptInviteButton | Public | Aceptar invitación |
@@ -26,7 +24,7 @@ Display público de miembros y gestión administrativa estilo Vercel.
 owner > admin > member > follower
 
 ## Page Locations
-- /c/[slug]/comunidad → Galería de badges (público)
+- /c/[slug]/comunidad → Directorio público de miembros
 - /c/[slug]/settings/members → Gestión de miembros (Admin-only)
 
 ## Server Actions (lib/actions/community-members.ts)

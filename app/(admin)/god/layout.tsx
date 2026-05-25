@@ -22,9 +22,7 @@ export default async function GodLayout({ children }: GodLayoutProps) {
 	const tabs = [
 		{ id: "events", label: "Events", href: "/god/events" },
 		{ id: "pending", label: "Pending", href: "/god/pending" },
-		{ id: "wins", label: "Wins", href: "/god/wins" },
 		{ id: "organizations", label: "Organizations", href: "/god/organizations" },
-		{ id: "hosts", label: "Hosts", href: "/god/hosts" },
 		{ id: "graph", label: "Ecosistema", href: "/god/graph" },
 	];
 

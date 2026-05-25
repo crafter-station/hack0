@@ -11,8 +11,6 @@ Configuración de organización. Todos los componentes son Admin-only.
 ## Navigation
 /settings → General
 /settings/members → Gestión de miembros (invites, roles, eliminar)
-/settings/badge → Badge config (usa badges/)
-/settings/campaigns → Campañas (usa campaigns/)
 
 ## Note
-La galería de badges/insignias ahora está en /comunidad (tab pública)
+El directorio público de miembros vive en /comunidad.

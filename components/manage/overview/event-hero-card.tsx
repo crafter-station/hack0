@@ -8,7 +8,6 @@ import {
 	FeaturedBadge,
 	ImportedBadge,
 	StatusBadge,
-	VerifiedBadge,
 } from "@/components/manage/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -66,7 +65,6 @@ export function EventHeroCard({ event }: EventHeroCardProps) {
 								<ApprovalBadge status={event.approvalStatus} />
 							)}
 							{event.isFeatured && <FeaturedBadge />}
-							{event.isOrganizerVerified && <VerifiedBadge />}
 							{event.sourceScrapedAt && <ImportedBadge />}
 						</div>
 

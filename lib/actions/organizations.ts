@@ -36,14 +36,6 @@ export async function getUserOrganizations() {
 }
 
 /**
- * Get the first organization for the current user (backwards compatibility)
- */
-export async function getUserOrganization() {
-	const orgs = await getUserOrganizations();
-	return orgs[0] || null;
-}
-
-/**
  * Get all organizations where the user is a member (owner, admin, member, or follower)
  * Excludes personal orgs from the listing
  */
@@ -423,28 +415,6 @@ export async function updateOrganizationById(
 	return updated;
 }
 
-/**
- * Update the current user's organization (backwards compatibility)
- */
-export async function updateOrganization(
-	data: Partial<
-		Omit<NewOrganization, "id" | "ownerUserId" | "createdAt" | "updatedAt">
-	>,
-) {
-	const { userId } = await auth();
-
-	if (!userId) {
-		throw new Error("Not authenticated");
-	}
-
-	const org = await getUserOrganization();
-	if (!org) {
-		throw new Error("Organization not found");
-	}
-
-	return updateOrganizationById(org.id, data);
-}
-
 // ============================================
 // ORGANIZATION EVENTS
 // ============================================
@@ -452,25 +422,15 @@ export async function updateOrganization(
 /**
  * Get events for an organization
  */
-export async function getOrganizationEvents(organizationId?: string) {
+export async function getOrganizationEvents(organizationId: string) {
 	const { userId } = await auth();
 
 	if (!userId) {
 		return [];
 	}
 
-	let orgId = organizationId;
-
-	if (!orgId) {
-		const org = await getUserOrganization();
-		if (!org) {
-			return [];
-		}
-		orgId = org.id;
-	}
-
 	const orgEvents = await db.query.events.findMany({
-		where: eq(events.organizationId, orgId),
+		where: eq(events.organizationId, organizationId),
 		orderBy: [desc(events.createdAt)],
 	});
 
@@ -480,25 +440,15 @@ export async function getOrganizationEvents(organizationId?: string) {
 /**
  * Get stats for an organization
  */
-export async function getOrganizationStats(organizationId?: string) {
+export async function getOrganizationStats(organizationId: string) {
 	const { userId } = await auth();
 
 	if (!userId) {
 		return { totalEvents: 0, activeEvents: 0, endedEvents: 0 };
 	}
 
-	let orgId = organizationId;
-
-	if (!orgId) {
-		const org = await getUserOrganization();
-		if (!org) {
-			return { totalEvents: 0, activeEvents: 0, endedEvents: 0 };
-		}
-		orgId = org.id;
-	}
-
 	const orgEvents = await db.query.events.findMany({
-		where: eq(events.organizationId, orgId),
+		where: eq(events.organizationId, organizationId),
 	});
 
 	const now = new Date();

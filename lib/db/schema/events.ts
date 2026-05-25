@@ -14,10 +14,10 @@ import {
 	eventScopeEnum,
 	eventTypeEnum,
 	formatEnum,
-	shareAssetTypeEnum,
 	skillLevelEnum,
 	statusEnum,
 } from "./enums";
+import { organizations } from "./organizations";
 
 // ============================================
 // EVENTS - Hackathons, conferences, workshops, etc.
@@ -85,11 +85,9 @@ export const events = pgTable("events", {
 	approvalStatus: approvalStatusEnum("approval_status").default("approved"),
 
 	// Organization (for self-service orgs)
-	organizationId: uuid("organization_id"),
-
-	// Organizer verification (legacy - for claimed events)
-	isOrganizerVerified: boolean("is_organizer_verified").default(false),
-	verifiedOrganizerId: varchar("verified_organizer_id", { length: 255 }), // Clerk user ID
+	organizationId: uuid("organization_id")
+		.references(() => organizations.id, { onDelete: "cascade" })
+		.notNull(),
 
 	// Scraper metadata
 	scrapeSource: varchar("scrape_source", { length: 50 }), // devpost, meetup, eventbrite, mlh, linkedin, universities, social, perplexity, exa, haiku, hackathon_com
@@ -114,23 +112,3 @@ export const events = pgTable("events", {
 
 export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
-
-// ============================================
-// SOCIAL SHARING - Share images and analytics
-// ============================================
-
-export const eventShareAssets = pgTable("event_share_assets", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	eventId: uuid("event_id")
-		.references(() => events.id)
-		.notNull(),
-	assetType: shareAssetTypeEnum("asset_type").notNull(),
-	imageUrl: varchar("image_url", { length: 500 }).notNull(),
-	generatedAt: timestamp("generated_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-});
-
-export type EventShareAsset = typeof eventShareAssets.$inferSelect;
-export type NewEventShareAsset = typeof eventShareAssets.$inferInsert;

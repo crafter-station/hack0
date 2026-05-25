@@ -4,11 +4,11 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { events } from "@/lib/db/schema";
 import { requireGodMode } from "@/lib/god-mode";
-import { createUniqueSlug } from "@/lib/slug-utils";
+import { createUniqueSlug, ensureUniqueShortCode } from "@/lib/slug-utils";
 
 export async function godModeCreateEvent(data: {
 	name: string;
-	organizationId?: string;
+	organizationId: string;
 	description?: string;
 	eventType?: string;
 	startDate?: Date;
@@ -29,11 +29,13 @@ export async function godModeCreateEvent(data: {
 	await requireGodMode();
 
 	const slug = await createUniqueSlug(data.name);
+	const shortCode = await ensureUniqueShortCode();
 
 	const [event] = await db
 		.insert(events)
 		.values({
 			slug,
+			shortCode,
 			name: data.name,
 			description: data.description || null,
 			eventType: (data.eventType as any) || "hackathon",
@@ -44,10 +46,13 @@ export async function godModeCreateEvent(data: {
 			department: data.department || null,
 			city: data.city || null,
 			venue: data.venue || null,
-			websiteUrl: data.websiteUrl || null,
-			registrationUrl: data.registrationUrl || null,
+			websiteUrl:
+				data.websiteUrl ||
+				data.registrationUrl ||
+				`https://hack0.dev/e/${shortCode}`,
+			registrationUrl: data.registrationUrl || data.websiteUrl || null,
 			eventImageUrl: data.eventImageUrl || null,
-			organizationId: data.organizationId || null,
+			organizationId: data.organizationId,
 			skillLevel: data.skillLevel || "all",
 			prizePool: data.prizePool || null,
 			prizeCurrency: data.prizeCurrency || "USD",
