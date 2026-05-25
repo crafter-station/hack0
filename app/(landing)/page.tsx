@@ -6,8 +6,6 @@ import {
 	Code2,
 	ExternalLink,
 	FlaskConical,
-	GitBranch,
-	Lightbulb,
 	MapPin,
 	Search,
 	Sparkles,
@@ -304,7 +302,7 @@ export default async function HomePage() {
 
 				<section className="border-b bg-muted/20">
 					<div className="mx-auto max-w-screen-xl px-4 lg:px-8 py-5">
-						<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+						<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
 							<FacetLink
 								href="/events?country=PE"
 								icon={CalendarDays}
@@ -347,20 +345,6 @@ export default async function HomePage() {
 								value={data.counts.builders}
 								helper="desde eventos"
 							/>
-							<FacetLink
-								href="/roadmap"
-								icon={GitBranch}
-								label="Demo projects"
-								value={0}
-								helper="siguiente dataset"
-							/>
-							<FacetLink
-								href="/roadmap"
-								icon={Lightbulb}
-								label="AI workflows"
-								value={0}
-								helper="siguiente dataset"
-							/>
 						</div>
 					</div>
 				</section>
@@ -380,7 +364,7 @@ export default async function HomePage() {
 
 						<SectionHeader
 							title="Hackathons y retos"
-							description="Eventos que producen demos, repos y nuevos builders para el índice."
+							description="Eventos que producen proyectos, repos y nuevos builders para el índice."
 							href="/events?country=PE&eventType=hackathon,competition,olympiad,robotics"
 						/>
 						<div className="grid gap-3 md:grid-cols-2">
@@ -436,7 +420,7 @@ export default async function HomePage() {
 										</h2>
 										<p className="mt-1 text-xs leading-5 text-muted-foreground">
 											La versión trimestral debe salir de estos datos: eventos,
-											demos, comunidades, labs, sponsors y workflows.
+											comunidades, labs, programas, sponsors y builders.
 										</p>
 									</div>
 									<div className="grid grid-cols-2 gap-2 text-xs">
