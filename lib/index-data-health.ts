@@ -237,7 +237,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 			.limit(8),
 		db
 			.select({
-				eventsWithoutCity: sql<number>`count(distinct ${events.id}) filter (where ${events.city} is null or btrim(${events.city}) = '')::int`,
+				physicalEventsWithoutCity: sql<number>`count(distinct ${events.id}) filter (where ${events.format} in ('in-person', 'hybrid') and (${events.city} is null or btrim(${events.city}) = ''))::int`,
 				eventsWithoutImage: sql<number>`count(distinct ${events.id}) filter (where ${events.eventImageUrl} is null or btrim(${events.eventImageUrl}) = '')::int`,
 				eventsWithoutHosts: sql<number>`count(distinct ${events.id}) filter (where ${eventHosts.id} is null)::int`,
 			})
@@ -371,11 +371,11 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 
 	const qualitySignals: QualitySignal[] = [
 		{
-			label: "Eventos sin ciudad",
-			value: toNumber(qualityCounts?.eventsWithoutCity),
+			label: "Eventos físicos sin ciudad",
+			value: toNumber(qualityCounts?.physicalEventsWithoutCity),
 			total: totalEvents,
 			severity: signalSeverity(
-				toNumber(qualityCounts?.eventsWithoutCity),
+				toNumber(qualityCounts?.physicalEventsWithoutCity),
 				totalEvents,
 			),
 			nextAction: "Completar city y department para mapa, SEO local y filtros.",
