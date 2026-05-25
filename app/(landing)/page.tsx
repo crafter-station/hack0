@@ -325,7 +325,7 @@ export default async function HomePage() {
 							<FacetLink
 								href="/c/discover?countries=PE&types=university,student_org"
 								icon={FlaskConical}
-								label="Labs universitarios"
+								label="Universidades y labs"
 								value={data.counts.labs}
 								helper="por verificar"
 							/>
