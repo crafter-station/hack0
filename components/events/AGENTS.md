@@ -13,7 +13,7 @@ Componentes para display, filtrado, edición y gestión de eventos en hack0.dev.
 ```tsx
 import { AllEventsTable, EventsCards } from "@/components/events/views"
 import { EventsToolbar } from "@/components/events/toolbar"
-import { AttendanceButton } from "@/components/events/detail"
+import { ManageEventButton } from "@/components/events/detail"
 import { EditEventDialog } from "@/components/events/edit"
 ```
 

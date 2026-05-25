@@ -1,10 +1,10 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { and, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { isAdmin } from "@/lib/actions/claims";
 import { canManageEventBySlug } from "@/lib/actions/permissions";
 import { db } from "@/lib/db";
 import { communityMembers, events } from "@/lib/db/schema";
+import { isGodMode } from "@/lib/god-mode";
 
 export default async function DebugPermissionsPage() {
 	const user = await currentUser();
@@ -15,7 +15,7 @@ export default async function DebugPermissionsPage() {
 	}
 
 	const email = user.emailAddresses[0]?.emailAddress?.toLowerCase();
-	const adminCheck = await isAdmin();
+	const adminCheck = await isGodMode();
 
 	// Test with hackaru-2025
 	const testSlug = "hackaru-2025";

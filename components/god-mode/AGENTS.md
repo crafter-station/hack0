@@ -24,7 +24,6 @@ Interfaz de super-administrador para gestión global del ecosistema.
 | /god/organizations | Gestión de orgs |
 | /god/pending | Aprobaciones pendientes |
 | /god/graph | Visualización de ecosistema |
-| /god/wins | Gestión de claims |
 
 ## Acceso
 

@@ -13,6 +13,9 @@ import {
 import type { RawHackathon } from "@/lib/scraper/types";
 import { sanitizeImageUrl } from "@/lib/utils";
 
+export const SYSTEM_IMPORT_ORGANIZATION_ID =
+	"00000000-0000-0000-0000-000000000001";
+
 /** Strip trailing slash and known informational path suffixes for consistent URL storage & dedup. */
 function normalizeUrl(url: string): string {
 	return url
@@ -247,10 +250,7 @@ export function normalizeHackathon(raw: RawHackathon): NewEvent {
 		isApproved: false,
 		approvalStatus: "pending",
 
-		// Organization — null for scraped (assigned later if needed)
-		organizationId: null,
-		isOrganizerVerified: false,
-		verifiedOrganizerId: null,
+		organizationId: SYSTEM_IMPORT_ORGANIZATION_ID,
 
 		// Timestamps
 		sourceScrapedAt: new Date(),

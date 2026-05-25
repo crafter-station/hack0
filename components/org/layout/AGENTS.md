@@ -8,7 +8,6 @@ Header, navegación y acciones compartidas.
 - OrgHeaderClient (Client) - Wrapper cliente
 - OrgActions (Client) - Botones follow/join
 - OrgEventsToolbar - Toolbar de eventos
-- OrgSubscribeButton - Suscripción email
 
 ## Tab Logic
 Todos: Events, Members

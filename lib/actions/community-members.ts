@@ -11,7 +11,7 @@ import {
 } from "@/lib/db/schema";
 import { EMAIL_FROM, resend } from "@/lib/email/resend";
 import { CommunityInviteEmail } from "@/lib/email/templates/community-invite";
-import { isAdmin } from "./claims";
+import { isGodMode } from "@/lib/god-mode";
 
 // ============================================
 // GET COMMUNITY MEMBERS
@@ -42,7 +42,7 @@ export async function addCommunityMember(
 	}
 
 	// Check permission: must be admin or community owner/admin
-	const admin = await isAdmin();
+	const admin = await isGodMode();
 	if (!admin) {
 		const membership = await db.query.communityMembers.findFirst({
 			where: and(
@@ -118,7 +118,7 @@ export async function removeCommunityMember(memberId: string) {
 	}
 
 	// Check permission: must be admin or community owner/admin
-	const admin = await isAdmin();
+	const admin = await isGodMode();
 	if (!admin) {
 		const membership = await db.query.communityMembers.findFirst({
 			where: and(
@@ -174,7 +174,7 @@ export async function updateMemberRole(
 	}
 
 	// Check permission: must be admin or community owner
-	const admin = await isAdmin();
+	const admin = await isGodMode();
 	if (!admin) {
 		const membership = await db.query.communityMembers.findFirst({
 			where: and(
@@ -217,7 +217,7 @@ export async function createCommunityInvite(
 	}
 
 	// Check permission: must be admin or community owner/admin
-	const admin = await isAdmin();
+	const admin = await isGodMode();
 	if (!admin) {
 		const membership = await db.query.communityMembers.findFirst({
 			where: and(
@@ -269,7 +269,7 @@ export async function getOrganizationInvites(organizationId: string) {
 	}
 
 	// Check permission
-	const admin = await isAdmin();
+	const admin = await isGodMode();
 	if (!admin) {
 		const membership = await db.query.communityMembers.findFirst({
 			where: and(
@@ -427,7 +427,7 @@ export async function revokeInvite(inviteId: string) {
 	}
 
 	// Check permission
-	const admin = await isAdmin();
+	const admin = await isGodMode();
 	if (!admin) {
 		const membership = await db.query.communityMembers.findFirst({
 			where: and(
@@ -552,7 +552,7 @@ export async function sendEmailInvite(
 		return { success: false, error: "Debes iniciar sesión" };
 	}
 
-	const admin = await isAdmin();
+	const admin = await isGodMode();
 	if (!admin) {
 		const membership = await db.query.communityMembers.findFirst({
 			where: and(
@@ -689,7 +689,7 @@ export async function bulkRemoveMembers(memberIds: string[]) {
 		};
 	}
 
-	const admin = await isAdmin();
+	const admin = await isGodMode();
 	if (!admin) {
 		const membership = await db.query.communityMembers.findFirst({
 			where: and(
@@ -754,7 +754,7 @@ export async function bulkUpdateMemberRoles(
 		};
 	}
 
-	const admin = await isAdmin();
+	const admin = await isGodMode();
 	if (!admin) {
 		const membership = await db.query.communityMembers.findFirst({
 			where: and(

@@ -1,11 +1,11 @@
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
+	eventHostOrganizations,
+	eventSponsors,
 	events,
 	organizations,
-	eventSponsors,
-	eventHostOrganizations,
 } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 
 async function main() {
 	console.log("🚀 Creando Quantum AI Summit Perú 2025...\n");
@@ -257,7 +257,6 @@ Ingreso libre previa inscripción. Aforo limitado.`,
 				isApproved: true,
 				approvalStatus: "approved",
 				organizationId: quantumHubOrg.id,
-				isOrganizerVerified: true,
 			})
 			.returning();
 		console.log("✅ Evento creado:", newEvent.id);
@@ -266,15 +265,14 @@ Ingreso libre previa inscripción. Aforo limitado.`,
 
 	console.log("\n🏢 Vinculando organizaciones host...\n");
 
-	const existingQuantumHubHost = await db.query.eventHostOrganizations.findFirst(
-		{
+	const existingQuantumHubHost =
+		await db.query.eventHostOrganizations.findFirst({
 			where: (t, { and }) =>
 				and(
 					eq(t.eventId, mainEvent.id),
 					eq(t.organizationId, quantumHubOrg.id),
 				),
-		},
-	);
+		});
 
 	if (!existingQuantumHubHost) {
 		await db.insert(eventHostOrganizations).values({
@@ -325,10 +323,11 @@ Ingreso libre previa inscripción. Aforo limitado.`,
 			await db.insert(eventSponsors).values({
 				eventId: mainEvent.id,
 				organizationId: sponsor.org.id,
-				tier: sponsor.tier,
 				orderIndex: sponsor.order,
 			});
-			console.log(`✅ ${sponsor.org.name} vinculada como sponsor (${sponsor.tier})`);
+			console.log(
+				`✅ ${sponsor.org.name} vinculada como sponsor (${sponsor.tier})`,
+			);
 		} else {
 			console.log(`✅ ${sponsor.org.name} ya está vinculada como sponsor`);
 		}

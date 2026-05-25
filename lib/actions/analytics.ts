@@ -2,7 +2,7 @@
 
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { events, importJobs, notificationLogs } from "@/lib/db/schema";
+import { events, importJobs } from "@/lib/db/schema";
 
 // ============================================
 // IMPORT JOBS
@@ -39,33 +39,4 @@ export async function getOrganizationImportJobs(organizationId: string) {
 		.orderBy(desc(importJobs.createdAt));
 
 	return jobs;
-}
-
-// ============================================
-// NOTIFICATION LOGS
-// ============================================
-
-export async function getEventNotificationLogs(eventId: string) {
-	const logs = await db
-		.select()
-		.from(notificationLogs)
-		.where(eq(notificationLogs.eventId, eventId))
-		.orderBy(desc(notificationLogs.sentAt))
-		.limit(50);
-
-	return logs;
-}
-
-export async function getEventNotificationStats(eventId: string) {
-	const logs = await db
-		.select()
-		.from(notificationLogs)
-		.where(eq(notificationLogs.eventId, eventId));
-
-	const total = logs.length;
-	const sent = logs.filter((l) => l.status === "sent").length;
-	const failed = logs.filter((l) => l.status === "failed").length;
-	const bounced = logs.filter((l) => l.status === "bounced").length;
-
-	return { total, sent, failed, bounced };
 }

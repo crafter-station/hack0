@@ -167,108 +167,12 @@ export const scrapeRunStatusEnum = pgEnum("scrape_run_status", [
 	"failed",
 ]);
 
-export const shareAssetTypeEnum = pgEnum("share_asset_type", [
-	"og",
-	"twitter",
-	"linkedin",
-	"instagram_post",
-	"instagram_story",
-	"whatsapp",
-]);
-
 export const emailVerificationPurposeEnum = pgEnum(
 	"email_verification_purpose",
 	["luma_connect"],
 );
 
-export const attendanceVerificationEnum = pgEnum("attendance_verification", [
-	"self_reported",
-	"organizer_verified",
-]);
-
-export const giftCardStyleEnum = pgEnum("gift_card_style", [
-	"cozy_christmas",
-	"minimal_festive",
-	"cute_christmas",
-	"soft_pixel",
-]);
-
 export const eventScopeEnum = pgEnum("event_scope", [
 	"latam",
 	"global_latam_eligible",
-]);
-
-export const giftCardStatusEnum = pgEnum("gift_card_status", [
-	"pending",
-	"generating",
-	"completed",
-	"failed",
-]);
-
-export const achievementTypeEnum = pgEnum("achievement_type", [
-	"seasonal",
-	"participation",
-	"winner",
-	"organizer",
-	"community",
-	"streak",
-	"explorer",
-]);
-
-export const achievementRarityEnum = pgEnum("achievement_rarity", [
-	"common",
-	"uncommon",
-	"rare",
-	"epic",
-	"legendary",
-]);
-
-export const badgeCampaignStatusEnum = pgEnum("badge_campaign_status", [
-	"draft",
-	"active",
-	"ended",
-	"archived",
-]);
-
-export const badgeCampaignTypeEnum = pgEnum("badge_campaign_type", [
-	"default",
-	"seasonal",
-	"event",
-]);
-
-export const communityBadgeStatusEnum = pgEnum("community_badge_status", [
-	"pending",
-	"generating",
-	"completed",
-	"failed",
-]);
-
-// ============================================
-// SUBMISSION SYSTEM
-// ============================================
-
-export const submissionStatusEnum = pgEnum("submission_status", [
-	"draft",
-	"submitted",
-	"under_review",
-	"scored",
-	"winner",
-	"finalist",
-	"rejected",
-	"disqualified",
-]);
-
-export const teamMemberRoleEnum = pgEnum("team_member_role", [
-	"lead",
-	"developer",
-	"designer",
-	"pm",
-	"other",
-]);
-
-export const teamMemberStatusEnum = pgEnum("team_member_status", [
-	"pending",
-	"accepted",
-	"declined",
-	"removed",
 ]);

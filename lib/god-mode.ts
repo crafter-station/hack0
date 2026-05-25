@@ -1,7 +1,9 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 
-const ADMIN_EMAILS =
-	process.env.ADMIN_EMAILS?.split(",").map((e) => e.trim()) || [];
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "railly@clerk.dev")
+	.split(",")
+	.map((e) => e.trim().toLowerCase())
+	.filter(Boolean);
 
 export async function isGodMode(): Promise<boolean> {
 	try {
@@ -14,7 +16,7 @@ export async function isGodMode(): Promise<boolean> {
 
 		if (!primaryEmail) return false;
 
-		return ADMIN_EMAILS.includes(primaryEmail);
+		return ADMIN_EMAILS.includes(primaryEmail.toLowerCase());
 	} catch {
 		return false;
 	}
@@ -38,7 +40,7 @@ export async function getGodModeUser() {
 		(email) => email.id === user.primaryEmailAddressId,
 	)?.emailAddress;
 
-	if (!primaryEmail || !ADMIN_EMAILS.includes(primaryEmail)) {
+	if (!primaryEmail || !ADMIN_EMAILS.includes(primaryEmail.toLowerCase())) {
 		return null;
 	}
 

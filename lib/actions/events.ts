@@ -12,28 +12,26 @@ import {
 	or,
 	sql,
 } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import {
 	communityMembers,
 	type Event,
 	type EventSponsor,
 	eventOrganizers,
-	eventShareAssets,
 	eventSponsors,
 	events,
 	importJobs,
 	type NewEvent,
 	type NewEventSponsor,
-	notificationLogs,
 	type Organization,
 	organizations,
-	winnerClaims,
 } from "@/lib/db/schema";
-import { notifySubscribersOfNewEvent } from "@/lib/email/notify-subscribers";
 import { type EventCategory, getCategoryById } from "@/lib/event-categories";
 import { isGodMode } from "@/lib/god-mode";
 import { createUniqueSlug, ensureUniqueShortCode } from "@/lib/slug-utils";
 import { getUserCommunityRole } from "./community-members";
+import { canManageEventById } from "./permissions";
 
 export interface EventFilters {
 	category?: EventCategory;
@@ -522,6 +520,69 @@ export interface CreateEventResult {
 	error?: string;
 }
 
+export interface UpdateEventInput {
+	eventId: string;
+	name?: string;
+	description?: string;
+	startDate?: Date | null;
+	endDate?: Date | null;
+	registrationDeadline?: Date | null;
+	format?: "virtual" | "in-person" | "hybrid";
+	department?: string;
+	city?: string;
+	venue?: string;
+	timezone?: string;
+	geoLatitude?: string | null;
+	geoLongitude?: string | null;
+	meetingUrl?: string | null;
+	prizePool?: number | null;
+	prizeCurrency?: "USD" | "PEN";
+	prizeDescription?: string;
+	websiteUrl?: string;
+	registrationUrl?: string;
+	eventImageUrl?: string;
+	eventType?: string;
+	skillLevel?: string;
+	status?: string;
+}
+
+export async function updateEvent(input: UpdateEventInput) {
+	const { userId } = await auth();
+
+	if (!userId) {
+		return { success: false, error: "Debes iniciar sesión" };
+	}
+
+	const canEdit = await canManageEventById(input.eventId);
+
+	if (!canEdit) {
+		return {
+			success: false,
+			error: "No tienes permiso para editar este evento",
+		};
+	}
+
+	const { eventId, ...updateData } = input;
+	const filteredData = Object.fromEntries(
+		Object.entries(updateData).filter(([, value]) => value !== undefined),
+	);
+
+	if (Object.keys(filteredData).length === 0) {
+		return { success: false, error: "No hay cambios para guardar" };
+	}
+
+	await db
+		.update(events)
+		.set({
+			...filteredData,
+			updatedAt: new Date(),
+		})
+		.where(eq(events.id, eventId));
+
+	revalidatePath("/");
+	return { success: true };
+}
+
 export async function createEvent(
 	input: CreateEventInput,
 ): Promise<CreateEventResult> {
@@ -610,10 +671,6 @@ export async function createEvent(
 
 		const createdEvent = result[0];
 
-		if (isApproved) {
-			await notifySubscribersOfNewEvent({ eventId: createdEvent.id });
-		}
-
 		return { success: true, event: createdEvent };
 	} catch (error) {
 		console.error("Error creating event:", error);
@@ -629,9 +686,6 @@ export async function approveEvent(
 			.update(events)
 			.set({ isApproved: true, approvalStatus: "approved" })
 			.where(eq(events.id, eventId));
-
-		// Notify subscribers of the new event
-		await notifySubscribersOfNewEvent({ eventId });
 
 		return { success: true };
 	} catch (error) {
@@ -688,18 +742,11 @@ export async function deleteEvent(
 			};
 		}
 
-		await db
-			.delete(notificationLogs)
-			.where(eq(notificationLogs.eventId, eventId));
-		await db.delete(winnerClaims).where(eq(winnerClaims.eventId, eventId));
 		await db.delete(eventSponsors).where(eq(eventSponsors.eventId, eventId));
 		await db
 			.delete(eventOrganizers)
 			.where(eq(eventOrganizers.eventId, eventId));
 		await db.delete(importJobs).where(eq(importJobs.eventId, eventId));
-		await db
-			.delete(eventShareAssets)
-			.where(eq(eventShareAssets.eventId, eventId));
 
 		await db.delete(events).where(eq(events.id, eventId));
 
@@ -734,11 +781,6 @@ export async function getEventsByApprovalStatus(
 		.orderBy(desc(events.createdAt));
 
 	return result;
-}
-
-// Keep for backwards compatibility
-export async function getPendingEvents(): Promise<Event[]> {
-	return getEventsByApprovalStatus("pending");
 }
 
 // ============================================

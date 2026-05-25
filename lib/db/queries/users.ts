@@ -108,7 +108,6 @@ export async function updateUserStats(
 		hackathonsCount: number;
 		hackathonWinsCount: number;
 		communitiesCount: number;
-		achievementsCount: number;
 		totalPoints: number;
 	}>,
 ) {

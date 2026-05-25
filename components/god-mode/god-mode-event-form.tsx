@@ -74,9 +74,15 @@ export function GodModeEventForm({ organizations }: GodModeEventFormProps) {
 		const formData = new FormData(e.currentTarget);
 
 		try {
+			if (!organizationId) {
+				setError("Selecciona una organización");
+				setIsSubmitting(false);
+				return;
+			}
+
 			const result = await godModeCreateEvent({
 				name: formData.get("name") as string,
-				organizationId: organizationId || undefined,
+				organizationId,
 				description: (formData.get("description") as string) || undefined,
 				eventType: (formData.get("eventType") as string) || undefined,
 				startDate: formData.get("startDate")
@@ -124,7 +130,7 @@ export function GodModeEventForm({ organizations }: GodModeEventFormProps) {
 				</div>
 
 				<div className="space-y-2">
-					<Label htmlFor="organization">Organization (optional)</Label>
+					<Label htmlFor="organization">Organization *</Label>
 					<SearchableSelect
 						options={orgOptions}
 						value={organizationId}

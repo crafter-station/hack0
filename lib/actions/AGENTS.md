@@ -9,16 +9,11 @@ Todas las server actions de la aplicación. Core de la lógica de negocio.
 | events.ts | CRUD de eventos, ordenamiento inteligente, filtrado |
 | organizations.ts | Gestión de organizaciones |
 | communities.ts | Operaciones de comunidad |
-| campaigns.ts | Campañas de badges |
-| badges.ts | Generación y gestión de badges |
 | cohost-invites.ts | Invitaciones de co-host para eventos |
 | community-members.ts | Gestión de miembros de comunidad |
-| claims.ts | Claims de organizadores/ganadores |
-| host-claims.ts | Claims de hosts de eventos |
 | event-hosts.ts | Asignación manual de hosts |
 | permissions.ts | Verificación de permisos de usuario |
-| analytics.ts | Analytics de comunidad |
-| attendance.ts | Asistencia a eventos |
+| analytics.ts | Analytics de imports |
 | import.ts | Importación de eventos externos |
 | ai-extract.ts | Extracción de datos con IA |
 | god-mode.ts | Acciones de super-admin |
@@ -26,7 +21,6 @@ Todas las server actions de la aplicación. Core de la lógica de negocio.
 | event-organizers.ts | Gestión de organizadores |
 | organization-relationships.ts | Relaciones entre organizaciones |
 | users.ts | Gestión de usuarios |
-| submissions.ts | Sistema de entregas: templates, submissions, equipos, evaluación, rankings |
 
 ## Patrones
 

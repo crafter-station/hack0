@@ -6,15 +6,12 @@ Tasks de Trigger.dev v3 para procesamiento asíncrono.
 
 | Task | Propósito |
 |------|-----------|
-| community-badge-generate.ts | Genera badges personalizados con IA (Fal.ai) |
-| gift-card-generate.ts | Genera tarjetas de regalo con IA |
 | event-import.ts | Importa eventos de fuentes externas |
 | luma-calendar-sync.ts | Sincroniza eventos del calendario principal de Luma |
 | luma-webhook-processor.ts | Procesa webhooks de Luma (eventos + hosts) |
 | org-scraper.ts | Scraping de organizaciones |
 | org-scraper-preview.ts | Preview de resultados de scraping |
 | org-relationship-discovery.ts | Descubre relaciones entre organizaciones |
-| test-badge-style.ts | Testing de estilos de badge |
 
 ## Patrones
 
@@ -42,7 +39,6 @@ export const myTask = task({
 
 ## Dependencias Externas
 
-- Fal.ai - Generación de imágenes con IA
 - Firecrawl - Web scraping
 - Resend - Envío de emails
 

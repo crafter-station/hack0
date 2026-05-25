@@ -92,27 +92,3 @@ export const scrapeRuns = pgTable("scrape_runs", {
 
 export type ScrapeRun = typeof scrapeRuns.$inferSelect;
 export type NewScrapeRun = typeof scrapeRuns.$inferInsert;
-
-export const rssFeedSubscriptions = pgTable("rss_feed_subscriptions", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	organizationId: uuid("organization_id").references(() => organizations.id),
-	feedUrl: varchar("feed_url", { length: 500 }).notNull(),
-	feedTitle: varchar("feed_title", { length: 255 }),
-	isActive: boolean("is_active").default(true),
-	lastFetchedAt: timestamp("last_fetched_at", {
-		mode: "date",
-		withTimezone: true,
-	}),
-	lastItemGuid: varchar("last_item_guid", { length: 500 }),
-	createdAt: timestamp("created_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-	updatedAt: timestamp("updated_at", {
-		mode: "date",
-		withTimezone: true,
-	}).defaultNow(),
-});
-
-export type RssFeedSubscription = typeof rssFeedSubscriptions.$inferSelect;
-export type NewRssFeedSubscription = typeof rssFeedSubscriptions.$inferInsert;

@@ -33,7 +33,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { updateEvent } from "@/lib/actions/claims";
+import { updateEvent } from "@/lib/actions/events";
 import type { Event } from "@/lib/db/schema";
 
 interface EditEventDialogProps {

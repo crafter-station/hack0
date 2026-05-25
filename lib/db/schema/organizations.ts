@@ -1,7 +1,6 @@
 import {
 	boolean,
 	integer,
-	jsonb,
 	pgTable,
 	text,
 	timestamp,
@@ -59,28 +58,6 @@ export const organizations = pgTable("organizations", {
 
 	// Tags for discoverability
 	tags: text("tags").array(),
-
-	// Badge settings
-	badgeEnabled: boolean("badge_enabled").default(false),
-	badgeStylePrompt: text("badge_style_prompt"),
-	badgeBackgroundPrompt: text("badge_background_prompt"),
-	badgeAccentColor: varchar("badge_accent_color", { length: 20 }),
-	badgeAiStyle: varchar("badge_ai_style", { length: 50 }),
-	badgeCustomTestPortraitUrl: varchar("badge_custom_test_portrait_url", {
-		length: 500,
-	}),
-	badgeCustomTestBackgroundUrl: varchar("badge_custom_test_background_url", {
-		length: 500,
-	}),
-	badgeCustomTestReferenceUrl: varchar("badge_custom_test_reference_url", {
-		length: 500,
-	}),
-	badgeCustomBackgroundImageUrl: varchar("badge_custom_background_image_url", {
-		length: 500,
-	}),
-	badgeStyleTestImages: jsonb("badge_style_test_images").$type<
-		Record<string, { portrait: string | null; background: string | null }>
-	>(),
 
 	// Timestamps
 	createdAt: timestamp("created_at", {

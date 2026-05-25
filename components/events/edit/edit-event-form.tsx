@@ -21,8 +21,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { updateEvent } from "@/lib/actions/claims";
-import type { EventSponsorWithOrg } from "@/lib/actions/events";
+import { type EventSponsorWithOrg, updateEvent } from "@/lib/actions/events";
 import type { Event } from "@/lib/db/schema";
 import { EVENT_TYPE_OPTIONS, SKILL_LEVEL_OPTIONS } from "@/lib/event-utils";
 import { DateRangeInput } from "./date-range-input";
