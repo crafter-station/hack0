@@ -67,7 +67,7 @@ export function SiteFooter() {
 										href="/data-health"
 										className="hover:text-foreground transition-colors"
 									>
-										Data health
+										Cobertura
 									</Link>
 									<a
 										href="mailto:hey@hack0.dev"

@@ -316,27 +316,6 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 			nextAction:
 				"Dedupe manual de nombres, perfiles reclamables y links sociales.",
 		},
-		{
-			id: "demos",
-			label: "Demo projects",
-			count: 0,
-			status: statusFor(0, false),
-			href: null,
-			source: "pendiente",
-			evidence: "sin modelo público",
-			nextAction:
-				"Crear dataset mínimo: evento, demo, GitHub, equipo, video y tags.",
-		},
-		{
-			id: "workflows",
-			label: "AI workflows",
-			count: 0,
-			status: statusFor(0, false),
-			href: null,
-			source: "pendiente",
-			evidence: "sin modelo público",
-			nextAction: "Curar workflows reutilizables desde demos y eventos de IA.",
-		},
 	];
 
 	const sourceBreakdown = sourceRows.map((row) => ({

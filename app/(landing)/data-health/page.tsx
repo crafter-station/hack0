@@ -3,7 +3,6 @@ import {
 	AlertTriangle,
 	ArrowRight,
 	CheckCircle2,
-	CircleDashed,
 	Database,
 	ExternalLink,
 	ListChecks,
@@ -24,7 +23,7 @@ import {
 } from "@/lib/index-data-health";
 
 export const metadata: Metadata = {
-	title: "Data Health | Peru Agentic Builder Index",
+	title: "Cobertura | Peru Agentic Builder Index",
 	description:
 		"Cobertura, fuentes y gaps actuales del Peru Agentic Builder Index.",
 };
@@ -86,16 +85,16 @@ export default async function DataHealthPage() {
 							<div className="max-w-3xl space-y-5">
 								<Badge variant="outline" className="gap-2 rounded-none">
 									<Database className="size-3.5" />
-									Data health
+									Cobertura
 								</Badge>
 								<div className="space-y-3">
 									<h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">
-										Cobertura del Peru Agentic Builder Index
+										Cobertura y gaps del Peru Agentic Builder Index
 									</h1>
 									<p className="max-w-2xl text-base leading-7 text-muted-foreground">
-										Vista pública de lo que ya está mapeado, qué viene de datos
-										reales y qué todavía necesita backfill antes del primer
-										State of Agentic Builders in Peru.
+										Vista operativa de lo que ya está mapeado, qué viene de
+										datos reales y qué necesita backfill para priorizar el
+										trabajo del índice.
 									</p>
 								</div>
 								<div className="flex flex-col gap-2 sm:flex-row">
@@ -149,13 +148,20 @@ export default async function DataHealthPage() {
 					<div className="space-y-8">
 						<SectionHeader
 							icon={ListChecks}
-							title="Backfill queue"
+							title="Backfill prioritario"
 							description="Trabajo pendiente ordenado por gaps reales del modelo actual."
 						/>
 						<div className="grid gap-3">
-							{backfillQueue.map((facet) => (
-								<BackfillRow key={facet.id} facet={facet} />
-							))}
+							{backfillQueue.length > 0 ? (
+								backfillQueue.map((facet) => (
+									<BackfillRow key={facet.id} facet={facet} />
+								))
+							) : (
+								<div className="border bg-card p-6 text-sm text-muted-foreground">
+									Los buckets principales ya tienen modelo y conteo. El trabajo
+									urgente está en calidad de datos y fuentes.
+								</div>
+							)}
 						</div>
 
 						<SectionHeader
@@ -280,11 +286,7 @@ function BackfillRow({ facet }: { facet: CoverageFacet }) {
 		<div className="grid gap-4 border bg-card p-4 md:grid-cols-[180px_minmax(0,1fr)]">
 			<div className="space-y-2">
 				<div className="flex items-center gap-2">
-					{facet.status === "not_modeled" ? (
-						<CircleDashed className="size-4 text-muted-foreground" />
-					) : (
-						<AlertTriangle className="size-4 text-amber-600" />
-					)}
+					<AlertTriangle className="size-4 text-amber-600" />
 					<h3 className="text-sm font-semibold">{facet.label}</h3>
 				</div>
 				<Badge className={`rounded-none ${status.className}`}>
