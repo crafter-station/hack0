@@ -57,6 +57,12 @@ export function SiteFooter() {
 									>
 										Roadmap
 									</Link>
+									<Link
+										href="/data-health"
+										className="hover:text-foreground transition-colors"
+									>
+										Data health
+									</Link>
 									<a
 										href="mailto:hey@hack0.dev"
 										className="hover:text-foreground transition-colors"
