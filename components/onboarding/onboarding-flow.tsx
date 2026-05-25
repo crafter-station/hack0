@@ -461,8 +461,8 @@ export function OnboardingFlow({ redirectUrl }: OnboardingFlowProps) {
 									</>
 								) : (
 									<>
-										Reclamar mi badge
-										<Trophy className="w-4 h-4" />
+										Guardar preferencias
+										<Check className="w-4 h-4" />
 									</>
 								)}
 							</Button>
