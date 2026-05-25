@@ -16,6 +16,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { EventCover } from "@/components/events";
+import { VerifiedBadge } from "@/components/icons/verified-badge";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +56,7 @@ const HACKATHON_TYPES = [
 	"olympiad",
 	"robotics",
 ] as const;
+const COMMUNITY_TYPE = "community";
 const UNIVERSITY_TYPES = ["university", "student_org"] as const;
 
 type IndexCommunity = {
@@ -78,6 +80,14 @@ async function getIndexData() {
 		eq(organizations.isPublic, true),
 		eq(organizations.isPersonalOrg, false),
 		inArray(organizations.country, LATAM_EVENT_COUNTRIES),
+	);
+	const communityOrgWhere = and(
+		publicOrgWhere,
+		eq(organizations.type, COMMUNITY_TYPE),
+	);
+	const labOrgWhere = and(
+		publicOrgWhere,
+		inArray(organizations.type, UNIVERSITY_TYPES),
 	);
 
 	const approvedLatamEventsWhere = and(
@@ -148,7 +158,7 @@ async function getIndexData() {
 				memberCountSubquery,
 				eq(organizations.id, memberCountSubquery.communityId),
 			)
-			.where(publicOrgWhere)
+			.where(communityOrgWhere)
 			.orderBy(desc(organizations.isVerified), desc(organizations.updatedAt))
 			.limit(8),
 		db
@@ -175,7 +185,7 @@ async function getIndexData() {
 				memberCountSubquery,
 				eq(organizations.id, memberCountSubquery.communityId),
 			)
-			.where(and(publicOrgWhere, inArray(organizations.type, UNIVERSITY_TYPES)))
+			.where(labOrgWhere)
 			.orderBy(desc(organizations.isVerified), desc(organizations.updatedAt))
 			.limit(4),
 		db
@@ -200,15 +210,13 @@ async function getIndexData() {
 		db
 			.select({ totalCommunities: count(organizations.id) })
 			.from(organizations)
-			.where(publicOrgWhere),
+			.where(communityOrgWhere),
 		getBuilderDirectorySummary(),
 		getOpportunityDirectorySummary(),
 		db
 			.select({ totalLabs: count(organizations.id) })
 			.from(organizations)
-			.where(
-				and(publicOrgWhere, inArray(organizations.type, UNIVERSITY_TYPES)),
-			),
+			.where(labOrgWhere),
 	]);
 
 	const counts = countRows[0] || {
@@ -323,7 +331,7 @@ export default async function HomePage() {
 
 				<section className="border-b bg-muted/20">
 					<div className="mx-auto grid max-w-screen-xl gap-4 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start lg:px-8">
-						<div className="border bg-background p-4 sm:p-5">
+						<div className="h-fit self-start border bg-background p-4 sm:p-5">
 							<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 								<div className="max-w-2xl">
 									<h2 className="text-lg font-semibold">
@@ -388,7 +396,7 @@ export default async function HomePage() {
 							</div>
 						</div>
 
-						<div className="border bg-background p-4 sm:p-5">
+						<div className="h-fit self-start border bg-background p-4 sm:p-5">
 							<div className="flex items-center justify-between gap-4">
 								<div>
 									<h2 className="text-lg font-semibold">Cobertura por país</h2>
@@ -730,12 +738,12 @@ function CommunityRow({ community }: { community: IndexCommunity }) {
 				)}
 			</div>
 			<div className="min-w-0 flex-1">
-				<div className="flex items-center gap-2">
-					<h3 className="truncate text-sm font-medium group-hover:underline">
+				<div className="flex min-w-0 items-center gap-2">
+					<h3 className="min-w-0 truncate text-sm font-medium group-hover:underline">
 						{name}
 					</h3>
 					{community.isVerified && (
-						<span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
+						<VerifiedBadge className="size-4 shrink-0 text-blue-500" />
 					)}
 				</div>
 				<div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">

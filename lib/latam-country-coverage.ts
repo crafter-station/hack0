@@ -46,6 +46,7 @@ export async function getLatamCountryCoverage(): Promise<
 				and(
 					eq(organizations.isPublic, true),
 					eq(organizations.isPersonalOrg, false),
+					eq(organizations.type, "community"),
 					inArray(organizations.country, countryCodes),
 				),
 			)
