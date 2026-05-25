@@ -19,6 +19,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
+import { EventCover } from "@/components/events/event-cover";
 import { LinkedinLogo } from "@/components/logos/linkedin";
 import { TwitterLogo } from "@/components/logos/twitter";
 import { ShareEventDialog } from "@/components/manage/share-event-dialog";
@@ -118,20 +119,11 @@ export function OverviewTab({ event, community, sponsors }: OverviewTabProps) {
 			<div className="grid lg:grid-cols-[1fr_280px] gap-4">
 				<div className="rounded-xl border bg-card">
 					<div className="p-4 flex gap-4">
-						{event.eventImageUrl ? (
-							<div className="relative h-28 w-28 shrink-0 rounded-lg overflow-hidden border bg-muted">
-								<Image
-									src={event.eventImageUrl}
-									alt={event.name}
-									fill
-									className="object-cover"
-								/>
-							</div>
-						) : (
-							<div className="h-28 w-28 shrink-0 rounded-lg border bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-								<Calendar className="h-8 w-8 text-muted-foreground/50" />
-							</div>
-						)}
+						<EventCover
+							event={event}
+							className="h-28 w-28 shrink-0 rounded-lg border"
+							sizes="112px"
+						/>
 
 						<div className="flex-1 min-w-0 space-y-2">
 							<div className="flex items-center gap-2 flex-wrap">

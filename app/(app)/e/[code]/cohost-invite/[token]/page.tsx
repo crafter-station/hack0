@@ -1,9 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
-import { Calendar, XCircle } from "lucide-react";
+import { XCircle } from "lucide-react";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { AcceptCohostInviteButton } from "@/components/events/detail";
+import { EventCover } from "@/components/events/event-cover";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Button } from "@/components/ui/button";
@@ -83,17 +84,11 @@ async function CohostInviteContent({ token }: { token: string }) {
 				<div className="rounded-lg border bg-card p-8 space-y-6">
 					<div className="text-center space-y-4">
 						<div className="flex justify-center">
-							{invite.event.eventImageUrl ? (
-								<img
-									src={invite.event.eventImageUrl}
-									alt={invite.event.name}
-									className="h-24 w-24 rounded-lg object-cover border-2 border-border"
-								/>
-							) : (
-								<div className="h-24 w-24 rounded-lg bg-muted border-2 border-border flex items-center justify-center">
-									<Calendar className="h-12 w-12 text-muted-foreground" />
-								</div>
-							)}
+							<EventCover
+								event={invite.event}
+								className="h-24 w-24 rounded-lg border-2 border-border"
+								sizes="96px"
+							/>
 						</div>
 						<div className="space-y-2">
 							<h1 className="text-2xl font-bold">
@@ -173,17 +168,11 @@ async function CohostInviteContent({ token }: { token: string }) {
 			<div className="rounded-lg border bg-card p-8 space-y-6">
 				<div className="text-center space-y-4">
 					<div className="flex justify-center">
-						{invite.event.eventImageUrl ? (
-							<img
-								src={invite.event.eventImageUrl}
-								alt={invite.event.name}
-								className="h-24 w-24 rounded-lg object-cover border-2 border-border"
-							/>
-						) : (
-							<div className="h-24 w-24 rounded-lg bg-muted border-2 border-border flex items-center justify-center">
-								<Calendar className="h-12 w-12 text-muted-foreground" />
-							</div>
-						)}
+						<EventCover
+							event={invite.event}
+							className="h-24 w-24 rounded-lg border-2 border-border"
+							sizes="96px"
+						/>
 					</div>
 					<div className="space-y-2">
 						<h1 className="text-2xl font-bold">Invitación para co-organizar</h1>

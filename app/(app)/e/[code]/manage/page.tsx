@@ -5,9 +5,9 @@ import {
 	Settings,
 	Users,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { EventCover } from "@/components/events/event-cover";
 import { ManageContent } from "@/components/manage/manage-content";
 import { Button } from "@/components/ui/button";
 import { getEventImportJobs } from "@/lib/actions/analytics";
@@ -50,20 +50,12 @@ async function EventManageHero({
 			<div className="mx-auto max-w-screen-xl px-4 lg:px-8">
 				<div className="flex items-center justify-between gap-4 py-4">
 					<div className="flex items-center gap-3 min-w-0">
-						{event.eventImageUrl ? (
-							<div className="relative h-10 w-10 shrink-0 rounded-md overflow-hidden border border-border">
-								<Image
-									src={event.eventImageUrl}
-									alt={event.name}
-									fill
-									className="object-cover"
-								/>
-							</div>
-						) : (
-							<div className="h-10 w-10 shrink-0 rounded-md bg-muted border border-border flex items-center justify-center text-xs font-medium text-muted-foreground">
-								{event.name.charAt(0).toUpperCase()}
-							</div>
-						)}
+						<EventCover
+							event={event}
+							className="h-10 w-10 shrink-0 rounded-md border border-border"
+							sizes="40px"
+							variant="thumb"
+						/>
 
 						<div className="min-w-0">
 							<h1 className="text-lg font-semibold tracking-tight truncate">

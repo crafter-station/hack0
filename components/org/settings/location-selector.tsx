@@ -19,12 +19,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-
-export const ACTIVE_COUNTRIES = [
-	{ code: "PE", name: "Perú" },
-	{ code: "CO", name: "Colombia" },
-	{ code: "CL", name: "Chile" },
-] as const;
+import { LATAM_COUNTRY_OPTIONS } from "@/lib/latam-countries";
 
 export const REGIONS_BY_COUNTRY: Record<string, string[]> = {
 	PE: [
@@ -129,8 +124,9 @@ export function LocationSelector({
 	const [countryOpen, setCountryOpen] = useState(false);
 	const [regionOpen, setRegionOpen] = useState(false);
 
-	const selectedCountry = ACTIVE_COUNTRIES.find((c) => c.code === country);
+	const selectedCountry = LATAM_COUNTRY_OPTIONS.find((c) => c.code === country);
 	const availableRegions = country ? REGIONS_BY_COUNTRY[country] || [] : [];
+	const hasRegionOptions = availableRegions.length > 0;
 
 	return (
 		<div className={`flex gap-2 ${className}`}>
@@ -152,11 +148,13 @@ export function LocationSelector({
 						</Button>
 					</ButtonGroup>
 				</PopoverTrigger>
-				<PopoverContent className="w-[200px] p-0" align="start">
+				<PopoverContent className="w-[240px] p-0" align="start">
 					<Command>
+						<CommandInput placeholder="Buscar país..." />
 						<CommandList>
+							<CommandEmpty>No encontrado</CommandEmpty>
 							<CommandGroup>
-								{ACTIVE_COUNTRIES.map((c) => (
+								{LATAM_COUNTRY_OPTIONS.map((c) => (
 									<CommandItem
 										key={c.code}
 										value={c.code}
@@ -169,6 +167,7 @@ export function LocationSelector({
 											setCountryOpen(false);
 										}}
 									>
+										<span className="mr-2">{c.flag}</span>
 										{c.name}
 										{country === c.code && (
 											<Check className="ml-auto h-4 w-4" />
@@ -200,9 +199,9 @@ export function LocationSelector({
 						variant="outline"
 						role="combobox"
 						className="flex-1 justify-between !rounded-none font-normal"
-						disabled={disabled || !country}
+						disabled={disabled || !country || !hasRegionOptions}
 					>
-						{region || "Región"}
+						{region || (hasRegionOptions ? "Región" : "Región opcional")}
 						<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 					</Button>
 				</PopoverTrigger>

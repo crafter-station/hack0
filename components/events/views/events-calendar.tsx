@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { EventCover } from "@/components/events/event-cover";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { EventWithOrg } from "@/lib/actions/events";
@@ -293,17 +294,7 @@ export function EventsCalendar({
 		return (
 			<div className="flex h-32 w-64 bg-popover text-popover-foreground rounded-md border shadow-md overflow-hidden">
 				<div className="w-32 h-32 shrink-0 bg-muted">
-					{event.eventImageUrl ? (
-						<img
-							src={event.eventImageUrl}
-							alt={event.name}
-							className="w-full h-full object-cover"
-						/>
-					) : (
-						<div className="w-full h-full bg-gradient-to-br from-muted to-muted-foreground/20 flex items-center justify-center">
-							<Calendar className="w-8 h-8 text-muted-foreground/50" />
-						</div>
-					)}
+					<EventCover event={event} className="h-full w-full" sizes="128px" />
 				</div>
 				<div className="w-32 h-32 p-2.5 flex flex-col justify-between overflow-hidden">
 					<div className="space-y-0.5">

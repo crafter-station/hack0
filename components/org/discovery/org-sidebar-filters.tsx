@@ -3,13 +3,14 @@
 import { Check, Plus, Search, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { type FormEvent, type ReactNode, useCallback, useState } from "react";
 import {
 	COMMUNITY_TAG_CATEGORIES,
 	COMMUNITY_TAG_LABELS,
 	type CommunityTag,
 	ORGANIZER_TYPE_LABELS,
 } from "@/lib/db/schema";
+import { LATAM_COUNTRY_OPTIONS } from "@/lib/latam-countries";
 
 const SIZE_FILTERS = [
 	{ id: "small", label: "< 100 miembros", max: 100 },
@@ -20,12 +21,6 @@ const SIZE_FILTERS = [
 const VERIFICATION_FILTERS = [
 	{ id: "verified", label: "Verificadas" },
 	{ id: "unverified", label: "Sin verificar" },
-] as const;
-
-const ACTIVE_COUNTRIES = [
-	{ code: "PE", name: "Perú" },
-	{ code: "CO", name: "Colombia" },
-	{ code: "CL", name: "Chile" },
 ] as const;
 
 const POPULAR_TYPES = [
@@ -47,6 +42,41 @@ interface OrgSidebarFiltersProps {
 	defaultTags?: string[];
 	availableCountries?: string[];
 	availableTags?: string[];
+}
+
+function FilterButton({
+	selected,
+	onClick,
+	children,
+	trailing,
+}: {
+	selected: boolean;
+	onClick: () => void;
+	children: ReactNode;
+	trailing?: ReactNode;
+}) {
+	return (
+		<button
+			type="button"
+			aria-pressed={selected}
+			onClick={onClick}
+			className="flex w-full items-center gap-2 px-2 py-1.5 text-left text-xs transition-colors hover:bg-muted/30"
+		>
+			<span
+				className={`flex h-4 w-4 shrink-0 items-center justify-center border transition-colors ${
+					selected
+						? "border-foreground bg-foreground"
+						: "border-muted-foreground/60 bg-transparent"
+				}`}
+			>
+				{selected && <Check className="h-3 w-3 text-background" />}
+			</span>
+			<span className="min-w-0 flex-1 truncate text-muted-foreground">
+				{children}
+			</span>
+			{trailing}
+		</button>
+	);
 }
 
 export function OrgSidebarFilters({
@@ -78,7 +108,7 @@ export function OrgSidebarFilters({
 		[router, pathname, searchParams],
 	);
 
-	const handleSearchSubmit = (e: React.FormEvent) => {
+	const handleSearchSubmit = (e: FormEvent) => {
 		e.preventDefault();
 		const params = new URLSearchParams(searchParams.toString());
 		if (search) {
@@ -100,11 +130,21 @@ export function OrgSidebarFilters({
 		updateUrl(key, newValues);
 	};
 
-	const displayCountries = ACTIVE_COUNTRIES;
+	const availableCountrySet = new Set(
+		availableCountries.map((country) => country.toUpperCase()),
+	);
+	const displayCountries = LATAM_COUNTRY_OPTIONS.map((country) => ({
+		...country,
+		hasCommunities: availableCountrySet.has(country.code),
+	})).sort((a, b) => {
+		if (a.hasCommunities !== b.hasCommunities) {
+			return a.hasCommunities ? -1 : 1;
+		}
+		return a.name.localeCompare(b.name, "es");
+	});
 
 	return (
 		<aside className="hidden lg:block w-[190px] flex-shrink-0">
-			{/* Search */}
 			<form
 				onSubmit={handleSearchSubmit}
 				className="flex items-center border border-border/50 bg-transparent h-8 mb-4 hover:border-border transition-colors focus-within:border-foreground/30"
@@ -112,6 +152,8 @@ export function OrgSidebarFilters({
 				<Search className="w-3.5 h-3.5 text-muted-foreground ml-2.5" />
 				<input
 					type="text"
+					name="community-search"
+					autoComplete="off"
 					placeholder="Buscar..."
 					value={search}
 					onChange={(e) => setSearch(e.target.value)}
@@ -126,6 +168,7 @@ export function OrgSidebarFilters({
 							params.delete("search");
 							router.push(`${pathname}?${params.toString()}`);
 						}}
+						aria-label="Limpiar búsqueda"
 						className="pr-2 text-muted-foreground hover:text-foreground"
 					>
 						<X className="w-3.5 h-3.5" />
@@ -134,158 +177,91 @@ export function OrgSidebarFilters({
 			</form>
 
 			<div className="space-y-5">
-				{/* Countries */}
 				<div>
-					<h3 className="text-[10px] text-muted-foreground font-medium mb-2 uppercase tracking-wider">
+					<h3 className="mb-2 text-[10px] font-medium uppercase text-muted-foreground">
 						Países
 					</h3>
-					<div className="space-y-0.5">
+					<div className="max-h-64 space-y-0.5 overflow-y-auto pr-1">
 						{displayCountries.map((country) => (
-							<label
+							<FilterButton
 								key={country.code}
-								className="flex items-center gap-2 px-2 py-1.5 text-xs cursor-pointer hover:bg-muted/30 transition-colors"
+								selected={defaultCountries.includes(country.code)}
+								onClick={() =>
+									toggleFilter("countries", country.code, defaultCountries)
+								}
+								trailing={
+									country.hasCommunities ? (
+										<span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+									) : null
+								}
 							>
-								<div
-									className={`w-4 h-4 border flex items-center justify-center transition-colors ${
-										defaultCountries.includes(country.code)
-											? "bg-foreground border-foreground"
-											: "border-muted-foreground/60 bg-transparent"
-									}`}
-									onClick={() =>
-										toggleFilter("countries", country.code, defaultCountries)
-									}
-								>
-									{defaultCountries.includes(country.code) && (
-										<Check className="w-3 h-3 text-background" />
-									)}
-								</div>
-								<span
-									className="text-muted-foreground"
-									onClick={() =>
-										toggleFilter("countries", country.code, defaultCountries)
-									}
-								>
-									{country.name}
-								</span>
-							</label>
+								<span className="mr-1">{country.flag}</span>
+								{country.name}
+							</FilterButton>
 						))}
 						<Link
 							href="/roadmap#latam"
 							className="flex items-center gap-2 px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
 						>
 							<Plus className="w-3.5 h-3.5" />
-							<span>¿Tu país? Súmate</span>
+							<span>Ver mapa LATAM</span>
 						</Link>
 					</div>
 				</div>
 
-				{/* Type */}
 				<div>
-					<h3 className="text-[10px] text-muted-foreground font-medium mb-2 uppercase tracking-wider">
+					<h3 className="mb-2 text-[10px] font-medium uppercase text-muted-foreground">
 						Tipo
 					</h3>
 					<div className="space-y-0.5">
 						{POPULAR_TYPES.map((type) => (
-							<label
+							<FilterButton
 								key={type}
-								className="flex items-center gap-2 px-2 py-1.5 text-xs cursor-pointer hover:bg-muted/30 transition-colors"
+								selected={defaultTypes.includes(type)}
+								onClick={() => toggleFilter("types", type, defaultTypes)}
 							>
-								<div
-									className={`w-4 h-4 border flex items-center justify-center transition-colors ${
-										defaultTypes.includes(type)
-											? "bg-foreground border-foreground"
-											: "border-muted-foreground/60 bg-transparent"
-									}`}
-									onClick={() => toggleFilter("types", type, defaultTypes)}
-								>
-									{defaultTypes.includes(type) && (
-										<Check className="w-3 h-3 text-background" />
-									)}
-								</div>
-								<span
-									className="text-muted-foreground"
-									onClick={() => toggleFilter("types", type, defaultTypes)}
-								>
-									{ORGANIZER_TYPE_LABELS[type]}
-								</span>
-							</label>
+								{ORGANIZER_TYPE_LABELS[type]}
+							</FilterButton>
 						))}
 					</div>
 				</div>
 
-				{/* Size */}
 				<div>
-					<h3 className="text-[10px] text-muted-foreground font-medium mb-2 uppercase tracking-wider">
+					<h3 className="mb-2 text-[10px] font-medium uppercase text-muted-foreground">
 						Tamaño
 					</h3>
 					<div className="space-y-0.5">
 						{SIZE_FILTERS.map((size) => (
-							<label
+							<FilterButton
 								key={size.id}
-								className="flex items-center gap-2 px-2 py-1.5 text-xs cursor-pointer hover:bg-muted/30 transition-colors"
+								selected={defaultSizes.includes(size.id)}
+								onClick={() => toggleFilter("sizes", size.id, defaultSizes)}
 							>
-								<div
-									className={`w-4 h-4 border flex items-center justify-center transition-colors ${
-										defaultSizes.includes(size.id)
-											? "bg-foreground border-foreground"
-											: "border-muted-foreground/60 bg-transparent"
-									}`}
-									onClick={() => toggleFilter("sizes", size.id, defaultSizes)}
-								>
-									{defaultSizes.includes(size.id) && (
-										<Check className="w-3 h-3 text-background" />
-									)}
-								</div>
-								<span
-									className="text-muted-foreground"
-									onClick={() => toggleFilter("sizes", size.id, defaultSizes)}
-								>
-									{size.label}
-								</span>
-							</label>
+								{size.label}
+							</FilterButton>
 						))}
 					</div>
 				</div>
 
-				{/* Verification */}
 				<div>
-					<h3 className="text-[10px] text-muted-foreground font-medium mb-2 uppercase tracking-wider">
+					<h3 className="mb-2 text-[10px] font-medium uppercase text-muted-foreground">
 						Verificación
 					</h3>
 					<div className="space-y-0.5">
 						{VERIFICATION_FILTERS.map((item) => (
-							<label
+							<FilterButton
 								key={item.id}
-								className="flex items-center gap-2 px-2 py-1.5 text-xs cursor-pointer hover:bg-muted/30 transition-colors"
+								selected={defaultVerification.includes(item.id)}
+								onClick={() =>
+									toggleFilter("verification", item.id, defaultVerification)
+								}
 							>
-								<div
-									className={`w-4 h-4 border flex items-center justify-center transition-colors ${
-										defaultVerification.includes(item.id)
-											? "bg-foreground border-foreground"
-											: "border-muted-foreground/60 bg-transparent"
-									}`}
-									onClick={() =>
-										toggleFilter("verification", item.id, defaultVerification)
-									}
-								>
-									{defaultVerification.includes(item.id) && (
-										<Check className="w-3 h-3 text-background" />
-									)}
-								</div>
-								<span
-									className="text-muted-foreground"
-									onClick={() =>
-										toggleFilter("verification", item.id, defaultVerification)
-									}
-								>
-									{item.label}
-								</span>
-							</label>
+								{item.label}
+							</FilterButton>
 						))}
 					</div>
 				</div>
 
-				{/* Tags by category */}
 				{Object.entries(COMMUNITY_TAG_CATEGORIES).map(
 					([categoryKey, category]) => {
 						const categoryTags = category.tags.filter(
@@ -296,34 +272,18 @@ export function OrgSidebarFilters({
 
 						return (
 							<div key={categoryKey}>
-								<h3 className="text-[10px] text-muted-foreground font-medium mb-2 uppercase tracking-wider">
+								<h3 className="mb-2 text-[10px] font-medium uppercase text-muted-foreground">
 									{category.label}
 								</h3>
 								<div className="space-y-0.5">
 									{categoryTags.map((tag) => (
-										<label
+										<FilterButton
 											key={tag}
-											className="flex items-center gap-2 px-2 py-1.5 text-xs cursor-pointer hover:bg-muted/30 transition-colors"
+											selected={defaultTags.includes(tag)}
+											onClick={() => toggleFilter("tags", tag, defaultTags)}
 										>
-											<div
-												className={`w-4 h-4 border flex items-center justify-center transition-colors ${
-													defaultTags.includes(tag)
-														? "bg-foreground border-foreground"
-														: "border-muted-foreground/60 bg-transparent"
-												}`}
-												onClick={() => toggleFilter("tags", tag, defaultTags)}
-											>
-												{defaultTags.includes(tag) && (
-													<Check className="w-3 h-3 text-background" />
-												)}
-											</div>
-											<span
-												className="text-muted-foreground"
-												onClick={() => toggleFilter("tags", tag, defaultTags)}
-											>
-												{COMMUNITY_TAG_LABELS[tag as CommunityTag]}
-											</span>
-										</label>
+											{COMMUNITY_TAG_LABELS[tag as CommunityTag]}
+										</FilterButton>
 									))}
 								</div>
 							</div>
