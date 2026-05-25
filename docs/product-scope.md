@@ -30,6 +30,7 @@ These modules are removed from the public product until they have real usage, ow
 - Every visible module must have real production data or an immediate operating owner.
 - If a table has no production rows and no near-term workflow, delete it.
 - If a UI asks a user to perform an action we cannot fulfill end to end, remove the UI.
+- While the app has no active users, do not preserve backwards compatibility for removed modules. Flatten migrations to the current schema instead of carrying cleanup history.
 - Admin tools can stay rough when they directly support ingestion, cleanup, or publishing.
 
 ## Current Migration Path
