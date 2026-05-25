@@ -19,7 +19,7 @@ import {
 import { sanitizeImageUrl } from "@/lib/utils";
 
 export const metadata: Metadata = {
-	title: "Programas y Grants | LATAM Agentic Builder Index",
+	title: "Programas y Grants | LATAM Builder Index",
 	description:
 		"Directorio publico de aceleradoras, incubadoras, fondos y programas para builders en LATAM.",
 };

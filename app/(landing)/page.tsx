@@ -43,7 +43,7 @@ import { sanitizeImageUrl } from "@/lib/utils";
 import latamDotsData from "@/public/latam-dots.json";
 
 export const metadata: Metadata = {
-	title: "LATAM Agentic Builder Index",
+	title: "LATAM Builder Index",
 	description:
 		"Directorio público de eventos, comunidades, hackathons, labs, grants y builders de IA en Latinoamérica.",
 };
@@ -299,8 +299,8 @@ export default async function HomePage() {
 									</div>
 									<Hack0Wordmark className="h-14 w-[196px] text-brand-black sm:h-16 sm:w-[224px] dark:text-brand-paper" />
 									<h1 className="max-w-3xl text-pretty break-words text-3xl font-semibold leading-tight text-brand-black sm:text-5xl lg:text-6xl dark:text-brand-paper">
-										<span className="block sm:inline">LATAM Agentic</span>{" "}
-										<span className="block sm:inline">Builder Index</span>
+										<span className="block sm:inline">LATAM Builder</span>{" "}
+										<span className="block sm:inline">Index</span>
 									</h1>
 									<p className="w-full max-w-[22rem] break-words text-sm leading-6 text-brand-forest/85 sm:max-w-2xl sm:text-base sm:leading-7 dark:text-brand-grid">
 										Eventos, comunidades, hackathons, labs, grants y builders de
@@ -534,7 +534,7 @@ export default async function HomePage() {
 								<div className="space-y-3">
 									<div>
 										<h2 className="text-sm font-semibold">
-											State of Agentic Builders in LATAM
+											State of Builders in LATAM
 										</h2>
 										<p className="mt-1 text-xs leading-5 text-muted-foreground">
 											La versión trimestral debe salir de estos datos: eventos,

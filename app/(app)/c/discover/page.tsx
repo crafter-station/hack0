@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { and, count, desc, eq, sql } from "drizzle-orm";
-import { LayoutGrid, List } from "lucide-react";
+import { ArrowRight, LayoutGrid, List } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -24,6 +24,10 @@ import { normalizeCommunityDirectoryFilters } from "@/lib/community-directory-fi
 import { getCommunityDirectoryConditions } from "@/lib/community-directory-query";
 import { db } from "@/lib/db";
 import { communityMembers, organizations } from "@/lib/db/schema";
+import {
+	getLatamCountryCoverage,
+	type LatamCountryCoverage,
+} from "@/lib/latam-country-coverage";
 import { getCommunitiesViewPreference } from "@/lib/view-preferences";
 
 interface DiscoverPageProps {
@@ -166,13 +170,19 @@ export default async function DiscoverPage({
 
 	const normalizedFilters = normalizeCommunityDirectoryFilters(params);
 
-	const [initialData, _departments, availableCountries, availableTags] =
-		await Promise.all([
-			getInitialCommunities(params, userId),
-			getUniqueDepartments(),
-			getUniqueCountries(),
-			getUniqueTags(),
-		]);
+	const [
+		initialData,
+		_departments,
+		availableCountries,
+		availableTags,
+		countryCoverage,
+	] = await Promise.all([
+		getInitialCommunities(params, userId),
+		getUniqueDepartments(),
+		getUniqueCountries(),
+		getUniqueTags(),
+		getLatamCountryCoverage(),
+	]);
 
 	const isAuthenticated = !!userId;
 
@@ -201,6 +211,11 @@ export default async function DiscoverPage({
 			</section>
 
 			<main className="mx-auto max-w-screen-xl px-4 lg:px-8 py-4 flex-1 w-full">
+				<CountryCommunityOverview
+					countryCoverage={countryCoverage}
+					selectedCountries={normalizedFilters.countries}
+				/>
+
 				<div className="flex gap-6">
 					<Suspense
 						fallback={
@@ -290,6 +305,139 @@ export default async function DiscoverPage({
 
 			<SiteFooter />
 		</div>
+	);
+}
+
+function formatNumber(value: number) {
+	return new Intl.NumberFormat("es-PE").format(value);
+}
+
+function formatEntityCount(value: number, singular: string, plural: string) {
+	return `${formatNumber(value)} ${value === 1 ? singular : plural}`;
+}
+
+function CountryCommunityOverview({
+	countryCoverage,
+	selectedCountries,
+}: {
+	countryCoverage: LatamCountryCoverage[];
+	selectedCountries: string[];
+}) {
+	const activeCountries = countryCoverage.filter(
+		(country) => country.communities > 0,
+	);
+	const totalCommunities = countryCoverage.reduce(
+		(total, country) => total + country.communities,
+		0,
+	);
+	const totalEvents = countryCoverage.reduce(
+		(total, country) => total + country.events,
+		0,
+	);
+	const maxCommunities = Math.max(
+		1,
+		...countryCoverage.map((country) => country.communities),
+	);
+
+	return (
+		<section className="mb-6 border-b pb-6">
+			<div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+				<div className="max-w-2xl">
+					<div className="mb-3 h-2.5 w-12 bg-brand-green" />
+					<h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+						Índice público de comunidades
+					</h1>
+					<p className="mt-2 text-sm leading-6 text-muted-foreground">
+						Overview regional para ver qué países ya tienen comunidades mapeadas
+						y dónde falta activar señal local.
+					</p>
+				</div>
+				<div className="grid grid-cols-3 border text-sm">
+					<OverviewStat
+						label="Comunidades"
+						value={formatNumber(totalCommunities)}
+					/>
+					<OverviewStat
+						label="Países activos"
+						value={`${activeCountries.length}/${countryCoverage.length}`}
+					/>
+					<OverviewStat label="Eventos" value={formatNumber(totalEvents)} />
+				</div>
+			</div>
+
+			<div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+				{countryCoverage.map((country) => (
+					<CountryCommunityTile
+						key={country.code}
+						country={country}
+						maxCommunities={maxCommunities}
+						isSelected={selectedCountries.includes(country.code)}
+					/>
+				))}
+			</div>
+		</section>
+	);
+}
+
+function OverviewStat({ label, value }: { label: string; value: string }) {
+	return (
+		<div className="border-r px-4 py-3 last:border-r-0">
+			<div className="font-mono text-lg font-semibold tabular-nums">
+				{value}
+			</div>
+			<div className="mt-1 whitespace-nowrap text-[10px] uppercase tracking-wider text-muted-foreground">
+				{label}
+			</div>
+		</div>
+	);
+}
+
+function CountryCommunityTile({
+	country,
+	maxCommunities,
+	isSelected,
+}: {
+	country: LatamCountryCoverage;
+	maxCommunities: number;
+	isSelected: boolean;
+}) {
+	const hasCommunities = country.communities > 0;
+	const width = hasCommunities
+		? `${Math.max(10, Math.round((country.communities / maxCommunities) * 100))}%`
+		: "0%";
+
+	return (
+		<Link
+			href={`/c/discover?countries=${country.code}`}
+			className={`group border bg-card p-3 transition-colors hover:border-brand-green/40 hover:bg-muted/20 ${
+				isSelected ? "border-brand-green/60 bg-brand-green/10" : ""
+			}`}
+		>
+			<div className="flex items-start justify-between gap-2">
+				<div className="min-w-0">
+					<div className="flex items-center gap-2">
+						<span className="text-lg leading-none">{country.flag}</span>
+						<span className="truncate text-sm font-medium">{country.name}</span>
+					</div>
+					<div className="mt-2 text-xs text-muted-foreground">
+						{hasCommunities
+							? formatEntityCount(
+									country.communities,
+									"comunidad",
+									"comunidades",
+								)
+							: "Por mapear"}
+					</div>
+				</div>
+				<ArrowRight className="size-3.5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+			</div>
+			<div className="mt-3 h-1 bg-muted">
+				<div className="h-full bg-brand-green" style={{ width }} />
+			</div>
+			<div className="mt-2 text-[11px] text-muted-foreground">
+				{formatEntityCount(country.events, "evento", "eventos")}
+			</div>
+		</Link>
 	);
 }
 

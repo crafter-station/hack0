@@ -23,9 +23,8 @@ import {
 } from "@/lib/index-data-health";
 
 export const metadata: Metadata = {
-	title: "Cobertura | LATAM Agentic Builder Index",
-	description:
-		"Cobertura, fuentes y gaps actuales del LATAM Agentic Builder Index.",
+	title: "Cobertura | LATAM Builder Index",
+	description: "Cobertura, fuentes y gaps actuales del LATAM Builder Index.",
 };
 
 export const dynamic = "force-dynamic";
@@ -89,7 +88,7 @@ export default async function DataHealthPage() {
 								</Badge>
 								<div className="space-y-3">
 									<h1 className="text-3xl font-semibold sm:text-5xl">
-										Cobertura y gaps del LATAM Agentic Builder Index
+										Cobertura y gaps del LATAM Builder Index
 									</h1>
 									<p className="max-w-2xl text-base leading-7 text-muted-foreground">
 										Vista operativa de lo que ya está mapeado, qué viene de
@@ -105,7 +104,7 @@ export default async function DataHealthPage() {
 										</Link>
 									</Button>
 									<Button asChild variant="outline" size="sm" className="gap-2">
-										<a href="mailto:hey@hack0.dev?subject=Actualizar%20LATAM%20Agentic%20Builder%20Index">
+										<a href="mailto:hey@hack0.dev?subject=Actualizar%20LATAM%20Builder%20Index">
 											Reportar dataset
 											<ExternalLink className="size-4" />
 										</a>

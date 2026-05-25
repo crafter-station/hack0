@@ -14,7 +14,7 @@ import { formatEventDate } from "@/lib/event-utils";
 import { sanitizeImageUrl } from "@/lib/utils";
 
 export const metadata: Metadata = {
-	title: "Builders y Hosts | LATAM Agentic Builder Index",
+	title: "Builders y Hosts | LATAM Builder Index",
 	description:
 		"Directorio publico de builders y hosts activos en eventos de IA, hackathons y comunidades tech en LATAM.",
 };
@@ -52,7 +52,7 @@ export default async function BuildersPage({
 									</h1>
 									<p className="max-w-2xl text-sm leading-6 text-muted-foreground">
 										Personas que aparecen como hosts en eventos publicos del
-										LATAM Agentic Builder Index. Es una senal practica de quien
+										LATAM Builder Index. Es una senal practica de quien
 										organiza, ensena, convoca o mueve comunidades.
 									</p>
 								</div>

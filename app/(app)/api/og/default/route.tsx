@@ -131,7 +131,7 @@ export async function GET() {
 							maxWidth: "920px",
 						}}
 					>
-						LATAM Agentic Builder Index
+						LATAM Builder Index
 					</div>
 					<div
 						style={{
