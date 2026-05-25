@@ -289,7 +289,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 		},
 		{
 			id: "labs",
-			label: "Labs universitarios",
+			label: "Universidades y labs",
 			count: labs,
 			status: statusFor(labs),
 			href: "/c/discover?countries=PE&types=university,student_org",

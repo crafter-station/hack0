@@ -148,6 +148,7 @@
 		"lint:fix": "biome lint --write",
 		"migrate:personal-orgs": "bun run scripts/migrate-personal-orgs.ts",
 		"prepare": "simple-git-hooks",
+		"seed:peru-universities": "bun run scripts/seed-peru-universities.ts",
 		"sync:luma": "bun run scripts/sync-luma-calendar.ts",
 		"start": "next start"
 	},
