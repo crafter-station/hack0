@@ -7,7 +7,8 @@ Componentes para el panel de administración (God Mode).
 | Component | Description |
 |-----------|-------------|
 | pending-events-list.tsx | Lista de eventos pendientes de aprobación |
-| pending-org-events.tsx | Eventos pendientes por organización |
+| scraper/ | Inbox de curación para eventos importados/scrapeados |
+| scraper-constants.ts | Constantes visuales compartidas del scraper inbox |
 
 ## Patrones
 
@@ -18,4 +19,5 @@ Componentes para el panel de administración (God Mode).
 
 ## Dependencias
 
-- `@/lib/actions/pending-events` - Pending events actions
+- `@/lib/actions/events` - Approval actions para eventos
+- `@/lib/actions/scraper-curation` - Acciones de curación para imports scrapeados

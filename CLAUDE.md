@@ -4,51 +4,59 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-hack0.dev is a hackathon and tech event discovery platform focused on Peru. It aggregates hackathons, conferences, workshops, and other innovation events. The app has a Vercel/Linear/Clerk-inspired grayscale aesthetic with a focus on UX/DX.
+hack0.dev is the public Peru Agentic Builder Index. It maps events, communities, hackathons, labs, grants, builders, demo projects, and useful AI workflows in Peru, with Luma imports as the primary event pipeline.
 
 ## Commands
 
 ```bash
 bun run dev          # Start Next.js dev server
 bun run build        # Production build
-bun run lint         # ESLint
+bun run check        # Biome check
 bun run db:push      # Push schema directly (dev)
+bun run db:migrate   # Apply Drizzle migrations
 bun run db:studio    # Open Drizzle Studio
-bun run scrape       # Scrape events from Devpost using Firecrawl
+bun run sync:luma    # Backfill/sync the Luma calendar
 ```
 
 ## Architecture
 
 ### Tech Stack
 
-- **Framework**: Next.js 15 with App Router (React 19)
+- **Framework**: Next.js 16 with App Router (React 19)
 - **Database**: Neon PostgreSQL with Drizzle ORM
 - **Auth**: Clerk (redirect mode, not modal)
 - **Email**: Resend for notifications
 - **UI**: shadcn/ui components with Tailwind CSS v4
 - **URL State**: nuqs for type-safe search params
-- **Background Jobs**: Trigger.dev v3
+- **Background Jobs**: Trigger.dev v4
 
 ### Key Directories
 
 - `app/` - Next.js App Router pages
-  - `page.tsx` - Main event listing with filters, categories, and load more
-  - `[slug]/page.tsx` - Event detail page with two-column layout
+  - `(landing)/page.tsx` - Peru Agentic Builder Index homepage
+  - `events/` - Public event listing
+  - `(app)/e/[code]/page.tsx` - Event detail page
+  - `(app)/c/` - Community and organization directory
+  - `(app)/onboarding/` - User onboarding
+  - `(admin)/god/` - Admin curation and ecosystem graph
   - `(auth)/` - Clerk auth pages (sign-in, sign-up with catch-all routes)
-  - `submit/` - Event submission form (grid layout)
-  - `api/subscribe`, `api/verify`, `api/unsubscribe` - Email subscription endpoints
+  - `api/` - Event, organization, webhook, upload, and user APIs
 - `components/`
-  - `events/` - Event-specific components (event-row-with-children, filter-bar, category-tabs)
+  - `events/` - Event views, toolbar, detail, and edit components
+  - `org/` - Organization discovery, creation, settings, members, and layout
+  - `god-mode/` - Admin graph, navigation, and creation tools
+  - `admin/scraper/` - Scraper curation UI
   - `layout/` - Shared layout components (site-header, site-footer)
   - `ui/` - shadcn/ui components
 - `lib/`
-  - `db/schema.ts` - Drizzle schema with events, subscriptions, claims, sponsors, organizations tables
+  - `db/schema/` - Drizzle schema modules for events, organizations, users, imports, staff, community, and relations
   - `actions/events.ts` - Server actions with smart ordering, child events, sponsors
+  - `actions/organizations.ts` - Organization directory and admin actions
+  - `community-directory-query.ts` - Shared public directory filtering
   - `event-utils.ts` - Date formatting, status helpers, label functions
   - `event-categories.ts` - Category definitions (competitions, learning, community)
-  - `email/` - Resend templates and notification logic
   - `scraper/` - Firecrawl-based scraper for Devpost
-- `trigger/` - Trigger.dev background tasks (luma-import, org-scraper, drift-check)
+- `trigger/` - Trigger.dev background tasks for imports, webhooks, and drift checks
 
 ### Data Model
 
@@ -59,13 +67,17 @@ bun run scrape       # Scrape events from Devpost using Firecrawl
 - `parentEventId` - For multi-day events or conference tracks (child events)
 - `prizeCurrency` - USD or PEN (soles)
 - `skillLevel` - beginner/intermediate/advanced/all
-- `isOrganizerVerified` - Verified organizer badge
+- `approvalStatus` and `isApproved` - Admin curation state
 
-**sponsors** - Event sponsors/partners with tier: platinum, gold, silver, bronze, partner, community
+**organizations** - Communities, startups, investors, labs, companies, universities, and other ecosystem actors.
 
-**organizerClaims** / **winnerClaims** - Verification requests with status: pending, approved, rejected
+**eventHostOrganizations** / **eventHosts** - Event hosts imported from Luma or assigned manually.
 
-**subscriptions** - Email notification subscriptions with verification tokens
+**eventSponsors** - Event sponsor and partner links to organizations.
+
+**users** / **emailVerifications** - Clerk-backed profiles and Luma email verification.
+
+**importJobs** / **scrapeSources** / **scrapeRuns** - Import and scraper operations.
 
 ### Event Categories
 
@@ -111,7 +123,7 @@ Required in `.env`:
 
 ---
 
-## Trigger.dev v3 Quick Reference
+## Trigger.dev Quick Reference
 
 **MUST use `@trigger.dev/sdk/v3`, NEVER `client.defineJob` (v2 deprecated)**
 
