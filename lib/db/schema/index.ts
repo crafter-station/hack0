@@ -4,6 +4,7 @@ export * from "./enums";
 export * from "./event-staff";
 export * from "./events";
 export * from "./imports";
+export * from "./luma-connections";
 export * from "./organizations";
 export * from "./relations";
 export * from "./users";
