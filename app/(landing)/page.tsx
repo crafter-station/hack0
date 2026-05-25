@@ -330,27 +330,37 @@ export default async function HomePage() {
 				</section>
 
 				<section className="border-b bg-muted/20">
-					<div className="mx-auto grid max-w-screen-xl gap-4 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start lg:px-8">
-						<div className="h-fit self-start border bg-background p-4 sm:p-5">
-							<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-								<div className="max-w-2xl">
+					<div className="mx-auto max-w-screen-xl px-4 py-6 lg:px-8">
+						<div className="border bg-background p-4 sm:p-5">
+							<div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+								<div className="max-w-3xl">
 									<h2 className="text-lg font-semibold">
 										Directorio vivo para builders de LATAM
 									</h2>
-									<p className="mt-1 text-sm leading-6 text-muted-foreground">
+									<p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
 										Encuentra eventos, comunidades, labs y oportunidades por
 										país. Cuando una comunidad publica, el índice mejora para
 										toda la región.
 									</p>
 								</div>
-								<Button asChild variant="outline" size="sm" className="gap-2">
-									<Link href="/data-health">
-										Ver cobertura
-										<ArrowRight className="size-4" />
-									</Link>
-								</Button>
+								<div className="flex items-center gap-4 lg:text-right">
+									<div>
+										<div className="text-2xl font-semibold">
+											{activeCountryCount}/{data.counts.countries}
+										</div>
+										<div className="text-xs text-muted-foreground">
+											con señal
+										</div>
+									</div>
+									<Button asChild variant="outline" size="sm" className="gap-2">
+										<Link href="/data-health">
+											Ver cobertura
+											<ArrowRight className="size-4" />
+										</Link>
+									</Button>
+								</div>
 							</div>
-							<div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+							<div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
 								<FacetLink
 									href="/events"
 									icon={CalendarDays}
@@ -394,35 +404,30 @@ export default async function HomePage() {
 									helper="desde eventos"
 								/>
 							</div>
-						</div>
-
-						<div className="h-fit self-start border bg-background p-4 sm:p-5">
-							<div className="flex items-center justify-between gap-4">
-								<div>
-									<h2 className="text-lg font-semibold">Cobertura por país</h2>
-									<p className="mt-1 text-sm text-muted-foreground">
-										Priorizamos toda LATAM, no solo Perú.
-									</p>
-								</div>
-								<div className="text-right">
-									<div className="text-2xl font-semibold">
-										{activeCountryCount}/{data.counts.countries}
+							<div className="mt-5 border-t pt-4">
+								<div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+									<div>
+										<h3 className="text-sm font-semibold">
+											Cobertura por país
+										</h3>
+										<p className="mt-1 text-xs text-muted-foreground">
+											Priorizamos toda LATAM, no solo Perú.
+										</p>
 									</div>
-									<div className="text-xs text-muted-foreground">con señal</div>
+									<Link
+										href="/roadmap#latam"
+										className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+									>
+										Ver todos los países
+										<ArrowRight className="size-3" />
+									</Link>
+								</div>
+								<div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+									{data.countryCoverage.slice(0, 8).map((country) => (
+										<CountryCoverageRow key={country.code} country={country} />
+									))}
 								</div>
 							</div>
-							<div className="mt-4 grid gap-2">
-								{data.countryCoverage.slice(0, 8).map((country) => (
-									<CountryCoverageRow key={country.code} country={country} />
-								))}
-							</div>
-							<Link
-								href="/roadmap#latam"
-								className="mt-3 inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-							>
-								Ver todos los países
-								<ArrowRight className="size-3" />
-							</Link>
 						</div>
 					</div>
 				</section>
@@ -578,13 +583,13 @@ function CountryCoverageRow({ country }: { country: LatamCountryCoverage }) {
 	return (
 		<Link
 			href={`/events?country=${country.code}`}
-			className="group flex items-center justify-between border bg-card px-3 py-2.5 transition-colors hover:bg-muted/30"
+			className="group flex min-h-14 items-center justify-between border bg-card px-3 py-2 transition-colors hover:bg-muted/30"
 		>
 			<div className="flex min-w-0 items-center gap-3">
 				<div className="text-lg leading-none">{country.flag}</div>
 				<div className="min-w-0">
 					<div className="truncate text-sm font-medium">{country.name}</div>
-					<div className="text-xs text-muted-foreground">
+					<div className="truncate text-xs text-muted-foreground">
 						{hasSignal
 							? `${formatEntityCount(country.events, "evento", "eventos")} · ${formatEntityCount(country.communities, "comunidad", "comunidades")}`
 							: "Listo para mapear"}
