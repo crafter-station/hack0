@@ -450,7 +450,7 @@ export default async function HomePage() {
 										</div>
 									</div>
 									<Button asChild variant="outline" size="sm">
-										<Link href="/roadmap">Ver roadmap</Link>
+										<Link href="/data-health">Ver cobertura</Link>
 									</Button>
 								</div>
 							</div>
