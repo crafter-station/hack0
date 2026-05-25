@@ -2,9 +2,10 @@
   <title id="title">hack0 wordmark</title>
   <style>
     .fg { fill: var(--hack0-logo-fg, #050605); }
-    .green { fill: var(--hack0-logo-green, #22ff66); }
+    .green { fill: var(--hack0-logo-green, #087a4c); }
     @media (prefers-color-scheme: dark) {
       .fg { fill: var(--hack0-logo-fg, #f3f1e8); }
+      .green { fill: var(--hack0-logo-green, #35c982); }
     }
   </style>
   <path class="fg" d="m23.3 45.3h-9v-8h-4v29.3h4.1v-16.7h7.5v16.6h4.3v-17.8l-2.9-3.4z"/>

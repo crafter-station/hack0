@@ -2,9 +2,10 @@
   <title id="title">hack0 logo</title>
   <style>
     .fg { fill: var(--hack0-logo-fg, #050605); }
-    .green { fill: var(--hack0-logo-green, #22ff66); }
+    .green { fill: var(--hack0-logo-green, #087a4c); }
     @media (prefers-color-scheme: dark) {
       .fg { fill: var(--hack0-logo-fg, #f3f1e8); }
+      .green { fill: var(--hack0-logo-green, #35c982); }
     }
   </style>
   <polygon class="green" points="28.1 23.1 20.4 31.1 20.4 32.4 45.5 32.3 45.5 48.2 54.4 48.2 54.4 23.1"/>

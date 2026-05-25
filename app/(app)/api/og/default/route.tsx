@@ -6,9 +6,9 @@ export const runtime = "nodejs";
 const brand = {
 	black: "#050605",
 	paper: "#F3F1E8",
-	green: "#22FF66",
-	forest: "#063B26",
-	grid: "#7FBF9A",
+	green: "#35C982",
+	forest: "#0B2B1F",
+	grid: "#83A990",
 	muted: "#A1A1AA",
 };
 

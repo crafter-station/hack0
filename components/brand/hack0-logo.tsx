@@ -38,7 +38,7 @@ export function Hack0Wordmark({
 			/>
 			<path
 				className={greenClassName}
-				fill="var(--brand-green, #22ff66)"
+				fill="var(--brand-green, #087a4c)"
 				d="m97.3 37.8-4.5 4.6v0.9h15.2v9.4h5.3v-15l-16 0.1z"
 			/>
 			<path
@@ -65,7 +65,7 @@ export function Hack0Logo({
 		>
 			<polygon
 				className={greenClassName}
-				fill="var(--brand-green, #22ff66)"
+				fill="var(--brand-green, #087a4c)"
 				points="28.1 23.1 20.4 31.1 20.4 32.4 45.5 32.3 45.5 48.2 54.4 48.2 54.4 23.1"
 			/>
 			<polygon

@@ -285,24 +285,24 @@ export default async function HomePage() {
 			<SiteHeader />
 
 			<main className="flex-1">
-				<section className="relative overflow-hidden border-b bg-brand-black text-brand-paper">
-					<div className="absolute inset-0 bg-[linear-gradient(rgba(127,191,154,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(127,191,154,0.08)_1px,transparent_1px)] bg-[size:48px_48px]" />
+				<section className="relative overflow-hidden border-b bg-brand-paper text-brand-black dark:bg-brand-black dark:text-brand-paper">
+					<div className="hack0-hero-grid absolute inset-0" />
 					<div className="relative mx-auto max-w-screen-xl px-4 lg:px-8 py-10 lg:py-16">
 						<div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_420px] lg:items-end">
 							<div className="min-w-0 space-y-6">
 								<div className="space-y-5">
 									<div className="flex items-center gap-3">
-										<div className="h-8 w-24 bg-brand-green" />
-										<span className="font-mono text-xs uppercase tracking-wider text-brand-grid">
+										<div className="h-2.5 w-12 bg-brand-green" />
+										<span className="font-mono text-xs uppercase tracking-wider text-brand-forest/80 dark:text-brand-grid">
 											active builder index
 										</span>
 									</div>
-									<Hack0Wordmark className="h-14 w-[196px] text-brand-paper sm:h-16 sm:w-[224px]" />
-									<h1 className="max-w-3xl break-words text-3xl font-semibold leading-tight text-brand-paper sm:text-5xl lg:text-6xl">
+									<Hack0Wordmark className="h-14 w-[196px] text-brand-black sm:h-16 sm:w-[224px] dark:text-brand-paper" />
+									<h1 className="max-w-3xl text-pretty break-words text-3xl font-semibold leading-tight text-brand-black sm:text-5xl lg:text-6xl dark:text-brand-paper">
 										<span className="block sm:inline">LATAM Agentic</span>{" "}
 										<span className="block sm:inline">Builder Index</span>
 									</h1>
-									<p className="w-full max-w-[22rem] break-words text-sm leading-6 text-brand-grid sm:max-w-2xl sm:text-base sm:leading-7">
+									<p className="w-full max-w-[22rem] break-words text-sm leading-6 text-brand-forest/85 sm:max-w-2xl sm:text-base sm:leading-7 dark:text-brand-grid">
 										Eventos, comunidades, hackathons, labs, grants y builders de
 										IA en Latinoamérica, mantenidos desde hack0 y calendarios
 										públicos de la comunidad.
@@ -313,7 +313,7 @@ export default async function HomePage() {
 									<Button
 										asChild
 										size="sm"
-										className="gap-2 bg-brand-green text-brand-black hover:bg-brand-green/90"
+										className="gap-2 bg-brand-black text-brand-paper hover:bg-brand-forest dark:bg-brand-paper dark:text-brand-black dark:hover:bg-brand-grid"
 									>
 										<Link href="/events">
 											Explorar eventos
@@ -324,7 +324,7 @@ export default async function HomePage() {
 										asChild
 										variant="outline"
 										size="sm"
-										className="gap-2 border-brand-grid/40 bg-transparent text-brand-paper hover:bg-brand-forest hover:text-brand-paper"
+										className="gap-2 border-brand-forest/30 bg-brand-paper/30 text-brand-black hover:bg-brand-forest/10 dark:border-brand-grid/35 dark:bg-transparent dark:text-brand-paper dark:hover:bg-brand-forest/60"
 									>
 										<Link href="/c/discover">
 											Ver comunidades
@@ -340,7 +340,7 @@ export default async function HomePage() {
 									countryCoverage={data.countryCoverage}
 									totalCountries={data.counts.countries}
 								/>
-								<div className="grid grid-cols-2 border border-brand-grid/30 bg-brand-black/80 backdrop-blur">
+								<div className="grid grid-cols-2 border border-brand-forest/20 bg-card/85 shadow-sm backdrop-blur dark:border-brand-grid/25 dark:bg-brand-black/75">
 									<HeroMetric
 										label="Eventos LATAM"
 										value={data.counts.events}
@@ -573,11 +573,13 @@ export default async function HomePage() {
 
 function HeroMetric({ label, value }: { label: string; value: number }) {
 	return (
-		<div className="border-b border-r border-brand-grid/30 p-4 last:border-r-0 even:border-r-0 sm:p-5">
-			<div className="font-mono text-2xl font-semibold text-brand-green">
+		<div className="border-b border-r border-brand-forest/20 p-4 last:border-r-0 even:border-r-0 sm:p-5 dark:border-brand-grid/25">
+			<div className="font-mono text-2xl font-semibold text-brand-black dark:text-brand-paper">
 				{formatNumber(value)}
 			</div>
-			<div className="mt-1 text-xs text-brand-grid">{label}</div>
+			<div className="mt-1 text-xs text-brand-forest/75 dark:text-brand-grid">
+				{label}
+			</div>
 		</div>
 	);
 }
@@ -599,17 +601,17 @@ function LatamSignalMap({
 	);
 
 	return (
-		<div className="relative overflow-hidden border border-brand-grid/30 bg-brand-black/80 p-4 backdrop-blur">
+		<div className="relative overflow-hidden border border-brand-forest/20 bg-card/85 p-4 shadow-sm backdrop-blur dark:border-brand-grid/25 dark:bg-brand-black/75">
 			<div className="relative z-10 flex items-start justify-between gap-4">
 				<div>
-					<div className="font-mono text-[10px] uppercase tracking-wider text-brand-grid">
+					<div className="font-mono text-[10px] uppercase tracking-wider text-brand-forest/75 dark:text-brand-grid">
 						continent map
 					</div>
-					<div className="mt-1 text-sm font-medium text-brand-paper">
+					<div className="mt-1 text-sm font-medium text-brand-black dark:text-brand-paper">
 						Señal LATAM activa
 					</div>
 				</div>
-				<div className="font-mono text-xs text-brand-green">
+				<div className="font-mono text-xs text-brand-forest dark:text-brand-green">
 					{activeCountryCount}/{totalCountries}
 				</div>
 			</div>
@@ -634,17 +636,17 @@ function LatamSignalMap({
 										height={4.4}
 										fill={
 											isActive
-												? "var(--brand-green, #22ff66)"
-												: "var(--brand-grid, #7fbf9a)"
+												? "var(--brand-green, #35c982)"
+												: "var(--brand-map-muted, #2a3c31)"
 										}
-										opacity={isActive ? 0.78 : 0.22}
+										opacity={isActive ? 0.62 : 0.22}
 									/>
 								))}
 							</g>
 						);
 					})}
 				</svg>
-				<div className="absolute right-0 bottom-0 border border-brand-green/30 bg-brand-black/85 px-2.5 py-2 font-mono text-[10px] uppercase tracking-wider text-brand-green">
+				<div className="absolute right-0 bottom-0 border border-brand-forest/25 bg-brand-paper/90 px-2.5 py-2 font-mono text-[10px] uppercase tracking-wider text-brand-forest dark:border-brand-grid/25 dark:bg-brand-black/85 dark:text-brand-grid">
 					live index
 				</div>
 			</div>

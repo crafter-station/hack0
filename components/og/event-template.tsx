@@ -18,9 +18,9 @@ interface EventOGTemplateProps {
 const brand = {
 	black: "#050605",
 	paper: "#F3F1E8",
-	green: "#22FF66",
-	forest: "#063B26",
-	grid: "#7FBF9A",
+	green: "#35C982",
+	forest: "#0B2B1F",
+	grid: "#83A990",
 	muted: "#A1A1AA",
 	amber: "#FFB020",
 };
@@ -57,12 +57,12 @@ export function EventOGTemplate({
 		{ bg: string; text: string; dot: string }
 	> = {
 		ongoing: {
-			bg: "rgba(34, 255, 102, 0.14)",
+			bg: "rgba(53, 201, 130, 0.14)",
 			text: brand.green,
 			dot: brand.green,
 		},
 		open: {
-			bg: "rgba(34, 255, 102, 0.14)",
+			bg: "rgba(53, 201, 130, 0.14)",
 			text: brand.green,
 			dot: brand.green,
 		},
@@ -90,7 +90,7 @@ export function EventOGTemplate({
 
 	const gradientOverlay: CSSProperties = {
 		background:
-			"linear-gradient(135deg, rgba(34, 255, 102, 0.12) 0%, rgba(6, 59, 38, 0.18) 42%, rgba(5, 6, 5, 0) 100%)",
+			"linear-gradient(135deg, rgba(53, 201, 130, 0.1) 0%, rgba(11, 43, 31, 0.18) 42%, rgba(5, 6, 5, 0) 100%)",
 		position: "absolute",
 		inset: "0",
 	};

@@ -51,10 +51,11 @@ Both SVGs are theme-aware:
 
 - Light mode foreground: `#050605`
 - Dark mode foreground: `#F3F1E8`
-- Green active segment: `#22FF66`
+- Light green active segment: `#087A4C`
+- Dark green active segment: `#35C982`
 - Background: transparent
 
-Use the same files on light and dark surfaces. The SVGs switch foreground color with `prefers-color-scheme` while keeping the green fixed. If the SVG is inlined in React, override `--hack0-logo-fg` and `--hack0-logo-green` from CSS for app-controlled themes.
+Use the same files on light and dark surfaces. The SVGs switch foreground and green with `prefers-color-scheme`. If the SVG is inlined in React, drive the green from `--brand-green` so app themes can choose their own contrast.
 
 ## Logo Variants
 
@@ -91,7 +92,7 @@ The logo is a squared broken `0`:
 - Thick bottom segment.
 - Short lower-right vertical segment.
 - Open center negative space.
-- Bright green top/right segment.
+- Green top/right segment with enough contrast for the current surface.
 - Diagonal chamfer at the green segment's top-left corner.
 
 The logo should feel like a live cell in an index, not a loop, infinity symbol, map track, or racing shape.
@@ -104,15 +105,17 @@ Core palette:
 | --- | --- | --- |
 | `hack0-black` | `#050605` | Light-mode logo foreground, dark surfaces, dense UI |
 | `hack0-paper` | `#F3F1E8` | Warm light background, editorial surfaces |
-| `hack0-green` | `#22FF66` | Active cell, logo signal, live states |
-| `hack0-forest` | `#063B26` | Deep green surfaces, subdued panels |
-| `hack0-grid` | `#7FBF9A` | Map/grid/data support lines |
+| `hack0-green-light` | `#087A4C` | Active cell on light surfaces, readable live states |
+| `hack0-green-dark` | `#35C982` | Active cell on dark surfaces, softer than neon |
+| `hack0-forest` | `#073D29` | Deep green surfaces, subdued panels |
+| `hack0-grid-light` | `#58745F` | Light-mode map/grid/data support text |
+| `hack0-grid-dark` | `#83A990` | Dark-mode map/grid/data support text |
 | `hack0-muted` | `#A1A1AA` | Secondary text, metadata |
 
 Color hierarchy:
 
 - Black and paper are the base.
-- Green is the signature.
+- Green is the signature, but it changes by theme for contrast.
 - Forest green supports dark branded surfaces.
 - Muted grid green is for maps, data, and secondary system details.
 
@@ -124,10 +127,16 @@ Suggested CSS variables:
 :root {
   --hack0-black: #050605;
   --hack0-paper: #f3f1e8;
-  --hack0-green: #22ff66;
-  --hack0-forest: #063b26;
-  --hack0-grid: #7fbf9a;
+  --hack0-green: #087a4c;
+  --hack0-forest: #073d29;
+  --hack0-grid: #58745f;
   --hack0-muted: #a1a1aa;
+}
+
+.dark {
+  --hack0-green: #35c982;
+  --hack0-forest: #0b2b1f;
+  --hack0-grid: #83a990;
 }
 ```
 
@@ -140,7 +149,7 @@ Use for product surfaces, tables, directories, event lists, forms, docs, and lon
 - Background: `hack0-paper` or white.
 - Text: `hack0-black`.
 - Logo: theme-aware SVG, foreground resolves to black.
-- Accent: `hack0-green` for active or branded moments.
+- Accent: `hack0-green-light` for active or branded moments.
 
 ### Dark
 
@@ -149,7 +158,7 @@ Use for hero sections, social cards, event posters, sponsor slides, badge previe
 - Background: `hack0-black`.
 - Text: `hack0-paper`.
 - Logo: theme-aware SVG, foreground resolves to paper.
-- Accent: `hack0-green`.
+- Accent: `hack0-green-dark`.
 
 Dark mode should feel like a builder control surface, not terminal cosplay.
 

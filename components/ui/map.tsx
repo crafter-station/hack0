@@ -821,7 +821,7 @@ type MapRouteProps = {
 
 function MapRoute({
 	coordinates,
-	color = "#22ff66",
+	color = "#35c982",
 	width = 3,
 	opacity = 0.8,
 	dashArray,

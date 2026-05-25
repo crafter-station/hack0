@@ -17,7 +17,7 @@ interface EcosystemGraphProps {
 
 const TYPE_COLORS: Record<string, string> = {
 	startup: "#7FBF9A",
-	investor: "#22FF66",
+	investor: "#35C982",
 	university: "#F3F1E8",
 	community: "#FFB020",
 	company: "#063B26",
@@ -25,7 +25,7 @@ const TYPE_COLORS: Record<string, string> = {
 	ngo: "#A1A1AA",
 	law_firm: "#64748b",
 	consulting: "#7FBF9A",
-	coworking: "#22FF66",
+	coworking: "#35C982",
 };
 
 interface D3Node extends d3.SimulationNodeDatum {
@@ -146,7 +146,7 @@ export function EcosystemGraph({
 			.selectAll("line")
 			.data(d3Links)
 			.join("line")
-			.attr("stroke", (d) => (d.isVerified ? "#22FF66" : "#9ca3af"))
+			.attr("stroke", (d) => (d.isVerified ? "#35C982" : "#9ca3af"))
 			.attr("stroke-width", (d) => Math.max(1, d.strength / 3))
 			.attr("stroke-dasharray", (d) => (d.isVerified ? "none" : "4,2"))
 			.attr("marker-end", "url(#arrowhead)");
@@ -212,7 +212,7 @@ export function EcosystemGraph({
 			.attr("r", 5)
 			.attr("cx", 10)
 			.attr("cy", -10)
-			.attr("fill", "#22FF66");
+			.attr("fill", "#35C982");
 
 		nodeGroup
 			.append("text")

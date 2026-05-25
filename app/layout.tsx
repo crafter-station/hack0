@@ -61,7 +61,7 @@ const siteConfig = {
 const brand = {
 	black: "#050605",
 	paper: "#F3F1E8",
-	green: "#22FF66",
+	green: "#35C982",
 };
 
 export const metadata: Metadata = {

@@ -5,6 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+	color-scheme: light;
 	--background: #f3f1e8;
 	--foreground: #050605;
 	--card: #faf8f0;
@@ -17,16 +18,16 @@
 	--secondary-foreground: #050605;
 	--muted: #e8e3d7;
 	--muted-foreground: #4f5a50;
-	--accent: #22ff66;
-	--accent-foreground: #050605;
+	--accent: #dfe8de;
+	--accent-foreground: #073d29;
 	--destructive: #dc2626;
 	--destructive-foreground: #faf8f0;
 	--border: #d9d4c8;
 	--input: #d9d4c8;
-	--ring: #22ff66;
-	--chart-1: #22ff66;
-	--chart-2: #7fbf9a;
-	--chart-3: #063b26;
+	--ring: #087a4c;
+	--chart-1: #087a4c;
+	--chart-2: #58745f;
+	--chart-3: #073d29;
 	--chart-4: #ffb020;
 	--chart-5: #a1a1aa;
 	--radius: 0rem;
@@ -37,48 +38,56 @@
 	--sidebar-accent: #e8e3d7;
 	--sidebar-accent-foreground: #050605;
 	--sidebar-border: #d9d4c8;
-	--sidebar-ring: #22ff66;
+	--sidebar-ring: #087a4c;
 	--brand-black: #050605;
 	--brand-paper: #f3f1e8;
-	--brand-green: #22ff66;
-	--brand-forest: #063b26;
-	--brand-grid: #7fbf9a;
+	--brand-green: #087a4c;
+	--brand-forest: #073d29;
+	--brand-grid: #58745f;
 	--brand-muted: #a1a1aa;
+	--brand-map-muted: #9cac9f;
+	--brand-hero-grid: rgba(7, 61, 41, 0.1);
 }
 
 .dark {
+	color-scheme: dark;
 	--background: #050605;
 	--foreground: #f3f1e8;
 	--card: #0c0f0b;
 	--card-foreground: #f3f1e8;
 	--popover: #0c0f0b;
 	--popover-foreground: #f3f1e8;
-	--primary: #22ff66;
+	--primary: #f3f1e8;
 	--primary-foreground: #050605;
-	--secondary: #063b26;
+	--secondary: #102018;
 	--secondary-foreground: #f3f1e8;
 	--muted: #101611;
-	--muted-foreground: #7fbf9a;
-	--accent: #22ff66;
-	--accent-foreground: #050605;
+	--muted-foreground: #83a990;
+	--accent: #123523;
+	--accent-foreground: #f3f1e8;
 	--destructive: #ef4444;
 	--destructive-foreground: #f3f1e8;
 	--border: #1b2a1f;
 	--input: #1b2a1f;
-	--ring: #22ff66;
-	--chart-1: #22ff66;
-	--chart-2: #7fbf9a;
+	--ring: #35c982;
+	--chart-1: #35c982;
+	--chart-2: #83a990;
 	--chart-3: #f3f1e8;
 	--chart-4: #ffb020;
 	--chart-5: #a1a1aa;
 	--sidebar: #080a08;
 	--sidebar-foreground: #f3f1e8;
-	--sidebar-primary: #22ff66;
+	--sidebar-primary: #f3f1e8;
 	--sidebar-primary-foreground: #050605;
-	--sidebar-accent: #063b26;
+	--sidebar-accent: #102018;
 	--sidebar-accent-foreground: #f3f1e8;
 	--sidebar-border: #1b2a1f;
-	--sidebar-ring: #22ff66;
+	--sidebar-ring: #35c982;
+	--brand-green: #35c982;
+	--brand-forest: #0b2b1f;
+	--brand-grid: #83a990;
+	--brand-map-muted: #2a3c31;
+	--brand-hero-grid: rgba(131, 169, 144, 0.055);
 }
 
 @theme inline {
@@ -133,6 +142,7 @@
 	--color-brand-forest: var(--brand-forest);
 	--color-brand-grid: var(--brand-grid);
 	--color-brand-muted: var(--brand-muted);
+	--color-brand-map-muted: var(--brand-map-muted);
 
 	--animate-shimmer: shimmer 2s ease-in-out infinite;
 
@@ -162,6 +172,13 @@
 		font-feature-settings: "ss01", "ss02", "cv01";
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
+	}
+
+	.hack0-hero-grid {
+		background-image:
+			linear-gradient(var(--brand-hero-grid) 1px, transparent 1px),
+			linear-gradient(90deg, var(--brand-hero-grid) 1px, transparent 1px);
+		background-size: 48px 48px;
 	}
 	input,
 	textarea,

@@ -2,10 +2,11 @@
   <style>
     .bg { fill: #f3f1e8; }
     .fg { fill: #050605; }
-    .green { fill: #22ff66; }
+    .green { fill: #087a4c; }
     @media (prefers-color-scheme: dark) {
       .bg { fill: #050605; }
       .fg { fill: #f3f1e8; }
+      .green { fill: #35c982; }
     }
   </style>
   <rect class="bg" width="64" height="64"/>
