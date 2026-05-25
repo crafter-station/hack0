@@ -15,6 +15,7 @@ import {
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { EventCover } from "@/components/events";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Badge } from "@/components/ui/badge";
@@ -23,9 +24,15 @@ import { getEvents } from "@/lib/actions/events";
 import { getBuilderDirectorySummary } from "@/lib/builders-directory";
 import { db } from "@/lib/db";
 import { communityMembers, events, organizations } from "@/lib/db/schema";
-import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema/constants";
+import {
+	LATAM_COUNTRIES,
+	LATAM_COUNTRY_CODES,
+	ORGANIZER_TYPE_LABELS,
+} from "@/lib/db/schema/constants";
 import {
 	formatEventDateRange,
+	getCountryFlag,
+	getCountryName,
 	getEventTypeLabel,
 	getEventUrl,
 } from "@/lib/event-utils";
@@ -33,14 +40,19 @@ import { getOpportunityDirectorySummary } from "@/lib/opportunities-directory";
 import { sanitizeImageUrl } from "@/lib/utils";
 
 export const metadata: Metadata = {
-	title: "Peru Agentic Builder Index",
+	title: "LATAM Agentic Builder Index",
 	description:
-		"Directorio público de eventos, comunidades, hackathons, labs, grants y builders de IA en Perú.",
+		"Directorio público de eventos, comunidades, hackathons, labs, grants y builders de IA en Latinoamérica.",
 };
 
 export const dynamic = "force-dynamic";
 
-const PERU = "PE";
+const LATAM_EVENT_COUNTRIES = LATAM_COUNTRY_CODES.filter(
+	(code) => code !== "GLOBAL",
+);
+const LATAM_ORG_COUNTRIES = LATAM_COUNTRIES.filter(
+	(country) => country.code !== "GLOBAL",
+);
 const HACKATHON_TYPES = [
 	"hackathon",
 	"competition",
@@ -65,16 +77,23 @@ type IndexCommunity = {
 	memberCount: number;
 };
 
+type CountryCoverage = {
+	code: string;
+	name: string;
+	events: number;
+	communities: number;
+};
+
 async function getIndexData() {
 	const publicOrgWhere = and(
 		eq(organizations.isPublic, true),
 		eq(organizations.isPersonalOrg, false),
-		eq(organizations.country, PERU),
+		inArray(organizations.country, LATAM_EVENT_COUNTRIES),
 	);
 
-	const approvedPeruEventsWhere = and(
+	const approvedLatamEventsWhere = and(
 		eq(events.isApproved, true),
-		eq(events.country, PERU),
+		inArray(events.country, LATAM_EVENT_COUNTRIES),
 		isNull(events.parentEventId),
 	);
 
@@ -91,17 +110,19 @@ async function getIndexData() {
 		upcoming,
 		hackathons,
 		countRows,
+		countryEventRows,
+		countryCommunityRows,
 		communityRows,
 		labRows,
 		recentSources,
 	] = await Promise.all([
 		getEvents({
-			country: [PERU],
+			country: LATAM_EVENT_COUNTRIES,
 			timeFilter: "upcoming",
 			limit: 6,
 		}),
 		getEvents({
-			country: [PERU],
+			country: LATAM_EVENT_COUNTRIES,
 			eventType: [...HACKATHON_TYPES],
 			timeFilter: "all",
 			limit: 4,
@@ -114,7 +135,24 @@ async function getIndexData() {
 				cities: sql<number>`count(distinct ${events.city}) filter (where ${events.city} is not null)`,
 			})
 			.from(events)
-			.where(approvedPeruEventsWhere),
+			.where(approvedLatamEventsWhere),
+		db
+			.select({
+				country: events.country,
+				events: count(events.id),
+				activeEvents: sql<number>`count(*) filter (where ${events.endDate} is null or ${events.endDate} >= now())`,
+			})
+			.from(events)
+			.where(approvedLatamEventsWhere)
+			.groupBy(events.country),
+		db
+			.select({
+				country: organizations.country,
+				communities: count(organizations.id),
+			})
+			.from(organizations)
+			.where(publicOrgWhere)
+			.groupBy(organizations.country),
 		db
 			.select({
 				id: organizations.id,
@@ -175,7 +213,7 @@ async function getIndexData() {
 				count: count(events.id),
 			})
 			.from(events)
-			.where(approvedPeruEventsWhere)
+			.where(approvedLatamEventsWhere)
 			.groupBy(events.scrapeSource)
 			.orderBy(desc(count(events.id)))
 			.limit(4),
@@ -207,6 +245,32 @@ async function getIndexData() {
 		hackathons: 0,
 		cities: 0,
 	};
+	const eventCountsByCountry = new Map(
+		countryEventRows.map((row) => [
+			row.country,
+			{
+				events: Number(row.events || 0),
+				activeEvents: Number(row.activeEvents || 0),
+			},
+		]),
+	);
+	const communityCountsByCountry = new Map(
+		countryCommunityRows.map((row) => [
+			row.country,
+			Number(row.communities || 0),
+		]),
+	);
+	const countryCoverage = LATAM_ORG_COUNTRIES.map((country) => {
+		const eventCounts = eventCountsByCountry.get(country.code);
+		return {
+			code: country.code,
+			name: getCountryName(country.code),
+			events: eventCounts?.events || 0,
+			communities: communityCountsByCountry.get(country.code) || 0,
+		};
+	})
+		.filter((country) => country.events > 0 || country.communities > 0)
+		.sort((a, b) => b.events + b.communities - (a.events + a.communities));
 
 	return {
 		upcoming: upcoming.events,
@@ -214,6 +278,7 @@ async function getIndexData() {
 		communities: communityRows.map(normalizeCommunity),
 		labs: labRows.map(normalizeCommunity),
 		recentSources,
+		countryCoverage,
 		counts: {
 			events: Number(counts.eventsCount || 0),
 			upcoming: Number(counts.upcomingEvents || 0),
@@ -223,6 +288,7 @@ async function getIndexData() {
 			communities: Number(totalCommunities || 0),
 			builders: builderSummary.builders,
 			labs: Number(totalLabs || 0),
+			countries: LATAM_ORG_COUNTRIES.length,
 		},
 	};
 }
@@ -241,7 +307,7 @@ function formatNumber(value: number) {
 function locationLabel(city: string | null, department: string | null) {
 	if (city && department && city !== department)
 		return `${city}, ${department}`;
-	return city || department || "Perú";
+	return city || department || "LATAM";
 }
 
 export default async function HomePage() {
@@ -261,25 +327,25 @@ export default async function HomePage() {
 						<div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_420px] lg:items-end">
 							<div className="space-y-6">
 								<div className="space-y-4">
-									<h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-										Peru Agentic Builder Index
+									<h1 className="max-w-3xl text-4xl font-semibold text-foreground sm:text-5xl lg:text-6xl">
+										LATAM Agentic Builder Index
 									</h1>
 									<p className="max-w-2xl text-base leading-7 text-muted-foreground">
 										Eventos, comunidades, hackathons, labs, grants y builders de
-										IA en Perú, mantenidos desde hack0 y el calendario público
-										de la comunidad.
+										IA en Latinoamérica, mantenidos desde hack0 y calendarios
+										públicos de la comunidad.
 									</p>
 								</div>
 
 								<div className="flex flex-col gap-2 sm:flex-row">
 									<Button asChild size="sm" className="gap-2">
-										<Link href="/events?country=PE">
+										<Link href="/events">
 											Explorar eventos
 											<ArrowRight className="size-4" />
 										</Link>
 									</Button>
 									<Button asChild variant="outline" size="sm" className="gap-2">
-										<Link href="/c/discover?countries=PE">
+										<Link href="/c/discover">
 											Ver comunidades
 											<Search className="size-4" />
 										</Link>
@@ -288,63 +354,107 @@ export default async function HomePage() {
 							</div>
 
 							<div className="grid grid-cols-2 border bg-card">
-								<HeroMetric label="Eventos Perú" value={data.counts.events} />
+								<HeroMetric label="Eventos LATAM" value={data.counts.events} />
 								<HeroMetric
 									label="Comunidades"
 									value={data.counts.communities}
 								/>
 								<HeroMetric label="Hackathons" value={data.counts.hackathons} />
-								<HeroMetric label="Ciudades" value={data.counts.cities} />
+								<HeroMetric
+									label="Países soportados"
+									value={data.counts.countries}
+								/>
 							</div>
 						</div>
 					</div>
 				</section>
 
 				<section className="border-b bg-muted/20">
-					<div className="mx-auto max-w-screen-xl px-4 lg:px-8 py-5">
-						<div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-							<FacetLink
-								href="/events?country=PE"
-								icon={CalendarDays}
-								label="Eventos"
-								value={data.counts.upcoming}
-								helper="upcoming"
-							/>
-							<FacetLink
-								href="/c/discover?countries=PE"
-								icon={Users}
-								label="Comunidades"
-								value={data.counts.communities}
-								helper="mapeadas"
-							/>
-							<FacetLink
-								href="/events?country=PE&eventType=hackathon,competition,olympiad,robotics"
-								icon={Zap}
-								label="Hackathons"
-								value={data.counts.hackathons}
-								helper="históricos"
-							/>
-							<FacetLink
-								href="/c/discover?countries=PE&types=university,student_org"
-								icon={FlaskConical}
-								label="Universidades y labs"
-								value={data.counts.labs}
-								helper="por verificar"
-							/>
-							<FacetLink
-								href="/opportunities"
-								icon={BookOpen}
-								label="Grants y programas"
-								value={data.counts.opportunities}
-								helper="directorio"
-							/>
-							<FacetLink
-								href="/builders"
-								icon={Code2}
-								label="Builders y hosts"
-								value={data.counts.builders}
-								helper="desde eventos"
-							/>
+					<div className="mx-auto grid max-w-screen-xl gap-4 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start lg:px-8">
+						<div className="border bg-background p-4 sm:p-5">
+							<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+								<div className="max-w-2xl">
+									<h2 className="text-lg font-semibold">
+										El mapa operativo para builders de LATAM
+									</h2>
+									<p className="mt-1 text-sm leading-6 text-muted-foreground">
+										Un solo lugar para encontrar dónde construir, con quién
+										conectar y qué comunidades están activas por país.
+									</p>
+								</div>
+								<Button asChild variant="outline" size="sm" className="gap-2">
+									<Link href="/data-health">
+										Ver cobertura
+										<ArrowRight className="size-4" />
+									</Link>
+								</Button>
+							</div>
+							<div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+								<FacetLink
+									href="/events"
+									icon={CalendarDays}
+									label="Eventos activos"
+									value={data.counts.upcoming}
+									helper="para esta temporada"
+								/>
+								<FacetLink
+									href="/c/discover"
+									icon={Users}
+									label="Comunidades"
+									value={data.counts.communities}
+									helper="mapeadas"
+								/>
+								<FacetLink
+									href="/events?eventType=hackathon,competition,olympiad,robotics"
+									icon={Zap}
+									label="Hackathons"
+									value={data.counts.hackathons}
+									helper="históricos"
+								/>
+								<FacetLink
+									href="/c/discover?types=university,student_org"
+									icon={FlaskConical}
+									label="Universidades y labs"
+									value={data.counts.labs}
+									helper="por verificar"
+								/>
+								<FacetLink
+									href="/opportunities"
+									icon={BookOpen}
+									label="Grants y programas"
+									value={data.counts.opportunities}
+									helper="directorio"
+								/>
+								<FacetLink
+									href="/builders"
+									icon={Code2}
+									label="Builders y hosts"
+									value={data.counts.builders}
+									helper="desde eventos"
+								/>
+							</div>
+						</div>
+
+						<div className="border bg-background p-4 sm:p-5">
+							<div className="flex items-center justify-between gap-4">
+								<div>
+									<h2 className="text-lg font-semibold">Países con señal</h2>
+									<p className="mt-1 text-sm text-muted-foreground">
+										Eventos y comunidades ya indexadas.
+									</p>
+								</div>
+								<div className="text-right">
+									<div className="text-2xl font-semibold">
+										{data.countryCoverage.length}
+									</div>
+									<div className="text-xs text-muted-foreground">con data</div>
+								</div>
+							</div>
+							<div className="mt-4 grid gap-2">
+								{data.countryCoverage.slice(0, 8).map((country) => (
+									<CountryCoverageRow key={country.code} country={country} />
+								))}
+							</div>
 						</div>
 					</div>
 				</section>
@@ -354,7 +464,7 @@ export default async function HomePage() {
 						<SectionHeader
 							title="Próximos eventos"
 							description="El pulso público para builders, estudiantes, founders y comunidades."
-							href="/events?country=PE"
+							href="/events"
 						/>
 						<div className="grid gap-3">
 							{data.upcoming.map((event) => (
@@ -365,7 +475,7 @@ export default async function HomePage() {
 						<SectionHeader
 							title="Hackathons y retos"
 							description="Eventos que producen proyectos, repos y nuevos builders para el índice."
-							href="/events?country=PE&eventType=hackathon,competition,olympiad,robotics"
+							href="/events?eventType=hackathon,competition,olympiad,robotics"
 						/>
 						<div className="grid gap-3 md:grid-cols-2">
 							{data.hackathons.map((event) => (
@@ -386,7 +496,7 @@ export default async function HomePage() {
 							</div>
 							<div className="border-t p-3">
 								<Button asChild variant="outline" size="sm" className="w-full">
-									<Link href="/c/discover?countries=PE">Abrir directorio</Link>
+									<Link href="/c/discover">Abrir directorio</Link>
 								</Button>
 							</div>
 						</section>
@@ -416,11 +526,12 @@ export default async function HomePage() {
 								<div className="space-y-3">
 									<div>
 										<h2 className="text-sm font-semibold">
-											State of Agentic Builders in Peru
+											State of Agentic Builders in LATAM
 										</h2>
 										<p className="mt-1 text-xs leading-5 text-muted-foreground">
 											La versión trimestral debe salir de estos datos: eventos,
-											comunidades, labs, programas, sponsors y builders.
+											comunidades, labs, programas, sponsors y builders por
+											país.
 										</p>
 									</div>
 									<div className="grid grid-cols-2 gap-2 text-xs">
@@ -455,9 +566,7 @@ export default async function HomePage() {
 function HeroMetric({ label, value }: { label: string; value: number }) {
 	return (
 		<div className="border-b border-r p-4 last:border-r-0 even:border-r-0 sm:p-5">
-			<div className="text-2xl font-semibold tracking-tight">
-				{formatNumber(value)}
-			</div>
+			<div className="text-2xl font-semibold">{formatNumber(value)}</div>
 			<div className="mt-1 text-xs text-muted-foreground">{label}</div>
 		</div>
 	);
@@ -495,6 +604,29 @@ function FacetLink({
 	);
 }
 
+function CountryCoverageRow({ country }: { country: CountryCoverage }) {
+	return (
+		<Link
+			href={`/events?country=${country.code}`}
+			className="group flex items-center justify-between border bg-card px-3 py-2.5 transition-colors hover:bg-muted/30"
+		>
+			<div className="flex min-w-0 items-center gap-3">
+				<div className="text-lg leading-none">
+					{getCountryFlag(country.code)}
+				</div>
+				<div className="min-w-0">
+					<div className="truncate text-sm font-medium">{country.name}</div>
+					<div className="text-xs text-muted-foreground">
+						{formatNumber(country.events)} eventos ·{" "}
+						{formatNumber(country.communities)} comunidades
+					</div>
+				</div>
+			</div>
+			<ArrowRight className="size-3.5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+		</Link>
+	);
+}
+
 function SectionHeader({
 	title,
 	description,
@@ -507,7 +639,7 @@ function SectionHeader({
 	return (
 		<div className="flex items-end justify-between gap-4">
 			<div>
-				<h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+				<h2 className="text-xl font-semibold">{title}</h2>
 				<p className="mt-1 text-sm text-muted-foreground">{description}</p>
 			</div>
 			<Link
@@ -527,9 +659,6 @@ function EventIndexRow({
 	event: Awaited<ReturnType<typeof getEvents>>["events"][number];
 }) {
 	const eventUrl = getEventUrl(event);
-	const imageUrl = event.eventImageUrl
-		? sanitizeImageUrl(event.eventImageUrl)
-		: null;
 
 	return (
 		<Link
@@ -537,19 +666,12 @@ function EventIndexRow({
 			className="group grid gap-4 border bg-card p-3 transition-colors hover:bg-muted/20 sm:grid-cols-[96px_minmax(0,1fr)_auto]"
 		>
 			<div className="relative aspect-[4/3] overflow-hidden bg-muted sm:aspect-square">
-				{imageUrl ? (
-					<Image
-						src={imageUrl}
-						alt={event.name}
-						fill
-						className="object-cover transition-transform group-hover:scale-105"
-						sizes="96px"
-					/>
-				) : (
-					<div className="flex h-full items-center justify-center text-muted-foreground">
-						<CalendarDays className="size-5" />
-					</div>
-				)}
+				<EventCover
+					event={event}
+					className="h-full w-full"
+					imageClassName="transition-transform group-hover:scale-105"
+					sizes="96px"
+				/>
 			</div>
 			<div className="min-w-0 space-y-2">
 				<div className="flex flex-wrap items-center gap-2">
@@ -565,7 +687,7 @@ function EventIndexRow({
 					</span>
 				</div>
 				<div>
-					<h3 className="line-clamp-2 text-base font-semibold tracking-tight group-hover:underline">
+					<h3 className="line-clamp-2 text-base font-semibold group-hover:underline">
 						{event.name}
 					</h3>
 					<p className="mt-1 line-clamp-2 text-sm leading-6 text-muted-foreground">
@@ -589,9 +711,6 @@ function EventCompactCard({
 	event: Awaited<ReturnType<typeof getEvents>>["events"][number];
 }) {
 	const eventUrl = getEventUrl(event);
-	const imageUrl = event.eventImageUrl
-		? sanitizeImageUrl(event.eventImageUrl)
-		: null;
 
 	return (
 		<Link
@@ -599,19 +718,12 @@ function EventCompactCard({
 			className="group overflow-hidden border bg-card transition-colors hover:bg-muted/20"
 		>
 			<div className="relative aspect-[16/9] bg-muted">
-				{imageUrl ? (
-					<Image
-						src={imageUrl}
-						alt={event.name}
-						fill
-						className="object-cover transition-transform group-hover:scale-105"
-						sizes="(max-width: 768px) 100vw, 50vw"
-					/>
-				) : (
-					<div className="flex h-full items-center justify-center text-muted-foreground">
-						<Zap className="size-6" />
-					</div>
-				)}
+				<EventCover
+					event={event}
+					className="h-full w-full"
+					imageClassName="transition-transform group-hover:scale-105"
+					sizes="(max-width: 768px) 100vw, 50vw"
+				/>
 			</div>
 			<div className="space-y-2 border-t p-3">
 				<Badge variant="outline" className="h-5 rounded-none text-[10px]">

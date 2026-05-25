@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-hack0.dev is the public Peru Agentic Builder Index. It maps events, communities, hackathons, labs, grants, builders, demo projects, and useful AI workflows in Peru, with Luma imports as the primary event pipeline.
+hack0.dev is the public LATAM Agentic Builder Index. It maps events, communities, hackathons, labs, grants, and builders across Latin America, with Luma imports as the primary event pipeline.
 
 ## Commands
 
@@ -33,7 +33,7 @@ bun run sync:luma    # Backfill/sync the Luma calendar
 ### Key Directories
 
 - `app/` - Next.js App Router pages
-  - `(landing)/page.tsx` - Peru Agentic Builder Index homepage
+  - `(landing)/page.tsx` - LATAM Agentic Builder Index homepage
   - `events/` - Public event listing
   - `(app)/e/[code]/page.tsx` - Event detail page
   - `(app)/c/` - Community and organization directory

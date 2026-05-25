@@ -44,7 +44,7 @@ interface DiscoverPageProps {
 export const metadata = {
 	title: "Explorar Comunidades | hack0",
 	description:
-		"Descubre comunidades de tecnología, hackathons y eventos en Perú. Únete a la comunidad tech más activa.",
+		"Descubre comunidades de tecnología, hackathons y eventos en LATAM. Únete al mapa regional de builders.",
 };
 
 export const dynamic = "force-dynamic";

@@ -1,9 +1,9 @@
 "use client";
 
-import { Calendar, Loader2, MapPin, Trophy } from "lucide-react";
-import Image from "next/image";
+import { Loader2, MapPin, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
+import { EventCover } from "@/components/events/event-cover";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -62,28 +62,16 @@ function EventCard({ event }: { event: EventWithOrg }) {
 				className={`group h-full overflow-hidden p-0 transition-all hover:shadow-md hover:border-foreground/20 ${isEnded ? "opacity-60" : ""}`}
 			>
 				<div className="relative aspect-square w-full overflow-hidden">
-					{event.eventImageUrl ? (
-						<Image
-							src={event.eventImageUrl}
-							alt={event.name}
-							fill
-							className={`object-cover transition-transform group-hover:scale-105 ${isEnded ? "grayscale" : ""}`}
-							sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-						/>
-					) : (
-						<div
-							className={`flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-muted/80 to-muted ${isEnded ? "grayscale" : ""}`}
-						>
-							<Calendar className="h-8 w-8 text-muted-foreground/40" />
-							<span className="text-xs text-muted-foreground/60 px-4 text-center line-clamp-1">
-								{event.name}
-							</span>
-						</div>
-					)}
+					<EventCover
+						event={event}
+						className="h-full w-full"
+						imageClassName={`transition-transform group-hover:scale-105 ${isEnded ? "grayscale" : ""}`}
+						sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+					/>
 					{isEnded && (
 						<div className="absolute inset-0 flex items-center justify-center">
 							<div className="absolute w-[150%] rotate-[-35deg] bg-muted/95 py-1 text-center shadow-sm">
-								<span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+								<span className="text-[10px] font-medium text-muted-foreground uppercase">
 									Te lo perdiste
 								</span>
 							</div>

@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
 		const location =
 			event.format === "virtual"
 				? "Virtual"
-				: event.department || event.city || "Perú";
+				: event.department || event.city || "LATAM";
 
 		const dateStr = startDate
 			? formatEventDateSmart(startDate)

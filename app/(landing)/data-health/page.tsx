@@ -23,9 +23,9 @@ import {
 } from "@/lib/index-data-health";
 
 export const metadata: Metadata = {
-	title: "Cobertura | Peru Agentic Builder Index",
+	title: "Cobertura | LATAM Agentic Builder Index",
 	description:
-		"Cobertura, fuentes y gaps actuales del Peru Agentic Builder Index.",
+		"Cobertura, fuentes y gaps actuales del LATAM Agentic Builder Index.",
 };
 
 export const dynamic = "force-dynamic";
@@ -88,8 +88,8 @@ export default async function DataHealthPage() {
 									Cobertura
 								</Badge>
 								<div className="space-y-3">
-									<h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">
-										Cobertura y gaps del Peru Agentic Builder Index
+									<h1 className="text-3xl font-semibold sm:text-5xl">
+										Cobertura y gaps del LATAM Agentic Builder Index
 									</h1>
 									<p className="max-w-2xl text-base leading-7 text-muted-foreground">
 										Vista operativa de lo que ya está mapeado, qué viene de
@@ -99,13 +99,13 @@ export default async function DataHealthPage() {
 								</div>
 								<div className="flex flex-col gap-2 sm:flex-row">
 									<Button asChild size="sm" className="gap-2">
-										<Link href="/events?country=PE">
+										<Link href="/events">
 											Ver eventos
 											<ArrowRight className="size-4" />
 										</Link>
 									</Button>
 									<Button asChild variant="outline" size="sm" className="gap-2">
-										<a href="mailto:hey@hack0.dev?subject=Actualizar%20Peru%20Agentic%20Builder%20Index">
+										<a href="mailto:hey@hack0.dev?subject=Actualizar%20LATAM%20Agentic%20Builder%20Index">
 											Reportar dataset
 											<ExternalLink className="size-4" />
 										</a>
@@ -212,11 +212,7 @@ function HeroMetric({
 	return (
 		<div className="border-b border-r p-4 last:border-r-0 even:border-r-0">
 			<div
-				className={
-					text
-						? "text-sm font-semibold tracking-tight"
-						: "text-2xl font-semibold tracking-tight"
-				}
+				className={text ? "text-sm font-semibold" : "text-2xl font-semibold"}
 			>
 				{typeof value === "number" ? formatNumber(value) : value}
 			</div>
@@ -232,7 +228,7 @@ function CoverageCard({ facet }: { facet: CoverageFacet }) {
 			<div className="space-y-3">
 				<div className="flex items-start justify-between gap-3">
 					<div>
-						<div className="text-2xl font-semibold tracking-tight">
+						<div className="text-2xl font-semibold">
 							{formatNumber(facet.count)}
 						</div>
 						<h2 className="mt-1 text-sm font-medium">{facet.label}</h2>
@@ -272,7 +268,7 @@ function SectionHeader({
 				<Icon className="size-4" />
 			</div>
 			<div>
-				<h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+				<h2 className="text-xl font-semibold">{title}</h2>
 				<p className="mt-1 text-sm text-muted-foreground">{description}</p>
 			</div>
 		</div>
@@ -319,7 +315,7 @@ function QualityCard({ signal }: { signal: QualitySignal }) {
 				<CheckCircle2 className={`size-4 ${severityCopy[signal.severity]}`} />
 			</div>
 			<div className="mt-4 flex items-end justify-between gap-3">
-				<div className="text-2xl font-semibold tracking-tight">
+				<div className="text-2xl font-semibold">
 					{formatNumber(signal.value)}
 				</div>
 				<div className="text-xs text-muted-foreground">

@@ -81,7 +81,7 @@ export function CohostInviteEmail({
 					<Hr style={hr} />
 
 					<Text style={footer}>
-						hack0.dev - Centralizando eventos tech para Perú
+						hack0.dev - Centralizando eventos tech para LATAM
 					</Text>
 				</Container>
 			</Body>

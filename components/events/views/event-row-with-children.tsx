@@ -6,9 +6,9 @@ import {
 	ChevronRight,
 	Sparkles,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { EventCover } from "@/components/events/event-cover";
 import { CalendarIcon } from "@/components/icons/calendar";
 import { PinIcon } from "@/components/icons/pin";
 import { TrophyIcon } from "@/components/icons/trophy";
@@ -115,11 +115,10 @@ export function EventRowWithChildren({
 					{/* Banner background */}
 					{event.eventImageUrl && (
 						<div className="absolute inset-0 overflow-hidden pointer-events-none">
-							<Image
-								src={event.eventImageUrl}
-								alt=""
-								fill
-								className="object-cover object-center opacity-20 group-hover:opacity-30 transition-opacity duration-300 blur-sm"
+							<EventCover
+								event={event}
+								className="h-full w-full"
+								imageClassName="object-center opacity-20 group-hover:opacity-30 transition-opacity duration-300 blur-sm"
 								sizes="100vw"
 							/>
 							<div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-background/50" />
@@ -157,19 +156,12 @@ export function EventRowWithChildren({
 								</button>
 							)}
 							<div className="relative h-9 w-9 shrink-0 overflow-hidden bg-muted border border-border/50">
-								{event.eventImageUrl ? (
-									<Image
-										src={event.eventImageUrl}
-										alt={event.name}
-										fill
-										className="object-cover"
-										sizes="36px"
-									/>
-								) : (
-									<div className="flex h-full w-full items-center justify-center text-xs font-medium text-muted-foreground">
-										{event.name.charAt(0).toUpperCase()}
-									</div>
-								)}
+								<EventCover
+									event={event}
+									className="h-full w-full"
+									sizes="36px"
+									variant="thumb"
+								/>
 							</div>
 							<div className="flex-1 min-w-0">
 								<h3 className="font-medium text-xs leading-tight line-clamp-2 group-hover:underline underline-offset-2">
@@ -257,19 +249,12 @@ export function EventRowWithChildren({
 						)}
 
 						<div className="relative h-7 w-7 shrink-0 overflow-hidden bg-muted border border-border/50">
-							{event.eventImageUrl ? (
-								<Image
-									src={event.eventImageUrl}
-									alt={event.name}
-									fill
-									className="object-cover"
-									sizes="28px"
-								/>
-							) : (
-								<div className="flex h-full w-full items-center justify-center text-[10px] font-medium text-muted-foreground">
-									{event.name.charAt(0).toUpperCase()}
-								</div>
-							)}
+							<EventCover
+								event={event}
+								className="h-full w-full"
+								sizes="28px"
+								variant="thumb"
+							/>
 						</div>
 						<div className="min-w-0 flex-1">
 							<div className="flex items-center gap-2">
@@ -421,19 +406,12 @@ function ChildEventRow({
 			)}
 
 			<div className="relative h-5 w-5 shrink-0 overflow-hidden bg-muted border border-border/50">
-				{event.eventImageUrl ? (
-					<Image
-						src={event.eventImageUrl}
-						alt={event.name}
-						fill
-						className="object-cover"
-						sizes="20px"
-					/>
-				) : (
-					<div className="flex h-full w-full items-center justify-center text-[8px] font-medium text-muted-foreground">
-						{event.name.charAt(0).toUpperCase()}
-					</div>
-				)}
+				<EventCover
+					event={event}
+					className="h-full w-full"
+					sizes="20px"
+					variant="thumb"
+				/>
 			</div>
 
 			<div className="min-w-0 flex-1">

@@ -89,6 +89,10 @@ export interface EventsResult {
 	hasMore: boolean;
 }
 
+const DEFAULT_EVENT_COUNTRY_CODES = LATAM_COUNTRY_CODES.filter(
+	(code) => code !== "GLOBAL",
+);
+
 export async function getEvents(
 	filters: EventFilters = {},
 ): Promise<EventsResult> {
@@ -245,6 +249,8 @@ export async function getEvents(
 	// Country filter
 	if (countries.length > 0) {
 		conditions.push(inArray(events.country, countries));
+	} else {
+		conditions.push(inArray(events.country, DEFAULT_EVENT_COUNTRY_CODES));
 	}
 
 	// Department filter

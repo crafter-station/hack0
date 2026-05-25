@@ -1,7 +1,10 @@
 import { asc } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
-import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema/constants";
+import {
+	LATAM_COUNTRY_CODES,
+	ORGANIZER_TYPE_LABELS,
+} from "@/lib/db/schema/constants";
 
 export type OpportunityCategory =
 	| "accelerator"
@@ -64,6 +67,10 @@ const OPPORTUNITY_TERMS = [
 	"red angel",
 	"venture",
 ];
+const LATAM_ORG_COUNTRIES = LATAM_COUNTRY_CODES.filter(
+	(code) => code !== "GLOBAL",
+);
+const LATAM_ORG_COUNTRY_SET = new Set<string>(LATAM_ORG_COUNTRIES);
 
 function normalize(value: string | null | undefined) {
 	return (value || "")
@@ -107,7 +114,7 @@ function getOpportunityCategory(
 function isOpportunityOrg(org: RawOpportunityOrganization) {
 	const text = searchableText(org);
 	return (
-		org.country === "PE" &&
+		Boolean(org.country && LATAM_ORG_COUNTRY_SET.has(org.country)) &&
 		(org.type === "investor" ||
 			OPPORTUNITY_TERMS.some((term) => text.includes(term)))
 	);
