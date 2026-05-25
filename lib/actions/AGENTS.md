@@ -17,9 +17,9 @@ Todas las server actions de la aplicación. Core de la lógica de negocio.
 | import.ts | Importación de eventos externos |
 | ai-extract.ts | Extracción de datos con IA |
 | god-mode.ts | Acciones de super-admin |
-| pending-events.ts | Eventos pendientes de aprobación |
 | event-organizers.ts | Gestión de organizadores |
 | organization-relationships.ts | Relaciones entre organizaciones |
+| scraper-curation.ts | Curación de eventos scrapeados |
 | users.ts | Gestión de usuarios |
 
 ## Patrones

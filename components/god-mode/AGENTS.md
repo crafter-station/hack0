@@ -22,12 +22,11 @@ Interfaz de super-administrador para gestión global del ecosistema.
 | /god/events | Gestión de eventos |
 | /god/events/new | Crear evento |
 | /god/organizations | Gestión de orgs |
-| /god/pending | Aprobaciones pendientes |
 | /god/graph | Visualización de ecosistema |
 
 ## Acceso
 
-Solo usuarios con `role: "god"` en `userPreferences`.
+Solo usuarios cuyo email esté en `ADMIN_EMAILS`.
 
 Verificación en:
 - `lib/god-mode.ts` - Helper `isGodMode()`
@@ -36,5 +35,7 @@ Verificación en:
 ## Dependencias
 
 - `@/lib/actions/god-mode` - Acciones de admin
-- `@/lib/actions/pending-events` - Eventos pendientes
+- `@/lib/actions/events` - Approval actions para eventos
+- `@/lib/actions/organizations` - Verificación y gestión de orgs
+- `@/lib/actions/organization-relationships` - Datos del grafo
 - D3.js - Visualización de grafos

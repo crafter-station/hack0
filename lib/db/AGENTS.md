@@ -6,7 +6,7 @@ Schema Drizzle ORM y queries para Neon PostgreSQL.
 
 | Archivo | Propósito |
 |---------|-----------|
-| schema.ts | Definición completa del schema (~50KB) |
+| schema/ | Schema modular por dominio |
 | index.ts | Conexión y exportación de `db` |
 | seed.ts | Script de seeding (~36KB) |
 | queries/ | Query helpers reutilizables |
@@ -17,13 +17,19 @@ Schema Drizzle ORM y queries para Neon PostgreSQL.
 |-------|-----------|
 | events | Eventos (hackathons, workshops, etc.) |
 | organizations | Comunidades/organizadores |
-| userPreferences | Preferencias y rol de usuario |
+| users | Perfiles Clerk y preferencias públicas |
+| emailVerifications | Verificación de email para Luma |
 | eventSponsors | Sponsors de eventos |
 | eventHostOrganizations | Co-hosts de eventos |
 | eventHosts | Hosts individuales de eventos (Luma/manual) |
-| organizerClaims | Claims de organizadores |
+| eventOrganizers | Organizadores individuales de eventos |
 | communityMembers | Miembros de comunidad |
+| communityInvites | Invitaciones de comunidad |
+| communityRoleRequests | Solicitudes de rol en comunidad |
 | importJobs | Jobs de importación |
+| scrapeSources | Fuentes de scraping |
+| scrapeRuns | Ejecuciones de scraping |
+| organizationRelationships | Relaciones del ecosistema |
 
 ## Convenciones
 
