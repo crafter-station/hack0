@@ -22,6 +22,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getEvents } from "@/lib/actions/events";
+import { getBuilderDirectorySummary } from "@/lib/builders-directory";
 import { db } from "@/lib/db";
 import { communityMembers, events, organizations } from "@/lib/db/schema";
 import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema/constants";
@@ -182,26 +183,20 @@ async function getIndexData() {
 			.limit(4),
 	]);
 
-	const [{ totalCommunities }] = await db
-		.select({ totalCommunities: count(organizations.id) })
-		.from(organizations)
-		.where(publicOrgWhere);
-
-	const [{ totalBuilders }] = await db
-		.select({
-			totalBuilders: sql<number>`count(distinct ${communityMembers.userId})`,
-		})
-		.from(communityMembers)
-		.innerJoin(
-			organizations,
-			eq(communityMembers.communityId, organizations.id),
-		)
-		.where(publicOrgWhere);
-
-	const [{ totalLabs }] = await db
-		.select({ totalLabs: count(organizations.id) })
-		.from(organizations)
-		.where(and(publicOrgWhere, inArray(organizations.type, UNIVERSITY_TYPES)));
+	const [[{ totalCommunities }], builderSummary, [{ totalLabs }]] =
+		await Promise.all([
+			db
+				.select({ totalCommunities: count(organizations.id) })
+				.from(organizations)
+				.where(publicOrgWhere),
+			getBuilderDirectorySummary(),
+			db
+				.select({ totalLabs: count(organizations.id) })
+				.from(organizations)
+				.where(
+					and(publicOrgWhere, inArray(organizations.type, UNIVERSITY_TYPES)),
+				),
+		]);
 
 	const counts = countRows[0] || {
 		eventsCount: 0,
@@ -224,7 +219,7 @@ async function getIndexData() {
 			opportunities: Number(counts.opportunities || 0),
 			cities: Number(counts.cities || 0),
 			communities: Number(totalCommunities || 0),
-			builders: Number(totalBuilders || 0),
+			builders: builderSummary.builders,
 			labs: Number(totalLabs || 0),
 		},
 	};
@@ -342,11 +337,11 @@ export default async function HomePage() {
 								helper="oportunidades"
 							/>
 							<FacetLink
-								href="/c/discover?countries=PE"
+								href="/builders"
 								icon={Code2}
-								label="Builders activos"
+								label="Builders y hosts"
 								value={data.counts.builders}
-								helper="seguimientos"
+								helper="desde eventos"
 							/>
 							<FacetLink
 								href="/roadmap"

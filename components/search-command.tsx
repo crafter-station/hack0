@@ -1,6 +1,13 @@
 "use client";
 
-import { ArrowRight, Calendar, Command, MapPin, Sparkles } from "lucide-react";
+import {
+	ArrowRight,
+	Calendar,
+	Command,
+	MapPin,
+	Sparkles,
+	Users,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import {
@@ -102,6 +109,12 @@ export function SearchCommand({ hackathons }: SearchCommandProps) {
 					>
 						<Sparkles className="mr-2 h-4 w-4" />
 						Ver eventos para principiantes
+					</CommandItem>
+					<CommandItem
+						onSelect={() => runCommand(() => router.push("/builders"))}
+					>
+						<Users className="mr-2 h-4 w-4" />
+						Explorar builders y hosts
 					</CommandItem>
 				</CommandGroup>
 
