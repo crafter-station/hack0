@@ -22,6 +22,7 @@ import {
 } from "@/lib/actions/communities";
 import { db } from "@/lib/db";
 import { communityMembers, organizations } from "@/lib/db/schema";
+import { ORGANIZER_TYPES, type OrganizerType } from "@/lib/db/schema/constants";
 import { getCommunitiesViewPreference } from "@/lib/view-preferences";
 
 interface DiscoverPageProps {
@@ -47,6 +48,10 @@ export const metadata = {
 
 const INITIAL_LIMIT = 12;
 
+function isOrganizerType(value: string): value is OrganizerType {
+	return (ORGANIZER_TYPES as readonly string[]).includes(value);
+}
+
 async function getInitialCommunities(
 	params: {
 		search?: string;
@@ -61,8 +66,10 @@ async function getInitialCommunities(
 	userId: string | null,
 ): Promise<CommunitiesResponse> {
 	const search = params.search;
-	const type = params.type;
-	const typesArray = params.types?.split(",").filter(Boolean) || [];
+	const type =
+		params.type && isOrganizerType(params.type) ? params.type : undefined;
+	const typesArray = params.types?.split(",").filter(isOrganizerType) || [];
+	const countriesArray = params.countries?.split(",").filter(Boolean) || [];
 	const verifiedOnly = params.verified === "true";
 
 	const conditions = [
@@ -86,6 +93,14 @@ async function getInitialCommunities(
 
 	if (typesArray.length > 0) {
 		conditions.push(or(...typesArray.map((t) => eq(organizations.type, t)))!);
+	}
+
+	if (countriesArray.length > 0) {
+		conditions.push(
+			or(
+				...countriesArray.map((country) => eq(organizations.country, country)),
+			)!,
+		);
 	}
 
 	if (verifiedOnly) {
