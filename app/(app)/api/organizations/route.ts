@@ -1,61 +1,58 @@
 import { auth } from "@clerk/nextjs/server";
-import { and, asc, count, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
+import { normalizeCommunityDirectoryFilters } from "@/lib/community-directory-filters";
+import { getCommunityDirectoryConditions } from "@/lib/community-directory-query";
 import { db } from "@/lib/db";
 import { communityMembers, organizations } from "@/lib/db/schema";
-import { isOrganizerType } from "@/lib/db/schema/constants";
 
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 50;
 
 type OrderBy = "popular" | "recent" | "name" | "contact" | "contact_asc";
+const ORDER_BY_VALUES = [
+	"popular",
+	"recent",
+	"name",
+	"contact",
+	"contact_asc",
+] as const;
+
+function isOrderBy(value: string | null): value is OrderBy {
+	return ORDER_BY_VALUES.includes(value as OrderBy);
+}
+
+function parseIntegerParam(value: string | null, fallback: number) {
+	const parsed = Number.parseInt(value || "", 10);
+	return Number.isFinite(parsed) ? parsed : fallback;
+}
 
 export async function GET(request: NextRequest) {
 	try {
 		const { userId } = await auth();
 		const { searchParams } = new URL(request.url);
 
-		const search = searchParams.get("search") || undefined;
-		const rawType = searchParams.get("type");
-		const type = rawType && isOrganizerType(rawType) ? rawType : undefined;
-		const verifiedOnly = searchParams.get("verified") === "true";
-		const orderBy = (searchParams.get("orderBy") as OrderBy) || "popular";
+		const filters = normalizeCommunityDirectoryFilters({
+			search: searchParams.get("search"),
+			type: searchParams.get("type"),
+			types: searchParams.get("types"),
+			countries: searchParams.get("countries"),
+			sizes: searchParams.get("sizes"),
+			verification: searchParams.get("verification"),
+			verified: searchParams.get("verified"),
+			tags: searchParams.get("tags"),
+		});
+		const rawOrderBy = searchParams.get("orderBy");
+		const orderBy = isOrderBy(rawOrderBy) ? rawOrderBy : "popular";
 		const limit = Math.min(
-			Number.parseInt(searchParams.get("limit") || String(DEFAULT_LIMIT), 10),
+			Math.max(parseIntegerParam(searchParams.get("limit"), DEFAULT_LIMIT), 1),
 			MAX_LIMIT,
 		);
-		const offset = Number.parseInt(searchParams.get("offset") || "0", 10);
+		const offset = Math.max(
+			parseIntegerParam(searchParams.get("offset"), 0),
+			0,
+		);
 
-		const conditions = [
-			eq(organizations.isPublic, true),
-			eq(organizations.isPersonalOrg, false),
-		];
-
-		if (search) {
-			conditions.push(
-				or(
-					ilike(organizations.name, `%${search}%`),
-					ilike(organizations.displayName, `%${search}%`),
-					ilike(organizations.description, `%${search}%`),
-				)!,
-			);
-		}
-
-		if (type) {
-			conditions.push(eq(organizations.type, type));
-		}
-
-		if (verifiedOnly) {
-			conditions.push(eq(organizations.isVerified, true));
-		}
-
-		// Get total count for pagination
-		const [{ total }] = await db
-			.select({ total: count() })
-			.from(organizations)
-			.where(and(...conditions));
-
-		// Subquery for member count
 		const memberCountSubquery = db
 			.select({
 				communityId: communityMembers.communityId,
@@ -64,8 +61,19 @@ export async function GET(request: NextRequest) {
 			.from(communityMembers)
 			.groupBy(communityMembers.communityId)
 			.as("member_counts");
+		const memberCountSql = sql<number>`COALESCE(${memberCountSubquery.memberCount}, 0)`;
 
-		// Build query with member count
+		const conditions = getCommunityDirectoryConditions(filters, memberCountSql);
+
+		const [{ total }] = await db
+			.select({ total: count() })
+			.from(organizations)
+			.leftJoin(
+				memberCountSubquery,
+				eq(organizations.id, memberCountSubquery.communityId),
+			)
+			.where(and(...conditions));
+
 		let query = db
 			.select({
 				id: organizations.id,
@@ -78,10 +86,7 @@ export async function GET(request: NextRequest) {
 				coverUrl: organizations.coverUrl,
 				isVerified: organizations.isVerified,
 				createdAt: organizations.createdAt,
-				memberCount:
-					sql<number>`COALESCE(${memberCountSubquery.memberCount}, 0)`.as(
-						"member_count",
-					),
+				memberCount: memberCountSql.as("member_count"),
 				email: organizations.email,
 				country: organizations.country,
 				department: organizations.department,
@@ -108,11 +113,8 @@ export async function GET(request: NextRequest) {
 			CASE WHEN ${organizations.githubUrl} IS NOT NULL THEN 1 ELSE 0 END
 		)`;
 
-		// Apply ordering
 		if (orderBy === "popular") {
-			query = query.orderBy(
-				desc(sql`COALESCE(${memberCountSubquery.memberCount}, 0)`),
-			);
+			query = query.orderBy(desc(memberCountSql));
 		} else if (orderBy === "recent") {
 			query = query.orderBy(desc(organizations.createdAt));
 		} else if (orderBy === "name") {
