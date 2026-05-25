@@ -1,6 +1,7 @@
 "use client";
 
 import { useRealtimeRun } from "@trigger.dev/react-hooks";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import {
 	ArrowLeft,
 	Building2,
@@ -73,7 +74,11 @@ import {
 	getEventTypeConfig,
 	hasEventOptions,
 } from "@/lib/event-type-config";
-import { SKILL_LEVEL_OPTIONS } from "@/lib/event-utils";
+import {
+	DEFAULT_TIMEZONE,
+	SKILL_LEVEL_OPTIONS,
+	TIMEZONE_OPTIONS,
+} from "@/lib/event-utils";
 import type { ExtractedEventData } from "@/lib/schemas/event-extraction";
 import type { eventImportTask } from "@/trigger/event-import";
 import { AIExtractModal } from "./ai-extract-modal";
@@ -120,14 +125,16 @@ export function OrgEventFormMinimal({
 }: OrgEventFormMinimalProps) {
 	const router = useRouter();
 	const isEditMode = mode === "edit";
+	const initialTimezone = event?.timezone || DEFAULT_TIMEZONE;
 
 	const parseDateTime = (dateValue: Date | string | null | undefined) => {
 		if (!dateValue) return { date: "", time: "" };
 		try {
 			const date = new Date(dateValue);
-			const dateStr = date.toISOString().split("T")[0];
-			const timeStr = date.toTimeString().slice(0, 5);
-			return { date: dateStr, time: timeStr };
+			return {
+				date: formatInTimeZone(date, initialTimezone, "yyyy-MM-dd"),
+				time: formatInTimeZone(date, initialTimezone, "HH:mm"),
+			};
 		} catch {
 			return { date: "", time: "" };
 		}
@@ -180,6 +187,7 @@ export function OrgEventFormMinimal({
 	const [skillLevel, setSkillLevel] = useState<SkillLevel>(
 		event?.skillLevel || "all",
 	);
+	const [timezone, setTimezone] = useState(initialTimezone);
 	const [linksOpen, setLinksOpen] = useState(false);
 	const [locationOpen, setLocationOpen] = useState(false);
 	const [optionsOpen, setOptionsOpen] = useState(false);
@@ -235,14 +243,22 @@ export function OrgEventFormMinimal({
 				name,
 				description: description || undefined,
 				startDate: startDate
-					? new Date(`${startDate}T${startTime || "00:00"}`)
+					? fromZonedTime(
+							`${startDate}T${startTime || "00:00"}`,
+							timezone || DEFAULT_TIMEZONE,
+						)
 					: null,
-				endDate: endDate ? new Date(`${endDate}T${endTime || "23:59"}`) : null,
+				endDate: endDate
+					? fromZonedTime(
+							`${endDate}T${endTime || "23:59"}`,
+							timezone || DEFAULT_TIMEZONE,
+						)
+					: null,
 				format,
 				department: department || undefined,
 				city: city || undefined,
 				venue: venue || undefined,
-				timezone: "America/Lima",
+				timezone: timezone || DEFAULT_TIMEZONE,
 				geoLatitude: geoLatitude || undefined,
 				geoLongitude: geoLongitude || undefined,
 				meetingUrl: meetingUrl || undefined,
@@ -274,7 +290,7 @@ export function OrgEventFormMinimal({
 				department: department || undefined,
 				city: city || undefined,
 				venue: venue || undefined,
-				timezone: "America/Lima",
+				timezone: timezone || DEFAULT_TIMEZONE,
 				geoLatitude: geoLatitude || undefined,
 				geoLongitude: geoLongitude || undefined,
 				meetingUrl: meetingUrl || undefined,
@@ -844,6 +860,25 @@ export function OrgEventFormMinimal({
 								className={`h-8 text-sm w-24 ${isImporting ? "input-shimmer" : ""}`}
 								disabled={isImporting}
 							/>
+						</div>
+
+						<div className="border-t border-border" />
+
+						<div className="p-3 flex items-center gap-3">
+							<Globe className="h-4 w-4 text-muted-foreground/50" />
+							<Label className="text-sm text-muted-foreground w-12">
+								Zona Horaria
+							</Label>
+							<div className="flex-1 min-w-0">
+								<SearchableSelect
+									options={TIMEZONE_OPTIONS}
+									value={timezone}
+									onValueChange={setTimezone}
+									placeholder="Zona horaria"
+									searchPlaceholder="Buscar zona horaria..."
+									emptyMessage="No se encontró"
+								/>
+							</div>
 						</div>
 					</div>
 

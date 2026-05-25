@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
+import { fromZonedTime } from "date-fns-tz";
 import {
 	and,
 	asc,
@@ -675,10 +676,17 @@ export async function createEvent(
 			geoLatitude: input.geoLatitude,
 			geoLongitude: input.geoLongitude,
 			meetingUrl: input.meetingUrl,
-			startDate: input.startDate ? new Date(input.startDate) : undefined,
-			endDate: input.endDate ? new Date(input.endDate) : undefined,
+			startDate: input.startDate
+				? fromZonedTime(input.startDate, input.timezone || "America/Lima")
+				: undefined,
+			endDate: input.endDate
+				? fromZonedTime(input.endDate, input.timezone || "America/Lima")
+				: undefined,
 			registrationDeadline: input.registrationDeadline
-				? new Date(input.registrationDeadline)
+				? fromZonedTime(
+						input.registrationDeadline,
+						input.timezone || "America/Lima",
+					)
 				: undefined,
 			prizePool: input.prizePool,
 			prizeCurrency: input.prizeCurrency || "USD",

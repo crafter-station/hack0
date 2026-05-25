@@ -394,28 +394,29 @@ export function formatCalendarMonth(
 	return formatTz(date, formatStr, { locale: es, timeZone: tz });
 }
 
+export const TIMEZONE_ABBRS: Record<string, string> = {
+	"America/Lima": "PET",
+	"America/Bogota": "COT",
+	"America/Mexico_City": "CST",
+	"America/Guatemala": "CST",
+	"America/Argentina/Buenos_Aires": "ART",
+	"America/Santiago": "CLT",
+	"America/Sao_Paulo": "BRT",
+	"America/Guayaquil": "ECT",
+	"America/Caracas": "VET",
+	"America/Panama": "EST",
+	"America/Asuncion": "PYT",
+	"America/Montevideo": "UYT",
+	"America/La_Paz": "BOT",
+	"America/Costa_Rica": "CST",
+	"America/Managua": "CST",
+	"America/Tegucigalpa": "CST",
+	"America/El_Salvador": "CST",
+	"America/Santo_Domingo": "AST",
+	"America/Havana": "CST",
+};
+
 export function getTimezoneAbbreviation(tz: string): string {
-	const TIMEZONE_ABBRS: Record<string, string> = {
-		"America/Lima": "PET",
-		"America/Bogota": "COT",
-		"America/Mexico_City": "CST",
-		"America/Guatemala": "CST",
-		"America/Argentina/Buenos_Aires": "ART",
-		"America/Santiago": "CLT",
-		"America/Sao_Paulo": "BRT",
-		"America/Guayaquil": "ECT",
-		"America/Caracas": "VET",
-		"America/Panama": "EST",
-		"America/Asuncion": "PYT",
-		"America/Montevideo": "UYT",
-		"America/La_Paz": "BOT",
-		"America/Costa_Rica": "CST",
-		"America/Managua": "CST",
-		"America/Tegucigalpa": "CST",
-		"America/El_Salvador": "CST",
-		"America/Santo_Domingo": "AST",
-		"America/Havana": "CST",
-	};
 	return TIMEZONE_ABBRS[tz] || tz.split("/").pop()?.replace(/_/g, " ") || tz;
 }
 
@@ -441,6 +442,13 @@ export const STATUS_OPTIONS = Object.entries(STATUS_LABELS).map(
 
 export const COUNTRY_OPTIONS = Object.entries(COUNTRY_NAMES).map(
 	([code, name]) => ({ value: code, label: `${getCountryFlag(code)} ${name}` }),
+);
+
+export const TIMEZONE_OPTIONS = Object.entries(TIMEZONE_ABBRS).map(
+	([value, abbr]) => ({
+		value,
+		label: `${value.split("/").pop()?.replace(/_/g, " ")} (${abbr})`,
+	}),
 );
 
 // Peru departments/regions for filtering
