@@ -61,6 +61,7 @@ import {
 } from "@/lib/actions/events";
 import { startLumaImport } from "@/lib/actions/import";
 import type { Event, Organization } from "@/lib/db/schema";
+import { EVENT_TYPES, SKILL_LEVELS } from "@/lib/db/schema/constants";
 import {
 	EVENT_TYPE_LIST,
 	getEventTypeConfig,
@@ -68,8 +69,25 @@ import {
 } from "@/lib/event-type-config";
 import { SKILL_LEVEL_OPTIONS } from "@/lib/event-utils";
 import type { ExtractedEventData } from "@/lib/schemas/event-extraction";
+import type { eventImportTask } from "@/trigger/event-import";
 import { AIExtractModal } from "./ai-extract-modal";
 import { ImproveDescriptionModal } from "./improve-description-modal";
+
+type EventType = (typeof EVENT_TYPES)[number];
+type SkillLevel = (typeof SKILL_LEVELS)[number];
+type ImportMetadata = ExtractedEventData & {
+	eventImageUrl?: string;
+	error?: string;
+	step?: string;
+};
+
+function isEventType(value: string): value is EventType {
+	return (EVENT_TYPES as readonly string[]).includes(value);
+}
+
+function isSkillLevel(value: string): value is SkillLevel {
+	return (SKILL_LEVELS as readonly string[]).includes(value);
+}
 
 interface OrganizationWithRole {
 	organization: Organization;
@@ -86,24 +104,6 @@ interface OrgEventFormMinimalProps {
 	mode?: "create" | "edit";
 	event?: Event;
 	sponsors?: EventSponsorWithOrg[];
-}
-
-interface ExtractedData {
-	name?: string;
-	description?: string;
-	startDate?: string;
-	endDate?: string;
-	city?: string;
-	venue?: string;
-	format?: string;
-	eventImageUrl?: string;
-	organizerName?: string;
-	websiteUrl?: string;
-	registrationUrl?: string;
-	eventType?: string;
-	country?: string;
-	step?: string;
-	error?: string;
 }
 
 export function OrgEventFormMinimal({
@@ -174,8 +174,12 @@ export function OrgEventFormMinimal({
 	const [eventImageUrl, setEventImageUrl] = useState(
 		event?.eventImageUrl || "",
 	);
-	const [eventType, setEventType] = useState(event?.eventType || "hackathon");
-	const [skillLevel, setSkillLevel] = useState(event?.skillLevel || "all");
+	const [eventType, setEventType] = useState<EventType>(
+		event?.eventType || "hackathon",
+	);
+	const [skillLevel, setSkillLevel] = useState<SkillLevel>(
+		event?.skillLevel || "all",
+	);
 	const [linksOpen, setLinksOpen] = useState(false);
 	const [locationOpen, setLocationOpen] = useState(false);
 	const [optionsOpen, setOptionsOpen] = useState(false);
@@ -208,7 +212,10 @@ export function OrgEventFormMinimal({
 					if (
 						!orgs.some((o) => o.organization.id === orgWithRole.organization.id)
 					) {
-						orgs.push(orgWithRole);
+						orgs.push({
+							organization: orgWithRole.organization,
+							role: orgWithRole.role,
+						});
 					}
 				}
 			}
@@ -294,12 +301,15 @@ export function OrgEventFormMinimal({
 	};
 
 	// Use realtime run hook when we have import state
-	const { run } = useRealtimeRun<ExtractedData>(importState?.runId || "", {
-		accessToken: importState?.accessToken || "",
-		enabled: !!importState,
-	});
+	const { run } = useRealtimeRun<typeof eventImportTask>(
+		importState?.runId || "",
+		{
+			accessToken: importState?.accessToken || "",
+			enabled: !!importState,
+		},
+	);
 
-	const metadata = (run?.metadata || {}) as ExtractedData;
+	const metadata = (run?.metadata || {}) as ImportMetadata;
 	const step = metadata.step;
 
 	// Populate form when extraction is completed
@@ -330,7 +340,7 @@ export function OrgEventFormMinimal({
 			if (end.time) setEndTime(end.time);
 			if (metadata.venue) setVenue(metadata.venue);
 			if (metadata.city) setCity(metadata.city);
-			if (metadata.format) setFormat(metadata.format as any);
+			if (metadata.format) setFormat(metadata.format);
 			if (metadata.eventType) setEventType(metadata.eventType);
 			if (metadata.websiteUrl) setWebsiteUrl(metadata.websiteUrl);
 			if (metadata.registrationUrl)
@@ -716,7 +726,7 @@ export function OrgEventFormMinimal({
 														key={type.value}
 														value={type.value}
 														onSelect={(value) => {
-															setEventType(value);
+															if (isEventType(value)) setEventType(value);
 															setTypeSelectorOpen(false);
 														}}
 														className="flex items-center gap-2 py-2"
@@ -1089,7 +1099,9 @@ export function OrgEventFormMinimal({
 											<SearchableSelect
 												options={SKILL_LEVEL_OPTIONS}
 												value={skillLevel}
-												onValueChange={setSkillLevel}
+												onValueChange={(value) => {
+													if (isSkillLevel(value)) setSkillLevel(value);
+												}}
 												placeholder="Seleccionar nivel"
 												searchPlaceholder="Buscar nivel..."
 												emptyMessage="No se encontró"

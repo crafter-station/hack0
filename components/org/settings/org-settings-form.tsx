@@ -48,6 +48,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { updateOrganizationById } from "@/lib/actions/organizations";
 import type { Organization } from "@/lib/db/schema";
+import { ORGANIZER_TYPES, type OrganizerType } from "@/lib/db/schema/constants";
 import {
 	getOrganizerTypeConfig,
 	ORGANIZER_TYPE_LIST,
@@ -55,6 +56,10 @@ import {
 
 interface OrgSettingsFormProps {
 	organization: Organization;
+}
+
+function isOrganizerType(value: string): value is OrganizerType {
+	return (ORGANIZER_TYPES as readonly string[]).includes(value);
 }
 
 export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
@@ -67,7 +72,9 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
 	const [description, setDescription] = useState(
 		organization.description || "",
 	);
-	const [type, setType] = useState(organization.type || "community");
+	const [type, setType] = useState<OrganizerType>(
+		organization.type || "community",
+	);
 	const [logoUrl, setLogoUrl] = useState(organization.logoUrl || "");
 	const [coverUrl, setCoverUrl] = useState(organization.coverUrl || "");
 	const [websiteUrl, setWebsiteUrl] = useState(organization.websiteUrl || "");
@@ -234,7 +241,7 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
 														key={option.value}
 														value={option.value}
 														onSelect={(value) => {
-															setType(value);
+															if (isOrganizerType(value)) setType(value);
 															setTypeSelectorOpen(false);
 														}}
 														className="flex items-start gap-2.5 py-2.5 cursor-pointer"

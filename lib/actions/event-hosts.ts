@@ -50,9 +50,9 @@ export async function getAssignableMembers(eventId: string) {
 
 	return members.map((m) => ({
 		userId: m.userId,
-		role: m.role,
+		role: m.role ?? "member",
 		displayName: m.user?.displayName || m.user?.username || "Usuario",
-		avatarUrl: m.user?.avatarUrl,
+		avatarUrl: m.user?.avatarUrl ?? null,
 	}));
 }
 

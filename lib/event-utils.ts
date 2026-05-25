@@ -8,9 +8,9 @@ export const DEFAULT_TIMEZONE = PERU_TIMEZONE;
 import {
 	DOMAIN_LABELS,
 	EVENT_TYPE_LABELS,
-	type FORMATS,
+	FORMATS,
 	ORGANIZER_TYPE_LABELS,
-	type SKILL_LEVELS,
+	SKILL_LEVELS,
 	type STATUSES,
 } from "@/lib/db/schema";
 
@@ -90,6 +90,16 @@ const STATUS_LABELS: Record<(typeof STATUSES)[number], string> = {
 	ended: "Terminado",
 };
 
+function isFormat(value: string | null): value is (typeof FORMATS)[number] {
+	return !!value && (FORMATS as readonly string[]).includes(value);
+}
+
+function isSkillLevel(
+	value: string | null,
+): value is (typeof SKILL_LEVELS)[number] {
+	return !!value && (SKILL_LEVELS as readonly string[]).includes(value);
+}
+
 function isValidField(v: string | null | undefined): v is string {
 	return !!v && v !== "N/A" && v !== "n/a";
 }
@@ -101,11 +111,11 @@ export function getFormatLabel(
 	if (format === "in-person" && isValidField(department)) {
 		return department;
 	}
-	return FORMAT_LABELS[format || "virtual"] || "Virtual";
+	return FORMAT_LABELS[isFormat(format) ? format : "virtual"];
 }
 
 export function getSkillLevelLabel(level: string | null): string {
-	return SKILL_LEVEL_LABELS[level || "all"] || "Todos los niveles";
+	return SKILL_LEVEL_LABELS[isSkillLevel(level) ? level : "all"];
 }
 
 export function getEventTypeLabel(eventType: string | null): string {

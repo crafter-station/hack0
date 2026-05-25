@@ -60,8 +60,11 @@ Focus on the main organization name, not event names. Look for "About", "Nosotro
 			throw error;
 		}
 
+		const firecrawlSuccess =
+			"success" in result ? Boolean(result.success) : Boolean(result.json);
+
 		console.log("Firecrawl result:", {
-			success: result.success,
+			success: firecrawlSuccess,
 			hasJson: !!result.json,
 			json: result.json,
 			metadata: result.metadata,
@@ -76,7 +79,7 @@ Focus on the main organization name, not event names. Look for "About", "Nosotro
 			await metadata.set("status", "error");
 			await metadata.set("error", errorMessage);
 			await metadata.set("firecrawlDebug", {
-				success: result.success,
+				success: firecrawlSuccess,
 				hasJson: !!result.json,
 				resultKeys: Object.keys(result),
 			});
@@ -115,7 +118,10 @@ Focus on the main organization name, not event names. Look for "About", "Nosotro
 			socialLinks,
 		};
 
-		await metadata.set("extractedData", scrapedData);
+		await metadata.set(
+			"extractedData",
+			JSON.parse(JSON.stringify(scrapedData)),
+		);
 		await metadata.set("status", "extracted");
 
 		let finalLogoUrl: string | undefined = logoUrl;
