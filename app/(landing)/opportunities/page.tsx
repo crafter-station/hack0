@@ -19,9 +19,9 @@ import {
 import { sanitizeImageUrl } from "@/lib/utils";
 
 export const metadata: Metadata = {
-	title: "Programas y Grants | Peru Agentic Builder Index",
+	title: "Programas y Grants | LATAM Agentic Builder Index",
 	description:
-		"Directorio publico de aceleradoras, incubadoras, fondos y programas para builders en Peru.",
+		"Directorio publico de aceleradoras, incubadoras, fondos y programas para builders en LATAM.",
 };
 
 export const dynamic = "force-dynamic";
@@ -56,13 +56,13 @@ export default async function OpportunitiesPage({
 										<Handshake className="size-3.5" />
 										Programas
 									</Badge>
-									<h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+									<h1 className="text-3xl font-semibold sm:text-4xl">
 										Programas, grants e inversión
 									</h1>
 									<p className="max-w-2xl text-sm leading-6 text-muted-foreground">
 										Directorio de incubadoras, aceleradoras, fondos, redes de
 										ángeles e iniciativas de innovación abierta que ayudan a
-										builders peruanos a conseguir soporte, capital o
+										builders de Latinoamérica a conseguir soporte, capital o
 										distribución.
 									</p>
 								</div>
@@ -143,7 +143,7 @@ export default async function OpportunitiesPage({
 function SummaryMetric({ label, value }: { label: string; value: number }) {
 	return (
 		<div className="border-b border-r p-4 last:border-r-0 even:border-r-0">
-			<div className="text-2xl font-semibold tracking-tight">
+			<div className="text-2xl font-semibold">
 				{new Intl.NumberFormat("es-PE").format(value)}
 			</div>
 			<div className="mt-1 text-xs text-muted-foreground">{label}</div>
@@ -201,7 +201,7 @@ function OpportunityCard({
 					<div className="border p-2">
 						<div className="flex items-center gap-1.5 font-medium">
 							<Target className="size-3.5" />
-							{location || "Perú"}
+							{location || "LATAM"}
 						</div>
 						<div className="mt-0.5 text-muted-foreground">ubicación</div>
 					</div>

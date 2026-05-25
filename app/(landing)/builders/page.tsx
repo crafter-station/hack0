@@ -14,9 +14,9 @@ import { formatEventDate } from "@/lib/event-utils";
 import { sanitizeImageUrl } from "@/lib/utils";
 
 export const metadata: Metadata = {
-	title: "Builders y Hosts | Peru Agentic Builder Index",
+	title: "Builders y Hosts | LATAM Agentic Builder Index",
 	description:
-		"Directorio publico de builders y hosts activos en eventos de IA, hackathons y comunidades tech en Peru.",
+		"Directorio publico de builders y hosts activos en eventos de IA, hackathons y comunidades tech en LATAM.",
 };
 
 export const dynamic = "force-dynamic";
@@ -47,12 +47,12 @@ export default async function BuildersPage({
 						<div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
 							<div className="space-y-4">
 								<div className="space-y-3">
-									<h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+									<h1 className="text-3xl font-semibold sm:text-4xl">
 										Builders y hosts
 									</h1>
 									<p className="max-w-2xl text-sm leading-6 text-muted-foreground">
 										Personas que aparecen como hosts en eventos publicos del
-										Peru Agentic Builder Index. Es una senal practica de quien
+										LATAM Agentic Builder Index. Es una senal practica de quien
 										organiza, ensena, convoca o mueve comunidades.
 									</p>
 								</div>
@@ -132,7 +132,7 @@ export default async function BuildersPage({
 function SummaryMetric({ label, value }: { label: string; value: number }) {
 	return (
 		<div className="border-b border-r p-4 last:border-r-0 even:border-r-0">
-			<div className="text-2xl font-semibold tracking-tight">
+			<div className="text-2xl font-semibold">
 				{new Intl.NumberFormat("es-PE").format(value)}
 			</div>
 			<div className="mt-1 text-xs text-muted-foreground">{label}</div>

@@ -1,4 +1,4 @@
-import { and, count, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, count, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { getBuilderDirectorySummary } from "@/lib/builders-directory";
 import { db } from "@/lib/db";
 import {
@@ -14,11 +14,14 @@ import {
 } from "@/lib/db/schema";
 import {
 	EVENT_TYPE_LABELS,
+	LATAM_COUNTRY_CODES,
 	ORGANIZER_TYPE_LABELS,
 } from "@/lib/db/schema/constants";
 import { getOpportunityDirectorySummary } from "@/lib/opportunities-directory";
 
-const PERU = "PE";
+const LATAM_INDEX_COUNTRIES = LATAM_COUNTRY_CODES.filter(
+	(code) => code !== "GLOBAL",
+);
 const HACKATHON_TYPES = [
 	"hackathon",
 	"competition",
@@ -105,11 +108,11 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 	const publicOrgWhere = and(
 		eq(organizations.isPublic, true),
 		eq(organizations.isPersonalOrg, false),
-		eq(organizations.country, PERU),
+		inArray(organizations.country, LATAM_INDEX_COUNTRIES),
 	);
-	const approvedPeruEventsWhere = and(
+	const approvedLatamEventsWhere = and(
 		eq(events.isApproved, true),
-		eq(events.country, PERU),
+		inArray(events.country, LATAM_INDEX_COUNTRIES),
 		isNull(events.parentEventId),
 	);
 
@@ -139,7 +142,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 				latestSourceScrapedAt: sql<Date | null>`max(${events.sourceScrapedAt})`,
 			})
 			.from(events)
-			.where(approvedPeruEventsWhere),
+			.where(approvedLatamEventsWhere),
 		db
 			.select({
 				totalOrganizations: count(organizations.id),
@@ -170,7 +173,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 			})
 			.from(eventSponsors)
 			.innerJoin(events, eq(eventSponsors.eventId, events.id))
-			.where(approvedPeruEventsWhere),
+			.where(approvedLatamEventsWhere),
 		db
 			.select({
 				relationships: count(organizationRelationships.id),
@@ -179,7 +182,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 		db
 			.select({
 				claimedProfiles: count(users.id),
-				publicPeruProfiles: sql<number>`count(*) filter (where ${users.isPublic} = true and ${users.country} = ${PERU})::int`,
+				publicLatamProfiles: sql<number>`count(*) filter (where ${users.isPublic} = true and ${inArray(users.country, LATAM_INDEX_COUNTRIES)})::int`,
 			})
 			.from(users),
 		db
@@ -197,7 +200,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 				count: count(events.id),
 			})
 			.from(events)
-			.where(approvedPeruEventsWhere)
+			.where(approvedLatamEventsWhere)
 			.groupBy(events.scrapeSource)
 			.orderBy(desc(count(events.id)))
 			.limit(8),
@@ -207,7 +210,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 				count: count(events.id),
 			})
 			.from(events)
-			.where(approvedPeruEventsWhere)
+			.where(approvedLatamEventsWhere)
 			.groupBy(events.eventType)
 			.orderBy(desc(count(events.id)))
 			.limit(8),
@@ -227,7 +230,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 				count: count(events.id),
 			})
 			.from(events)
-			.where(approvedPeruEventsWhere)
+			.where(approvedLatamEventsWhere)
 			.groupBy(events.city)
 			.orderBy(desc(count(events.id)))
 			.limit(8),
@@ -239,7 +242,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 			})
 			.from(events)
 			.leftJoin(eventHosts, eq(eventHosts.eventId, events.id))
-			.where(approvedPeruEventsWhere),
+			.where(approvedLatamEventsWhere),
 	]);
 
 	const totalEvents = toNumber(eventCounts?.eventsCount);
@@ -255,7 +258,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 			label: "Eventos",
 			count: totalEvents,
 			status: statusFor(totalEvents),
-			href: "/events?country=PE",
+			href: "/events",
 			source: "events",
 			evidence: `${toNumber(eventCounts?.upcomingEvents)} upcoming, ${toNumber(eventCounts?.cities)} ciudades`,
 			nextAction:
@@ -266,7 +269,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 			label: "Comunidades",
 			count: totalOrganizations,
 			status: statusFor(totalOrganizations),
-			href: "/c/discover?countries=PE",
+			href: "/c/discover",
 			source: "organizations",
 			evidence: `${toNumber(organizationCounts?.verifiedOrganizations)} verificadas`,
 			nextAction:
@@ -277,7 +280,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 			label: "Hackathons",
 			count: hackathons,
 			status: statusFor(hackathons),
-			href: "/events?country=PE&eventType=hackathon,competition,olympiad,robotics",
+			href: "/events?eventType=hackathon,competition,olympiad,robotics",
 			source: "events.event_type",
 			evidence: HACKATHON_TYPES.join(", "),
 			nextAction:
@@ -288,7 +291,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 			label: "Universidades y labs",
 			count: labs,
 			status: statusFor(labs),
-			href: "/c/discover?countries=PE&types=university,student_org",
+			href: "/c/discover?types=university,student_org",
 			source: "organizations.type",
 			evidence: UNIVERSITY_TYPES.join(", "),
 			nextAction:
@@ -321,7 +324,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 	const sourceBreakdown = sourceRows.map((row) => ({
 		label: row.source || "manual",
 		count: toNumber(row.count),
-		helper: "eventos aprobados PE",
+		helper: "eventos aprobados LATAM",
 	}));
 
 	const eventTypeBreakdown = eventTypeRows.map((row) => ({
@@ -341,7 +344,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 	const cityBreakdown = cityRows.map((row) => ({
 		label: row.city || "Sin ciudad",
 		count: toNumber(row.count),
-		helper: "eventos aprobados PE",
+		helper: "eventos aprobados LATAM",
 	}));
 
 	const qualitySignals: QualitySignal[] = [

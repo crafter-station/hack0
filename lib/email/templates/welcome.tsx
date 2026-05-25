@@ -26,7 +26,7 @@ export function WelcomeEmail({ confirmUrl }: WelcomeEmailProps) {
 
 					<Text style={paragraph}>
 						Estás a un paso de recibir notificaciones sobre nuevos hackathons y
-						eventos tech en Perú.
+						eventos tech en LATAM.
 					</Text>
 
 					<Text style={paragraph}>
@@ -44,7 +44,7 @@ export function WelcomeEmail({ confirmUrl }: WelcomeEmailProps) {
 					<Hr style={hr} />
 
 					<Text style={footer}>
-						hack0.dev - Centralizando eventos tech para Perú
+						hack0.dev - Centralizando eventos tech para LATAM
 					</Text>
 				</Container>
 			</Body>

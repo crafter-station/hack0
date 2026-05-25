@@ -19,7 +19,7 @@ import { getCountryFlag, getCountryName } from "@/lib/event-utils";
 export const metadata: Metadata = {
 	title: "Roadmap",
 	description:
-		"Conoce nuestras prioridades y visión para mapear el ecosistema tech de LATAM, empezando por Perú.",
+		"Conoce nuestras prioridades y visión para mapear el ecosistema tech de LATAM.",
 };
 
 const phases = [
@@ -147,13 +147,13 @@ export default async function RoadmapPage() {
 								<Rocket className="h-3 w-3 mr-1" />
 								Roadmap
 							</Badge>
-							<h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+							<h1 className="text-3xl md:text-4xl font-bold">
 								Construyendo el mapa del ecosistema tech de LATAM
 							</h1>
 							<p className="text-muted-foreground mt-4 text-lg">
 								Nuestra misión es dar visibilidad a todas las comunidades y
-								eventos tech de Latinoamérica. Empezamos por Perú, pero la
-								visión es regional.
+								eventos tech de Latinoamérica, país por país, desde una base de
+								datos abierta y accionable.
 							</p>
 						</div>
 					</div>

@@ -7,8 +7,8 @@ const SITE_URL = "https://hack0.dev";
 
 export async function GET() {
 	const feed = new Feed({
-		title: "hack0.dev - Eventos Tech en Perú",
-		description: "Hackathons, conferencias, workshops y eventos tech en Perú",
+		title: "hack0.dev - Eventos Tech en LATAM",
+		description: "Hackathons, conferencias, workshops y eventos tech en LATAM",
 		id: SITE_URL,
 		link: SITE_URL,
 		language: "es",
@@ -57,7 +57,7 @@ export async function GET() {
 			? event.description.length > 500
 				? `${event.description.slice(0, 497)}...`
 				: event.description
-			: `${event.name} - Evento tech en Perú`;
+			: `${event.name} - Evento tech en LATAM`;
 
 		feed.addItem({
 			title: event.name,

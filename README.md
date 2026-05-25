@@ -1,5 +1,5 @@
 ### hack0.dev
-Hackathons & Tech Events in Peru 🇵🇪
+Hackathons, communities, and tech events in LATAM
 
 ## Contributing
 

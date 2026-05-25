@@ -1,8 +1,11 @@
-import { and, desc, eq, ilike, type SQL, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, type SQL, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { eventHosts, events, organizations } from "@/lib/db/schema";
+import { LATAM_COUNTRY_CODES } from "@/lib/db/schema/constants";
 
-const PERU = "PE";
+const LATAM_EVENT_COUNTRIES = LATAM_COUNTRY_CODES.filter(
+	(code) => code !== "GLOBAL",
+);
 
 export interface BuilderDirectoryEntry {
 	hostKey: string;
@@ -37,7 +40,7 @@ function getHostKeySql() {
 function getBuilderConditions(search?: string): SQL[] {
 	const conditions: SQL[] = [
 		eq(events.isApproved, true),
-		eq(events.country, PERU),
+		inArray(events.country, LATAM_EVENT_COUNTRIES),
 		sql`trim(${eventHosts.name}) <> ''`,
 	];
 

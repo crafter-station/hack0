@@ -14,11 +14,11 @@ import {
 	Users,
 	Zap,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { EventCover } from "@/components/events/event-cover";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -101,19 +101,12 @@ function EventListItem({
 		>
 			<div className="flex gap-3">
 				<div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
-					{event.eventImageUrl ? (
-						<Image
-							src={event.eventImageUrl}
-							alt={event.name}
-							fill
-							className="object-cover"
-							sizes="48px"
-						/>
-					) : (
-						<div className="flex h-full w-full items-center justify-center text-lg font-bold text-muted-foreground">
-							{event.name.charAt(0)}
-						</div>
-					)}
+					<EventCover
+						event={event}
+						className="h-full w-full"
+						sizes="48px"
+						variant="thumb"
+					/>
 				</div>
 
 				<div className="flex-1 min-w-0">
@@ -196,22 +189,12 @@ function EventDetailPanel({ event }: { event: EventWithOrg }) {
 		>
 			{/* Header with image */}
 			<div className="relative h-48 shrink-0 overflow-hidden bg-muted">
-				{event.eventImageUrl ? (
-					<Image
-						src={event.eventImageUrl}
-						alt={event.name}
-						fill
-						className="object-cover"
-						sizes="(max-width: 768px) 100vw, 50vw"
-						priority
-					/>
-				) : (
-					<div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
-						<span className="text-6xl font-bold text-primary/30">
-							{event.name.charAt(0)}
-						</span>
-					</div>
-				)}
+				<EventCover
+					event={event}
+					className="h-full w-full"
+					sizes="(max-width: 768px) 100vw, 50vw"
+					priority
+				/>
 				<div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
 
 				{/* Status badge */}
@@ -353,7 +336,7 @@ function EventDetailPanel({ event }: { event: EventWithOrg }) {
 					{/* Description */}
 					{event.description && (
 						<div className="space-y-2">
-							<h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+							<h3 className="text-xs font-medium uppercase text-muted-foreground">
 								Sobre el evento
 							</h3>
 							<div className="prose prose-sm prose-neutral dark:prose-invert max-w-none">
