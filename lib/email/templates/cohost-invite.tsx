@@ -47,7 +47,7 @@ export function CohostInviteEmail({
 					</Text>
 
 					<Container style={eventCard}>
-						<Text style={eventName}>{eventName}</Text>
+						<Text style={eventTitleStyle}>{eventName}</Text>
 						<Link href={eventUrl} style={eventLink}>
 							Ver detalles del evento →
 						</Link>
@@ -132,7 +132,7 @@ const eventCard = {
 	margin: "16px 0 24px",
 };
 
-const _eventName = {
+const eventTitleStyle = {
 	color: "#fafafa",
 	fontSize: "16px",
 	fontWeight: "600",

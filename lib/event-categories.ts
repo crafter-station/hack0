@@ -77,7 +77,7 @@ export function getCategoryById(
 export function getCategoryByEventType(
 	eventType: string,
 ): EventCategoryConfig | undefined {
-	return EVENT_CATEGORIES.find((cat) => cat.eventTypes.includes(eventType));
+	return EVENT_CATEGORIES.find((cat) => cat.eventTypes?.includes(eventType));
 }
 
 export function getDefaultCategory(): EventCategory {

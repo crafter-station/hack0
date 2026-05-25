@@ -110,7 +110,10 @@ Focus on the main organization name, not event names. Look for "About", "Nosotro
 			socialLinks,
 		};
 
-		await metadata.set("extractedData", scrapedData);
+		await metadata.set(
+			"extractedData",
+			JSON.parse(JSON.stringify(scrapedData)),
+		);
 		await metadata.set("status", "extracted");
 
 		let finalLogoUrl: string | undefined = logoUrl;

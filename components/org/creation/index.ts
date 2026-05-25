@@ -1,4 +1,4 @@
-export { AiExtractModal } from "./ai-extract-modal";
+export { AIExtractModal } from "./ai-extract-modal";
 export { CreateTypeSelector } from "./create-type-selector";
 export { LumaImportForm } from "./luma-import-form";
 export { OnboardingForm } from "./onboarding-form";

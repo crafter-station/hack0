@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { createOrUpdateUser } from "@/lib/actions/users";
 
 const transitionProps = {
-	type: "spring",
+	type: "spring" as const,
 	stiffness: 500,
 	damping: 30,
 	mass: 0.5,

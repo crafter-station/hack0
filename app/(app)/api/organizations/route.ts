@@ -3,11 +3,16 @@ import { and, asc, count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { communityMembers, organizations } from "@/lib/db/schema";
+import { ORGANIZER_TYPES, type OrganizerType } from "@/lib/db/schema/constants";
 
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 50;
 
 type OrderBy = "popular" | "recent" | "name" | "contact" | "contact_asc";
+
+function isOrganizerType(value: string): value is OrganizerType {
+	return (ORGANIZER_TYPES as readonly string[]).includes(value);
+}
 
 export async function GET(request: NextRequest) {
 	try {
@@ -15,7 +20,8 @@ export async function GET(request: NextRequest) {
 		const { searchParams } = new URL(request.url);
 
 		const search = searchParams.get("search") || undefined;
-		const type = searchParams.get("type") || undefined;
+		const rawType = searchParams.get("type");
+		const type = rawType && isOrganizerType(rawType) ? rawType : undefined;
 		const verifiedOnly = searchParams.get("verified") === "true";
 		const orderBy = (searchParams.get("orderBy") as OrderBy) || "popular";
 		const limit = Math.min(

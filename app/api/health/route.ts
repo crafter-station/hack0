@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import packageJson from "@/package.json";
 
 export async function GET() {
-	const runtime = typeof Bun !== "undefined" ? `bun ${Bun.version}` : `node ${process.version}`;
+	const bunVersion = Reflect.get(process.versions, "bun");
+	const runtime =
+		typeof bunVersion === "string"
+			? `bun ${bunVersion}`
+			: `node ${process.version}`;
 
 	return NextResponse.json({
 		status: "ok",

@@ -148,9 +148,6 @@
 		"lint:fix": "biome lint --write",
 		"migrate:personal-orgs": "bun run scripts/migrate-personal-orgs.ts",
 		"prepare": "simple-git-hooks",
-		"rollback:ecosistema": "bun run scripts/rollback-ecosistema-orgs.ts",
-		"seed:ecosistema": "bun run scripts/seed-ecosistema-orgs.ts",
-		"seed:ecosistema:with-logos": "bun run scripts/seed-ecosistema-orgs.ts --upload-logos",
 		"sync:luma": "bun run scripts/sync-luma-calendar.ts",
 		"start": "next start"
 	},

@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-	typescript: {
-		ignoreBuildErrors: true,
-	},
 	serverExternalPackages: ["@takumi-rs/image-response"],
 	images: {
 		remotePatterns: [{ protocol: "https", hostname: "**" }],

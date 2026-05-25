@@ -74,7 +74,8 @@ export async function GET(request: NextRequest) {
 			}
 		}
 
-		const isJuniorFriendly = event.skillLevel === "beginner" || event.skillLevel === "all";
+		const isJuniorFriendly =
+			event.skillLevel === "beginner" || event.skillLevel === "all";
 
 		const pngResponse = new ImageResponse(
 			<EventOGTemplate
@@ -102,7 +103,7 @@ export async function GET(request: NextRequest) {
 			.jpeg({ quality: 72, progressive: true })
 			.toBuffer();
 
-		return new Response(jpegBuffer, {
+		return new Response(new Uint8Array(jpegBuffer), {
 			headers: {
 				"Content-Type": "image/jpeg",
 				"Cache-Control": "public, max-age=86400, s-maxage=86400",

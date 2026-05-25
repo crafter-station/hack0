@@ -106,10 +106,12 @@ export function OrganizationsTable({ organizations }: OrganizationsTableProps) {
 								</td>
 								<td className="px-4 py-3 text-sm">{org.events.length}</td>
 								<td className="px-4 py-3 text-sm text-muted-foreground">
-									{formatDistanceToNow(new Date(org.createdAt), {
-										addSuffix: true,
-										locale: es,
-									})}
+									{org.createdAt
+										? formatDistanceToNow(new Date(org.createdAt), {
+												addSuffix: true,
+												locale: es,
+											})
+										: "Sin fecha"}
 								</td>
 								<td className="px-4 py-3">
 									{org.isVerified ? (
