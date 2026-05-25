@@ -15,6 +15,13 @@ const dryRun = process.argv.includes("--dry-run");
 const includePast = !process.argv.includes("--future-only");
 const limitArg = process.argv.find((arg) => arg.startsWith("--limit="));
 const limit = limitArg ? Number(limitArg.split("=")[1]) : 50;
-const result = await syncLumaCalendarEvents({ dryRun, includePast, limit });
 
-console.log(JSON.stringify(result, null, 2));
+async function main() {
+	const result = await syncLumaCalendarEvents({ dryRun, includePast, limit });
+	console.log(JSON.stringify(result, null, 2));
+}
+
+main().catch((error) => {
+	console.error(error);
+	process.exit(1);
+});

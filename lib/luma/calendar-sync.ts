@@ -17,6 +17,20 @@ type LumaHost = {
 	avatar_url?: string | null;
 };
 
+type LumaGeoAddress = {
+	city?: string | null;
+	region?: string | null;
+	country?: string | null;
+	country_code?: string | null;
+	address?: string | null;
+	description?: string | null;
+	latitude?: number | string | null;
+	longitude?: number | string | null;
+	full_address?: string | null;
+	short_address?: string | null;
+	mode?: string | null;
+};
+
 type LumaEvent = {
 	id?: string;
 	api_id?: string;
@@ -29,29 +43,8 @@ type LumaEvent = {
 	url: string;
 	cover_url?: string | null;
 	meeting_url?: string | null;
-	geo_address_json?: {
-		city?: string | null;
-		region?: string | null;
-		country?: string | null;
-		country_code?: string | null;
-		address?: string | null;
-		description?: string | null;
-		latitude?: string | null;
-		longitude?: string | null;
-		full_address?: string | null;
-		short_address?: string | null;
-	} | null;
-	geo_address_info?: {
-		city?: string | null;
-		region?: string | null;
-		country?: string | null;
-		country_code?: string | null;
-		address?: string | null;
-		description?: string | null;
-		full_address?: string | null;
-		short_address?: string | null;
-		mode?: string | null;
-	} | null;
+	geo_address_json?: LumaGeoAddress | null;
+	geo_address_info?: LumaGeoAddress | null;
 	coordinate?: {
 		latitude?: number | string | null;
 		longitude?: number | string | null;
@@ -129,6 +122,14 @@ function normalizeEventUrl(event: LumaEvent) {
 function truncate(value: string | null | undefined, max: number) {
 	if (!value) return null;
 	return value.length > max ? value.slice(0, max) : value;
+}
+
+function coordinateValue(...values: Array<number | string | null | undefined>) {
+	const value = values.find(
+		(candidate) => candidate !== null && candidate !== undefined,
+	);
+	if (value === null || value === undefined) return null;
+	return String(value);
 }
 
 function durationEndDate(startDate: Date | null, interval?: string | null) {
@@ -413,15 +414,17 @@ async function syncEvent(
 					255,
 				),
 				geoLatitude:
-					detailedEvent.geo_latitude ||
-					geo?.latitude ||
-					detailedEvent.coordinate?.latitude?.toString() ||
-					existing.geoLatitude,
+					coordinateValue(
+						detailedEvent.geo_latitude,
+						geo?.latitude,
+						detailedEvent.coordinate?.latitude,
+					) || existing.geoLatitude,
 				geoLongitude:
-					detailedEvent.geo_longitude ||
-					geo?.longitude ||
-					detailedEvent.coordinate?.longitude?.toString() ||
-					existing.geoLongitude,
+					coordinateValue(
+						detailedEvent.geo_longitude,
+						geo?.longitude,
+						detailedEvent.coordinate?.longitude,
+					) || existing.geoLongitude,
 				meetingUrl,
 				registrationUrl: detailedEvent.url,
 				eventImageUrl: detailedEvent.cover_url || existing.eventImageUrl,
@@ -467,15 +470,17 @@ async function syncEvent(
 				255,
 			),
 			geoLatitude:
-				detailedEvent.geo_latitude ||
-				geo?.latitude ||
-				detailedEvent.coordinate?.latitude?.toString() ||
-				null,
+				coordinateValue(
+					detailedEvent.geo_latitude,
+					geo?.latitude,
+					detailedEvent.coordinate?.latitude,
+				) || null,
 			geoLongitude:
-				detailedEvent.geo_longitude ||
-				geo?.longitude ||
-				detailedEvent.coordinate?.longitude?.toString() ||
-				null,
+				coordinateValue(
+					detailedEvent.geo_longitude,
+					geo?.longitude,
+					detailedEvent.coordinate?.longitude,
+				) || null,
 			meetingUrl,
 			websiteUrl: detailedEvent.url,
 			registrationUrl: detailedEvent.url,

@@ -83,8 +83,31 @@ export interface LumaExtractedData {
 	organizerName?: string;
 	registrationUrl?: string;
 	price?: string;
-	eventType?: string;
+	eventType?: EventType;
 }
+
+export const EVENT_TYPES = [
+	"hackathon",
+	"conference",
+	"seminar",
+	"research_fair",
+	"workshop",
+	"bootcamp",
+	"summer_school",
+	"course",
+	"certification",
+	"meetup",
+	"networking",
+	"olympiad",
+	"competition",
+	"robotics",
+	"accelerator",
+	"incubator",
+	"fellowship",
+	"call_for_papers",
+] as const;
+
+export type EventType = (typeof EVENT_TYPES)[number];
 
 export function isLumaUrl(url: string): boolean {
 	try {
@@ -113,7 +136,7 @@ export function normalizeLumaUrl(url: string): string {
 	}
 }
 
-export function inferEventType(name: string, description?: string): string {
+export function inferEventType(name: string, description?: string): EventType {
 	const text = `${name} ${description || ""}`.toLowerCase();
 
 	if (text.includes("hackathon") || text.includes("hackatón"))
