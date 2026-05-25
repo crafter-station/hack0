@@ -17,8 +17,16 @@ const ecosystemWebsites: EcosystemWebsiteSeed[] = [
 		websiteUrl: "https://www.caf.com/",
 	},
 	{
+		slug: "cooperacion-suiza-en-peru",
+		websiteUrl: "https://www.eda.admin.ch/lima",
+	},
+	{
 		slug: "nexum-incubadora-de-empresas-pucp",
 		websiteUrl: "https://cide.pucp.edu.pe/",
+	},
+	{
+		slug: "fundacion-bbva",
+		websiteUrl: "https://fundacionbbva.pe/",
 	},
 	{
 		slug: "fundacion-romero",
@@ -39,6 +47,22 @@ const ecosystemWebsites: EcosystemWebsiteSeed[] = [
 	{
 		slug: "pecap-asociacion-peruana-de-capital-semilla-y-emprendedor",
 		websiteUrl: "https://www.pecap.pe/",
+	},
+	{
+		slug: "peruincuba",
+		websiteUrl: "https://peruincuba.net/",
+	},
+	{
+		slug: "piura-innovadora",
+		websiteUrl: "https://www.piurainnovadora.pe/",
+	},
+	{
+		slug: "pqs-para-quitarse-el-sombrero",
+		websiteUrl: "https://pqs.pe/",
+	},
+	{
+		slug: "procapitales",
+		websiteUrl: "https://procapitales.org/",
 	},
 	{
 		slug: "prociencia",
@@ -65,6 +89,10 @@ const ecosystemWebsites: EcosystemWebsiteSeed[] = [
 		websiteUrl: "https://endeavor.org.pe/",
 	},
 	{
+		slug: "incubagraria",
+		websiteUrl: "https://incubagraria.lamolina.edu.pe/",
+	},
+	{
 		slug: "bcp-banco-del-credito-del-peru",
 		websiteUrl: "https://www.viabcp.com/",
 	},
@@ -77,8 +105,28 @@ const ecosystemWebsites: EcosystemWebsiteSeed[] = [
 		websiteUrl: "https://krealo.pe/",
 	},
 	{
+		slug: "liquid-venture-studio-2",
+		websiteUrl: "https://www.liquid.ventures/",
+	},
+	{
+		slug: "nesst",
+		websiteUrl: "https://www.nesst.org/peru",
+	},
+	{
+		slug: "inca-ventures",
+		websiteUrl: "https://www.incaventures.com/",
+	},
+	{
+		slug: "kukua-ventures",
+		websiteUrl: "https://www.kukuaventures.com/",
+	},
+	{
 		slug: "rimac",
 		websiteUrl: "https://www.rimac.com/",
+	},
+	{
+		slug: "rpp-ventures",
+		websiteUrl: "https://grppventures.pe/",
 	},
 	{
 		slug: "salkantay-ventures",
@@ -91,6 +139,18 @@ const ecosystemWebsites: EcosystemWebsiteSeed[] = [
 	{
 		slug: "wework",
 		websiteUrl: "https://www.wework.com/",
+	},
+	{
+		slug: "rebaza-alcazar-de-las-casas",
+		websiteUrl: "https://rebaza-alcazar.com/",
+	},
+	{
+		slug: "rodrigo-elias-medrano-abogados",
+		websiteUrl: "https://www.estudiorodrigo.com/",
+	},
+	{
+		slug: "vodanovic-legal",
+		websiteUrl: "https://vodanovic.pe/",
 	},
 ];
 
