@@ -45,6 +45,12 @@ export function SiteFooter() {
 									>
 										Builders
 									</Link>
+									<Link
+										href="/opportunities"
+										className="hover:text-foreground transition-colors"
+									>
+										Programas
+									</Link>
 								</nav>
 							</div>
 
