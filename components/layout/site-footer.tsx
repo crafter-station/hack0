@@ -39,6 +39,12 @@ export function SiteFooter() {
 									>
 										Comunidades
 									</Link>
+									<Link
+										href="/builders"
+										className="hover:text-foreground transition-colors"
+									>
+										Builders
+									</Link>
 								</nav>
 							</div>
 
