@@ -1,7 +1,7 @@
 import { and, eq, notInArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { eventHosts, events, organizations } from "@/lib/db/schema";
-import { normalizeCountryCode } from "@/lib/event-utils";
+import { resolveLumaEventLocation } from "@/lib/luma/location";
 import { inferEventType } from "@/lib/scraper/luma-schema";
 import {
 	createUniqueSlug,
@@ -53,6 +53,7 @@ type LumaEvent = {
 	geo_longitude?: string | null;
 	visibility?: string | null;
 	duration_interval?: string | null;
+	location_type?: string | null;
 	host?: string | null;
 	tags?: string[];
 };
@@ -122,14 +123,6 @@ function normalizeEventUrl(event: LumaEvent) {
 function truncate(value: string | null | undefined, max: number) {
 	if (!value) return null;
 	return value.length > max ? value.slice(0, max) : value;
-}
-
-function coordinateValue(...values: Array<number | string | null | undefined>) {
-	const value = values.find(
-		(candidate) => candidate !== null && candidate !== undefined,
-	);
-	if (value === null || value === undefined) return null;
-	return String(value);
 }
 
 function durationEndDate(startDate: Date | null, interval?: string | null) {
@@ -366,7 +359,6 @@ async function syncEvent(
 	);
 	const description =
 		detailedEvent.description_md || detailedEvent.description || null;
-	const geo = detailedEvent.geo_address_json || detailedEvent.geo_address_info;
 	const startDate = detailedEvent.start_at
 		? new Date(detailedEvent.start_at)
 		: null;
@@ -374,9 +366,16 @@ async function syncEvent(
 		? new Date(detailedEvent.end_at)
 		: durationEndDate(startDate, detailedEvent.duration_interval);
 	const meetingUrl = detailedEvent.meeting_url || null;
-	const format = !geo && meetingUrl ? "virtual" : "in-person";
-	const country =
-		normalizeCountryCode(geo?.country_code || geo?.country || null) || "PE";
+	const location = resolveLumaEventLocation({
+		geoAddress: detailedEvent.geo_address_json,
+		geoAddressInfo: detailedEvent.geo_address_info,
+		coordinate: detailedEvent.coordinate,
+		geoLatitude: detailedEvent.geo_latitude,
+		geoLongitude: detailedEvent.geo_longitude,
+		meetingUrl,
+		locationType: detailedEvent.location_type,
+		countryFallback: "PE",
+	});
 	const status = statusFromDates(startDate, endDate);
 	const eventType = inferEventType(
 		detailedEvent.name,
@@ -405,26 +404,13 @@ async function syncEvent(
 				startDate,
 				endDate,
 				timezone: detailedEvent.timezone || "America/Lima",
-				format,
-				country,
-				department: truncate(geo?.region, 100),
-				city: truncate(geo?.city, 100),
-				venue: truncate(
-					geo?.description || geo?.short_address || geo?.address,
-					255,
-				),
-				geoLatitude:
-					coordinateValue(
-						detailedEvent.geo_latitude,
-						geo?.latitude,
-						detailedEvent.coordinate?.latitude,
-					) || existing.geoLatitude,
-				geoLongitude:
-					coordinateValue(
-						detailedEvent.geo_longitude,
-						geo?.longitude,
-						detailedEvent.coordinate?.longitude,
-					) || existing.geoLongitude,
+				format: location.format,
+				country: location.country,
+				department: truncate(location.department, 100),
+				city: truncate(location.city, 100),
+				venue: truncate(location.venue, 255),
+				geoLatitude: location.geoLatitude || existing.geoLatitude,
+				geoLongitude: location.geoLongitude || existing.geoLongitude,
 				meetingUrl,
 				registrationUrl: detailedEvent.url,
 				eventImageUrl: detailedEvent.cover_url || existing.eventImageUrl,
@@ -461,26 +447,13 @@ async function syncEvent(
 			startDate,
 			endDate,
 			timezone: detailedEvent.timezone || "America/Lima",
-			format,
-			country,
-			department: truncate(geo?.region, 100),
-			city: truncate(geo?.city, 100),
-			venue: truncate(
-				geo?.description || geo?.short_address || geo?.address,
-				255,
-			),
-			geoLatitude:
-				coordinateValue(
-					detailedEvent.geo_latitude,
-					geo?.latitude,
-					detailedEvent.coordinate?.latitude,
-				) || null,
-			geoLongitude:
-				coordinateValue(
-					detailedEvent.geo_longitude,
-					geo?.longitude,
-					detailedEvent.coordinate?.longitude,
-				) || null,
+			format: location.format,
+			country: location.country,
+			department: truncate(location.department, 100),
+			city: truncate(location.city, 100),
+			venue: truncate(location.venue, 255),
+			geoLatitude: location.geoLatitude,
+			geoLongitude: location.geoLongitude,
 			meetingUrl,
 			websiteUrl: detailedEvent.url,
 			registrationUrl: detailedEvent.url,
