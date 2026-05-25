@@ -206,8 +206,7 @@ Archivos `AGENTS.md` proporcionan contexto específico de directorio para instan
 ```
 components/
 ├── events/           # ✓ + views/, toolbar/, detail/, edit/
-├── org/              # ✓ + badges/, campaigns/, members/, settings/, discovery/, creation/, layout/, my-orgs/
-├── gift/             # ✓
+├── org/              # ✓ + members/, settings/, discovery/, creation/, layout/, my-orgs/
 ├── manage/           # ✓
 └── god-mode/         # ✓
 
