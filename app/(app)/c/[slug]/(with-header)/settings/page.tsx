@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { OrgSettingsForm } from "@/components/org/settings";
+import { LumaConnectCard, OrgSettingsForm } from "@/components/org/settings";
+import { getOrganizationLumaConnection } from "@/lib/actions/luma-connections";
 import { getOrganizationBySlug } from "@/lib/actions/organizations";
 
 interface SettingsPageProps {
@@ -29,7 +30,14 @@ async function SettingsContent({ slug }: { slug: string }) {
 		notFound();
 	}
 
-	return <OrgSettingsForm organization={org} />;
+	const lumaConnection = await getOrganizationLumaConnection(org.id);
+
+	return (
+		<>
+			<LumaConnectCard organizationId={org.id} connection={lumaConnection} />
+			<OrgSettingsForm organization={org} />
+		</>
+	);
 }
 
 export default async function SettingsPage({ params }: SettingsPageProps) {
