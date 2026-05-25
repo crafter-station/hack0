@@ -3,8 +3,9 @@
 import { X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
+import { normalizeCommunityDirectoryFilters } from "@/lib/community-directory-filters";
 import {
-	isOrganizerType,
+	COMMUNITY_TAG_LABELS,
 	LATAM_COUNTRIES,
 	ORGANIZER_TYPE_LABELS,
 } from "@/lib/db/schema";
@@ -54,6 +55,16 @@ export function OrgActiveFilters({ totalResults }: OrgActiveFiltersProps) {
 
 	const activeFilters = useMemo(() => {
 		const filters: ActiveFilter[] = [];
+		const normalizedFilters = normalizeCommunityDirectoryFilters({
+			search: searchParams.get("search"),
+			type: searchParams.get("type"),
+			types: searchParams.get("types"),
+			countries: searchParams.get("countries"),
+			sizes: searchParams.get("sizes"),
+			verification: searchParams.get("verification"),
+			verified: searchParams.get("verified"),
+			tags: searchParams.get("tags"),
+		});
 
 		// Category
 		const category = searchParams.get("category");
@@ -67,9 +78,8 @@ export function OrgActiveFilters({ totalResults }: OrgActiveFiltersProps) {
 		}
 
 		// Countries
-		const countries = searchParams.get("countries");
-		if (countries) {
-			for (const code of countries.split(",")) {
+		if (normalizedFilters.countries.length > 0) {
+			for (const code of normalizedFilters.countries) {
 				const name = countryMap[code];
 				if (name) {
 					filters.push({
@@ -83,24 +93,19 @@ export function OrgActiveFilters({ totalResults }: OrgActiveFiltersProps) {
 		}
 
 		// Types
-		const types = searchParams.get("types");
-		if (types) {
-			for (const type of types.split(",")) {
-				if (isOrganizerType(type)) {
-					filters.push({
-						key: `type-${type}`,
-						param: "types",
-						value: type,
-						label: ORGANIZER_TYPE_LABELS[type],
-					});
-				}
+		if (normalizedFilters.types.length > 0) {
+			for (const type of normalizedFilters.types) {
+				filters.push({
+					key: `type-${type}`,
+					param: "types",
+					value: type,
+					label: ORGANIZER_TYPE_LABELS[type],
+				});
 			}
 		}
 
-		// Sizes
-		const sizes = searchParams.get("sizes");
-		if (sizes) {
-			for (const size of sizes.split(",")) {
+		if (normalizedFilters.sizes.length > 0) {
+			for (const size of normalizedFilters.sizes) {
 				const label = SIZE_LABELS[size] || size;
 				filters.push({
 					key: `size-${size}`,
@@ -111,10 +116,8 @@ export function OrgActiveFilters({ totalResults }: OrgActiveFiltersProps) {
 			}
 		}
 
-		// Verification
-		const verification = searchParams.get("verification");
-		if (verification) {
-			for (const v of verification.split(",")) {
+		if (normalizedFilters.verification.length > 0) {
+			for (const v of normalizedFilters.verification) {
 				const label = VERIFICATION_LABELS[v] || v;
 				filters.push({
 					key: `verification-${v}`,
@@ -125,7 +128,17 @@ export function OrgActiveFilters({ totalResults }: OrgActiveFiltersProps) {
 			}
 		}
 
-		// Search
+		if (normalizedFilters.tags.length > 0) {
+			for (const tag of normalizedFilters.tags) {
+				filters.push({
+					key: `tag-${tag}`,
+					param: "tags",
+					value: tag,
+					label: COMMUNITY_TAG_LABELS[tag],
+				});
+			}
+		}
+
 		const search = searchParams.get("search");
 		if (search) {
 			filters.push({
@@ -169,6 +182,7 @@ export function OrgActiveFilters({ totalResults }: OrgActiveFiltersProps) {
 		params.delete("types");
 		params.delete("sizes");
 		params.delete("verification");
+		params.delete("tags");
 		router.push(`${pathname}?${params.toString()}`);
 	};
 

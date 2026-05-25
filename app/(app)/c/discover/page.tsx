@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { and, count, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, sql } from "drizzle-orm";
 import { LayoutGrid, List } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -20,9 +20,10 @@ import {
 	getUniqueDepartments,
 	getUniqueTags,
 } from "@/lib/actions/communities";
+import { normalizeCommunityDirectoryFilters } from "@/lib/community-directory-filters";
+import { getCommunityDirectoryConditions } from "@/lib/community-directory-query";
 import { db } from "@/lib/db";
 import { communityMembers, organizations } from "@/lib/db/schema";
-import { isCountryCode, isOrganizerType } from "@/lib/db/schema/constants";
 import { getCommunitiesViewPreference } from "@/lib/view-preferences";
 
 interface DiscoverPageProps {
@@ -63,53 +64,7 @@ async function getInitialCommunities(
 	},
 	userId: string | null,
 ): Promise<CommunitiesResponse> {
-	const search = params.search;
-	const type =
-		params.type && isOrganizerType(params.type) ? params.type : undefined;
-	const typesArray = params.types?.split(",").filter(isOrganizerType) || [];
-	const countriesArray =
-		params.countries?.split(",").filter(isCountryCode) || [];
-	const verifiedOnly = params.verified === "true";
-
-	const conditions = [
-		eq(organizations.isPublic, true),
-		eq(organizations.isPersonalOrg, false),
-	];
-
-	if (search) {
-		conditions.push(
-			or(
-				ilike(organizations.name, `%${search}%`),
-				ilike(organizations.displayName, `%${search}%`),
-				ilike(organizations.description, `%${search}%`),
-			)!,
-		);
-	}
-
-	if (type) {
-		conditions.push(eq(organizations.type, type));
-	}
-
-	if (typesArray.length > 0) {
-		conditions.push(or(...typesArray.map((t) => eq(organizations.type, t)))!);
-	}
-
-	if (countriesArray.length > 0) {
-		conditions.push(
-			or(
-				...countriesArray.map((country) => eq(organizations.country, country)),
-			)!,
-		);
-	}
-
-	if (verifiedOnly) {
-		conditions.push(eq(organizations.isVerified, true));
-	}
-
-	const [{ total }] = await db
-		.select({ total: count() })
-		.from(organizations)
-		.where(and(...conditions));
+	const filters = normalizeCommunityDirectoryFilters(params);
 
 	const memberCountSubquery = db
 		.select({
@@ -119,6 +74,18 @@ async function getInitialCommunities(
 		.from(communityMembers)
 		.groupBy(communityMembers.communityId)
 		.as("member_counts");
+	const memberCountSql = sql<number>`COALESCE(${memberCountSubquery.memberCount}, 0)`;
+
+	const conditions = getCommunityDirectoryConditions(filters, memberCountSql);
+
+	const [{ total }] = await db
+		.select({ total: count() })
+		.from(organizations)
+		.leftJoin(
+			memberCountSubquery,
+			eq(organizations.id, memberCountSubquery.communityId),
+		)
+		.where(and(...conditions));
 
 	const communities = await db
 		.select({
@@ -131,10 +98,7 @@ async function getInitialCommunities(
 			logoUrl: organizations.logoUrl,
 			coverUrl: organizations.coverUrl,
 			isVerified: organizations.isVerified,
-			memberCount:
-				sql<number>`COALESCE(${memberCountSubquery.memberCount}, 0)`.as(
-					"member_count",
-				),
+			memberCount: memberCountSql.as("member_count"),
 			email: organizations.email,
 			country: organizations.country,
 			department: organizations.department,
@@ -150,7 +114,7 @@ async function getInitialCommunities(
 			eq(organizations.id, memberCountSubquery.communityId),
 		)
 		.where(and(...conditions))
-		.orderBy(desc(sql`COALESCE(${memberCountSubquery.memberCount}, 0)`))
+		.orderBy(desc(memberCountSql))
 		.limit(INITIAL_LIMIT)
 		.offset(0);
 
@@ -200,13 +164,7 @@ export default async function DiscoverPage({
 	const { userId } = await auth();
 	const params = await searchParams;
 
-	const countriesArray =
-		params.countries?.split(",").filter(isCountryCode) || [];
-	const typesArray = params.types?.split(",").filter(Boolean) || [];
-	const sizesArray = params.sizes?.split(",").filter(Boolean) || [];
-	const verificationArray =
-		params.verification?.split(",").filter(Boolean) || [];
-	const tagsArray = params.tags?.split(",").filter(Boolean) || [];
+	const normalizedFilters = normalizeCommunityDirectoryFilters(params);
 
 	const [initialData, _departments, availableCountries, availableTags] =
 		await Promise.all([
@@ -251,11 +209,11 @@ export default async function DiscoverPage({
 					>
 						<OrgSidebarFilters
 							defaultSearch={params.search}
-							defaultCountries={countriesArray}
-							defaultTypes={typesArray}
-							defaultSizes={sizesArray}
-							defaultVerification={verificationArray}
-							defaultTags={tagsArray}
+							defaultCountries={normalizedFilters.countries}
+							defaultTypes={normalizedFilters.types}
+							defaultSizes={normalizedFilters.sizes}
+							defaultVerification={normalizedFilters.verification}
+							defaultTags={normalizedFilters.tags}
 							availableCountries={availableCountries}
 							availableTags={availableTags}
 						/>

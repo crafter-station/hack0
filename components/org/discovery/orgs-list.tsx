@@ -26,6 +26,7 @@ import {
 	useCommunities,
 } from "@/hooks/use-communities";
 import { followCommunity, unfollowCommunity } from "@/lib/actions/communities";
+import { normalizeCommunityDirectoryFilters } from "@/lib/community-directory-filters";
 import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
 
 interface OrgsListProps {
@@ -34,6 +35,17 @@ interface OrgsListProps {
 }
 
 type SortColumn = "name" | "contact" | "members";
+const ORDER_BY_VALUES = [
+	"popular",
+	"recent",
+	"name",
+	"contact",
+	"contact_asc",
+] as const;
+
+function isOrderBy(value: string | null): value is OrderBy {
+	return ORDER_BY_VALUES.includes(value as OrderBy);
+}
 
 function getContactCount(community: PublicCommunity): number {
 	let count = 0;
@@ -335,10 +347,18 @@ export function OrgsList({ initialData, isAuthenticated }: OrgsListProps) {
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
 
-	const search = searchParams.get("search") || undefined;
-	const type = searchParams.get("type") || undefined;
-	const verifiedOnly = searchParams.get("verified") === "true";
-	const orderByParam = (searchParams.get("orderBy") as OrderBy) || "popular";
+	const filters = normalizeCommunityDirectoryFilters({
+		search: searchParams.get("search"),
+		type: searchParams.get("type"),
+		types: searchParams.get("types"),
+		countries: searchParams.get("countries"),
+		sizes: searchParams.get("sizes"),
+		verification: searchParams.get("verification"),
+		verified: searchParams.get("verified"),
+		tags: searchParams.get("tags"),
+	});
+	const rawOrderBy = searchParams.get("orderBy");
+	const orderByParam = isOrderBy(rawOrderBy) ? rawOrderBy : "popular";
 
 	const { column: sortColumn, direction: sortDirection } =
 		getOrderByFromParams(orderByParam);
@@ -352,9 +372,12 @@ export function OrgsList({ initialData, isAuthenticated }: OrgsListProps) {
 		isError,
 		refetch,
 	} = useCommunities({
-		search,
-		type,
-		verifiedOnly,
+		search: filters.search,
+		types: filters.types,
+		countries: filters.countries,
+		sizes: filters.sizes,
+		verification: filters.verification,
+		tags: filters.tags,
 		orderBy: orderByParam,
 		initialData: orderByParam === "popular" ? initialData : undefined,
 	});

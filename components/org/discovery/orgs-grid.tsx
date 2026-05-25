@@ -18,6 +18,7 @@ import {
 	useCommunities,
 } from "@/hooks/use-communities";
 import { followCommunity, unfollowCommunity } from "@/lib/actions/communities";
+import { normalizeCommunityDirectoryFilters } from "@/lib/community-directory-filters";
 import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
 
 function hashString(str: string): number {
@@ -311,9 +312,16 @@ function LoadingSkeleton() {
 export function OrgsGrid({ initialData, isAuthenticated }: OrgsGridProps) {
 	const searchParams = useSearchParams();
 
-	const search = searchParams.get("search") || undefined;
-	const type = searchParams.get("type") || undefined;
-	const verifiedOnly = searchParams.get("verified") === "true";
+	const filters = normalizeCommunityDirectoryFilters({
+		search: searchParams.get("search"),
+		type: searchParams.get("type"),
+		types: searchParams.get("types"),
+		countries: searchParams.get("countries"),
+		sizes: searchParams.get("sizes"),
+		verification: searchParams.get("verification"),
+		verified: searchParams.get("verified"),
+		tags: searchParams.get("tags"),
+	});
 
 	const {
 		data,
@@ -323,9 +331,12 @@ export function OrgsGrid({ initialData, isAuthenticated }: OrgsGridProps) {
 		isLoading,
 		isError,
 	} = useCommunities({
-		search,
-		type,
-		verifiedOnly,
+		search: filters.search,
+		types: filters.types,
+		countries: filters.countries,
+		sizes: filters.sizes,
+		verification: filters.verification,
+		tags: filters.tags,
 		initialData,
 	});
 
