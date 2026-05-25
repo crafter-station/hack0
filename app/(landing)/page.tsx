@@ -31,6 +31,7 @@ import {
 	getEventTypeLabel,
 	getEventUrl,
 } from "@/lib/event-utils";
+import { getOpportunityDirectorySummary } from "@/lib/opportunities-directory";
 import { sanitizeImageUrl } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -112,7 +113,6 @@ async function getIndexData() {
 				eventsCount: count(events.id),
 				upcomingEvents: sql<number>`count(*) filter (where ${events.endDate} is null or ${events.endDate} >= now())`,
 				hackathons: sql<number>`count(*) filter (where ${events.eventType} in ('hackathon', 'competition', 'olympiad', 'robotics'))`,
-				opportunities: sql<number>`count(*) filter (where ${events.eventType} in ('accelerator', 'incubator', 'fellowship', 'call_for_papers'))`,
 				cities: sql<number>`count(distinct ${events.city}) filter (where ${events.city} is not null)`,
 			})
 			.from(events)
@@ -183,26 +183,30 @@ async function getIndexData() {
 			.limit(4),
 	]);
 
-	const [[{ totalCommunities }], builderSummary, [{ totalLabs }]] =
-		await Promise.all([
-			db
-				.select({ totalCommunities: count(organizations.id) })
-				.from(organizations)
-				.where(publicOrgWhere),
-			getBuilderDirectorySummary(),
-			db
-				.select({ totalLabs: count(organizations.id) })
-				.from(organizations)
-				.where(
-					and(publicOrgWhere, inArray(organizations.type, UNIVERSITY_TYPES)),
-				),
-		]);
+	const [
+		[{ totalCommunities }],
+		builderSummary,
+		opportunitySummary,
+		[{ totalLabs }],
+	] = await Promise.all([
+		db
+			.select({ totalCommunities: count(organizations.id) })
+			.from(organizations)
+			.where(publicOrgWhere),
+		getBuilderDirectorySummary(),
+		getOpportunityDirectorySummary(),
+		db
+			.select({ totalLabs: count(organizations.id) })
+			.from(organizations)
+			.where(
+				and(publicOrgWhere, inArray(organizations.type, UNIVERSITY_TYPES)),
+			),
+	]);
 
 	const counts = countRows[0] || {
 		eventsCount: 0,
 		upcomingEvents: 0,
 		hackathons: 0,
-		opportunities: 0,
 		cities: 0,
 	};
 
@@ -216,7 +220,7 @@ async function getIndexData() {
 			events: Number(counts.eventsCount || 0),
 			upcoming: Number(counts.upcomingEvents || 0),
 			hackathons: Number(counts.hackathons || 0),
-			opportunities: Number(counts.opportunities || 0),
+			opportunities: opportunitySummary.total,
 			cities: Number(counts.cities || 0),
 			communities: Number(totalCommunities || 0),
 			builders: builderSummary.builders,
@@ -330,11 +334,11 @@ export default async function HomePage() {
 								helper="por verificar"
 							/>
 							<FacetLink
-								href="/events?country=PE&eventType=accelerator,incubator,fellowship,call_for_papers"
+								href="/opportunities"
 								icon={BookOpen}
 								label="Grants y programas"
 								value={data.counts.opportunities}
-								helper="oportunidades"
+								helper="directorio"
 							/>
 							<FacetLink
 								href="/builders"

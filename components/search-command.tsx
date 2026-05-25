@@ -5,6 +5,7 @@ import {
 	Calendar,
 	Command,
 	Database,
+	Handshake,
 	MapPin,
 	Sparkles,
 	Users,
@@ -116,6 +117,12 @@ export function SearchCommand({ hackathons }: SearchCommandProps) {
 					>
 						<Users className="mr-2 h-4 w-4" />
 						Explorar builders y hosts
+					</CommandItem>
+					<CommandItem
+						onSelect={() => runCommand(() => router.push("/opportunities"))}
+					>
+						<Handshake className="mr-2 h-4 w-4" />
+						Ver programas y grants
 					</CommandItem>
 					<CommandItem
 						onSelect={() => runCommand(() => router.push("/data-health"))}

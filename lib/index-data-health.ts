@@ -16,6 +16,7 @@ import {
 	EVENT_TYPE_LABELS,
 	ORGANIZER_TYPE_LABELS,
 } from "@/lib/db/schema/constants";
+import { getOpportunityDirectorySummary } from "@/lib/opportunities-directory";
 
 const PERU = "PE";
 const HACKATHON_TYPES = [
@@ -23,12 +24,6 @@ const HACKATHON_TYPES = [
 	"competition",
 	"olympiad",
 	"robotics",
-] as const;
-const OPPORTUNITY_TYPES = [
-	"accelerator",
-	"incubator",
-	"fellowship",
-	"call_for_papers",
 ] as const;
 const UNIVERSITY_TYPES = ["university", "student_org"] as const;
 
@@ -122,6 +117,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 		[eventCounts],
 		[organizationCounts],
 		builderSummary,
+		opportunitySummary,
 		[membershipCounts],
 		[sponsorCounts],
 		[relationshipCounts],
@@ -138,7 +134,6 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 				eventsCount: count(events.id),
 				upcomingEvents: sql<number>`count(*) filter (where ${events.endDate} is null or ${events.endDate} >= now())::int`,
 				hackathons: sql<number>`count(*) filter (where ${events.eventType} in ('hackathon', 'competition', 'olympiad', 'robotics'))::int`,
-				opportunities: sql<number>`count(*) filter (where ${events.eventType} in ('accelerator', 'incubator', 'fellowship', 'call_for_papers'))::int`,
 				cities: sql<number>`count(distinct ${events.city}) filter (where ${events.city} is not null and btrim(${events.city}) <> '')::int`,
 				updatedAt: sql<Date | null>`max(${events.updatedAt})`,
 				latestSourceScrapedAt: sql<Date | null>`max(${events.sourceScrapedAt})`,
@@ -156,6 +151,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 			.from(organizations)
 			.where(publicOrgWhere),
 		getBuilderDirectorySummary(),
+		getOpportunityDirectorySummary(),
 		db
 			.select({
 				importedMemberships: count(communityMembers.id),
@@ -249,7 +245,7 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 	const totalEvents = toNumber(eventCounts?.eventsCount);
 	const totalOrganizations = toNumber(organizationCounts?.totalOrganizations);
 	const hackathons = toNumber(eventCounts?.hackathons);
-	const opportunities = toNumber(eventCounts?.opportunities);
+	const opportunities = opportunitySummary.total;
 	const labs = toNumber(organizationCounts?.labs);
 	const builders = toNumber(builderSummary.builders);
 
@@ -303,9 +299,9 @@ export async function getIndexDataHealth(): Promise<IndexDataHealth> {
 			label: "Grants y programas",
 			count: opportunities,
 			status: statusFor(opportunities),
-			href: "/events?country=PE&eventType=accelerator,incubator,fellowship,call_for_papers",
-			source: "events.event_type",
-			evidence: OPPORTUNITY_TYPES.join(", "),
+			href: "/opportunities",
+			source: "organizations",
+			evidence: `${opportunitySummary.incubators} incubadoras, ${opportunitySummary.accelerators} aceleradoras, ${opportunitySummary.investors} fondos`,
 			nextAction:
 				"Importar becas, grants, incubadoras, aceleradoras y convocatorias abiertas.",
 		},
