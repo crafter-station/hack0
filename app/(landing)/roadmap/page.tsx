@@ -1,9 +1,12 @@
 import {
+	CalendarDays,
 	Check,
 	Circle,
 	Github,
 	Globe,
 	Heart,
+	type LucideIcon,
+	Network,
 	Rocket,
 	Target,
 	Users,
@@ -13,8 +16,10 @@ import Link from "next/link";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Badge } from "@/components/ui/badge";
-import { getCountriesWithEvents } from "@/lib/actions/events";
-import { getCountryFlag, getCountryName } from "@/lib/event-utils";
+import {
+	getLatamCountryCoverage,
+	type LatamCountryCoverage,
+} from "@/lib/latam-country-coverage";
 
 export const metadata: Metadata = {
 	title: "Roadmap",
@@ -75,29 +80,6 @@ const phases = [
 	},
 ];
 
-const ALL_LATAM_COUNTRIES = [
-	"PE",
-	"GT",
-	"CO",
-	"CL",
-	"MX",
-	"AR",
-	"BR",
-	"EC",
-	"BO",
-	"UY",
-	"PY",
-	"VE",
-	"CR",
-	"PA",
-	"DO",
-	"SV",
-	"HN",
-	"NI",
-	"CU",
-	"PR",
-];
-
 function StatusBadge({
 	status,
 }: {
@@ -120,20 +102,95 @@ function StatusBadge({
 	return <Badge className="bg-muted text-muted-foreground">Planeado</Badge>;
 }
 
+function formatNumber(value: number) {
+	return new Intl.NumberFormat("es-PE").format(value);
+}
+
+function formatEntityCount(value: number, singular: string, plural: string) {
+	return `${formatNumber(value)} ${value === 1 ? singular : plural}`;
+}
+
+function CoverageStat({
+	icon: Icon,
+	label,
+	value,
+}: {
+	icon: LucideIcon;
+	label: string;
+	value: number | string;
+}) {
+	return (
+		<div className="border bg-background p-3">
+			<div className="flex items-center gap-2 text-xs text-muted-foreground">
+				<Icon className="size-3.5" />
+				{label}
+			</div>
+			<div className="mt-2 text-xl font-semibold">{value}</div>
+		</div>
+	);
+}
+
+function CountryCoverageTile({
+	country,
+	maxSignal,
+}: {
+	country: LatamCountryCoverage;
+	maxSignal: number;
+}) {
+	const hasSignal = country.signal > 0;
+	const width = hasSignal
+		? `${Math.max(10, Math.round((country.signal / maxSignal) * 100))}%`
+		: "0%";
+
+	return (
+		<Link
+			href={`/events?country=${country.code}`}
+			className="group border bg-background p-3 transition-colors hover:bg-card"
+		>
+			<div className="flex items-start justify-between gap-3">
+				<div className="min-w-0">
+					<div className="flex items-center gap-2">
+						<span className="text-xl leading-none">{country.flag}</span>
+						<span className="truncate text-sm font-medium">{country.name}</span>
+					</div>
+					<div className="mt-2 text-xs text-muted-foreground">
+						{hasSignal
+							? `${formatEntityCount(country.events, "evento", "eventos")} · ${formatEntityCount(country.communities, "comunidad", "comunidades")}`
+							: "Listo para activar con comunidades locales"}
+					</div>
+				</div>
+				<span
+					className={`shrink-0 text-[10px] ${
+						hasSignal ? "text-emerald-500" : "text-muted-foreground"
+					}`}
+				>
+					{hasSignal ? "Con señal" : "Por mapear"}
+				</span>
+			</div>
+			<div className="mt-3 h-1 bg-muted">
+				<div className="h-full bg-emerald-500" style={{ width }} />
+			</div>
+		</Link>
+	);
+}
+
 export default async function RoadmapPage() {
-	const activeCountries = await getCountriesWithEvents();
-	const countries = ALL_LATAM_COUNTRIES.map((code) => ({
-		code,
-		name: getCountryName(code),
-		flag: getCountryFlag(code),
-		status: activeCountries.includes(code)
-			? ("active" as const)
-			: ("future" as const),
-	}));
-	const sortedCountries = [
-		...countries.filter((c) => c.status === "active"),
-		...countries.filter((c) => c.status === "future"),
-	];
+	const countryCoverage = await getLatamCountryCoverage();
+	const activeCountries = countryCoverage.filter(
+		(country) => country.signal > 0,
+	);
+	const totalEvents = countryCoverage.reduce(
+		(total, country) => total + country.events,
+		0,
+	);
+	const totalCommunities = countryCoverage.reduce(
+		(total, country) => total + country.communities,
+		0,
+	);
+	const maxSignal = Math.max(
+		1,
+		...countryCoverage.map((country) => country.signal),
+	);
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
@@ -214,22 +271,38 @@ export default async function RoadmapPage() {
 							<h2 className="text-xl font-semibold">Visión LATAM</h2>
 						</div>
 
-						<div className="grid gap-8 md:grid-cols-2">
+						<div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
 							<div className="space-y-4">
-								<p className="text-muted-foreground">
-									hack0.dev es un proyecto open source con eventos activos en{" "}
-									<strong className="text-foreground">
-										{activeCountries.length}{" "}
-										{activeCountries.length === 1 ? "país" : "países"}
-									</strong>{" "}
-									de Latinoamérica. La arquitectura está diseñada para escalar a
-									toda la región.
+								<h3 className="text-2xl font-semibold">
+									LATAM-first desde el producto
+								</h3>
+								<p className="text-muted-foreground leading-7">
+									hack0.dev parte desde una tesis regional: cualquier comunidad
+									de LATAM debe poder publicar eventos, aparecer en el mapa y
+									atraer builders locales sin depender de un hub central.
 								</p>
-								<p className="text-muted-foreground">
-									Si quieres llevar esta iniciativa a tu país, eres bienvenido.
-									Puedes contribuir al código, adaptar la plataforma, o
-									simplemente empezar a agregar eventos de tu región.
+								<p className="text-muted-foreground leading-7">
+									La cobertura actual marca dónde ya tenemos señal y dónde falta
+									backfilling. La meta es que cada país tenga eventos,
+									comunidades, labs, grants y builders conectados entre sí.
 								</p>
+								<div className="grid gap-2 sm:grid-cols-3">
+									<CoverageStat
+										icon={Globe}
+										label="Países soportados"
+										value={countryCoverage.length}
+									/>
+									<CoverageStat
+										icon={CalendarDays}
+										label="Eventos indexados"
+										value={formatNumber(totalEvents)}
+									/>
+									<CoverageStat
+										icon={Network}
+										label="Comunidades"
+										value={formatNumber(totalCommunities)}
+									/>
+								</div>
 								<div className="flex items-center gap-4 pt-4">
 									<Link
 										href="https://github.com/crafter-station/hack0"
@@ -240,33 +313,40 @@ export default async function RoadmapPage() {
 										<Github className="h-4 w-4" />
 										Ver en GitHub
 									</Link>
+									<Link
+										href="/c/new"
+										className="inline-flex h-10 items-center gap-2 rounded-lg bg-foreground px-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+									>
+										<Users className="h-4 w-4" />
+										Mapear comunidad
+									</Link>
 								</div>
 							</div>
 
-							<div className="space-y-3">
-								{sortedCountries.map((country) => (
-									<div
-										key={country.code}
-										className="flex items-center justify-between p-3 rounded-lg border"
-									>
-										<div className="flex items-center gap-3">
-											<span className="text-2xl">{country.flag}</span>
-											<span className="font-medium">{country.name}</span>
-										</div>
-										{country.status === "active" ? (
-											<Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
-												Activo
-											</Badge>
-										) : (
-											<Badge
-												variant="outline"
-												className="text-muted-foreground"
-											>
-												Próximamente
-											</Badge>
-										)}
+							<div className="border bg-muted/20 p-3">
+								<div className="mb-3 flex items-center justify-between gap-4 px-1">
+									<div>
+										<h3 className="text-sm font-semibold">
+											Cobertura regional
+										</h3>
+										<p className="mt-1 text-xs text-muted-foreground">
+											{activeCountries.length}/{countryCoverage.length} países
+											con señal actual
+										</p>
 									</div>
-								))}
+									<Badge variant="outline" className="rounded-none">
+										LATAM
+									</Badge>
+								</div>
+								<div className="grid gap-2 sm:grid-cols-2">
+									{countryCoverage.map((country) => (
+										<CountryCoverageTile
+											key={country.code}
+											country={country}
+											maxSignal={maxSignal}
+										/>
+									))}
+								</div>
 							</div>
 						</div>
 					</div>

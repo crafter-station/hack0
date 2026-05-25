@@ -4,11 +4,8 @@ import { X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { normalizeCommunityDirectoryFilters } from "@/lib/community-directory-filters";
-import {
-	COMMUNITY_TAG_LABELS,
-	LATAM_COUNTRIES,
-	ORGANIZER_TYPE_LABELS,
-} from "@/lib/db/schema";
+import { COMMUNITY_TAG_LABELS, ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
+import { LATAM_COUNTRY_OPTIONS } from "@/lib/latam-countries";
 
 const SIZE_LABELS: Record<string, string> = {
 	small: "< 100 miembros",
@@ -47,7 +44,7 @@ export function OrgActiveFilters({ totalResults }: OrgActiveFiltersProps) {
 
 	const countryMap = useMemo(() => {
 		const map: Record<string, string> = {};
-		for (const country of LATAM_COUNTRIES) {
+		for (const country of LATAM_COUNTRY_OPTIONS) {
 			map[country.code] = country.name;
 		}
 		return map;

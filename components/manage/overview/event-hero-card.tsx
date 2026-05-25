@@ -1,8 +1,8 @@
 "use client";
 
 import { AlertCircle, Calendar, ExternalLink, MapPin } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
+import { EventCover } from "@/components/events/event-cover";
 import {
 	ApprovalBadge,
 	FeaturedBadge,
@@ -43,20 +43,17 @@ export function EventHeroCard({ event }: EventHeroCardProps) {
 
 	return (
 		<Card className="overflow-hidden">
-			{event.eventImageUrl && (
-				<div className="relative aspect-[4/1] md:aspect-[5/1] w-full bg-muted">
-					<Image
-						src={event.eventImageUrl}
-						alt={event.name}
-						fill
-						className="object-cover"
-						priority
-					/>
-					<div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-				</div>
-			)}
+			<div className="relative aspect-[4/1] w-full bg-muted md:aspect-[5/1]">
+				<EventCover
+					event={event}
+					className="h-full w-full"
+					sizes="(max-width: 768px) 100vw, 1200px"
+					priority
+				/>
+				<div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+			</div>
 
-			<CardContent className={event.eventImageUrl ? "pt-4" : "pt-6"}>
+			<CardContent className="pt-4">
 				<div className="flex flex-col gap-4">
 					<div className="flex items-start justify-between gap-4">
 						<div className="flex items-center gap-2 flex-wrap">

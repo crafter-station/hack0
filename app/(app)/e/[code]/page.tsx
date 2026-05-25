@@ -24,6 +24,7 @@ import {
 	EventLocationMap,
 	ManageEventCard,
 } from "@/components/events/detail";
+import { EventCover } from "@/components/events/event-cover";
 import { VerifiedBadge } from "@/components/icons/verified-badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getEventCohost } from "@/lib/actions/cohost-invites";
@@ -192,8 +193,6 @@ export default async function EventPage({ params }: EventPageProps) {
 			startZoned.getMinutes() !== 0 ||
 			(endZoned && (endZoned.getHours() !== 0 || endZoned.getMinutes() !== 0)));
 
-	const stripePattern = `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23888' fill-opacity='0.15'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E")`;
-
 	const breadcrumbJsonLd = {
 		"@context": "https://schema.org",
 		"@type": "BreadcrumbList",
@@ -291,47 +290,23 @@ export default async function EventPage({ params }: EventPageProps) {
 
 			<main className="flex-1 w-full">
 				<div className="md:hidden relative w-full aspect-square overflow-hidden bg-muted">
-					{hackathon.eventImageUrl ? (
-						<Image
-							src={hackathon.eventImageUrl}
-							alt={hackathon.name}
-							width={600}
-							height={600}
-							className="w-full h-full object-cover"
-							priority
-						/>
-					) : (
-						<div
-							className="w-full h-full"
-							style={{
-								backgroundImage: stripePattern,
-								backgroundSize: "40px 40px",
-							}}
-						/>
-					)}
+					<EventCover
+						event={hackathon}
+						className="h-full w-full"
+						sizes="100vw"
+						priority
+					/>
 				</div>
 
 				<section className="mx-auto max-w-screen-xl px-8 py-4 md:py-6">
 					<div className="grid md:grid-cols-[240px_1fr] gap-4 md:gap-6">
 						<div className="hidden md:block">
 							<div className="aspect-square w-full overflow-hidden bg-muted border border-border">
-								{hackathon.eventImageUrl ? (
-									<Image
-										src={hackathon.eventImageUrl}
-										alt={hackathon.name}
-										width={240}
-										height={240}
-										className="w-full h-full object-cover"
-									/>
-								) : (
-									<div
-										className="w-full h-full"
-										style={{
-											backgroundImage: stripePattern,
-											backgroundSize: "40px 40px",
-										}}
-									/>
-								)}
+								<EventCover
+									event={hackathon}
+									className="h-full w-full"
+									sizes="240px"
+								/>
 							</div>
 						</div>
 
@@ -639,19 +614,12 @@ export default async function EventPage({ params }: EventPageProps) {
 															</div>
 														)}
 														<div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted border border-border">
-															{child.eventImageUrl ? (
-																<Image
-																	src={child.eventImageUrl}
-																	alt={child.name}
-																	fill
-																	className="object-cover"
-																	sizes="40px"
-																/>
-															) : (
-																<div className="flex h-full w-full items-center justify-center text-xs font-medium text-muted-foreground">
-																	{child.name.charAt(0).toUpperCase()}
-																</div>
-															)}
+															<EventCover
+																event={child}
+																className="h-full w-full"
+																sizes="40px"
+																variant="thumb"
+															/>
 														</div>
 														<div className="flex-1 min-w-0">
 															<h3 className="font-medium group-hover:underline underline-offset-2">

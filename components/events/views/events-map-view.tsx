@@ -2,7 +2,6 @@
 
 import * as d3 from "d3";
 import { Calendar, MapPin, Trophy } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import {
 	useCallback,
@@ -13,6 +12,7 @@ import {
 	useState,
 } from "react";
 import { feature } from "topojson-client";
+import { EventCover } from "@/components/events/event-cover";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { EventFilters, EventWithOrg } from "@/lib/actions/events";
@@ -188,19 +188,12 @@ function EventListItem({
 			<Link href={eventUrl} className="block">
 				<div className="flex gap-3">
 					<div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
-						{event.eventImageUrl ? (
-							<Image
-								src={event.eventImageUrl}
-								alt={event.name}
-								fill
-								className="object-cover"
-								sizes="48px"
-							/>
-						) : (
-							<div className="flex h-full w-full items-center justify-center text-lg font-bold text-muted-foreground">
-								{event.name.charAt(0)}
-							</div>
-						)}
+						<EventCover
+							event={event}
+							className="h-full w-full"
+							sizes="48px"
+							variant="thumb"
+						/>
 					</div>
 
 					<div className="flex-1 min-w-0">

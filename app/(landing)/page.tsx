@@ -24,18 +24,17 @@ import { getEvents } from "@/lib/actions/events";
 import { getBuilderDirectorySummary } from "@/lib/builders-directory";
 import { db } from "@/lib/db";
 import { communityMembers, events, organizations } from "@/lib/db/schema";
-import {
-	LATAM_COUNTRIES,
-	LATAM_COUNTRY_CODES,
-	ORGANIZER_TYPE_LABELS,
-} from "@/lib/db/schema/constants";
+import { ORGANIZER_TYPE_LABELS } from "@/lib/db/schema/constants";
 import {
 	formatEventDateRange,
-	getCountryFlag,
-	getCountryName,
 	getEventTypeLabel,
 	getEventUrl,
 } from "@/lib/event-utils";
+import { LATAM_COUNTRY_OPTIONS } from "@/lib/latam-countries";
+import {
+	getLatamCountryCoverage,
+	type LatamCountryCoverage,
+} from "@/lib/latam-country-coverage";
 import { getOpportunityDirectorySummary } from "@/lib/opportunities-directory";
 import { sanitizeImageUrl } from "@/lib/utils";
 
@@ -47,11 +46,8 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const LATAM_EVENT_COUNTRIES = LATAM_COUNTRY_CODES.filter(
-	(code) => code !== "GLOBAL",
-);
-const LATAM_ORG_COUNTRIES = LATAM_COUNTRIES.filter(
-	(country) => country.code !== "GLOBAL",
+const LATAM_EVENT_COUNTRIES = LATAM_COUNTRY_OPTIONS.map(
+	(country) => country.code,
 );
 const HACKATHON_TYPES = [
 	"hackathon",
@@ -75,13 +71,6 @@ type IndexCommunity = {
 	websiteUrl: string | null;
 	isVerified: boolean | null;
 	memberCount: number;
-};
-
-type CountryCoverage = {
-	code: string;
-	name: string;
-	events: number;
-	communities: number;
 };
 
 async function getIndexData() {
@@ -110,11 +99,10 @@ async function getIndexData() {
 		upcoming,
 		hackathons,
 		countRows,
-		countryEventRows,
-		countryCommunityRows,
 		communityRows,
 		labRows,
 		recentSources,
+		countryCoverage,
 	] = await Promise.all([
 		getEvents({
 			country: LATAM_EVENT_COUNTRIES,
@@ -136,23 +124,6 @@ async function getIndexData() {
 			})
 			.from(events)
 			.where(approvedLatamEventsWhere),
-		db
-			.select({
-				country: events.country,
-				events: count(events.id),
-				activeEvents: sql<number>`count(*) filter (where ${events.endDate} is null or ${events.endDate} >= now())`,
-			})
-			.from(events)
-			.where(approvedLatamEventsWhere)
-			.groupBy(events.country),
-		db
-			.select({
-				country: organizations.country,
-				communities: count(organizations.id),
-			})
-			.from(organizations)
-			.where(publicOrgWhere)
-			.groupBy(organizations.country),
 		db
 			.select({
 				id: organizations.id,
@@ -217,6 +188,7 @@ async function getIndexData() {
 			.groupBy(events.scrapeSource)
 			.orderBy(desc(count(events.id)))
 			.limit(4),
+		getLatamCountryCoverage(),
 	]);
 
 	const [
@@ -245,33 +217,6 @@ async function getIndexData() {
 		hackathons: 0,
 		cities: 0,
 	};
-	const eventCountsByCountry = new Map(
-		countryEventRows.map((row) => [
-			row.country,
-			{
-				events: Number(row.events || 0),
-				activeEvents: Number(row.activeEvents || 0),
-			},
-		]),
-	);
-	const communityCountsByCountry = new Map(
-		countryCommunityRows.map((row) => [
-			row.country,
-			Number(row.communities || 0),
-		]),
-	);
-	const countryCoverage = LATAM_ORG_COUNTRIES.map((country) => {
-		const eventCounts = eventCountsByCountry.get(country.code);
-		return {
-			code: country.code,
-			name: getCountryName(country.code),
-			events: eventCounts?.events || 0,
-			communities: communityCountsByCountry.get(country.code) || 0,
-		};
-	})
-		.filter((country) => country.events > 0 || country.communities > 0)
-		.sort((a, b) => b.events + b.communities - (a.events + a.communities));
-
 	return {
 		upcoming: upcoming.events,
 		hackathons: hackathons.events,
@@ -288,7 +233,7 @@ async function getIndexData() {
 			communities: Number(totalCommunities || 0),
 			builders: builderSummary.builders,
 			labs: Number(totalLabs || 0),
-			countries: LATAM_ORG_COUNTRIES.length,
+			countries: LATAM_EVENT_COUNTRIES.length,
 		},
 	};
 }
@@ -304,6 +249,10 @@ function formatNumber(value: number) {
 	return new Intl.NumberFormat("es-PE").format(value);
 }
 
+function formatEntityCount(value: number, singular: string, plural: string) {
+	return `${formatNumber(value)} ${value === 1 ? singular : plural}`;
+}
+
 function locationLabel(city: string | null, department: string | null) {
 	if (city && department && city !== department)
 		return `${city}, ${department}`;
@@ -312,6 +261,9 @@ function locationLabel(city: string | null, department: string | null) {
 
 export default async function HomePage() {
 	const data = await getIndexData();
+	const activeCountryCount = data.countryCoverage.filter(
+		(country) => country.signal > 0,
+	).length;
 	const eventsFromIndexedSources = data.recentSources.reduce(
 		(total, source) => total + Number(source.count || 0),
 		0,
@@ -375,11 +327,12 @@ export default async function HomePage() {
 							<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 								<div className="max-w-2xl">
 									<h2 className="text-lg font-semibold">
-										El mapa operativo para builders de LATAM
+										Directorio vivo para builders de LATAM
 									</h2>
 									<p className="mt-1 text-sm leading-6 text-muted-foreground">
-										Un solo lugar para encontrar dónde construir, con quién
-										conectar y qué comunidades están activas por país.
+										Encuentra eventos, comunidades, labs y oportunidades por
+										país. Cuando una comunidad publica, el índice mejora para
+										toda la región.
 									</p>
 								</div>
 								<Button asChild variant="outline" size="sm" className="gap-2">
@@ -438,16 +391,16 @@ export default async function HomePage() {
 						<div className="border bg-background p-4 sm:p-5">
 							<div className="flex items-center justify-between gap-4">
 								<div>
-									<h2 className="text-lg font-semibold">Países con señal</h2>
+									<h2 className="text-lg font-semibold">Cobertura por país</h2>
 									<p className="mt-1 text-sm text-muted-foreground">
-										Eventos y comunidades ya indexadas.
+										Priorizamos toda LATAM, no solo Perú.
 									</p>
 								</div>
 								<div className="text-right">
 									<div className="text-2xl font-semibold">
-										{data.countryCoverage.length}
+										{activeCountryCount}/{data.counts.countries}
 									</div>
-									<div className="text-xs text-muted-foreground">con data</div>
+									<div className="text-xs text-muted-foreground">con señal</div>
 								</div>
 							</div>
 							<div className="mt-4 grid gap-2">
@@ -455,6 +408,13 @@ export default async function HomePage() {
 									<CountryCoverageRow key={country.code} country={country} />
 								))}
 							</div>
+							<Link
+								href="/roadmap#latam"
+								className="mt-3 inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+							>
+								Ver todos los países
+								<ArrowRight className="size-3" />
+							</Link>
 						</div>
 					</div>
 				</section>
@@ -604,21 +564,22 @@ function FacetLink({
 	);
 }
 
-function CountryCoverageRow({ country }: { country: CountryCoverage }) {
+function CountryCoverageRow({ country }: { country: LatamCountryCoverage }) {
+	const hasSignal = country.signal > 0;
+
 	return (
 		<Link
 			href={`/events?country=${country.code}`}
 			className="group flex items-center justify-between border bg-card px-3 py-2.5 transition-colors hover:bg-muted/30"
 		>
 			<div className="flex min-w-0 items-center gap-3">
-				<div className="text-lg leading-none">
-					{getCountryFlag(country.code)}
-				</div>
+				<div className="text-lg leading-none">{country.flag}</div>
 				<div className="min-w-0">
 					<div className="truncate text-sm font-medium">{country.name}</div>
 					<div className="text-xs text-muted-foreground">
-						{formatNumber(country.events)} eventos ·{" "}
-						{formatNumber(country.communities)} comunidades
+						{hasSignal
+							? `${formatEntityCount(country.events, "evento", "eventos")} · ${formatEntityCount(country.communities, "comunidad", "comunidades")}`
+							: "Listo para mapear"}
 					</div>
 				</div>
 			</div>
