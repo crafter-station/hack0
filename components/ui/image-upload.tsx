@@ -48,7 +48,12 @@ export function ImageUpload({
 			const file = e.target.files?.[0];
 			if (!file) return;
 
-			const supportedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+			const supportedTypes = [
+				"image/jpeg",
+				"image/png",
+				"image/webp",
+				"image/gif",
+			];
 			if (!supportedTypes.includes(file.type)) {
 				console.error(`Tipo de imagen no soportado: ${file.type}`);
 				alert("Solo se permiten imágenes JPG, PNG, WebP o GIF");
@@ -123,7 +128,8 @@ export function ImageUpload({
 						Subir imagen
 					</div>
 					<p className="text-xs text-muted-foreground">
-						JPG, PNG, WebP, GIF ({endpoint === "bannerUploader" ? "max 8MB" : "max 4MB"})
+						JPG, PNG, WebP, GIF (
+						{endpoint === "bannerUploader" ? "max 8MB" : "max 4MB"})
 					</p>
 				</>
 			)}

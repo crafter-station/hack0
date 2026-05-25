@@ -178,9 +178,9 @@ export function EventRowWithChildren({
 									isEnded
 										? "text-muted-foreground"
 										: isOngoing
-											? "text-emerald-400"
+											? "text-brand-green"
 											: isOpen
-												? "text-blue-400"
+												? "text-brand-grid"
 												: "text-amber-400"
 								}`}
 							>
@@ -189,9 +189,9 @@ export function EventRowWithChildren({
 										isEnded
 											? "bg-muted-foreground/50"
 											: isOngoing
-												? "bg-emerald-400 animate-pulse"
+												? "bg-brand-green animate-pulse"
 												: isOpen
-													? "bg-blue-400"
+													? "bg-brand-grid"
 													: "bg-amber-400"
 									}`}
 								/>
@@ -218,7 +218,7 @@ export function EventRowWithChildren({
 								</span>
 							)}
 							{hasChildren && (
-								<span className="text-blue-400">
+								<span className="text-brand-grid">
 									{childEvents.length || "3"} días
 								</span>
 							)}
@@ -262,7 +262,7 @@ export function EventRowWithChildren({
 									{event.name}
 								</h3>
 								{hasChildren && (
-									<span className="text-[9px] font-medium text-blue-400 shrink-0">
+									<span className="text-[9px] font-medium text-brand-grid shrink-0">
 										{childEvents.length}d
 									</span>
 								)}
@@ -286,7 +286,7 @@ export function EventRowWithChildren({
 												event.organization?.name}
 										</span>
 										{event.organization?.isVerified && (
-											<CheckCircle2 className="h-2.5 w-2.5 text-emerald-400 shrink-0" />
+											<CheckCircle2 className="h-2.5 w-2.5 text-brand-green shrink-0" />
 										)}
 										<span className="text-muted-foreground/40">·</span>
 									</>
@@ -321,7 +321,7 @@ export function EventRowWithChildren({
 					{showPrize && (
 						<div className="hidden lg:block text-right relative z-10">
 							{event.prizePool && event.prizePool > 0 ? (
-								<span className="text-xs font-medium text-emerald-400">
+								<span className="text-xs font-medium text-brand-green">
 									{event.prizeCurrency === "PEN" ? "S/" : "$"}
 									{event.prizePool.toLocaleString()}
 								</span>
@@ -345,9 +345,9 @@ export function EventRowWithChildren({
 								isEnded
 									? "text-muted-foreground"
 									: isOngoing
-										? "text-emerald-400"
+										? "text-brand-green"
 										: isOpen
-											? "text-blue-400"
+											? "text-brand-grid"
 											: "text-amber-400"
 							}`}
 						>
@@ -356,9 +356,9 @@ export function EventRowWithChildren({
 									isEnded
 										? "bg-muted-foreground/50"
 										: isOngoing
-											? "bg-emerald-400 animate-pulse"
+											? "bg-brand-green animate-pulse"
 											: isOpen
-												? "bg-blue-400"
+												? "bg-brand-grid"
 												: "bg-amber-400"
 								}`}
 							/>
@@ -434,9 +434,9 @@ function ChildEventRow({
 					isEnded
 						? "text-muted-foreground"
 						: isOngoing
-							? "text-emerald-400"
+							? "text-brand-green"
 							: isOpen
-								? "text-blue-400"
+								? "text-brand-grid"
 								: "text-amber-400"
 				}`}
 			>
@@ -445,9 +445,9 @@ function ChildEventRow({
 						isEnded
 							? "bg-muted-foreground/50"
 							: isOngoing
-								? "bg-emerald-400 animate-pulse"
+								? "bg-brand-green animate-pulse"
 								: isOpen
-									? "bg-blue-400"
+									? "bg-brand-grid"
 									: "bg-amber-400"
 					}`}
 				/>

@@ -15,6 +15,31 @@ interface EventOGTemplateProps {
 	isJuniorFriendly?: boolean;
 }
 
+const brand = {
+	black: "#050605",
+	paper: "#F3F1E8",
+	green: "#22FF66",
+	forest: "#063B26",
+	grid: "#7FBF9A",
+	muted: "#A1A1AA",
+	amber: "#FFB020",
+};
+
+function BlockZero({ size = 34 }: { size?: number }) {
+	return (
+		<svg width={size} height={size * 1.5} viewBox="20.3 23.1 34.1 51.2">
+			<polygon
+				fill={brand.green}
+				points="28.1 23.1 20.4 31.1 20.4 32.4 45.5 32.3 45.5 48.2 54.4 48.2 54.4 23.1"
+			/>
+			<polygon
+				fill={brand.paper}
+				points="28.9 32.3 20.4 32.4 20.3 74.3 47.2 74.3 54.4 67.6 54.4 52.8 45.4 52.8 45.4 65.4 28.9 65.4"
+			/>
+		</svg>
+	);
+}
+
 export function EventOGTemplate({
 	eventName,
 	organizerName,
@@ -31,14 +56,26 @@ export function EventOGTemplate({
 		string,
 		{ bg: string; text: string; dot: string }
 	> = {
-		ongoing: { bg: "rgba(16, 185, 129, 0.1)", text: "#10b981", dot: "#10b981" },
-		open: { bg: "rgba(59, 130, 246, 0.1)", text: "#3b82f6", dot: "#3b82f6" },
-		upcoming: {
-			bg: "rgba(245, 158, 11, 0.1)",
-			text: "#f59e0b",
-			dot: "#f59e0b",
+		ongoing: {
+			bg: "rgba(34, 255, 102, 0.14)",
+			text: brand.green,
+			dot: brand.green,
 		},
-		ended: { bg: "rgba(148, 163, 184, 0.1)", text: "#94a3b8", dot: "#94a3b8" },
+		open: {
+			bg: "rgba(34, 255, 102, 0.14)",
+			text: brand.green,
+			dot: brand.green,
+		},
+		upcoming: {
+			bg: "rgba(127, 191, 154, 0.14)",
+			text: brand.grid,
+			dot: brand.grid,
+		},
+		ended: {
+			bg: "rgba(161, 161, 170, 0.12)",
+			text: brand.muted,
+			dot: brand.muted,
+		},
 	};
 
 	const statusLabels: Record<string, string> = {
@@ -53,14 +90,15 @@ export function EventOGTemplate({
 
 	const gradientOverlay: CSSProperties = {
 		background:
-			"linear-gradient(135deg, rgba(204, 208, 201, 0.1) 0%, rgba(210, 152, 80, 0.1) 33%, rgba(114, 177, 191, 0.1) 66%, rgba(99, 78, 88, 0.1) 100%)",
+			"linear-gradient(135deg, rgba(34, 255, 102, 0.12) 0%, rgba(6, 59, 38, 0.18) 42%, rgba(5, 6, 5, 0) 100%)",
 		position: "absolute",
 		inset: "0",
 	};
 
 	const noisePattern: CSSProperties = {
 		backgroundImage:
-			"url(\"data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E\")",
+			"linear-gradient(rgba(127, 191, 154, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(127, 191, 154, 0.08) 1px, transparent 1px)",
+		backgroundSize: "48px 48px",
 		position: "absolute",
 		inset: "0",
 	};
@@ -72,7 +110,7 @@ export function EventOGTemplate({
 				height: "630px",
 				display: "flex",
 				position: "relative",
-				backgroundColor: "#09090b",
+				backgroundColor: brand.black,
 				overflow: "hidden",
 			}}
 		>
@@ -134,18 +172,25 @@ export function EventOGTemplate({
 						style={{
 							display: "flex",
 							alignItems: "center",
-							gap: "12px",
+							gap: "14px",
 						}}
 					>
 						<div
 							style={{
+								display: "flex",
+								alignItems: "center",
+								gap: "10px",
 								fontSize: "32px",
-								fontWeight: "700",
-								color: "#fafafa",
+								fontWeight: "800",
+								color: brand.paper,
 								letterSpacing: "-0.02em",
 							}}
 						>
-							hack0.dev
+							<span>hack</span>
+							<BlockZero size={26} />
+							<span style={{ color: brand.grid, fontFamily: "monospace" }}>
+								.dev
+							</span>
 						</div>
 					</div>
 
@@ -157,16 +202,16 @@ export function EventOGTemplate({
 							backgroundColor: currentStatus.bg,
 							color: currentStatus.text,
 							padding: "10px 20px",
-							borderRadius: "9999px",
+							borderRadius: "0",
 							fontSize: "18px",
 							fontWeight: "600",
+							fontFamily: "monospace",
 						}}
 					>
 						<div
 							style={{
-								width: "8px",
-								height: "8px",
-								borderRadius: "50%",
+								width: "10px",
+								height: "10px",
 								backgroundColor: currentStatus.dot,
 							}}
 						/>
@@ -195,11 +240,12 @@ export function EventOGTemplate({
 						<div
 							style={{
 								backgroundColor: "rgba(250, 250, 250, 0.1)",
-								color: "#a1a1aa",
+								color: brand.grid,
 								padding: "8px 16px",
-								borderRadius: "6px",
+								borderRadius: "0",
 								fontSize: "16px",
 								fontWeight: "500",
+								fontFamily: "monospace",
 							}}
 						>
 							{eventType}
@@ -207,10 +253,10 @@ export function EventOGTemplate({
 						{(skillLevel === "beginner" || skillLevel === "all") && (
 							<div
 								style={{
-									backgroundColor: "rgba(245, 158, 11, 0.15)",
-									color: "#f59e0b",
+									backgroundColor: "rgba(255, 176, 32, 0.15)",
+									color: brand.amber,
 									padding: "8px 16px",
-									borderRadius: "6px",
+									borderRadius: "0",
 									fontSize: "16px",
 									fontWeight: "500",
 									display: "flex",
@@ -228,7 +274,7 @@ export function EventOGTemplate({
 						style={{
 							fontSize: "64px",
 							fontWeight: "700",
-							color: "#fafafa",
+							color: brand.paper,
 							lineHeight: "1.1",
 							letterSpacing: "-0.02em",
 							maxHeight: "140px",
@@ -244,7 +290,7 @@ export function EventOGTemplate({
 							display: "flex",
 							gap: "32px",
 							fontSize: "22px",
-							color: "#a1a1aa",
+							color: brand.grid,
 							flexWrap: "wrap",
 						}}
 					>
@@ -260,7 +306,7 @@ export function EventOGTemplate({
 									display: "flex",
 									alignItems: "center",
 									gap: "10px",
-									color: "#f59e0b",
+									color: brand.amber,
 									fontWeight: "600",
 								}}
 							>
@@ -276,7 +322,7 @@ export function EventOGTemplate({
 						display: "flex",
 						alignItems: "center",
 						gap: "16px",
-						borderTop: "1px solid rgba(250, 250, 250, 0.1)",
+						borderTop: "1px solid rgba(127, 191, 154, 0.22)",
 						paddingTop: "24px",
 					}}
 				>
@@ -286,8 +332,8 @@ export function EventOGTemplate({
 							style={{
 								width: "48px",
 								height: "48px",
-								borderRadius: "50%",
-								border: "2px solid rgba(250, 250, 250, 0.2)",
+								borderRadius: "0",
+								border: "2px solid rgba(127, 191, 154, 0.35)",
 							}}
 						/>
 					) : (
@@ -295,14 +341,14 @@ export function EventOGTemplate({
 							style={{
 								width: "48px",
 								height: "48px",
-								borderRadius: "50%",
-								backgroundColor: "rgba(250, 250, 250, 0.1)",
+								borderRadius: "0",
+								backgroundColor: brand.forest,
 								display: "flex",
 								alignItems: "center",
 								justifyContent: "center",
 								fontSize: "20px",
 								fontWeight: "600",
-								color: "#a1a1aa",
+								color: brand.grid,
 								lineHeight: "48px",
 								textAlign: "center",
 							}}
@@ -320,7 +366,7 @@ export function EventOGTemplate({
 						<div
 							style={{
 								fontSize: "14px",
-								color: "#71717a",
+								color: brand.grid,
 								textTransform: "uppercase",
 								letterSpacing: "0.05em",
 							}}
@@ -331,7 +377,7 @@ export function EventOGTemplate({
 							style={{
 								fontSize: "20px",
 								fontWeight: "600",
-								color: "#fafafa",
+								color: brand.paper,
 							}}
 						>
 							{organizerName}

@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
+import { Hack0Wordmark } from "@/components/brand/hack0-logo";
 import { SearchTrigger } from "@/components/search-command";
 import { isGodMode } from "@/lib/god-mode";
 import { GithubStars } from "./github-stars";
@@ -81,15 +82,12 @@ export async function SiteHeader({
 								</svg>
 							</Link>
 						)}
-						<Link href="/" className="flex items-center gap-2">
-							<span className="flex items-center">
-								<span className="text-sm font-semibold tracking-tight">
-									hack0
+						<Link href="/" className="flex items-center">
+							<span className="flex items-end gap-1">
+								<Hack0Wordmark className="h-5 w-[70px]" />
+								<span className="pb-[1px] font-mono text-[11px] text-muted-foreground">
+									.dev
 								</span>
-								<span className="text-sm text-muted-foreground">.dev</span>
-							</span>
-							<span className="font-mono text-[10px] font-medium uppercase tracking-wider text-violet-500 border border-violet-500/30 px-1.5 py-0.5 rounded-sm">
-								beta
 							</span>
 						</Link>
 						<MainNav />

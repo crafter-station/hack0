@@ -97,9 +97,9 @@ const COUNTRY_ZOOM_CONFIG: Record<
 function getStatusColor(status: string) {
 	switch (status) {
 		case "ongoing":
-			return "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
+			return "bg-brand-green/30 text-brand-green border-brand-green/30";
 		case "open":
-			return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+			return "bg-brand-grid/20 text-brand-grid border-brand-grid/30";
 		case "upcoming":
 			return "bg-amber-500/20 text-amber-400 border-amber-500/30";
 		default:
@@ -231,7 +231,7 @@ function EventListItem({
 								</span>
 							)}
 							{prize && (
-								<span className="flex items-center gap-1 text-emerald-500 font-medium">
+								<span className="flex items-center gap-1 text-brand-green font-medium">
 									<Trophy className="h-3 w-3" />
 									{prize}
 								</span>

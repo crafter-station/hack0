@@ -708,7 +708,7 @@ export function MembersManagement({
 													Owner
 												</span>
 											) : member?.role === "admin" ? (
-												<span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-medium text-blue-500">
+												<span className="inline-flex items-center gap-1 rounded-full bg-brand-grid/10 px-2.5 py-1 text-xs font-medium text-brand-grid">
 													<Shield className="h-3 w-3" />
 													Admin
 												</span>

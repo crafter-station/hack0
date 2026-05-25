@@ -162,7 +162,7 @@ function CommunityRow({
 						<span className="text-foreground group-hover:underline underline-offset-2 line-clamp-1 flex items-center gap-1">
 							{community.displayName || community.name}
 							{community.isVerified && (
-								<CheckCircle2 className="h-3 w-3 text-emerald-500" />
+								<CheckCircle2 className="h-3 w-3 text-brand-green" />
 							)}
 						</span>
 						<div className="text-[10px] text-muted-foreground truncate max-w-[200px]">

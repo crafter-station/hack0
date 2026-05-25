@@ -1,5 +1,6 @@
 import { Github, Heart } from "lucide-react";
 import Link from "next/link";
+import { Hack0Wordmark } from "@/components/brand/hack0-logo";
 import { CrafterStationLogo } from "@/components/logos/crafter-station";
 import { formatEventDate } from "@/lib/event-utils";
 
@@ -13,13 +14,15 @@ export function SiteFooter() {
 					<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
 						<div className="flex flex-col gap-2">
 							<Link href="/" className="flex items-center">
-								<span className="text-sm font-semibold tracking-tight">
-									hack0
+								<span className="flex items-end gap-1">
+									<Hack0Wordmark className="h-5 w-[70px]" />
+									<span className="pb-[1px] font-mono text-[11px] text-muted-foreground">
+										.dev
+									</span>
 								</span>
-								<span className="text-sm text-muted-foreground">.dev</span>
 							</Link>
 							<p className="text-xs text-muted-foreground">
-								Mapeando el ecosistema tech de LATAM 🌎
+								Mapeando el ecosistema tech de LATAM
 							</p>
 						</div>
 
@@ -106,7 +109,7 @@ export function SiteFooter() {
 							<p>© {new Date().getFullYear()} hack0.dev</p>
 							<p className="inline-flex items-center gap-1">
 								Hecho con{" "}
-								<Heart className="h-3 w-3 fill-red-500 text-red-500 animate-pulse" />{" "}
+								<Heart className="h-3 w-3 fill-brand-green text-brand-green animate-pulse" />{" "}
 								en LATAM por{" "}
 								<a
 									href="https://www.crafterstation.com/"

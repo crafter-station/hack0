@@ -18,8 +18,8 @@ export default async function OrganizacionesPage() {
 			<div className="grid grid-cols-3 gap-4">
 				<div className="rounded-lg border bg-card p-4">
 					<div className="flex items-center gap-3">
-						<div className="flex h-9 w-9 items-center justify-center rounded-md bg-blue-500/10">
-							<Building2 className="h-4 w-4 text-blue-500" />
+						<div className="flex h-9 w-9 items-center justify-center rounded-md bg-brand-grid/10">
+							<Building2 className="h-4 w-4 text-brand-grid" />
 						</div>
 						<div>
 							<p className="text-2xl font-semibold">{organizations.length}</p>
@@ -31,8 +31,8 @@ export default async function OrganizacionesPage() {
 				</div>
 				<div className="rounded-lg border bg-card p-4">
 					<div className="flex items-center gap-3">
-						<div className="flex h-9 w-9 items-center justify-center rounded-md bg-emerald-500/10">
-							<Building2 className="h-4 w-4 text-emerald-500" />
+						<div className="flex h-9 w-9 items-center justify-center rounded-md bg-brand-green/10">
+							<Building2 className="h-4 w-4 text-brand-green" />
 						</div>
 						<div>
 							<p className="text-2xl font-semibold">{verifiedOrgs.length}</p>

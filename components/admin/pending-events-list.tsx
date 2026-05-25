@@ -153,7 +153,7 @@ export function PendingEventsList({
 											href={event.websiteUrl}
 											target="_blank"
 											rel="noopener noreferrer"
-											className="text-xs text-blue-500 hover:underline flex items-center gap-1"
+											className="text-xs text-brand-grid hover:underline flex items-center gap-1"
 										>
 											<ExternalLink className="h-3 w-3" />
 											{event.websiteUrl}
@@ -168,7 +168,7 @@ export function PendingEventsList({
 											event.approvalStatus === "pending"
 												? "bg-amber-500/10 text-amber-500"
 												: event.approvalStatus === "approved"
-													? "bg-emerald-500/10 text-emerald-500"
+													? "bg-brand-green/10 text-brand-green"
 													: "bg-red-500/10 text-red-500"
 										}`}
 									>
@@ -184,7 +184,7 @@ export function PendingEventsList({
 											<button
 												onClick={() => handleApprove(event.id)}
 												disabled={loading === event.id}
-												className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-emerald-500/30 text-emerald-500 transition-colors hover:bg-emerald-500/10 disabled:opacity-50"
+												className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-brand-green/30 text-brand-green transition-colors hover:bg-brand-green/10 disabled:opacity-50"
 											>
 												<Check className="h-4 w-4" />
 											</button>

@@ -61,7 +61,7 @@ const STATUS_CONFIG = {
 	approved: {
 		label: "Aceptado",
 		icon: Check,
-		className: "text-emerald-600",
+		className: "text-brand-green",
 	},
 	pending: {
 		label: "Pendiente",
@@ -301,7 +301,7 @@ export function CohostSelector({
 														</p>
 													</div>
 													{item.priority === 1 && (
-														<span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-400 font-medium shrink-0">
+														<span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-grid/10 text-brand-grid dark:text-brand-grid font-medium shrink-0">
 															Equipo
 														</span>
 													)}

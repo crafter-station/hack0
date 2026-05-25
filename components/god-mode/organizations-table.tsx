@@ -95,7 +95,7 @@ export function OrganizationsTable({ organizations }: OrganizationsTableProps) {
 													{org.displayName || org.name}
 												</p>
 												{org.isVerified && (
-													<Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+													<Check className="h-4 w-4 text-brand-green flex-shrink-0" />
 												)}
 											</div>
 											<p className="text-xs text-muted-foreground truncate">
@@ -115,7 +115,7 @@ export function OrganizationsTable({ organizations }: OrganizationsTableProps) {
 								</td>
 								<td className="px-4 py-3">
 									{org.isVerified ? (
-										<span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+										<span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium bg-brand-green/10 text-brand-green dark:text-brand-green">
 											<Check className="h-3 w-3" />
 											Verificada
 										</span>

@@ -52,22 +52,21 @@ export function WelcomeEmail({ confirmUrl }: WelcomeEmailProps) {
 	);
 }
 
-// Styles
 const main = {
-	backgroundColor: "#0a0a0a",
+	backgroundColor: "#050605",
 	fontFamily:
 		'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
 };
 
 const container = {
-	backgroundColor: "#0a0a0a",
+	backgroundColor: "#050605",
 	margin: "0 auto",
 	padding: "40px 20px",
 	maxWidth: "560px",
 };
 
 const h1 = {
-	color: "#fafafa",
+	color: "#F3F1E8",
 	fontSize: "24px",
 	fontWeight: "600",
 	letterSpacing: "-0.025em",
@@ -75,23 +74,23 @@ const h1 = {
 };
 
 const heroText = {
-	color: "#fafafa",
+	color: "#F3F1E8",
 	fontSize: "20px",
 	fontWeight: "500",
 	margin: "0 0 16px",
 };
 
 const paragraph = {
-	color: "#a1a1a1",
+	color: "#A1A1AA",
 	fontSize: "14px",
 	lineHeight: "1.6",
 	margin: "0 0 16px",
 };
 
 const button = {
-	backgroundColor: "#fafafa",
-	borderRadius: "6px",
-	color: "#0a0a0a",
+	backgroundColor: "#22FF66",
+	borderRadius: "0",
+	color: "#050605",
 	display: "inline-block",
 	fontSize: "14px",
 	fontWeight: "500",
@@ -101,18 +100,18 @@ const button = {
 };
 
 const note = {
-	color: "#666666",
+	color: "#7FBF9A",
 	fontSize: "12px",
 	margin: "0 0 24px",
 };
 
 const hr = {
-	borderColor: "#262626",
+	borderColor: "#1b2a1f",
 	margin: "24px 0",
 };
 
 const footer = {
-	color: "#666666",
+	color: "#7FBF9A",
 	fontSize: "12px",
 };
 

@@ -103,7 +103,9 @@ export async function canManageEventBySlug(slug: string): Promise<boolean> {
 	return organizer.role === "lead" || organizer.role === "organizer";
 }
 
-export async function canManageEventByShortCode(code: string): Promise<boolean> {
+export async function canManageEventByShortCode(
+	code: string,
+): Promise<boolean> {
 	const godMode = await isGodMode();
 	if (godMode) return true;
 

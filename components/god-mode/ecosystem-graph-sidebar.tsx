@@ -120,7 +120,7 @@ export function EcosystemGraphSidebar({ stats }: EcosystemGraphSidebarProps) {
 				<h3 className="font-medium text-sm mb-3">Leyenda</h3>
 				<div className="space-y-2 text-xs">
 					<div className="flex items-center gap-2">
-						<div className="h-0.5 w-6 bg-emerald-500" />
+						<div className="h-0.5 w-6 bg-brand-green" />
 						<span className="text-muted-foreground">Relación verificada</span>
 					</div>
 					<div className="flex items-center gap-2">
@@ -136,7 +136,7 @@ export function EcosystemGraphSidebar({ stats }: EcosystemGraphSidebarProps) {
 						</span>
 					</div>
 					<div className="flex items-center gap-2">
-						<div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+						<div className="h-2.5 w-2.5 rounded-full bg-brand-green" />
 						<span className="text-muted-foreground">Org verificada</span>
 					</div>
 				</div>

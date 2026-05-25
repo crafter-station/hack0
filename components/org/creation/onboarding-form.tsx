@@ -287,7 +287,7 @@ export function OnboardingForm() {
 									</>
 								) : run?.isCompleted ? (
 									<>
-										<Check className="h-4 w-4 mr-2 text-emerald-500" />
+										<Check className="h-4 w-4 mr-2 text-brand-green" />
 										Completado
 									</>
 								) : (
@@ -310,7 +310,7 @@ export function OnboardingForm() {
 							</div>
 						)}
 						{run?.isCompleted && !metadataError && (
-							<div className="rounded-lg border border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30 p-3 text-sm text-emerald-600 dark:text-emerald-400">
+							<div className="rounded-lg border border-brand-green/20 bg-brand-green/10 dark:border-brand-forest dark:bg-brand-forest/30 p-3 text-sm text-brand-green dark:text-brand-green">
 								<p className="font-medium">✓ Datos extraídos exitosamente</p>
 								<p className="text-xs mt-1">
 									Revisa y completa los campos abajo.
@@ -366,7 +366,7 @@ export function OnboardingForm() {
 									<Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
 								)}
 								{slugStatus === "available" && (
-									<Check className="h-4 w-4 text-emerald-500" />
+									<Check className="h-4 w-4 text-brand-green" />
 								)}
 								{slugStatus === "taken" && (
 									<X className="h-4 w-4 text-red-500" />

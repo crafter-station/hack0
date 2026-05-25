@@ -17,7 +17,7 @@ interface MyOrgCardsProps {
 
 const ROLE_CONFIG = {
 	owner: { label: "Owner", icon: Crown, color: "text-amber-500" },
-	admin: { label: "Admin", icon: Shield, color: "text-blue-500" },
+	admin: { label: "Admin", icon: Shield, color: "text-brand-grid" },
 	member: { label: "Miembro", icon: Users, color: "text-muted-foreground" },
 	follower: {
 		label: "Seguidor",
@@ -69,7 +69,7 @@ export function MyOrgCards({ organizations }: MyOrgCardsProps) {
 										? "Personal"
 										: organization.displayName || organization.name}
 									{organization.isVerified && (
-										<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+										<CheckCircle2 className="h-3.5 w-3.5 text-brand-green shrink-0" />
 									)}
 								</h3>
 								<p className="text-[11px] text-muted-foreground">

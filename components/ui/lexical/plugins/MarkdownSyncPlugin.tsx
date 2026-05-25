@@ -192,13 +192,12 @@ function parseInlineMarkdown(text: string): TextNode[] {
 
 	// Regex to match inline markdown patterns
 	// Matches: **bold**, *italic*, ~~strike~~, `code`
-	const inlinePattern =
-		/(\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|`[^`]+`)/g;
+	const inlinePattern = /(\*\*[^*]+\*\*|\*[^*]+\*|~~[^~]+~~|`[^`]+`)/g;
 
 	let lastIndex = 0;
-	let match: RegExpExecArray | null;
+	let match: RegExpExecArray | null = inlinePattern.exec(text);
 
-	while ((match = inlinePattern.exec(text)) !== null) {
+	while (match !== null) {
 		// Add plain text before the match
 		if (match.index > lastIndex) {
 			const plainText = text.slice(lastIndex, match.index);
@@ -237,6 +236,7 @@ function parseInlineMarkdown(text: string): TextNode[] {
 		nodes.push(node);
 
 		lastIndex = match.index + formatted.length;
+		match = inlinePattern.exec(text);
 	}
 
 	// Add remaining plain text

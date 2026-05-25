@@ -34,7 +34,7 @@ const statusCopy: Record<CoverageStatus, { label: string; className: string }> =
 	{
 		live: {
 			label: "live",
-			className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600",
+			className: "border-brand-green/30 bg-brand-green/10 text-brand-green",
 		},
 		needs_backfill: {
 			label: "backfill",
@@ -47,7 +47,7 @@ const statusCopy: Record<CoverageStatus, { label: string; className: string }> =
 	};
 
 const severityCopy: Record<QualitySignal["severity"], string> = {
-	good: "text-emerald-600",
+	good: "text-brand-green",
 	watch: "text-amber-600",
 	fix: "text-red-600",
 };

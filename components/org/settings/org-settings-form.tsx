@@ -157,8 +157,8 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
 			)}
 
 			{success && (
-				<div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-3">
-					<p className="text-sm text-emerald-600 dark:text-emerald-400">
+				<div className="rounded-lg border border-brand-green/30 bg-brand-green/10 px-4 py-3">
+					<p className="text-sm text-brand-green dark:text-brand-green">
 						✓ Comunidad actualizada correctamente
 					</p>
 				</div>
@@ -252,7 +252,7 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
 															</div>
 														</div>
 														{option.value === type && (
-															<Check className="h-4 w-4 shrink-0 text-emerald-500 mt-0.5" />
+															<Check className="h-4 w-4 shrink-0 text-brand-green mt-0.5" />
 														)}
 													</CommandItem>
 												);

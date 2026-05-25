@@ -512,8 +512,8 @@ export function OrgEventFormMinimal({
 										}}
 									>
 										<div className="flex items-center gap-3">
-											<div className="h-10 w-10 rounded-lg bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 flex items-center justify-center">
-												<Wand2 className="h-5 w-5 text-violet-500" />
+											<div className="h-10 w-10 rounded-lg bg-gradient-to-br from-brand-forest/30 to-brand-green/20 flex items-center justify-center">
+												<Wand2 className="h-5 w-5 text-brand-green" />
 											</div>
 											<div>
 												<div className="font-medium">Desde texto o imagen</div>
@@ -1000,7 +1000,7 @@ export function OrgEventFormMinimal({
 												? "Virtual"
 												: "Híbrido"}
 										{geoLatitude && geoLongitude && (
-											<span className="text-xs text-emerald-500 ml-1">✓</span>
+											<span className="text-xs text-brand-green ml-1">✓</span>
 										)}
 									</div>
 								</div>

@@ -87,7 +87,7 @@ export function LumaConnectCard({
 					</div>
 				</div>
 				{connection.isConnected && (
-					<div className="inline-flex items-center gap-1.5 text-sm text-blue-500">
+					<div className="inline-flex items-center gap-1.5 text-sm text-brand-grid">
 						<Check className="size-4" />
 						Conectado
 					</div>
@@ -175,7 +175,7 @@ export function LumaConnectCard({
 				<p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>
 			)}
 			{success && (
-				<p className="mt-3 text-sm text-emerald-600 dark:text-emerald-400">
+				<p className="mt-3 text-sm text-brand-green dark:text-brand-green">
 					{success}
 				</p>
 			)}

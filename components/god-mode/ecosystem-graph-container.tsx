@@ -139,7 +139,7 @@ export function EcosystemGraphContainer({
 											{hoveredNode.name}
 										</span>
 										{hoveredNode.isVerified && (
-											<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+											<CheckCircle2 className="h-3.5 w-3.5 text-brand-green" />
 										)}
 									</div>
 									<div className="text-xs text-muted-foreground">
@@ -161,15 +161,15 @@ export function EcosystemGraphContainer({
 
 				<div className="flex items-center gap-4 text-xs text-muted-foreground">
 					<div className="flex items-center gap-1.5">
-						<div className="h-3 w-3 rounded-full bg-blue-500" />
+						<div className="h-3 w-3 rounded-full bg-brand-grid" />
 						<span>Startup</span>
 					</div>
 					<div className="flex items-center gap-1.5">
-						<div className="h-3 w-3 rounded-full bg-emerald-500" />
+						<div className="h-3 w-3 rounded-full bg-brand-green" />
 						<span>Investor</span>
 					</div>
 					<div className="flex items-center gap-1.5">
-						<div className="h-3 w-3 rounded-full bg-purple-500" />
+						<div className="h-3 w-3 rounded-full bg-brand-green" />
 						<span>University</span>
 					</div>
 					<div className="flex items-center gap-1.5">

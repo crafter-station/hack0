@@ -17,8 +17,9 @@ export function StatusBadge({ status, label, className }: StatusBadgeProps) {
 				"inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium",
 				status === "ended" && "bg-muted text-muted-foreground",
 				status === "ongoing" &&
-					"bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-				status === "open" && "bg-blue-500/10 text-blue-700 dark:text-blue-400",
+					"bg-brand-green/10 text-brand-green dark:text-brand-green",
+				status === "open" &&
+					"bg-brand-grid/10 text-brand-grid dark:text-brand-grid",
 				status === "upcoming" &&
 					"bg-amber-500/10 text-amber-700 dark:text-amber-400",
 				className,
@@ -28,7 +29,7 @@ export function StatusBadge({ status, label, className }: StatusBadgeProps) {
 				className={cn(
 					"h-1.5 w-1.5 rounded-full",
 					status === "ongoing"
-						? "bg-emerald-500 animate-pulse"
+						? "bg-brand-green animate-pulse"
 						: "bg-current opacity-60",
 				)}
 			/>
@@ -48,7 +49,7 @@ export function ApprovalBadge({ status, className }: ApprovalBadgeProps) {
 			className={cn(
 				"inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium",
 				status === "approved" &&
-					"bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+					"bg-brand-green/10 text-brand-green dark:text-brand-green",
 				status === "pending" &&
 					"bg-amber-500/10 text-amber-700 dark:text-amber-400",
 				status === "rejected" && "bg-red-500/10 text-red-700 dark:text-red-400",
@@ -56,7 +57,7 @@ export function ApprovalBadge({ status, className }: ApprovalBadgeProps) {
 			)}
 		>
 			{status === "approved" && (
-				<CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
+				<CheckCircle2 className="h-3 w-3 text-brand-green shrink-0" />
 			)}
 			{status === "approved"
 				? "Aprobado"
@@ -110,11 +111,11 @@ export function VerifiedBadge({ className }: VerifiedBadgeProps) {
 	return (
 		<div
 			className={cn(
-				"inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium bg-blue-500/10 text-blue-700 dark:text-blue-400",
+				"inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium bg-brand-grid/10 text-brand-grid dark:text-brand-grid",
 				className,
 			)}
 		>
-			<CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
+			<CheckCircle2 className="h-3 w-3 text-brand-green shrink-0" />
 			Verificado
 		</div>
 	);

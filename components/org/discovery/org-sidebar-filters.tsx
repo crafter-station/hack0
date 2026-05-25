@@ -191,7 +191,7 @@ export function OrgSidebarFilters({
 								}
 								trailing={
 									country.hasCommunities ? (
-										<span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+										<span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-green" />
 									) : null
 								}
 							>

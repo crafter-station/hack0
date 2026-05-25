@@ -87,14 +87,14 @@ function StatusBadge({
 }) {
 	if (status === "completed") {
 		return (
-			<Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+			<Badge className="bg-brand-green/10 text-brand-green border-brand-green/30">
 				Completado
 			</Badge>
 		);
 	}
 	if (status === "in_progress") {
 		return (
-			<Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20">
+			<Badge className="bg-brand-grid/10 text-brand-grid border-brand-grid/30">
 				En progreso
 			</Badge>
 		);
@@ -161,14 +161,14 @@ function CountryCoverageTile({
 				</div>
 				<span
 					className={`shrink-0 text-[10px] ${
-						hasSignal ? "text-emerald-500" : "text-muted-foreground"
+						hasSignal ? "text-brand-green" : "text-muted-foreground"
 					}`}
 				>
 					{hasSignal ? "Con señal" : "Por mapear"}
 				</span>
 			</div>
 			<div className="mt-3 h-1 bg-muted">
-				<div className="h-full bg-emerald-500" style={{ width }} />
+				<div className="h-full bg-brand-green" style={{ width }} />
 			</div>
 		</Link>
 	);
@@ -242,7 +242,7 @@ export default async function RoadmapPage() {
 												className="flex items-center gap-2 text-sm"
 											>
 												{item.done ? (
-													<Check className="h-4 w-4 text-emerald-500 shrink-0" />
+													<Check className="h-4 w-4 text-brand-green shrink-0" />
 												) : (
 													<Circle className="h-4 w-4 text-muted-foreground/50 shrink-0" />
 												)}

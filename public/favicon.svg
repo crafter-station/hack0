@@ -1,4 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <rect width="32" height="32" fill="#000"/>
-  <text x="16" y="22" font-family="monospace" font-size="14" font-weight="700" fill="#fff" text-anchor="middle" letter-spacing="-0.5">H0</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" shape-rendering="crispEdges">
+  <style>
+    .bg { fill: #f3f1e8; }
+    .fg { fill: #050605; }
+    .green { fill: #22ff66; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #050605; }
+      .fg { fill: #f3f1e8; }
+    }
+  </style>
+  <rect class="bg" width="64" height="64"/>
+  <g transform="translate(16.7 9) scale(0.9) translate(-20.3 -23.1)">
+    <polygon class="green" points="28.1 23.1 20.4 31.1 20.4 32.4 45.5 32.3 45.5 48.2 54.4 48.2 54.4 23.1"/>
+    <polygon class="fg" points="28.9 32.3 20.4 32.4 20.3 74.3 47.2 74.3 54.4 67.6 54.4 52.8 45.4 52.8 45.4 65.4 28.9 65.4"/>
+  </g>
 </svg>

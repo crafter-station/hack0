@@ -114,7 +114,7 @@ export function ManageContent({
 													href={job.sourceUrl}
 													target="_blank"
 													rel="noopener noreferrer"
-													className="text-xs text-blue-600 hover:underline inline-flex items-center gap-1"
+													className="text-xs text-brand-grid hover:underline inline-flex items-center gap-1"
 												>
 													<ExternalLink className="h-3 w-3" />
 													{job.sourceUrl}
@@ -131,9 +131,9 @@ export function ManageContent({
 											<div
 												className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium ${
 													job.status === "completed"
-														? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+														? "bg-brand-green/10 text-brand-green dark:text-brand-green"
 														: job.status === "processing"
-															? "bg-blue-500/10 text-blue-700 dark:text-blue-400"
+															? "bg-brand-grid/10 text-brand-grid dark:text-brand-grid"
 															: job.status === "failed"
 																? "bg-red-500/10 text-red-700 dark:text-red-400"
 																: "bg-amber-500/10 text-amber-700 dark:text-amber-400"

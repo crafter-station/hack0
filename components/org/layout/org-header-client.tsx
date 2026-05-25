@@ -144,7 +144,7 @@ export function OrgHeaderClient({
 								{community.displayName || community.name}
 							</h1>
 							{community.isVerified && (
-								<VerifiedBadge className="h-6 w-6 text-blue-500 shrink-0" />
+								<VerifiedBadge className="h-6 w-6 text-brand-green shrink-0" />
 							)}
 						</div>
 

@@ -223,17 +223,17 @@ export function EventsCalendar({
 		switch (status) {
 			case "ongoing":
 				return {
-					bg: "bg-emerald-500/20",
-					border: "border-l-emerald-500",
-					text: "text-emerald-700 dark:text-emerald-400",
-					bar: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400",
+					bg: "bg-brand-green/30",
+					border: "border-l-brand-green",
+					text: "text-brand-green dark:text-brand-green",
+					bar: "bg-brand-green/30 text-brand-green dark:text-brand-green",
 				};
 			case "open":
 				return {
-					bg: "bg-blue-500/20",
-					border: "border-l-blue-500",
-					text: "text-blue-700 dark:text-blue-400",
-					bar: "bg-blue-500/20 text-blue-700 dark:text-blue-400",
+					bg: "bg-brand-grid/20",
+					border: "border-l-brand-grid",
+					text: "text-brand-grid dark:text-brand-grid",
+					bar: "bg-brand-grid/20 text-brand-grid dark:text-brand-grid",
 				};
 			case "upcoming":
 				return {
@@ -302,7 +302,7 @@ export function EventsCalendar({
 							{event.name}
 						</h4>
 						<span
-							className={`text-[10px] ${status === "ongoing" ? "text-emerald-600" : status === "open" ? "text-blue-600" : "text-muted-foreground"}`}
+							className={`text-[10px] ${status === "ongoing" ? "text-brand-green" : status === "open" ? "text-brand-grid" : "text-muted-foreground"}`}
 						>
 							{label}
 						</span>
@@ -325,7 +325,7 @@ export function EventsCalendar({
 							</div>
 						)}
 						{event.prizePool ? (
-							<div className="flex items-center gap-1 text-emerald-600">
+							<div className="flex items-center gap-1 text-brand-green">
 								<Trophy className="w-2.5 h-2.5 shrink-0" />$
 								{event.prizePool.toLocaleString()}
 							</div>

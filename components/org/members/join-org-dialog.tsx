@@ -72,8 +72,8 @@ export function JoinOrgDialog({
 				{action === "request-member" && (
 					<>
 						<div className="flex items-center gap-3">
-							<div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
-								<Users className="h-5 w-5 text-emerald-500" />
+							<div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-green/10">
+								<Users className="h-5 w-5 text-brand-green" />
 							</div>
 							<div className="flex-1 min-w-0">
 								<p className="font-medium">Convertirte en miembro</p>
@@ -90,7 +90,7 @@ export function JoinOrgDialog({
 							<li>• Participar en discusiones internas</li>
 							<li>• Colaborar en proyectos de la comunidad</li>
 						</ul>
-						<p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2">
+						<p className="text-xs text-brand-green dark:text-brand-green mt-2">
 							Se activa automáticamente al confirmar
 						</p>
 					</>

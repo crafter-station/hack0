@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Hack0Wordmark } from "@/components/brand/hack0-logo";
 import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
@@ -6,12 +7,10 @@ export default function NotFound() {
 		<div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
 			<div className="max-w-md w-full text-center space-y-6">
 				<div className="space-y-2">
-					<Link href="/" className="inline-flex items-center gap-2 mb-4">
-						<span className="flex items-center">
-							<span className="text-sm font-semibold tracking-tight">
-								hack0
-							</span>
-							<span className="text-sm text-muted-foreground">.dev</span>
+					<Link href="/" className="mb-4 inline-flex items-end gap-1">
+						<Hack0Wordmark className="h-7 w-[98px]" />
+						<span className="pb-[2px] font-mono text-sm text-muted-foreground">
+							.dev
 						</span>
 					</Link>
 					<h1 className="text-4xl font-semibold tracking-tight">404</h1>

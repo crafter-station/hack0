@@ -88,7 +88,7 @@ export function ScraperTable({
 								conf === null
 									? "text-muted-foreground"
 									: conf >= 70
-										? "text-emerald-600"
+										? "text-brand-green"
 										: conf >= 40
 											? "text-amber-600"
 											: "text-red-600";
@@ -96,7 +96,7 @@ export function ScraperTable({
 								conf === null
 									? "bg-muted-foreground"
 									: conf >= 70
-										? "bg-emerald-500"
+										? "bg-brand-green"
 										: conf >= 40
 											? "bg-amber-500"
 											: "bg-red-500";
@@ -185,14 +185,14 @@ export function ScraperTable({
 														onClick={() => onApprove(event.id)}
 														disabled={isLoading}
 														title="Aprobar"
-														className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-emerald-500/30 text-emerald-500 transition-colors hover:bg-emerald-500/10 disabled:opacity-50"
+														className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand-green/30 text-brand-green transition-colors hover:bg-brand-green/10 disabled:opacity-50"
 													>
 														<Check className="h-3.5 w-3.5" />
 													</button>
 												</>
 											) : (
 												<span
-													className={`rounded-full px-2 py-0.5 text-xs font-medium ${event.approvalStatus === "approved" ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"}`}
+													className={`rounded-full px-2 py-0.5 text-xs font-medium ${event.approvalStatus === "approved" ? "bg-brand-green/10 text-brand-green" : "bg-red-500/10 text-red-600"}`}
 												>
 													{event.approvalStatus === "approved"
 														? "Aprobado"
@@ -226,7 +226,7 @@ export function ScraperTable({
 						<button
 							onClick={onBulkApprove}
 							disabled={bulkLoading}
-							className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/30 px-3 py-1.5 text-xs font-medium text-emerald-500 transition-colors hover:bg-emerald-500/10 disabled:opacity-50"
+							className="inline-flex items-center gap-1.5 rounded-md border border-brand-green/30 px-3 py-1.5 text-xs font-medium text-brand-green transition-colors hover:bg-brand-green/10 disabled:opacity-50"
 						>
 							<Check className="h-3.5 w-3.5" />
 							Aprobar todos

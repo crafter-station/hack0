@@ -136,7 +136,11 @@ export function LexicalLiveEditor({
 				/>
 				<HistoryPlugin />
 				<ListPlugin />
-				<MarkdownSyncPlugin value={value} onChange={onChange} forceUpdate={forceUpdate} />
+				<MarkdownSyncPlugin
+					value={value}
+					onChange={onChange}
+					forceUpdate={forceUpdate}
+				/>
 				<MarkdownPastePlugin />
 				<InlineMarkdownDecoratorPlugin />
 				<BlockMarkdownPlugin />

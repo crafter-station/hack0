@@ -21,7 +21,7 @@ export function MarkdownContent({ content, className }: MarkdownContentProps) {
 				"prose-h3:text-lg prose-h3:mt-4 prose-h3:mb-2",
 				// Paragraphs and text
 				"prose-p:text-foreground prose-p:leading-relaxed",
-				"prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline",
+				"prose-a:text-brand-grid prose-a:no-underline hover:prose-a:underline",
 				"prose-strong:font-semibold prose-strong:text-foreground",
 				// Lists
 				"prose-ul:list-disc prose-ul:ml-6 prose-ul:space-y-1",
@@ -91,7 +91,7 @@ export function MarkdownContent({ content, className }: MarkdownContentProps) {
 							href={href}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="text-blue-400 hover:underline"
+							className="text-brand-grid hover:underline"
 						>
 							{children}
 						</a>

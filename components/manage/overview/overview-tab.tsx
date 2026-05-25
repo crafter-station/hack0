@@ -96,7 +96,7 @@ export function OverviewTab({ event, community, sponsors }: OverviewTabProps) {
 			<div className="grid grid-cols-3 gap-3">
 				<Link href={`/e/${event.shortCode || event.slug}/manage?tab=edit`}>
 					<Button variant="outline" className="w-full h-14 flex-col gap-1">
-						<Pencil className="h-4 w-4 text-emerald-600" />
+						<Pencil className="h-4 w-4 text-brand-green" />
 						<span className="text-xs">Editar evento</span>
 					</Button>
 				</Link>
@@ -110,7 +110,7 @@ export function OverviewTab({ event, community, sponsors }: OverviewTabProps) {
 
 				<Link href={`/e/${event.shortCode || event.slug}/manage?tab=team`}>
 					<Button variant="outline" className="w-full h-14 flex-col gap-1">
-						<Users className="h-4 w-4 text-blue-600" />
+						<Users className="h-4 w-4 text-brand-grid" />
 						<span className="text-xs">Invitar equipo</span>
 					</Button>
 				</Link>
@@ -221,7 +221,7 @@ export function OverviewTab({ event, community, sponsors }: OverviewTabProps) {
 							{event.prizePool && (
 								<div>
 									<p className="text-muted-foreground text-xs">Premio</p>
-									<p className="font-medium text-emerald-600">
+									<p className="font-medium text-brand-green">
 										{event.prizeCurrency === "PEN" ? "S/" : "$"}
 										{event.prizePool.toLocaleString()}
 									</p>
@@ -364,7 +364,7 @@ export function OverviewTab({ event, community, sponsors }: OverviewTabProps) {
 								title="Copiar enlace"
 							>
 								{copied ? (
-									<Check className="h-4 w-4 text-emerald-600" />
+									<Check className="h-4 w-4 text-brand-green" />
 								) : (
 									<Copy className="h-4 w-4 text-muted-foreground" />
 								)}

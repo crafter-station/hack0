@@ -32,7 +32,7 @@ const siteConfig = {
 	description:
 		"Descubre hackathons, conferencias, talleres y eventos de tecnología en Latinoamérica. La plataforma más completa para encontrar competencias de programación, workshops de IA, meetups tech y más en LATAM.",
 	url: "https://hack0.dev",
-	ogImage: "https://hack0.dev/og.png",
+	ogImage: "https://hack0.dev/api/og/default",
 	keywords: [
 		"hackathons latinoamerica",
 		"hackathon latam",
@@ -58,11 +58,18 @@ const siteConfig = {
 	],
 };
 
+const brand = {
+	black: "#050605",
+	paper: "#F3F1E8",
+	green: "#22FF66",
+};
+
 export const metadata: Metadata = {
 	metadataBase: new URL(siteConfig.url),
 	icons: {
 		icon: "/favicon.svg",
 		shortcut: "/favicon.svg",
+		apple: "/favicon.svg",
 	},
 	title: {
 		default: `${siteConfig.name} - ${siteConfig.title}`,
@@ -125,8 +132,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
 	themeColor: [
-		{ media: "(prefers-color-scheme: light)", color: "#ffffff" },
-		{ media: "(prefers-color-scheme: dark)", color: "#000000" },
+		{ media: "(prefers-color-scheme: light)", color: brand.paper },
+		{ media: "(prefers-color-scheme: dark)", color: brand.black },
 	],
 	width: "device-width",
 	initialScale: 1,
@@ -163,7 +170,7 @@ export default function RootLayout({
 		"@type": "Organization",
 		name: siteConfig.name,
 		url: siteConfig.url,
-		logo: `${siteConfig.url}/logo.png`,
+		logo: `${siteConfig.url}/brand/svg/hack0-logo.svg`,
 		sameAs: ["https://github.com/crafter-station/hack0"],
 		contactPoint: {
 			"@type": "ContactPoint",

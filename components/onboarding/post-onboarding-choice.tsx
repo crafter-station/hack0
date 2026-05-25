@@ -14,7 +14,9 @@ export function PostOnboardingChoice({
 	redirectUrl,
 }: PostOnboardingChoiceProps) {
 	const router = useRouter();
-	const [navigatingTo, setNavigatingTo] = useState<"profile" | "org" | null>(null);
+	const [navigatingTo, setNavigatingTo] = useState<"profile" | "org" | null>(
+		null,
+	);
 
 	const handlePersonalProfile = () => {
 		setNavigatingTo("profile");
@@ -33,8 +35,8 @@ export function PostOnboardingChoice({
 	return (
 		<div className="space-y-8">
 			<div className="text-center space-y-2">
-				<div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 mb-2">
-					<Sparkles className="h-6 w-6 text-emerald-500" />
+				<div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand-green/10 mb-2">
+					<Sparkles className="h-6 w-6 text-brand-green" />
 				</div>
 				<h2 className="text-2xl font-bold tracking-tight">
 					¡Cuenta creada con éxito!
@@ -62,7 +64,7 @@ export function PostOnboardingChoice({
 						<div className="flex-1 min-w-0">
 							<div className="flex items-center gap-2 mb-1">
 								<h3 className="font-semibold">Continuar con cuenta personal</h3>
-								<span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-medium">
+								<span className="text-xs px-2 py-0.5 rounded-full bg-brand-green/10 text-brand-green font-medium">
 									Recomendado
 								</span>
 							</div>
@@ -72,7 +74,9 @@ export function PostOnboardingChoice({
 							</p>
 							<div className="flex items-center gap-1 text-sm font-medium text-foreground group-hover:gap-2 transition-all">
 								{navigatingTo === "profile" ? "Cargando..." : "Ir a mi perfil"}
-								{navigatingTo !== "profile" && <ArrowRight className="h-4 w-4" />}
+								{navigatingTo !== "profile" && (
+									<ArrowRight className="h-4 w-4" />
+								)}
 							</div>
 						</div>
 					</div>

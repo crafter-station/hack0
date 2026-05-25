@@ -4,6 +4,7 @@ import { Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { Hack0Wordmark } from "@/components/brand/hack0-logo";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useMounted } from "@/hooks/use-mounted";
 
@@ -48,13 +49,13 @@ export function MobileNav() {
 					<div className="p-6 border-b border-border/50">
 						<Link
 							href="/"
-							className="flex items-center"
+							className="flex items-end gap-1"
 							onClick={() => setOpen(false)}
 						>
-							<span className="text-lg font-semibold tracking-tight">
-								hack0
+							<Hack0Wordmark className="h-7 w-[98px]" />
+							<span className="pb-[2px] font-mono text-sm text-muted-foreground">
+								.dev
 							</span>
-							<span className="text-lg text-muted-foreground">.dev</span>
 						</Link>
 					</div>
 
@@ -113,7 +114,7 @@ export function MobileNav() {
 
 					<div className="p-6 border-t border-border/50">
 						<p className="text-xs text-muted-foreground">
-							Mapeando el ecosistema tech de LATAM 🌎
+							Mapeando el ecosistema tech de LATAM
 						</p>
 					</div>
 				</div>

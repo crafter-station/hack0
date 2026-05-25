@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-export const EMAIL_FROM = "Hack0 <noreply@updates.hack0.dev>";
+export const EMAIL_FROM = "hack0 <noreply@updates.hack0.dev>";
 
 let _resend: Resend | undefined;
 function getResend(): Resend {

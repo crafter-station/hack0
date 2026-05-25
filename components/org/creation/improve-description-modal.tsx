@@ -174,10 +174,14 @@ export function ImproveDescriptionModal({
 		<ResponsiveModal open={open} onOpenChange={handleOpenChange}>
 			<ResponsiveModalContent
 				className={
-					currentView === "preview" ? "max-w-3xl h-[60vh] flex flex-col" : "max-w-md"
+					currentView === "preview"
+						? "max-w-3xl h-[60vh] flex flex-col"
+						: "max-w-md"
 				}
 			>
-				<ResponsiveModalHeader className={currentView === "preview" ? "shrink-0" : ""}>
+				<ResponsiveModalHeader
+					className={currentView === "preview" ? "shrink-0" : ""}
+				>
 					<ResponsiveModalTitle className="flex items-center gap-2">
 						{currentView === "preview" && (
 							<button
@@ -325,7 +329,9 @@ export function ImproveDescriptionModal({
 						<div className="p-6 flex-1 min-h-0 overflow-y-auto">
 							{error ? (
 								<div className="flex items-center justify-center h-full">
-									<p className="text-sm text-destructive text-center">{error}</p>
+									<p className="text-sm text-destructive text-center">
+										{error}
+									</p>
 								</div>
 							) : (
 								<div className="mx-auto max-w-2xl h-full">
@@ -346,7 +352,11 @@ export function ImproveDescriptionModal({
 
 						{!isGenerating && (
 							<ResponsiveModalFooter className="shrink-0 flex gap-2">
-								<Button variant="outline" onClick={handleBack} className="flex-1">
+								<Button
+									variant="outline"
+									onClick={handleBack}
+									className="flex-1"
+								>
 									Intentar de nuevo
 								</Button>
 								<Button

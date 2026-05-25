@@ -23,8 +23,8 @@ export function QuickActions({ event, eventCode }: QuickActionsProps) {
 							variant="outline"
 							className="flex-1 min-w-[140px] gap-2 h-11"
 						>
-							<div className="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500/10">
-								<Pencil className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+							<div className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-green/10">
+								<Pencil className="h-4 w-4 text-brand-green dark:text-brand-green" />
 							</div>
 							<span>Editar evento</span>
 						</Button>
@@ -47,8 +47,8 @@ export function QuickActions({ event, eventCode }: QuickActionsProps) {
 						className="flex-1 min-w-[140px]"
 					>
 						<Button variant="outline" className="w-full gap-2 h-11">
-							<div className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-500/10">
-								<Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+							<div className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-grid/10">
+								<Users className="h-4 w-4 text-brand-grid dark:text-brand-grid" />
 							</div>
 							<span>Invitar equipo</span>
 						</Button>

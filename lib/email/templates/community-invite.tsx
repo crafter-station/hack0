@@ -46,7 +46,7 @@ export function CommunityInviteEmail({
 					<Text style={heroText}>¡Tienes una invitación a una comunidad!</Text>
 
 					<Text style={paragraph}>
-						<strong style={{ color: "#fafafa" }}>{inviterName}</strong> te
+						<strong style={{ color: "#F3F1E8" }}>{inviterName}</strong> te
 						invitó a unirte a la comunidad:
 					</Text>
 
@@ -112,20 +112,20 @@ export function CommunityInviteEmail({
 }
 
 const main = {
-	backgroundColor: "#0a0a0a",
+	backgroundColor: "#050605",
 	fontFamily:
 		'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
 };
 
 const container = {
-	backgroundColor: "#0a0a0a",
+	backgroundColor: "#050605",
 	margin: "0 auto",
 	padding: "40px 20px",
 	maxWidth: "560px",
 };
 
 const h1 = {
-	color: "#fafafa",
+	color: "#F3F1E8",
 	fontSize: "24px",
 	fontWeight: "600",
 	letterSpacing: "-0.025em",
@@ -133,36 +133,36 @@ const h1 = {
 };
 
 const heroText = {
-	color: "#fafafa",
+	color: "#F3F1E8",
 	fontSize: "20px",
 	fontWeight: "500",
 	margin: "0 0 16px",
 };
 
 const paragraph = {
-	color: "#a1a1a1",
+	color: "#A1A1AA",
 	fontSize: "14px",
 	lineHeight: "1.6",
 	margin: "0 0 16px",
 };
 
 const communityCard = {
-	backgroundColor: "#171717",
-	border: "1px solid #262626",
-	borderRadius: "8px",
+	backgroundColor: "#0c0f0b",
+	border: "1px solid #1b2a1f",
+	borderRadius: "0",
 	padding: "20px",
 	margin: "16px 0 24px",
 };
 
 const communityNameStyle = {
-	color: "#fafafa",
+	color: "#F3F1E8",
 	fontSize: "18px",
 	fontWeight: "600",
 	margin: "0 0 8px",
 };
 
 const roleText = {
-	color: "#10b981",
+	color: "#22FF66",
 	fontSize: "14px",
 	margin: "0",
 };
@@ -173,16 +173,16 @@ const benefitsList = {
 };
 
 const benefitItem = {
-	color: "#a1a1a1",
+	color: "#A1A1AA",
 	fontSize: "14px",
 	lineHeight: "1.8",
 	margin: "0",
 };
 
 const button = {
-	backgroundColor: "#fafafa",
-	borderRadius: "6px",
-	color: "#0a0a0a",
+	backgroundColor: "#22FF66",
+	borderRadius: "0",
+	color: "#050605",
 	display: "inline-block",
 	fontSize: "14px",
 	fontWeight: "500",
@@ -192,19 +192,19 @@ const button = {
 };
 
 const note = {
-	color: "#666666",
+	color: "#7FBF9A",
 	fontSize: "12px",
 	margin: "0 0 24px",
 	lineHeight: "1.6",
 };
 
 const hr = {
-	borderColor: "#262626",
+	borderColor: "#1b2a1f",
 	margin: "24px 0",
 };
 
 const footer = {
-	color: "#666666",
+	color: "#7FBF9A",
 	fontSize: "12px",
 };
 

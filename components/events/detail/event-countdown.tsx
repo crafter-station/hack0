@@ -78,13 +78,13 @@ function getUrgencyColor(ms: number, type: CountdownTarget["type"]): string {
 
 	if (hours <= 72) {
 		return type === "end"
-			? "text-emerald-500 bg-emerald-500/10"
+			? "text-brand-green bg-brand-green/10"
 			: "text-red-500 bg-red-500/10";
 	}
 	if (hours <= 168) {
 		return "text-amber-500 bg-amber-500/10";
 	}
-	return "text-blue-500 bg-blue-500/10";
+	return "text-brand-grid bg-brand-grid/10";
 }
 
 export function EventCountdown({

@@ -51,9 +51,9 @@ function isEventPast(event: EventWithOrg): boolean {
 function getStatusColor(status: string) {
 	switch (status) {
 		case "ongoing":
-			return "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
+			return "bg-brand-green/30 text-brand-green border-brand-green/30";
 		case "open":
-			return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+			return "bg-brand-grid/20 text-brand-grid border-brand-grid/30";
 		case "upcoming":
 			return "bg-amber-500/20 text-amber-400 border-amber-500/30";
 		default:
@@ -145,7 +145,7 @@ function EventListItem({
 							</span>
 						)}
 						{prize && (
-							<span className="flex items-center gap-1 text-emerald-500 font-medium">
+							<span className="flex items-center gap-1 text-brand-green font-medium">
 								<Trophy className="h-3 w-3" />
 								{prize}
 							</span>
@@ -297,11 +297,11 @@ function EventDetailPanel({ event }: { event: EventWithOrg }) {
 
 						{/* Prize */}
 						{prize && (
-							<div className="flex items-start gap-2 p-2.5 rounded-lg bg-emerald-500/10">
-								<Trophy className="h-4 w-4 text-emerald-500 mt-0.5" />
+							<div className="flex items-start gap-2 p-2.5 rounded-lg bg-brand-green/10">
+								<Trophy className="h-4 w-4 text-brand-green mt-0.5" />
 								<div>
 									<p className="text-xs text-muted-foreground">Premios</p>
-									<p className="text-sm font-bold text-emerald-500">{prize}</p>
+									<p className="text-sm font-bold text-brand-green">{prize}</p>
 								</div>
 							</div>
 						)}

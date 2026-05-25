@@ -277,7 +277,7 @@ export function HostAssignment({ eventId, initialHosts }: HostAssignmentProps) {
 														{host.name}
 													</p>
 													{host.userId && (
-														<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+														<CheckCircle2 className="h-3.5 w-3.5 text-brand-green shrink-0" />
 													)}
 												</div>
 												{host.source === "luma" && (
@@ -292,8 +292,8 @@ export function HostAssignment({ eventId, initialHosts }: HostAssignmentProps) {
 										<span
 											className={`text-xs px-2 py-1 rounded-full ${
 												host.source === "luma"
-													? "bg-purple-500/10 text-purple-700 dark:text-purple-400"
-													: "bg-blue-500/10 text-blue-700 dark:text-blue-400"
+													? "bg-brand-forest/20 text-brand-green"
+													: "bg-brand-grid/10 text-brand-grid dark:text-brand-grid"
 											}`}
 										>
 											{host.source === "luma" ? "Luma" : "Manual"}

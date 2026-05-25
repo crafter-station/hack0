@@ -33,11 +33,11 @@ interface LoadMoreButtonProps {
 function getStatusColor(status: string) {
 	switch (status) {
 		case "ongoing":
-			return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+			return "bg-brand-green/10 text-brand-green border-brand-green/30";
 		case "open":
-			return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+			return "bg-brand-green/10 text-brand-green border-brand-green/30";
 		case "upcoming":
-			return "bg-amber-500/10 text-amber-500 border-amber-500/20";
+			return "bg-brand-grid/10 text-brand-grid border-brand-grid/30";
 		default:
 			return "bg-muted text-muted-foreground border-muted";
 	}
@@ -126,7 +126,7 @@ function EventCard({ event }: { event: EventWithOrg }) {
 							)}
 						</div>
 						{prize && (
-							<span className="flex items-center gap-1 text-emerald-500 font-medium">
+							<span className="flex items-center gap-1 text-brand-green font-medium">
 								<Trophy className="h-3 w-3" />
 								{prize}
 							</span>

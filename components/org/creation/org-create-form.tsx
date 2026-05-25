@@ -364,7 +364,7 @@ export function OrgCreateForm() {
 															</div>
 														</div>
 														{option.value === type && (
-															<Check className="h-4 w-4 shrink-0 text-emerald-500 mt-0.5" />
+															<Check className="h-4 w-4 shrink-0 text-brand-green mt-0.5" />
 														)}
 													</CommandItem>
 												);
@@ -451,7 +451,7 @@ export function OrgCreateForm() {
 									<Loader2 className="h-4 w-4 animate-spin" />
 								)}
 								{slugStatus === "available" && (
-									<Check className="h-4 w-4 text-emerald-500" />
+									<Check className="h-4 w-4 text-brand-green" />
 								)}
 								{slugStatus === "taken" && (
 									<X className="h-4 w-4 text-red-500" />

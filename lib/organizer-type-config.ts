@@ -1,6 +1,8 @@
+import type { LucideIcon } from "lucide-react";
 import {
 	Building2,
 	Flag,
+	Globe,
 	GraduationCap,
 	Handshake,
 	Landmark,
@@ -8,9 +10,7 @@ import {
 	Rocket,
 	School,
 	Users,
-	Globe,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 
 export interface OrganizerTypeConfig {
 	icon: LucideIcon;

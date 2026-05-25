@@ -321,7 +321,7 @@ export function LocationInput({
 
 					{hasCoordinates ? (
 						<p className="text-xs text-muted-foreground flex items-center gap-1">
-							<Check className="h-3 w-3 text-emerald-500" />
+							<Check className="h-3 w-3 text-brand-green" />
 							Coordenadas: {markerPosition.lat.toFixed(6)},{" "}
 							{markerPosition.lng.toFixed(6)}
 							<span className="text-muted-foreground/60 ml-1">

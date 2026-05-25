@@ -306,7 +306,7 @@ export function OrgFilters({
 								}}
 								className={`flex w-full items-center gap-2 border px-2.5 py-1.5 text-xs font-medium transition-colors ${
 									verified
-										? "border-emerald-400/30 bg-emerald-400/10 text-emerald-500"
+										? "border-brand-green/30 bg-brand-green/10 text-brand-green"
 										: "border-border/50 text-muted-foreground hover:text-foreground"
 								}`}
 							>

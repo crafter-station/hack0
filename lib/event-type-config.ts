@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import {
 	Award,
 	BookOpen,
@@ -13,7 +14,6 @@ import {
 	Users,
 	Zap,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 
 export interface EventTypeConfig {
 	icon: LucideIcon;

@@ -12,8 +12,8 @@ export async function GET() {
 		id: SITE_URL,
 		link: SITE_URL,
 		language: "es",
-		image: `${SITE_URL}/og-image.png`,
-		favicon: `${SITE_URL}/favicon.ico`,
+		image: `${SITE_URL}/api/og/default`,
+		favicon: `${SITE_URL}/favicon.svg`,
 		copyright: `hack0.dev ${new Date().getFullYear()}`,
 		feedLinks: {
 			rss2: `${SITE_URL}/feed.xml`,

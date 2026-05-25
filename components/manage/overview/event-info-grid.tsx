@@ -131,7 +131,7 @@ export function EventInfoGrid({ event, community }: EventInfoGridProps) {
 								<Trophy className="h-3.5 w-3.5" />
 								Premios
 							</div>
-							<p className="text-lg font-semibold text-emerald-600 dark:text-emerald-500">
+							<p className="text-lg font-semibold text-brand-green dark:text-brand-green">
 								{event.prizeCurrency === "PEN" ? "S/" : "$"}
 								{event.prizePool.toLocaleString()}
 							</p>
@@ -269,7 +269,7 @@ export function EventInfoGrid({ event, community }: EventInfoGridProps) {
 								title="Copiar enlace"
 							>
 								{copied ? (
-									<Check className="h-4 w-4 text-emerald-600" />
+									<Check className="h-4 w-4 text-brand-green" />
 								) : (
 									<Copy className="h-4 w-4 text-muted-foreground" />
 								)}

@@ -165,7 +165,7 @@ export function EditEventForm({
 			)}
 
 			{success && (
-				<div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-4 text-sm text-emerald-600">
+				<div className="rounded-lg bg-brand-green/10 border border-brand-green/30 p-4 text-sm text-brand-green">
 					✓ Cambios guardados exitosamente
 				</div>
 			)}

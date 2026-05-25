@@ -33,8 +33,8 @@ export default async function EventosPage() {
 				</div>
 				<div className="rounded-lg border bg-card p-4">
 					<div className="flex items-center gap-3">
-						<div className="flex h-9 w-9 items-center justify-center rounded-md bg-emerald-500/10">
-							<Calendar className="h-4 w-4 text-emerald-500" />
+						<div className="flex h-9 w-9 items-center justify-center rounded-md bg-brand-green/10">
+							<Calendar className="h-4 w-4 text-brand-green" />
 						</div>
 						<div>
 							<p className="text-2xl font-semibold">{approvedEvents.length}</p>

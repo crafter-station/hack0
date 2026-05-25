@@ -21,8 +21,8 @@ export function ManageDashboard({ event }: ManageDashboardProps) {
 				<InviteDialog event={event}>
 					<button className="w-full flex items-center justify-between p-4 text-left transition-colors hover:bg-accent/50 group">
 						<div className="flex items-center gap-3">
-							<div className="flex h-9 w-9 items-center justify-center rounded-md bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
-								<Users className="h-4 w-4 text-blue-600" />
+							<div className="flex h-9 w-9 items-center justify-center rounded-md bg-brand-grid/10 group-hover:bg-brand-grid/20 transition-colors">
+								<Users className="h-4 w-4 text-brand-grid" />
 							</div>
 							<div>
 								<p className="text-sm font-medium">Invitar miembros</p>
@@ -55,8 +55,8 @@ export function ManageDashboard({ event }: ManageDashboardProps) {
 				<EditEventDialog event={event}>
 					<button className="w-full flex items-center justify-between p-4 text-left transition-colors hover:bg-accent/50 group">
 						<div className="flex items-center gap-3">
-							<div className="flex h-9 w-9 items-center justify-center rounded-md bg-emerald-500/10 group-hover:bg-emerald-500/20 transition-colors">
-								<Edit3 className="h-4 w-4 text-emerald-600" />
+							<div className="flex h-9 w-9 items-center justify-center rounded-md bg-brand-green/10 group-hover:bg-brand-green/30 transition-colors">
+								<Edit3 className="h-4 w-4 text-brand-green" />
 							</div>
 							<div>
 								<p className="text-sm font-medium">Editar detalles</p>

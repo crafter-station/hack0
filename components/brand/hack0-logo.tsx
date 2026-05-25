@@ -1,0 +1,77 @@
+import type { SVGProps } from "react";
+import { cn } from "@/lib/utils";
+
+type Hack0LogoProps = SVGProps<SVGSVGElement> & {
+	title?: string;
+	greenClassName?: string;
+};
+
+export function Hack0Wordmark({
+	className,
+	greenClassName,
+	title = "hack0",
+	...props
+}: Hack0LogoProps) {
+	return (
+		<svg
+			viewBox="10.3 37.4 103 29.3"
+			role="img"
+			aria-label={title}
+			className={cn("text-foreground", className)}
+			{...props}
+		>
+			<path
+				fill="currentColor"
+				d="m23.3 45.3h-9v-8h-4v29.3h4.1v-16.7h7.5v16.6h4.3v-17.8l-2.9-3.4z"
+			/>
+			<path
+				fill="currentColor"
+				d="m31.9 45.3v4.7h10.6v3.7h-8.8l-3.4 3.2v6.4l3.2 3.2h13.3v-17.8l-3.1-3.4h-11.8zm10.6 16.9h-7.6v-4.2h7.6v4.2z"
+			/>
+			<path
+				fill="currentColor"
+				d="m51.1 48.7v14.5l3.3 3.3h10.4l3.7-3.2v-3h-4.6v1.9h-8.1v-12.2h8.1v1.9h4.6v-3.2l-3.2-3.4h-10.9l-3.3 3.4z"
+			/>
+			<path
+				fill="currentColor"
+				d="m89.5 45.3h-5.8l-6.8 8v-15.9h-4.6v29.2h4.6v-6.8l1-1.2 6.1 8h5.4l-8.4-11.3 8.5-10z"
+			/>
+			<path
+				className={greenClassName}
+				fill="var(--brand-green, #22ff66)"
+				d="m97.3 37.8-4.5 4.6v0.9h15.2v9.4h5.3v-15l-16 0.1z"
+			/>
+			<path
+				fill="currentColor"
+				d="m108 62.2h-10.3v-18.9h-4.9v23.4h16.8l3.6-3.5v-7.8h-5.2v6.8z"
+			/>
+		</svg>
+	);
+}
+
+export function Hack0Logo({
+	className,
+	greenClassName,
+	title = "hack0 logo",
+	...props
+}: Hack0LogoProps) {
+	return (
+		<svg
+			viewBox="20.3 23.1 34.1 51.2"
+			role="img"
+			aria-label={title}
+			className={cn("text-foreground", className)}
+			{...props}
+		>
+			<polygon
+				className={greenClassName}
+				fill="var(--brand-green, #22ff66)"
+				points="28.1 23.1 20.4 31.1 20.4 32.4 45.5 32.3 45.5 48.2 54.4 48.2 54.4 23.1"
+			/>
+			<polygon
+				fill="currentColor"
+				points="28.9 32.3 20.4 32.4 20.3 74.3 47.2 74.3 54.4 67.6 54.4 52.8 45.4 52.8 45.4 65.4 28.9 65.4"
+			/>
+		</svg>
+	);
+}

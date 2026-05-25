@@ -163,11 +163,11 @@ function ImportProgress({
 				)}
 				{isPublished && metadata.isVerified && (
 					<>
-						<div className="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-							<Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+						<div className="h-8 w-8 rounded-full bg-brand-green/10 dark:bg-brand-forest/30 flex items-center justify-center">
+							<Check className="h-4 w-4 text-brand-green dark:text-brand-green" />
 						</div>
 						<div>
-							<p className="font-medium text-emerald-600 dark:text-emerald-400">
+							<p className="font-medium text-brand-green dark:text-brand-green">
 								¡Evento publicado!
 							</p>
 							<p className="text-sm text-muted-foreground">

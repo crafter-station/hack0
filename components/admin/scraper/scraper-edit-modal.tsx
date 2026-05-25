@@ -243,7 +243,7 @@ export function ScraperEditModal({
 					<button
 						onClick={handleSaveAndApprove}
 						disabled={loading}
-						className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+						className="inline-flex items-center gap-1.5 rounded-md bg-brand-green px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
 					>
 						<Check className="h-4 w-4" />
 						{loading ? "Guardando..." : "Guardar y Aprobar"}

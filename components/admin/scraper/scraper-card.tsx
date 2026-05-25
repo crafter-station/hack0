@@ -7,29 +7,29 @@ import { getCountryFlag, getEventTypeLabel } from "@/lib/event-utils";
 
 const SOURCE_GRADIENT: Record<string, string> = {
 	devpost: "from-red-950/40 to-red-900/20",
-	meetup: "from-purple-950/40 to-purple-900/20",
+	meetup: "from-brand-forest/40 to-brand-forest/20",
 	eventbrite: "from-orange-950/40 to-orange-900/20",
-	mlh: "from-blue-950/40 to-blue-900/20",
-	linkedin: "from-sky-950/40 to-sky-900/20",
-	perplexity: "from-green-950/40 to-green-900/20",
-	exa: "from-indigo-950/40 to-indigo-900/20",
+	mlh: "from-brand-grid/20 to-brand-forest/20",
+	linkedin: "from-brand-grid/20 to-brand-forest/20",
+	perplexity: "from-brand-green/20 to-brand-forest/20",
+	exa: "from-brand-forest/50 to-brand-grid/10",
 	haiku: "from-amber-950/40 to-amber-900/20",
-	universities: "from-cyan-950/40 to-cyan-900/20",
-	social: "from-gray-950/40 to-gray-900/20",
-	hackathon_com: "from-violet-950/40 to-violet-900/20",
+	universities: "from-brand-grid/20 to-brand-forest/20",
+	social: "from-brand-black/40 to-brand-forest/20",
+	hackathon_com: "from-brand-forest/40 to-brand-forest/20",
 };
 
 function ConfidenceDot({ score }: { score: number | null }) {
 	if (score === null) return null;
 	const color =
 		score >= 70
-			? "bg-emerald-500"
+			? "bg-brand-green"
 			: score >= 40
 				? "bg-amber-500"
 				: "bg-red-500";
 	return (
 		<span
-			className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${score >= 70 ? "bg-emerald-500/10 text-emerald-600" : score >= 40 ? "bg-amber-500/10 text-amber-600" : "bg-red-500/10 text-red-600"}`}
+			className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${score >= 70 ? "bg-brand-green/10 text-brand-green" : score >= 40 ? "bg-amber-500/10 text-amber-600" : "bg-red-500/10 text-red-600"}`}
 		>
 			<span className={`h-1.5 w-1.5 rounded-full ${color}`} />
 			{score}%
@@ -139,7 +139,7 @@ export function ScraperCard({
 
 				{/* Prize */}
 				{event.prizePool && (
-					<div className="flex items-center gap-1 text-xs text-emerald-600">
+					<div className="flex items-center gap-1 text-xs text-brand-green">
 						<Trophy className="h-3 w-3" />
 						<span>
 							{event.prizeCurrency === "PEN" ? "S/ " : "$ "}
@@ -203,7 +203,7 @@ export function ScraperCard({
 									onClick={() => onApprove(event.id)}
 									disabled={isLoading}
 									title="Aprobar"
-									className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-emerald-500/30 text-emerald-500 transition-colors hover:bg-emerald-500/10 disabled:opacity-50"
+									className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand-green/30 text-brand-green transition-colors hover:bg-brand-green/10 disabled:opacity-50"
 								>
 									<Check className="h-3.5 w-3.5" />
 								</button>
@@ -211,7 +211,7 @@ export function ScraperCard({
 						)}
 						{event.approvalStatus !== "pending" && (
 							<span
-								className={`rounded-full px-2 py-0.5 text-xs font-medium ${event.approvalStatus === "approved" ? "bg-emerald-500/10 text-emerald-600" : "bg-red-500/10 text-red-600"}`}
+								className={`rounded-full px-2 py-0.5 text-xs font-medium ${event.approvalStatus === "approved" ? "bg-brand-green/10 text-brand-green" : "bg-red-500/10 text-red-600"}`}
 							>
 								{event.approvalStatus === "approved" ? "Aprobado" : "Rechazado"}
 							</span>

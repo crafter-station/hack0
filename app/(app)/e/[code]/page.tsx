@@ -399,7 +399,7 @@ export default async function EventPage({ params }: EventPageProps) {
 													href={hackathon.meetingUrl}
 													target="_blank"
 													rel="noopener noreferrer"
-													className="text-xs text-blue-500 hover:underline truncate block"
+													className="text-xs text-brand-grid hover:underline truncate block"
 												>
 													{new URL(hackathon.meetingUrl).hostname.replace(
 														"www.",
@@ -464,9 +464,9 @@ export default async function EventPage({ params }: EventPageProps) {
 										isEnded
 											? "bg-muted text-muted-foreground"
 											: isOngoing
-												? "bg-emerald-500/10 text-emerald-500"
+												? "bg-brand-green/10 text-brand-green"
 												: isOpen
-													? "bg-blue-500/10 text-blue-500"
+													? "bg-brand-grid/10 text-brand-grid"
 													: "bg-amber-500/10 text-amber-500"
 									}`}
 								>
@@ -475,9 +475,9 @@ export default async function EventPage({ params }: EventPageProps) {
 											isEnded
 												? "bg-muted-foreground/50"
 												: isOngoing
-													? "bg-emerald-500 animate-pulse"
+													? "bg-brand-green animate-pulse"
 													: isOpen
-														? "bg-blue-500"
+														? "bg-brand-grid"
 														: "bg-amber-500"
 										}`}
 									/>
@@ -549,7 +549,7 @@ export default async function EventPage({ params }: EventPageProps) {
 														href={href}
 														target="_blank"
 														rel="noopener noreferrer"
-														className="text-blue-400 hover:underline"
+														className="text-brand-grid hover:underline"
 													>
 														{children}
 													</a>
@@ -645,9 +645,9 @@ export default async function EventPage({ params }: EventPageProps) {
 																childStatus.status === "ended"
 																	? "bg-muted text-muted-foreground"
 																	: childStatus.status === "ongoing"
-																		? "bg-emerald-500/10 text-emerald-500"
+																		? "bg-brand-green/10 text-brand-green"
 																		: childStatus.status === "open"
-																			? "bg-blue-500/10 text-blue-500"
+																			? "bg-brand-grid/10 text-brand-grid"
 																			: "bg-amber-500/10 text-amber-500"
 															}`}
 														>
@@ -656,9 +656,9 @@ export default async function EventPage({ params }: EventPageProps) {
 																	childStatus.status === "ended"
 																		? "bg-muted-foreground/50"
 																		: childStatus.status === "ongoing"
-																			? "bg-emerald-500 animate-pulse"
+																			? "bg-brand-green animate-pulse"
 																			: childStatus.status === "open"
-																				? "bg-blue-500"
+																				? "bg-brand-grid"
 																				: "bg-amber-500"
 																}`}
 															/>
@@ -744,7 +744,7 @@ export default async function EventPage({ params }: EventPageProps) {
 															{community.displayName || community.name}
 														</Link>
 														{community.isVerified && (
-															<VerifiedBadge className="h-4 w-4 text-blue-500 shrink-0" />
+															<VerifiedBadge className="h-4 w-4 text-brand-green shrink-0" />
 														)}
 													</div>
 													<div className="flex items-center gap-2 mt-0.5">
@@ -753,7 +753,7 @@ export default async function EventPage({ params }: EventPageProps) {
 																{getOrganizerTypeLabel(community.type)}
 															</p>
 														)}
-														<span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+														<span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium bg-brand-green/10 text-brand-green dark:text-brand-green">
 															Principal
 														</span>
 													</div>
@@ -806,7 +806,7 @@ export default async function EventPage({ params }: EventPageProps) {
 																		cohost.organization.name}
 																</Link>
 																{cohost.organization.isVerified && (
-																	<VerifiedBadge className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+																	<VerifiedBadge className="h-3.5 w-3.5 text-brand-green shrink-0" />
 																)}
 															</div>
 															{cohost.organization.type && (
@@ -849,7 +849,7 @@ export default async function EventPage({ params }: EventPageProps) {
 																	{host.name}
 																</span>
 																{host.userId && (
-																	<CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+																	<CheckCircle2 className="h-3.5 w-3.5 text-brand-green shrink-0" />
 																)}
 															</div>
 														</div>
@@ -932,14 +932,14 @@ export default async function EventPage({ params }: EventPageProps) {
 
 							{hackathon.prizePool !== null && hackathon.prizePool > 0 && (
 								<div className="rounded-lg border bg-card overflow-hidden">
-									<div className="px-5 py-4 border-b bg-emerald-500/5">
+									<div className="px-5 py-4 border-b bg-brand-green/5">
 										<div className="flex items-center gap-2">
-											<Trophy className="h-4 w-4 text-emerald-500" />
+											<Trophy className="h-4 w-4 text-brand-green" />
 											<h3 className="text-sm font-semibold">Premio Total</h3>
 										</div>
 									</div>
 									<div className="p-5">
-										<p className="font-bold text-3xl text-emerald-500 mb-3">
+										<p className="font-bold text-3xl text-brand-green mb-3">
 											{hackathon.prizeCurrency === "PEN" ? "S/" : "$"}
 											{hackathon.prizePool.toLocaleString()}
 										</p>

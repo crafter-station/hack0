@@ -175,7 +175,7 @@ export function ScraperInbox({ initialEvents, stats }: ScraperInboxProps) {
 					<p className="text-xs text-muted-foreground">Pendientes</p>
 				</div>
 				<div className="rounded-lg border bg-card p-3">
-					<p className="text-xl font-semibold text-emerald-600">
+					<p className="text-xl font-semibold text-brand-green">
 						{liveStats.approvedToday}
 					</p>
 					<p className="text-xs text-muted-foreground">Aprobados hoy</p>
@@ -282,7 +282,7 @@ export function ScraperInbox({ initialEvents, stats }: ScraperInboxProps) {
 						<button
 							onClick={handleBulkApprove}
 							disabled={bulkLoading}
-							className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/30 px-3 py-1.5 text-xs font-medium text-emerald-500 transition-colors hover:bg-emerald-500/10 disabled:opacity-50"
+							className="inline-flex items-center gap-1.5 rounded-md border border-brand-green/30 px-3 py-1.5 text-xs font-medium text-brand-green transition-colors hover:bg-brand-green/10 disabled:opacity-50"
 						>
 							<Check className="h-3.5 w-3.5" />
 							Aprobar todos

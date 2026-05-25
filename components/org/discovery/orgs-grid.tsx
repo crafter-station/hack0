@@ -182,7 +182,7 @@ function CommunityCard({
 						{community.displayName || community.name}
 					</h3>
 					{community.isVerified && (
-						<VerifiedBadge className="h-4 w-4 text-blue-500 shrink-0" />
+						<VerifiedBadge className="h-4 w-4 text-brand-green shrink-0" />
 					)}
 				</div>
 

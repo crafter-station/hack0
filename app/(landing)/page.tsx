@@ -15,6 +15,7 @@ import {
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { Hack0Wordmark } from "@/components/brand/hack0-logo";
 import { EventCover } from "@/components/events";
 import { VerifiedBadge } from "@/components/icons/verified-badge";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -31,6 +32,7 @@ import {
 	getEventTypeLabel,
 	getEventUrl,
 } from "@/lib/event-utils";
+import { ISO_TO_MAP_ID } from "@/lib/geo/peru-departments";
 import { LATAM_COUNTRY_OPTIONS } from "@/lib/latam-countries";
 import {
 	getLatamCountryCoverage,
@@ -38,6 +40,7 @@ import {
 } from "@/lib/latam-country-coverage";
 import { getOpportunityDirectorySummary } from "@/lib/opportunities-directory";
 import { sanitizeImageUrl } from "@/lib/utils";
+import latamDotsData from "@/public/latam-dots.json";
 
 export const metadata: Metadata = {
 	title: "LATAM Agentic Builder Index",
@@ -282,15 +285,24 @@ export default async function HomePage() {
 			<SiteHeader />
 
 			<main className="flex-1">
-				<section className="border-b">
-					<div className="mx-auto max-w-screen-xl px-4 lg:px-8 py-8 lg:py-12">
-						<div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_420px] lg:items-end">
-							<div className="space-y-6">
-								<div className="space-y-4">
-									<h1 className="max-w-3xl text-4xl font-semibold text-foreground sm:text-5xl lg:text-6xl">
-										LATAM Agentic Builder Index
+				<section className="relative overflow-hidden border-b bg-brand-black text-brand-paper">
+					<div className="absolute inset-0 bg-[linear-gradient(rgba(127,191,154,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(127,191,154,0.08)_1px,transparent_1px)] bg-[size:48px_48px]" />
+					<div className="relative mx-auto max-w-screen-xl px-4 lg:px-8 py-10 lg:py-16">
+						<div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_420px] lg:items-end">
+							<div className="min-w-0 space-y-6">
+								<div className="space-y-5">
+									<div className="flex items-center gap-3">
+										<div className="h-8 w-24 bg-brand-green" />
+										<span className="font-mono text-xs uppercase tracking-wider text-brand-grid">
+											active builder index
+										</span>
+									</div>
+									<Hack0Wordmark className="h-14 w-[196px] text-brand-paper sm:h-16 sm:w-[224px]" />
+									<h1 className="max-w-3xl break-words text-3xl font-semibold leading-tight text-brand-paper sm:text-5xl lg:text-6xl">
+										<span className="block sm:inline">LATAM Agentic</span>{" "}
+										<span className="block sm:inline">Builder Index</span>
 									</h1>
-									<p className="max-w-2xl text-base leading-7 text-muted-foreground">
+									<p className="w-full max-w-[22rem] break-words text-sm leading-6 text-brand-grid sm:max-w-2xl sm:text-base sm:leading-7">
 										Eventos, comunidades, hackathons, labs, grants y builders de
 										IA en Latinoamérica, mantenidos desde hack0 y calendarios
 										públicos de la comunidad.
@@ -298,13 +310,22 @@ export default async function HomePage() {
 								</div>
 
 								<div className="flex flex-col gap-2 sm:flex-row">
-									<Button asChild size="sm" className="gap-2">
+									<Button
+										asChild
+										size="sm"
+										className="gap-2 bg-brand-green text-brand-black hover:bg-brand-green/90"
+									>
 										<Link href="/events">
 											Explorar eventos
 											<ArrowRight className="size-4" />
 										</Link>
 									</Button>
-									<Button asChild variant="outline" size="sm" className="gap-2">
+									<Button
+										asChild
+										variant="outline"
+										size="sm"
+										className="gap-2 border-brand-grid/40 bg-transparent text-brand-paper hover:bg-brand-forest hover:text-brand-paper"
+									>
 										<Link href="/c/discover">
 											Ver comunidades
 											<Search className="size-4" />
@@ -313,27 +334,41 @@ export default async function HomePage() {
 								</div>
 							</div>
 
-							<div className="grid grid-cols-2 border bg-card">
-								<HeroMetric label="Eventos LATAM" value={data.counts.events} />
-								<HeroMetric
-									label="Comunidades"
-									value={data.counts.communities}
+							<div className="space-y-3">
+								<LatamSignalMap
+									activeCountryCount={activeCountryCount}
+									countryCoverage={data.countryCoverage}
+									totalCountries={data.counts.countries}
 								/>
-								<HeroMetric label="Hackathons" value={data.counts.hackathons} />
-								<HeroMetric
-									label="Países soportados"
-									value={data.counts.countries}
-								/>
+								<div className="grid grid-cols-2 border border-brand-grid/30 bg-brand-black/80 backdrop-blur">
+									<HeroMetric
+										label="Eventos LATAM"
+										value={data.counts.events}
+									/>
+									<HeroMetric
+										label="Comunidades"
+										value={data.counts.communities}
+									/>
+									<HeroMetric
+										label="Hackathons"
+										value={data.counts.hackathons}
+									/>
+									<HeroMetric
+										label="Países soportados"
+										value={data.counts.countries}
+									/>
+								</div>
 							</div>
 						</div>
 					</div>
 				</section>
 
-				<section className="border-b bg-muted/20">
+				<section className="border-b bg-background">
 					<div className="mx-auto max-w-screen-xl px-4 py-6 lg:px-8">
-						<div className="border bg-background p-4 sm:p-5">
+						<div className="border bg-card p-4 sm:p-5">
 							<div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
 								<div className="max-w-3xl">
+									<div className="mb-3 h-3 w-12 bg-brand-green" />
 									<h2 className="text-lg font-semibold">
 										Directorio vivo para builders de LATAM
 									</h2>
@@ -345,7 +380,7 @@ export default async function HomePage() {
 								</div>
 								<div className="flex items-center gap-4 lg:text-right">
 									<div>
-										<div className="text-2xl font-semibold">
+										<div className="font-mono text-2xl font-semibold text-brand-green">
 											{activeCountryCount}/{data.counts.countries}
 										</div>
 										<div className="text-xs text-muted-foreground">
@@ -538,9 +573,81 @@ export default async function HomePage() {
 
 function HeroMetric({ label, value }: { label: string; value: number }) {
 	return (
-		<div className="border-b border-r p-4 last:border-r-0 even:border-r-0 sm:p-5">
-			<div className="text-2xl font-semibold">{formatNumber(value)}</div>
-			<div className="mt-1 text-xs text-muted-foreground">{label}</div>
+		<div className="border-b border-r border-brand-grid/30 p-4 last:border-r-0 even:border-r-0 sm:p-5">
+			<div className="font-mono text-2xl font-semibold text-brand-green">
+				{formatNumber(value)}
+			</div>
+			<div className="mt-1 text-xs text-brand-grid">{label}</div>
+		</div>
+	);
+}
+
+function LatamSignalMap({
+	activeCountryCount,
+	countryCoverage,
+	totalCountries,
+}: {
+	activeCountryCount: number;
+	countryCoverage: LatamCountryCoverage[];
+	totalCountries: number;
+}) {
+	const activeCountryIds = new Set(
+		countryCoverage
+			.filter((country) => country.signal > 0)
+			.map((country) => ISO_TO_MAP_ID[country.code])
+			.filter(Boolean),
+	);
+
+	return (
+		<div className="relative overflow-hidden border border-brand-grid/30 bg-brand-black/80 p-4 backdrop-blur">
+			<div className="relative z-10 flex items-start justify-between gap-4">
+				<div>
+					<div className="font-mono text-[10px] uppercase tracking-wider text-brand-grid">
+						continent map
+					</div>
+					<div className="mt-1 text-sm font-medium text-brand-paper">
+						Señal LATAM activa
+					</div>
+				</div>
+				<div className="font-mono text-xs text-brand-green">
+					{activeCountryCount}/{totalCountries}
+				</div>
+			</div>
+			<div className="relative h-[300px]">
+				<svg
+					viewBox="-130 -80 1120 1180"
+					className="absolute inset-0 h-full w-full"
+					aria-hidden="true"
+					preserveAspectRatio="xMidYMid meet"
+				>
+					{latamDotsData.map((country) => {
+						const isActive = activeCountryIds.has(country.countryId);
+
+						return (
+							<g key={country.countryId}>
+								{country.dots.map((dot, index) => (
+									<rect
+										key={index}
+										x={dot.x - 2.2}
+										y={dot.y - 2.2}
+										width={4.4}
+										height={4.4}
+										fill={
+											isActive
+												? "var(--brand-green, #22ff66)"
+												: "var(--brand-grid, #7fbf9a)"
+										}
+										opacity={isActive ? 0.78 : 0.22}
+									/>
+								))}
+							</g>
+						);
+					})}
+				</svg>
+				<div className="absolute right-0 bottom-0 border border-brand-green/30 bg-brand-black/85 px-2.5 py-2 font-mono text-[10px] uppercase tracking-wider text-brand-green">
+					live index
+				</div>
+			</div>
 		</div>
 	);
 }
@@ -561,10 +668,10 @@ function FacetLink({
 	return (
 		<Link
 			href={href}
-			className="group flex items-center justify-between border bg-background px-3 py-3 transition-colors hover:bg-card"
+			className="group flex items-center justify-between border bg-background px-3 py-3 transition-colors hover:border-brand-green/40 hover:bg-card"
 		>
 			<div className="flex min-w-0 items-center gap-3">
-				<div className="flex size-8 shrink-0 items-center justify-center border bg-muted/40 text-muted-foreground group-hover:text-foreground">
+				<div className="flex size-8 shrink-0 items-center justify-center border bg-muted/40 text-muted-foreground group-hover:border-brand-green/50 group-hover:text-brand-green">
 					<Icon className="size-4" />
 				</div>
 				<div className="min-w-0">
@@ -583,7 +690,7 @@ function CountryCoverageRow({ country }: { country: LatamCountryCoverage }) {
 	return (
 		<Link
 			href={`/events?country=${country.code}`}
-			className="group flex min-h-14 items-center justify-between border bg-card px-3 py-2 transition-colors hover:bg-muted/30"
+			className="group flex min-h-14 items-center justify-between border bg-card px-3 py-2 transition-colors hover:border-brand-green/40 hover:bg-muted/30"
 		>
 			<div className="flex min-w-0 items-center gap-3">
 				<div className="text-lg leading-none">{country.flag}</div>
@@ -596,7 +703,7 @@ function CountryCoverageRow({ country }: { country: LatamCountryCoverage }) {
 					</div>
 				</div>
 			</div>
-			<ArrowRight className="size-3.5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+			<ArrowRight className="size-3.5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-brand-green" />
 		</Link>
 	);
 }
@@ -637,7 +744,7 @@ function EventIndexRow({
 	return (
 		<Link
 			href={eventUrl}
-			className="group grid gap-4 border bg-card p-3 transition-colors hover:bg-muted/20 sm:grid-cols-[96px_minmax(0,1fr)_auto]"
+			className="group grid gap-4 border bg-card p-3 transition-colors hover:border-brand-green/40 hover:bg-muted/20 sm:grid-cols-[96px_minmax(0,1fr)_auto]"
 		>
 			<div className="relative aspect-[4/3] overflow-hidden bg-muted sm:aspect-square">
 				<EventCover
@@ -649,7 +756,10 @@ function EventIndexRow({
 			</div>
 			<div className="min-w-0 space-y-2">
 				<div className="flex flex-wrap items-center gap-2">
-					<Badge variant="secondary" className="h-5 rounded-none text-[10px]">
+					<Badge
+						variant="secondary"
+						className="h-5 rounded-none border-brand-grid/30 bg-brand-forest/20 font-mono text-[10px] text-brand-grid"
+					>
 						{getEventTypeLabel(event.eventType)}
 					</Badge>
 					<span className="text-xs text-muted-foreground">
@@ -689,7 +799,7 @@ function EventCompactCard({
 	return (
 		<Link
 			href={eventUrl}
-			className="group overflow-hidden border bg-card transition-colors hover:bg-muted/20"
+			className="group overflow-hidden border bg-card transition-colors hover:border-brand-green/40 hover:bg-muted/20"
 		>
 			<div className="relative aspect-[16/9] bg-muted">
 				<EventCover
@@ -700,7 +810,10 @@ function EventCompactCard({
 				/>
 			</div>
 			<div className="space-y-2 border-t p-3">
-				<Badge variant="outline" className="h-5 rounded-none text-[10px]">
+				<Badge
+					variant="outline"
+					className="h-5 rounded-none border-brand-grid/30 font-mono text-[10px] text-brand-grid"
+				>
 					{getEventTypeLabel(event.eventType)}
 				</Badge>
 				<h3 className="line-clamp-2 text-sm font-semibold group-hover:underline">
@@ -748,7 +861,7 @@ function CommunityRow({ community }: { community: IndexCommunity }) {
 						{name}
 					</h3>
 					{community.isVerified && (
-						<VerifiedBadge className="size-4 shrink-0 text-blue-500" />
+						<VerifiedBadge className="size-4 shrink-0 text-brand-green" />
 					)}
 				</div>
 				<div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
