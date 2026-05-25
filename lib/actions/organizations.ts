@@ -2,7 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { tasks } from "@trigger.dev/sdk/v3";
-import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, or, type SQL, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import {
@@ -11,6 +11,7 @@ import {
 	type NewOrganization,
 	organizations,
 } from "@/lib/db/schema";
+import { filterEnumValues, ORGANIZER_TYPES } from "@/lib/db/schema/constants";
 import { ensureUniqueOrgShortCode } from "@/lib/slug-utils";
 
 // ============================================
@@ -149,7 +150,7 @@ export interface OrganizationsResult {
 
 export interface OrganizationFilters {
 	search?: string;
-	type?: string[];
+	type?: readonly string[];
 	page?: number;
 	limit?: number;
 }
@@ -159,7 +160,8 @@ export async function getPublicOrganizations(
 ): Promise<OrganizationsResult> {
 	const { search, type, page = 1, limit = 12 } = filters;
 
-	const conditions: ReturnType<typeof eq>[] = [];
+	const organizerTypes = filterEnumValues(ORGANIZER_TYPES, type);
+	const conditions: SQL[] = [];
 
 	conditions.push(eq(organizations.isPublic, true));
 	conditions.push(eq(organizations.isPersonalOrg, false));
@@ -174,8 +176,8 @@ export async function getPublicOrganizations(
 		);
 	}
 
-	if (type && type.length > 0) {
-		conditions.push(or(...type.map((t) => eq(organizations.type, t as any)))!);
+	if (organizerTypes.length > 0) {
+		conditions.push(inArray(organizations.type, organizerTypes));
 	}
 
 	const whereClause = conditions.length > 0 ? and(...conditions) : undefined;

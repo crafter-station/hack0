@@ -3,6 +3,15 @@
 import { Search, X } from "lucide-react";
 import { useQueryStates } from "nuqs";
 import { useState } from "react";
+import {
+	DOMAINS,
+	EVENT_TYPES,
+	FORMATS,
+	filterEnumValues,
+	LATAM_COUNTRY_CODES,
+	ORGANIZER_TYPES,
+	SKILL_LEVELS,
+} from "@/lib/db/schema/constants";
 import { searchParamsParsers } from "@/lib/search-params";
 import { EventsFiltersPopover } from "./events-filters-popover";
 import { EventsViewSelector } from "./events-view-selector";
@@ -29,6 +38,18 @@ export function EventsToolbar() {
 		mine,
 		timeFilter,
 	} = filters;
+	const sanitizedFilters = {
+		eventType: filterEnumValues(EVENT_TYPES, eventType),
+		organizerType: filterEnumValues(ORGANIZER_TYPES, organizerType),
+		skillLevel: filterEnumValues(SKILL_LEVELS, skillLevel),
+		format: filterEnumValues(FORMATS, format),
+		domain: filterEnumValues(DOMAINS, domain),
+		country: filterEnumValues(LATAM_COUNTRY_CODES, country),
+		department,
+		juniorFriendly,
+		mine,
+		timeFilter,
+	};
 
 	const clearAllFilters = () => {
 		setFilters({
@@ -78,18 +99,7 @@ export function EventsToolbar() {
 			<EventsFiltersPopover
 				open={filtersOpen}
 				onOpenChange={setFiltersOpen}
-				filters={{
-					eventType,
-					organizerType,
-					skillLevel,
-					format,
-					domain,
-					country,
-					department,
-					juniorFriendly,
-					mine,
-					timeFilter,
-				}}
+				filters={sanitizedFilters}
 				onFiltersChange={(updates) => setFilters(updates)}
 				onClearAll={clearAllFilters}
 			/>

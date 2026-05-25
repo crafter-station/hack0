@@ -18,6 +18,8 @@ interface EventsPageProps {
 	searchParams: Promise<SearchParams>;
 }
 
+export const dynamic = "force-dynamic";
+
 async function EventsContent({
 	filters,
 	viewMode,

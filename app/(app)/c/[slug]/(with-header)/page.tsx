@@ -20,6 +20,8 @@ interface CommunityPageProps {
 	searchParams: Promise<SearchParams>;
 }
 
+export const dynamic = "force-dynamic";
+
 type ViewMode = "table" | "cards" | "calendar" | "map" | "preview";
 
 async function CommunityEvents({

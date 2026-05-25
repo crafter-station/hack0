@@ -29,6 +29,8 @@ export const EVENT_TYPES = [
 	"call_for_papers",
 ] as const;
 
+export type EventType = (typeof EVENT_TYPES)[number];
+
 export const EVENT_TYPE_LABELS: Record<string, string> = {
 	hackathon: "Hackathon",
 	conference: "Congreso",
@@ -208,6 +210,10 @@ export const SKILL_LEVELS = [
 export const FORMATS = ["virtual", "in-person", "hybrid"] as const;
 export const STATUSES = ["upcoming", "open", "ongoing", "ended"] as const;
 
+export type SkillLevel = (typeof SKILL_LEVELS)[number];
+export type Format = (typeof FORMATS)[number];
+export type Status = (typeof STATUSES)[number];
+
 export const DOMAINS = [
 	"ai",
 	"web3",
@@ -233,6 +239,8 @@ export const DOMAINS = [
 	"energy",
 	"general",
 ] as const;
+
+export type Domain = (typeof DOMAINS)[number];
 
 export const DOMAIN_LABELS: Record<string, string> = {
 	ai: "IA / Machine Learning",
@@ -260,6 +268,54 @@ export const DOMAIN_LABELS: Record<string, string> = {
 	general: "General",
 };
 
+export function isEnumValue<const T extends readonly string[]>(
+	values: T,
+	value: string | null | undefined,
+): value is T[number] {
+	return typeof value === "string" && values.includes(value);
+}
+
+export function filterEnumValues<const T extends readonly string[]>(
+	values: T,
+	input: readonly string[] | null | undefined,
+): T[number][] {
+	return Array.from(
+		new Set(
+			input?.filter((value): value is T[number] => isEnumValue(values, value)),
+		),
+	);
+}
+
+export function isEventType(
+	value: string | null | undefined,
+): value is EventType {
+	return isEnumValue(EVENT_TYPES, value);
+}
+
+export function isOrganizerType(
+	value: string | null | undefined,
+): value is OrganizerType {
+	return isEnumValue(ORGANIZER_TYPES, value);
+}
+
+export function isSkillLevel(
+	value: string | null | undefined,
+): value is SkillLevel {
+	return isEnumValue(SKILL_LEVELS, value);
+}
+
+export function isFormat(value: string | null | undefined): value is Format {
+	return isEnumValue(FORMATS, value);
+}
+
+export function isStatus(value: string | null | undefined): value is Status {
+	return isEnumValue(STATUSES, value);
+}
+
+export function isDomain(value: string | null | undefined): value is Domain {
+	return isEnumValue(DOMAINS, value);
+}
+
 export const LATAM_COUNTRIES = [
 	{ code: "AR", name: "Argentina" },
 	{ code: "BO", name: "Bolivia" },
@@ -283,6 +339,18 @@ export const LATAM_COUNTRIES = [
 	{ code: "VE", name: "Venezuela" },
 	{ code: "GLOBAL", name: "Global" },
 ] as const;
+
+export type CountryCode = (typeof LATAM_COUNTRIES)[number]["code"];
+
+export const LATAM_COUNTRY_CODES = LATAM_COUNTRIES.map(
+	(country) => country.code,
+) as readonly CountryCode[];
+
+export function isCountryCode(
+	value: string | null | undefined,
+): value is CountryCode {
+	return isEnumValue(LATAM_COUNTRY_CODES, value);
+}
 
 export const RELATIONSHIP_TYPES = [
 	"partner",

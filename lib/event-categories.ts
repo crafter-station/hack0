@@ -1,4 +1,4 @@
-// Event categories - groups of event types with specific display configurations
+import type { EventType } from "@/lib/db/schema/constants";
 
 export type EventCategory = "all" | "competitions" | "learning" | "community";
 
@@ -6,8 +6,7 @@ export interface EventCategoryConfig {
 	id: EventCategory;
 	label: string;
 	description: string;
-	eventTypes: string[] | null; // null means all types
-	// Columns to show in table
+	eventTypes: EventType[] | null;
 	showPrize: boolean;
 	showFormat: boolean;
 	showSkillLevel: boolean;
@@ -18,7 +17,7 @@ export const EVENT_CATEGORIES: EventCategoryConfig[] = [
 		id: "all",
 		label: "Todos",
 		description: "Todos los eventos",
-		eventTypes: null, // No filter - show all
+		eventTypes: null,
 		showPrize: true,
 		showFormat: true,
 		showSkillLevel: false,
@@ -75,7 +74,7 @@ export function getCategoryById(
 }
 
 export function getCategoryByEventType(
-	eventType: string,
+	eventType: EventType,
 ): EventCategoryConfig | undefined {
 	return EVENT_CATEGORIES.find((cat) => cat.eventTypes?.includes(eventType));
 }

@@ -3,7 +3,11 @@
 import { X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
-import { LATAM_COUNTRIES, ORGANIZER_TYPE_LABELS } from "@/lib/db/schema";
+import {
+	isOrganizerType,
+	LATAM_COUNTRIES,
+	ORGANIZER_TYPE_LABELS,
+} from "@/lib/db/schema";
 
 const SIZE_LABELS: Record<string, string> = {
 	small: "< 100 miembros",
@@ -66,13 +70,15 @@ export function OrgActiveFilters({ totalResults }: OrgActiveFiltersProps) {
 		const countries = searchParams.get("countries");
 		if (countries) {
 			for (const code of countries.split(",")) {
-				const name = countryMap[code] || code;
-				filters.push({
-					key: `country-${code}`,
-					param: "countries",
-					value: code,
-					label: name,
-				});
+				const name = countryMap[code];
+				if (name) {
+					filters.push({
+						key: `country-${code}`,
+						param: "countries",
+						value: code,
+						label: name,
+					});
+				}
 			}
 		}
 
@@ -80,15 +86,14 @@ export function OrgActiveFilters({ totalResults }: OrgActiveFiltersProps) {
 		const types = searchParams.get("types");
 		if (types) {
 			for (const type of types.split(",")) {
-				const label =
-					ORGANIZER_TYPE_LABELS[type as keyof typeof ORGANIZER_TYPE_LABELS] ||
-					type;
-				filters.push({
-					key: `type-${type}`,
-					param: "types",
-					value: type,
-					label,
-				});
+				if (isOrganizerType(type)) {
+					filters.push({
+						key: `type-${type}`,
+						param: "types",
+						value: type,
+						label: ORGANIZER_TYPE_LABELS[type],
+					});
+				}
 			}
 		}
 
