@@ -48,7 +48,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { updateOrganizationById } from "@/lib/actions/organizations";
 import type { Organization } from "@/lib/db/schema";
-import { ORGANIZER_TYPES, type OrganizerType } from "@/lib/db/schema/constants";
+import { isOrganizerType, type OrganizerType } from "@/lib/db/schema/constants";
 import {
 	getOrganizerTypeConfig,
 	ORGANIZER_TYPE_LIST,
@@ -56,10 +56,6 @@ import {
 
 interface OrgSettingsFormProps {
 	organization: Organization;
-}
-
-function isOrganizerType(value: string): value is OrganizerType {
-	return (ORGANIZER_TYPES as readonly string[]).includes(value);
 }
 
 export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
@@ -119,7 +115,7 @@ export function OrgSettingsForm({ organization }: OrgSettingsFormProps) {
 			await updateOrganizationById(organization.id, {
 				name,
 				description: description || undefined,
-				type: type as any,
+				type,
 				websiteUrl: websiteUrl || undefined,
 				logoUrl: logoUrl || undefined,
 				coverUrl: coverUrl || undefined,

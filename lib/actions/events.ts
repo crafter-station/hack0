@@ -10,6 +10,7 @@ import {
 	inArray,
 	isNull,
 	or,
+	type SQL,
 	sql,
 } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -27,6 +28,24 @@ import {
 	type Organization,
 	organizations,
 } from "@/lib/db/schema";
+import {
+	DOMAINS,
+	EVENT_TYPES,
+	type EventType,
+	FORMATS,
+	type Format,
+	filterEnumValues,
+	isEventType,
+	isFormat,
+	isSkillLevel,
+	isStatus,
+	LATAM_COUNTRY_CODES,
+	ORGANIZER_TYPES,
+	SKILL_LEVELS,
+	type SkillLevel,
+	STATUSES,
+	type Status,
+} from "@/lib/db/schema/constants";
 import { type EventCategory, getCategoryById } from "@/lib/event-categories";
 import { isGodMode } from "@/lib/god-mode";
 import { createUniqueSlug, ensureUniqueShortCode } from "@/lib/slug-utils";
@@ -36,13 +55,13 @@ import { canManageEventById } from "./permissions";
 export interface EventFilters {
 	category?: EventCategory;
 	search?: string;
-	eventType?: string[];
-	organizerType?: string[];
-	skillLevel?: string[];
-	format?: string[];
-	status?: string[];
-	domain?: string[];
-	country?: string[];
+	eventType?: readonly string[];
+	organizerType?: readonly string[];
+	skillLevel?: readonly string[];
+	format?: readonly string[];
+	status?: readonly string[];
+	domain?: readonly string[];
+	country?: readonly string[];
 	department?: string[];
 	juniorFriendly?: boolean;
 	mine?: boolean;
@@ -91,7 +110,14 @@ export async function getEvents(
 		timeFilter = "upcoming",
 	} = filters;
 
-	const conditions: ReturnType<typeof eq>[] = [];
+	const eventTypes = filterEnumValues(EVENT_TYPES, eventType);
+	const organizerTypes = filterEnumValues(ORGANIZER_TYPES, organizerType);
+	const skillLevels = filterEnumValues(SKILL_LEVELS, skillLevel);
+	const formats = filterEnumValues(FORMATS, format);
+	const statuses = filterEnumValues(STATUSES, status);
+	const domains = filterEnumValues(DOMAINS, domain);
+	const countries = filterEnumValues(LATAM_COUNTRY_CODES, country);
+	const conditions: SQL[] = [];
 
 	// If mine=true, filter by user's communities
 	if (mine) {
@@ -149,23 +175,15 @@ export async function getEvents(
 	// Category filter - filter by event types in category (skip if "all" or no eventTypes)
 	const categoryConfig = getCategoryById(category);
 	if (categoryConfig && categoryConfig.eventTypes !== null) {
-		conditions.push(
-			inArray(events.eventType, categoryConfig.eventTypes as any),
-		);
+		conditions.push(inArray(events.eventType, categoryConfig.eventTypes));
 	}
 
-	// Event type filter (within category)
-	if (eventType && eventType.length > 0) {
-		conditions.push(
-			or(...eventType.map((t) => eq(events.eventType, t as any)))!,
-		);
+	if (eventTypes.length > 0) {
+		conditions.push(inArray(events.eventType, eventTypes));
 	}
 
-	// Organizer type filter
-	if (organizerType && organizerType.length > 0) {
-		conditions.push(
-			or(...organizerType.map((t) => eq(organizations.type, t as any)))!,
-		);
+	if (organizerTypes.length > 0) {
+		conditions.push(inArray(organizations.type, organizerTypes));
 	}
 
 	// Junior friendly filter (derived from skillLevel: beginner or all)
@@ -187,33 +205,16 @@ export async function getEvents(
 	}
 
 	// Skill level filter
-	if (skillLevel && skillLevel.length > 0) {
-		conditions.push(
-			or(
-				...skillLevel.map((level) =>
-					eq(
-						events.skillLevel,
-						level as "beginner" | "intermediate" | "advanced" | "all",
-					),
-				),
-			)!,
-		);
+	if (skillLevels.length > 0) {
+		conditions.push(inArray(events.skillLevel, skillLevels));
 	}
 
-	// Format filter
-	if (format && format.length > 0) {
-		conditions.push(
-			or(
-				...format.map((f) =>
-					eq(events.format, f as "virtual" | "in-person" | "hybrid"),
-				),
-			)!,
-		);
+	if (formats.length > 0) {
+		conditions.push(inArray(events.format, formats));
 	}
 
-	// Status filter - calculated dynamically based on dates
-	if (status && status.length > 0) {
-		const statusConditions = status.map((s) => {
+	if (statuses.length > 0) {
+		const statusConditions = statuses.map((s) => {
 			switch (s) {
 				case "ended":
 					// Event has ended (endDate < now)
@@ -235,15 +236,15 @@ export async function getEvents(
 	}
 
 	// Domain filter (uses array contains)
-	if (domain && domain.length > 0) {
+	if (domains.length > 0) {
 		conditions.push(
-			or(...domain.map((d) => sql`${d} = ANY(${events.domains})`))!,
+			or(...domains.map((d) => sql`${d} = ANY(${events.domains})`))!,
 		);
 	}
 
 	// Country filter
-	if (country && country.length > 0) {
-		conditions.push(or(...country.map((c) => eq(events.country, c)))!);
+	if (countries.length > 0) {
+		conditions.push(inArray(events.country, countries));
 	}
 
 	// Department filter
@@ -492,9 +493,9 @@ export interface CreateEventInput {
 	name: string;
 	description?: string;
 	websiteUrl?: string;
-	eventType?: string;
-	format?: string;
-	skillLevel?: string;
+	eventType?: EventType;
+	format?: Format;
+	skillLevel?: SkillLevel;
 	country?: string;
 	department?: string;
 	city?: string;
@@ -527,7 +528,7 @@ export interface UpdateEventInput {
 	startDate?: Date | null;
 	endDate?: Date | null;
 	registrationDeadline?: Date | null;
-	format?: "virtual" | "in-person" | "hybrid";
+	format?: Format;
 	department?: string;
 	city?: string;
 	venue?: string;
@@ -541,9 +542,9 @@ export interface UpdateEventInput {
 	websiteUrl?: string;
 	registrationUrl?: string;
 	eventImageUrl?: string;
-	eventType?: string;
-	skillLevel?: string;
-	status?: string;
+	eventType?: EventType;
+	skillLevel?: SkillLevel;
+	status?: Status;
 }
 
 export async function updateEvent(input: UpdateEventInput) {
@@ -562,9 +563,29 @@ export async function updateEvent(input: UpdateEventInput) {
 		};
 	}
 
-	const { eventId, ...updateData } = input;
+	const { eventId, eventType, format, skillLevel, status, ...updateData } =
+		input;
+	if (eventType !== undefined && !isEventType(eventType)) {
+		return { success: false, error: "Tipo de evento inválido" };
+	}
+	if (format !== undefined && !isFormat(format)) {
+		return { success: false, error: "Formato inválido" };
+	}
+	if (skillLevel !== undefined && !isSkillLevel(skillLevel)) {
+		return { success: false, error: "Nivel inválido" };
+	}
+	if (status !== undefined && !isStatus(status)) {
+		return { success: false, error: "Estado inválido" };
+	}
+	const typedUpdateData = {
+		...updateData,
+		...(eventType !== undefined ? { eventType } : {}),
+		...(format !== undefined ? { format } : {}),
+		...(skillLevel !== undefined ? { skillLevel } : {}),
+		...(status !== undefined ? { status } : {}),
+	};
 	const filteredData = Object.fromEntries(
-		Object.entries(updateData).filter(([, value]) => value !== undefined),
+		Object.entries(typedUpdateData).filter(([, value]) => value !== undefined),
 	);
 
 	if (Object.keys(filteredData).length === 0) {
@@ -637,9 +658,9 @@ export async function createEvent(
 				input.registrationUrl ||
 				`https://hack0.dev/e/${shortCode}`,
 			registrationUrl: input.registrationUrl || input.websiteUrl,
-			eventType: (input.eventType as any) || "hackathon",
-			format: (input.format as any) || "virtual",
-			skillLevel: (input.skillLevel as any) || "all",
+			eventType: input.eventType || "hackathon",
+			format: input.format || "virtual",
+			skillLevel: input.skillLevel || "all",
 			country: input.country || "PE",
 			department: input.department,
 			city: input.city,
@@ -654,7 +675,7 @@ export async function createEvent(
 				? new Date(input.registrationDeadline)
 				: undefined,
 			prizePool: input.prizePool,
-			prizeCurrency: (input.prizeCurrency as any) || "USD",
+			prizeCurrency: input.prizeCurrency || "USD",
 			eventImageUrl: input.eventImageUrl,
 			status: "upcoming",
 			isApproved,

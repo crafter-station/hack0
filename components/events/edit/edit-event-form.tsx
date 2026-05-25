@@ -23,6 +23,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { type EventSponsorWithOrg, updateEvent } from "@/lib/actions/events";
 import type { Event } from "@/lib/db/schema";
+import {
+	type EventType,
+	isEventType,
+	isSkillLevel,
+	type SkillLevel,
+} from "@/lib/db/schema/constants";
 import { EVENT_TYPE_OPTIONS, SKILL_LEVEL_OPTIONS } from "@/lib/event-utils";
 import { DateRangeInput } from "./date-range-input";
 import { FormatSelector } from "./format-selector";
@@ -100,10 +106,10 @@ export function EditEventForm({
 		event.registrationUrl || "",
 	);
 	const [eventImageUrl, setEventImageUrl] = useState(event.eventImageUrl || "");
-	const [eventType, setEventType] = useState<string>(
+	const [eventType, setEventType] = useState<EventType>(
 		event.eventType || "hackathon",
 	);
-	const [skillLevel, setSkillLevel] = useState<string>(
+	const [skillLevel, setSkillLevel] = useState<SkillLevel>(
 		event.skillLevel || "all",
 	);
 
@@ -212,7 +218,9 @@ export function EditEventForm({
 									<SearchableSelect
 										options={EVENT_TYPE_OPTIONS}
 										value={eventType}
-										onValueChange={setEventType}
+										onValueChange={(value) => {
+											if (isEventType(value)) setEventType(value);
+										}}
 										placeholder="Seleccionar tipo..."
 										searchPlaceholder="Buscar tipo de evento..."
 										emptyMessage="No se encontró ningún tipo"
@@ -221,7 +229,12 @@ export function EditEventForm({
 
 								<Field>
 									<FieldLabel htmlFor="skillLevel">Nivel requerido</FieldLabel>
-									<Select value={skillLevel} onValueChange={setSkillLevel}>
+									<Select
+										value={skillLevel}
+										onValueChange={(value) => {
+											if (isSkillLevel(value)) setSkillLevel(value);
+										}}
+									>
 										<SelectTrigger id="skillLevel">
 											<SelectValue />
 										</SelectTrigger>

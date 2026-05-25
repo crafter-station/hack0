@@ -61,7 +61,13 @@ import {
 } from "@/lib/actions/events";
 import { startLumaImport } from "@/lib/actions/import";
 import type { Event, Organization } from "@/lib/db/schema";
-import { EVENT_TYPES, SKILL_LEVELS } from "@/lib/db/schema/constants";
+import {
+	type EventType,
+	type Format,
+	isEventType,
+	isSkillLevel,
+	type SkillLevel,
+} from "@/lib/db/schema/constants";
 import {
 	EVENT_TYPE_LIST,
 	getEventTypeConfig,
@@ -73,21 +79,17 @@ import type { eventImportTask } from "@/trigger/event-import";
 import { AIExtractModal } from "./ai-extract-modal";
 import { ImproveDescriptionModal } from "./improve-description-modal";
 
-type EventType = (typeof EVENT_TYPES)[number];
-type SkillLevel = (typeof SKILL_LEVELS)[number];
 type ImportMetadata = ExtractedEventData & {
 	eventImageUrl?: string;
 	error?: string;
 	step?: string;
 };
 
-function isEventType(value: string): value is EventType {
-	return (EVENT_TYPES as readonly string[]).includes(value);
-}
-
-function isSkillLevel(value: string): value is SkillLevel {
-	return (SKILL_LEVELS as readonly string[]).includes(value);
-}
+const LOCATION_FORMATS = [
+	"in-person",
+	"virtual",
+	"hybrid",
+] as const satisfies readonly Format[];
 
 interface OrganizationWithRole {
 	organization: Organization;
@@ -148,9 +150,7 @@ export function OrgEventFormMinimal({
 	const [startTime, setStartTime] = useState(initialStart.time);
 	const [endDate, setEndDate] = useState(initialEnd.date);
 	const [endTime, setEndTime] = useState(initialEnd.time);
-	const [format, setFormat] = useState<"virtual" | "in-person" | "hybrid">(
-		(event?.format as "virtual" | "in-person" | "hybrid") || "in-person",
-	);
+	const [format, setFormat] = useState<Format>(event?.format || "in-person");
 	const [department, setDepartment] = useState(event?.department || "");
 	const [city, setCity] = useState(event?.city || "");
 	const [venue, setVenue] = useState(event?.venue || "");
@@ -981,11 +981,11 @@ export function OrgEventFormMinimal({
 								<div>
 									<Label className="text-sm mb-2 block">Formato</Label>
 									<div className="flex gap-2">
-										{["in-person", "virtual", "hybrid"].map((f) => (
+										{LOCATION_FORMATS.map((f) => (
 											<button
 												key={f}
 												type="button"
-												onClick={() => setFormat(f as any)}
+												onClick={() => setFormat(f)}
 												className={`flex-1 px-3 py-2 rounded-md text-sm transition-colors ${
 													format === f
 														? "bg-foreground text-background"

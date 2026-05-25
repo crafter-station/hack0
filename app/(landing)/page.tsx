@@ -38,6 +38,8 @@ export const metadata: Metadata = {
 		"Directorio público de eventos, comunidades, hackathons, labs, grants y builders de IA en Perú.",
 };
 
+export const dynamic = "force-dynamic";
+
 const PERU = "PE";
 const HACKATHON_TYPES = [
 	"hackathon",

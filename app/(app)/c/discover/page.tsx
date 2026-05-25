@@ -22,7 +22,7 @@ import {
 } from "@/lib/actions/communities";
 import { db } from "@/lib/db";
 import { communityMembers, organizations } from "@/lib/db/schema";
-import { ORGANIZER_TYPES, type OrganizerType } from "@/lib/db/schema/constants";
+import { isCountryCode, isOrganizerType } from "@/lib/db/schema/constants";
 import { getCommunitiesViewPreference } from "@/lib/view-preferences";
 
 interface DiscoverPageProps {
@@ -46,11 +46,9 @@ export const metadata = {
 		"Descubre comunidades de tecnología, hackathons y eventos en Perú. Únete a la comunidad tech más activa.",
 };
 
-const INITIAL_LIMIT = 12;
+export const dynamic = "force-dynamic";
 
-function isOrganizerType(value: string): value is OrganizerType {
-	return (ORGANIZER_TYPES as readonly string[]).includes(value);
-}
+const INITIAL_LIMIT = 12;
 
 async function getInitialCommunities(
 	params: {
@@ -69,7 +67,8 @@ async function getInitialCommunities(
 	const type =
 		params.type && isOrganizerType(params.type) ? params.type : undefined;
 	const typesArray = params.types?.split(",").filter(isOrganizerType) || [];
-	const countriesArray = params.countries?.split(",").filter(Boolean) || [];
+	const countriesArray =
+		params.countries?.split(",").filter(isCountryCode) || [];
 	const verifiedOnly = params.verified === "true";
 
 	const conditions = [
@@ -201,7 +200,8 @@ export default async function DiscoverPage({
 	const { userId } = await auth();
 	const params = await searchParams;
 
-	const countriesArray = params.countries?.split(",").filter(Boolean) || [];
+	const countriesArray =
+		params.countries?.split(",").filter(isCountryCode) || [];
 	const typesArray = params.types?.split(",").filter(Boolean) || [];
 	const sizesArray = params.sizes?.split(",").filter(Boolean) || [];
 	const verificationArray =

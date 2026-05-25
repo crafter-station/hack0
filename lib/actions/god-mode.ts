@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { events } from "@/lib/db/schema";
+import type { EventType, Format, SkillLevel } from "@/lib/db/schema/constants";
 import { requireGodMode } from "@/lib/god-mode";
 import { createUniqueSlug, ensureUniqueShortCode } from "@/lib/slug-utils";
 
@@ -10,10 +11,10 @@ export async function godModeCreateEvent(data: {
 	name: string;
 	organizationId: string;
 	description?: string;
-	eventType?: string;
+	eventType?: EventType;
 	startDate?: Date;
 	endDate?: Date;
-	format?: "virtual" | "in-person" | "hybrid";
+	format?: Format;
 	country?: string;
 	department?: string;
 	city?: string;
@@ -21,7 +22,7 @@ export async function godModeCreateEvent(data: {
 	websiteUrl?: string;
 	registrationUrl?: string;
 	eventImageUrl?: string;
-	skillLevel?: "beginner" | "intermediate" | "advanced" | "all";
+	skillLevel?: SkillLevel;
 	prizePool?: number;
 	prizeCurrency?: "USD" | "PEN";
 	isApproved?: boolean;
@@ -38,7 +39,7 @@ export async function godModeCreateEvent(data: {
 			shortCode,
 			name: data.name,
 			description: data.description || null,
-			eventType: (data.eventType as any) || "hackathon",
+			eventType: data.eventType || "hackathon",
 			startDate: data.startDate || null,
 			endDate: data.endDate || null,
 			format: data.format || "hybrid",

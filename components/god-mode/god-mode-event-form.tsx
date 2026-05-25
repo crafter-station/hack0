@@ -18,6 +18,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { godModeCreateEvent } from "@/lib/actions/god-mode";
 import type { Organization } from "@/lib/db/schema";
+import { isEventType, isFormat, isSkillLevel } from "@/lib/db/schema/constants";
 
 const PERU_DEPARTMENTS = [
 	{ value: "Lima", label: "Lima" },
@@ -72,6 +73,26 @@ export function GodModeEventForm({ organizations }: GodModeEventFormProps) {
 		setError(null);
 
 		const formData = new FormData(e.currentTarget);
+		const rawEventType = formData.get("eventType");
+		const rawFormat = formData.get("format");
+		const rawSkillLevel = formData.get("skillLevel");
+		const rawPrizeCurrency = formData.get("prizeCurrency");
+		const eventType =
+			typeof rawEventType === "string" && isEventType(rawEventType)
+				? rawEventType
+				: undefined;
+		const format =
+			typeof rawFormat === "string" && isFormat(rawFormat)
+				? rawFormat
+				: "hybrid";
+		const skillLevel =
+			typeof rawSkillLevel === "string" && isSkillLevel(rawSkillLevel)
+				? rawSkillLevel
+				: "all";
+		const prizeCurrency =
+			rawPrizeCurrency === "PEN" || rawPrizeCurrency === "USD"
+				? rawPrizeCurrency
+				: "USD";
 
 		try {
 			if (!organizationId) {
@@ -84,14 +105,14 @@ export function GodModeEventForm({ organizations }: GodModeEventFormProps) {
 				name: formData.get("name") as string,
 				organizationId,
 				description: (formData.get("description") as string) || undefined,
-				eventType: (formData.get("eventType") as string) || undefined,
+				eventType,
 				startDate: formData.get("startDate")
 					? new Date(formData.get("startDate") as string)
 					: undefined,
 				endDate: formData.get("endDate")
 					? new Date(formData.get("endDate") as string)
 					: undefined,
-				format: (formData.get("format") as any) || "hybrid",
+				format,
 				country: (formData.get("country") as string) || undefined,
 				department: department || undefined,
 				city: (formData.get("city") as string) || undefined,
@@ -100,11 +121,11 @@ export function GodModeEventForm({ organizations }: GodModeEventFormProps) {
 				registrationUrl:
 					(formData.get("registrationUrl") as string) || undefined,
 				eventImageUrl: eventImageUrl || undefined,
-				skillLevel: (formData.get("skillLevel") as any) || "all",
+				skillLevel,
 				prizePool: formData.get("prizePool")
 					? Number(formData.get("prizePool"))
 					: undefined,
-				prizeCurrency: (formData.get("prizeCurrency") as any) || "USD",
+				prizeCurrency,
 				isApproved: true,
 			});
 

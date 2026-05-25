@@ -8,10 +8,12 @@ export const DEFAULT_TIMEZONE = PERU_TIMEZONE;
 import {
 	DOMAIN_LABELS,
 	EVENT_TYPE_LABELS,
-	FORMATS,
+	type Format,
+	isFormat,
+	isSkillLevel,
 	ORGANIZER_TYPE_LABELS,
-	SKILL_LEVELS,
-	type STATUSES,
+	type SkillLevel,
+	type Status,
 } from "@/lib/db/schema";
 
 // =============================================================================
@@ -70,35 +72,25 @@ export function getEventStatus(event: {
 // LABELS
 // =============================================================================
 
-const FORMAT_LABELS: Record<(typeof FORMATS)[number], string> = {
+const FORMAT_LABELS: Record<Format, string> = {
 	virtual: "Virtual",
 	"in-person": "Presencial",
 	hybrid: "Híbrido",
 };
 
-const SKILL_LEVEL_LABELS: Record<(typeof SKILL_LEVELS)[number], string> = {
+const SKILL_LEVEL_LABELS: Record<SkillLevel, string> = {
 	beginner: "Principiante",
 	intermediate: "Intermedio",
 	advanced: "Avanzado",
 	all: "Todos los niveles",
 };
 
-const STATUS_LABELS: Record<(typeof STATUSES)[number], string> = {
+const STATUS_LABELS: Record<Status, string> = {
 	upcoming: "Próximamente",
 	open: "Abierto",
 	ongoing: "En curso",
 	ended: "Terminado",
 };
-
-function isFormat(value: string | null): value is (typeof FORMATS)[number] {
-	return !!value && (FORMATS as readonly string[]).includes(value);
-}
-
-function isSkillLevel(
-	value: string | null,
-): value is (typeof SKILL_LEVELS)[number] {
-	return !!value && (SKILL_LEVELS as readonly string[]).includes(value);
-}
 
 function isValidField(v: string | null | undefined): v is string {
 	return !!v && v !== "N/A" && v !== "n/a";
