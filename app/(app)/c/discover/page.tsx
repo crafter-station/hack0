@@ -340,7 +340,7 @@ function CountryCommunityOverview({
 	);
 
 	return (
-		<section className="mb-6 border-b pb-6">
+		<section className="mb-6 pb-4">
 			<div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
 				<div className="max-w-2xl">
 					<div className="mb-3 h-2.5 w-12 bg-brand-green" />
@@ -365,7 +365,7 @@ function CountryCommunityOverview({
 				</div>
 			</div>
 
-			<div className="-mx-4 mt-5 overflow-x-auto px-4 pb-2 snap-x snap-mandatory [scrollbar-width:none] lg:-mx-8 lg:px-8 [&::-webkit-scrollbar]:hidden">
+			<div className="mt-5 overflow-x-auto pb-2 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 				<div className="flex gap-2">
 					{countryCoverage.map((country) => (
 						<CountryCommunityTile
