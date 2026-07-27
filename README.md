@@ -1,69 +1,78 @@
 <div align="center">
 
-# hack0
+```
+ ██╗  ██╗  █████╗   ██████╗ ██╗  ██╗  ██████╗
+ ██║  ██║ ██╔══██╗ ██╔════╝ ██║ ██╔╝ ██╔═████╗
+ ███████║ ███████║ ██║      █████╔╝  ██║██╔██║
+ ██╔══██║ ██╔══██║ ██║      ██╔═██╗  ████╔╝██║
+ ██║  ██║ ██║  ██║ ╚██████╗ ██║  ██╗ ╚██████╔╝
+ ╚═╝  ╚═╝ ╚═╝  ╚═╝  ╚═════╝ ╚═╝  ╚═╝  ╚═════╝
+```
 
-**The public LATAM Agentic Builder Index** — a curated, always-fresh map of the hackathons, tech events, communities, labs, and builders across Latin America.
+# hack0 · LATAM Builder Index
 
-[![Live](https://img.shields.io/badge/live-hack0.dev-000000)](https://hack0.dev)
-[![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=next.js)](https://nextjs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Neon Postgres](https://img.shields.io/badge/Neon-Postgres-336791?logo=postgresql&logoColor=white)](https://neon.tech)
+**The public, always-fresh map of the LATAM builder ecosystem** — events, hackathons, communities, labs, grants, and the people building across Latin America.
+
+[![hack0.dev](https://img.shields.io/badge/live-hack0.dev-16A34A)](https://hack0.dev)
+[![Roadmap](https://img.shields.io/badge/roadmap-hack0.dev%2Froadmap-000000)](https://hack0.dev/roadmap)
+[![Stars](https://img.shields.io/github/stars/crafter-station/hack0?style=flat&color=16A34A)](https://github.com/crafter-station/hack0/stargazers)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-16A34A)](CONTRIBUTING.md)
 
 </div>
 
+![hack0 — LATAM Builder Index](.github/assets/hero.png)
+
 ## What is hack0?
 
-hack0.dev maps the LATAM builder ecosystem in one place — **events, hackathons, communities, labs, grants, and active builders** — auto-detected, curated, and kept fresh so nobody misses what's happening.
+hack0.dev maps **who's building in Latin America and what's happening** — in one public index, kept fresh automatically from community calendars (Luma) and the web. No more scattered event links: the LATAM builder signal, in one place.
 
-- 🌎 **Public event index** — LATAM-first, multi-country, filterable by type, format, country, and skill level.
-- 🔎 **Auto-detection** — events are discovered automatically (Luma calendar sync + web scrapers like Devpost), not hand-entered.
-- 🏙️ **Community & org directory** — communities, universities, labs, and companies with their events.
-- 🗺️ **Interactive maps** — LATAM and Peru-by-department event coverage.
-- 🏷️ **Programmatic SEO + dynamic OG images** — every event and facet page is shareable and indexable.
-- 🛠️ **Admin curation** — an approval queue keeps the public index clean.
+- **Eventos** — every tech event, hackathon and meetup across LATAM, auto-detected and filterable.
+- **Comunidades** — the public directory of communities, universities and labs, country by country.
+- **Builders & hosts** — the people who organize, teach, convene and move communities: a practical signal of who's active.
+- **Programas** — incubators, accelerators, funds and grants that help LATAM builders find support and capital.
 
-## Quick start
+### Eventos
+Auto-detected and curated, always current.
 
-Requires [Bun](https://bun.sh). To boot the app you only need **Clerk** keys and a **Neon** database.
+![Eventos](.github/assets/events.png)
 
-```bash
-bun install
-cp .env.example .env      # fill DATABASE_URL + Clerk keys (minimum to run)
-bun run db:push           # create the schema
-bun run dev               # http://localhost:3000
-```
+### Comunidades
+Regional coverage — which countries already have mapped communities, and where signal is still missing.
 
-Load real events without the background worker:
+![Comunidades](.github/assets/communities.png)
 
-```bash
-bun run sync:luma --future-only   # import upcoming Luma events
-bun run sync:devpost              # scrape Devpost hackathons (into the curation queue)
-```
+### Builders & hosts
+Profiles derived from event hosts — who's building, teaching and convening across the region.
 
-Full setup, required services, and Trigger-free import details: **[docs/setup-and-data-sources.md](docs/setup-and-data-sources.md)**.
+![Builders & hosts](.github/assets/builders.png)
 
-## Tech stack
+### Programas, grants e inversión
+Incubators, accelerators, funds and angel networks that help builders get support, capital or distribution.
 
-Next.js 16 (App Router, React 19) · Drizzle ORM + Neon Postgres · Clerk auth · Trigger.dev background jobs · Firecrawl scraping · shadcn/ui + Tailwind CSS v4 · nuqs · Resend.
+![Programas](.github/assets/programs.png)
 
-## Project structure
+## Roadmap & where it's going
 
-```
-app/       Next.js routes — landing, /events, /e/[code] detail, /c communities, /god admin
-lib/       db schema, server actions, scraper pipeline, Luma integration
-trigger/   background jobs (hourly Luma sync, daily/weekly scrapers)
-docs/      setup, product direction & roadmap
-```
+Today hack0 is the **public index** above. Next, it becomes a toolkit for the community managers who feed it:
 
-New here? Start with **[docs/consolidation-plan.md](docs/consolidation-plan.md)** and **[docs/ROADMAP.md](docs/ROADMAP.md)** to see where the project is headed.
+- **Frictionless publishing** — drop a Luma link and your events land in the index with more exposure.
+- **Per-event design kit** — auto-generated badges, certificates and shareable graphics built from your event's own style, so organizers spend less time on design and grow their reach.
+- **Wider coverage** — country by country, until all of LATAM has active signal.
+
+Live roadmap → **[hack0.dev/roadmap](https://hack0.dev/roadmap)**.
 
 ## Contributing
 
-Contributions are welcome — from adding a new event source to polishing the UI. Read the **[Contributing Guidelines](CONTRIBUTING.md)**, then open a PR with one focused change per branch.
+hack0 grows with the community — you don't need to touch code to help:
 
----
+- **Add your community or events** — [publish on hack0.dev](https://hack0.dev) or connect your Luma calendar; public events flow into the index.
+- **Improve the coverage** — spot a missing event, community, lab or program in your country? Flag it.
+- **Build with us** — for code contributions, see the [Contributing Guidelines](CONTRIBUTING.md).
+
+If you're building in LATAM, a ⭐ helps more people find the index.
 
 <div align="center">
-Built for the LATAM builder community · <a href="https://hack0.dev">hack0.dev</a>
+
+Made with 💚 in LATAM · [hack0.dev](https://hack0.dev)
+
 </div>
