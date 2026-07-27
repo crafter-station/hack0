@@ -192,9 +192,6 @@ const LATAM_SEARCH_TERMS = [
 interface DevpostSweep {
 	/** Full URL with all params except `page`. Must include `per_page=40`. */
 	baseUrl: string;
-	/** Safety cap — smart pagination fetches only what meta.total_count requires,
-	 *  up to this maximum. */
-	maxPages: number;
 	scopeHint?: "latam" | "global";
 	label?: string;
 }
@@ -205,16 +202,14 @@ function getDevpostListingSweeps(): DevpostSweep[] {
 		`https://devpost.com/api/hackathons?search=${encodeURIComponent(term)}&per_page=40&status[]=upcoming&status[]=open${extra}`;
 
 	for (const term of LATAM_SEARCH_TERMS) {
-		// Popularity ordering — smart pagination caps at 3 pages
+		// Popularity ordering.
 		sweeps.push({
 			baseUrl: mkBase(term),
-			maxPages: 3,
 			label: `search:${term}`,
 		});
-		// Recently-added — page 1 only to catch newly listed events
+		// Recently-added — full pagination to catch newly listed events.
 		sweeps.push({
 			baseUrl: mkBase(term, "&order_by=recently-added"),
-			maxPages: 1,
 			label: `search:${term}:recent`,
 		});
 	}
@@ -240,38 +235,33 @@ function getDevpostGlobalSweeps(): DevpostSweep[] {
 	const base = `https://devpost.com/api/hackathons?per_page=40`;
 
 	return [
-		// General — popularity ordering (up to 5 pages = 200 events max)
+		// General — popularity ordering.
 		{
 			baseUrl: `${base}&${open}`,
-			maxPages: 5,
 			scopeHint: "global",
 			label: "global:popular",
 		},
-		// Recently-added — catch events before they rank by popularity
+		// Recently-added — catch events before they rank by popularity.
 		{
 			baseUrl: `${base}&${open}&order_by=recently-added`,
-			maxPages: 2,
 			scopeHint: "global",
 			label: "global:recent",
 		},
 		// Closing-soon deadline ordering (open only)
 		{
 			baseUrl: `${base}&status[]=open&order_by=deadline`,
-			maxPages: 3,
 			scopeHint: "global",
 			label: "global:deadline",
 		},
 		// In-person only — FIXED: was `online=false` (no-op); correct param is `challenge_type[]=in-person`
 		{
 			baseUrl: `${base}&${open}&challenge_type[]=in-person`,
-			maxPages: 3,
 			scopeHint: "global",
 			label: "global:in-person",
 		},
 		// Theme-filtered sweeps — surfaces domain-specific hackathons open to LATAM
 		...DEVPOST_RELEVANT_THEMES.map((theme) => ({
 			baseUrl: `${base}&${open}&themes[]=${encodeURIComponent(theme)}`,
-			maxPages: 2,
 			scopeHint: "global" as const,
 			label: `theme:${theme}`,
 		})),
@@ -1216,7 +1206,7 @@ async function fetchDevpostSweeps(
 	}
 
 	async function fetchOneSweep(sweep: DevpostSweep): Promise<void> {
-		const { baseUrl, maxPages, scopeHint, label } = sweep;
+		const { baseUrl, scopeHint, label } = sweep;
 		try {
 			// Page 1 — also reads meta.total_count to determine how many pages to fetch
 			const res1 = await fetch(`${baseUrl}&page=1`, { headers: API_HEADERS });
@@ -1229,7 +1219,7 @@ async function fetchDevpostSweeps(
 			processItems(page1Items, scopeHint);
 
 			const totalCount = meta.total_count ?? 0;
-			const pagesNeeded = Math.min(Math.ceil(totalCount / PER_PAGE), maxPages);
+			const pagesNeeded = Math.ceil(totalCount / PER_PAGE);
 			console.log(
 				`[devpost] ${label ?? "sweep"}: ${totalCount} total → ${pagesNeeded} page(s) (p1 returned ${page1Items.length})`,
 			);

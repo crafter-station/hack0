@@ -80,6 +80,13 @@ type SyncResult = {
 	created: number;
 	updated: number;
 	skipped: number;
+	calendars: Array<{
+		name: string | null;
+		fetched: number;
+		created: number;
+		updated: number;
+		skipped: number;
+	}>;
 	events: Array<{
 		name: string;
 		url: string;
@@ -97,12 +104,21 @@ type LumaCalendarItem = {
 	calendar?: LumaCalendar;
 };
 
-function getLumaApiKey() {
-	const apiKey = process.env.LUMA_API_KEY;
-	if (!apiKey) {
-		throw new Error("LUMA_API_KEY is required");
+function getLumaApiKeys() {
+	const keys = [
+		...(process.env.LUMA_API_KEYS ?? "")
+			.split(/[\n,]/)
+			.map((key) => key.trim())
+			.filter(Boolean),
+		process.env.LUMA_API_KEY?.trim(),
+	].filter((key): key is string => Boolean(key));
+	const uniqueKeys = [...new Set(keys)];
+
+	if (uniqueKeys.length === 0) {
+		throw new Error("LUMA_API_KEY or LUMA_API_KEYS is required");
 	}
-	return apiKey;
+
+	return uniqueKeys;
 }
 
 function shouldSkipEvent(event: LumaEvent) {
@@ -145,11 +161,11 @@ function statusFromDates(startDate: Date | null, endDate: Date | null) {
 	return "upcoming";
 }
 
-async function fetchJson<T>(url: string) {
+async function fetchJson<T>(url: string, apiKey: string) {
 	const response = await fetch(url, {
 		headers: {
 			accept: "application/json",
-			"x-luma-api-key": getLumaApiKey(),
+			"x-luma-api-key": apiKey,
 		},
 	});
 
@@ -160,57 +176,57 @@ async function fetchJson<T>(url: string) {
 	return (await response.json()) as T;
 }
 
-async function fetchCalendar() {
-	const calendarId = process.env.HACK0_LUMA_CALENDAR_API_ID;
-	if (!calendarId) return null;
-
-	const url = new URL("https://public-api.luma.com/v1/calendar/get");
-	url.searchParams.set("id", calendarId);
-	const data = await fetchJson<{ calendar: LumaCalendar }>(url.toString());
-	return data.calendar;
+async function fetchCalendar(apiKey: string) {
+	return fetchJson<LumaCalendar>(
+		"https://public-api.luma.com/v1/calendars/get",
+		apiKey,
+	);
 }
 
-async function listCalendarEvents(limit: number, includePast: boolean) {
-	const calendarId = process.env.HACK0_LUMA_CALENDAR_API_ID;
-	if (!calendarId) {
-		throw new Error("HACK0_LUMA_CALENDAR_API_ID is required");
-	}
-
+async function listCalendarEvents(
+	limit: number,
+	includePast: boolean,
+	apiKey: string,
+) {
 	const eventsList: Array<{ event: LumaEvent; hosts: LumaHost[] }> = [];
 	const seen = new Set<string>();
-	const periods = includePast ? ["future", "past"] : ["future"];
+	const windows: Array<{ after?: string; sortDirection: "asc" | "desc" }> =
+		includePast
+			? [{ sortDirection: "asc" as const }]
+			: [{ after: new Date().toISOString(), sortDirection: "asc" as const }];
 
-	for (const period of periods) {
+	for (const window of windows) {
 		let cursor: string | undefined;
 
 		while (eventsList.length < limit) {
-			const url = new URL("https://api2.luma.com/calendar/get-items");
-			url.searchParams.set("calendar_api_id", calendarId);
+			const url = new URL(
+				"https://public-api.luma.com/v1/calendars/events/list",
+			);
 			url.searchParams.set("pagination_limit", "50");
-			url.searchParams.set("period", period);
+			url.searchParams.set("status", "approved");
+			url.searchParams.append("platforms", "luma");
+			url.searchParams.append("platforms", "external");
+			url.searchParams.append("access", "manage");
+			url.searchParams.append("access", "view");
+			url.searchParams.set("sort_column", "start_at");
+			url.searchParams.set("sort_direction", window.sortDirection);
+			if (window.after) url.searchParams.set("after", window.after);
 			if (cursor) url.searchParams.set("pagination_cursor", cursor);
 
-			const response = await fetch(url, {
-				headers: { accept: "application/json" },
-			});
-
-			if (!response.ok) {
-				throw new Error(`Luma calendar returned ${response.status} for ${url}`);
-			}
-
-			const data = (await response.json()) as {
+			const data = await fetchJson<{
 				entries?: LumaCalendarItem[];
 				has_more?: boolean;
 				next_cursor?: string;
-			};
+			}>(url.toString(), apiKey);
 
 			for (const entry of data.entries || []) {
 				if (entry.status && entry.status !== "approved") continue;
-				if (!entry.event?.name || !entry.event.url) continue;
+				const entryEvent = entry.event ?? (entry as unknown as LumaEvent);
+				if (!entryEvent?.name || !entryEvent.url) continue;
 
 				const event = {
-					...entry.event,
-					url: normalizeEventUrl(entry.event),
+					...entryEvent,
+					url: normalizeEventUrl(entryEvent),
 				};
 				const key = event.api_id || event.id || event.url;
 				if (seen.has(key)) continue;
@@ -228,25 +244,30 @@ async function listCalendarEvents(limit: number, includePast: boolean) {
 	return eventsList;
 }
 
-async function fetchEventDetails(event: LumaEvent, fallbackHosts: LumaHost[]) {
+async function fetchEventDetails(
+	event: LumaEvent,
+	fallbackHosts: LumaHost[],
+	apiKey: string,
+) {
 	const eventId = event.api_id || event.id;
 	if (!eventId || !event.url.includes("luma.com")) {
 		return { event, hosts: fallbackHosts };
 	}
 
-	const url = new URL("https://public-api.luma.com/v1/event/get");
-	url.searchParams.set("id", eventId);
+	const url = new URL("https://public-api.luma.com/v1/events/get");
+	url.searchParams.set("event_id", eventId);
 	try {
-		const data = await fetchJson<{ event?: LumaEvent; hosts?: LumaHost[] }>(
+		const data = await fetchJson<LumaEvent & { hosts?: LumaHost[] }>(
 			url.toString(),
+			apiKey,
 		);
 
-		if (data.event?.url) {
-			data.event.url = normalizeEventUrl(data.event);
+		if (data.url) {
+			data.url = normalizeEventUrl(data);
 		}
 
 		return {
-			event: data.event || event,
+			event: data || event,
 			hosts: data.hosts || fallbackHosts,
 		};
 	} catch {
@@ -261,12 +282,13 @@ async function resolveCalendarOrganization(
 	const name = calendar?.name || "Hack0 Community";
 	const slug = generateSlug(calendar?.slug || name || "hack0");
 
+	if (dryRun) return { id: "dry-run" };
+
 	const existing = await db.query.organizations.findFirst({
 		where: eq(organizations.slug, slug),
 	});
 
 	if (existing) return existing;
-	if (dryRun) return { id: "dry-run" };
 
 	const shortCode = await ensureUniqueOrgShortCode();
 	const [created] = await db
@@ -343,6 +365,7 @@ async function syncEvent(
 	organizationId: string,
 	dryRun: boolean,
 	fallbackHosts: LumaHost[],
+	apiKey: string,
 ) {
 	if (shouldSkipEvent(event)) {
 		return {
@@ -356,6 +379,7 @@ async function syncEvent(
 	const { event: detailedEvent, hosts } = await fetchEventDetails(
 		event,
 		fallbackHosts,
+		apiKey,
 	);
 	const description =
 		detailedEvent.description_md || detailedEvent.description || null;
@@ -478,30 +502,70 @@ async function syncEvent(
 	};
 }
 
-export async function syncLumaCalendarEvents(options: SyncOptions = {}) {
+async function syncSingleLumaCalendar(apiKey: string, options: SyncOptions) {
 	const limit = options.limit ?? 50;
 	const dryRun = options.dryRun ?? false;
-	const calendar = await fetchCalendar();
+	const calendar = await fetchCalendar(apiKey);
 	const organization = await resolveCalendarOrganization(calendar, dryRun);
 	const lumaEvents = await listCalendarEvents(
 		limit,
 		options.includePast !== false,
+		apiKey,
 	);
 	const result: SyncResult = {
 		fetched: lumaEvents.length,
 		created: 0,
 		updated: 0,
 		skipped: 0,
+		calendars: [],
 		events: [],
 	};
 
 	for (const { event, hosts } of lumaEvents) {
-		const eventResult = await syncEvent(event, organization.id, dryRun, hosts);
+		const eventResult = await syncEvent(
+			event,
+			organization.id,
+			dryRun,
+			hosts,
+			apiKey,
+		);
 		result.events.push(eventResult);
 
 		if (eventResult.action === "created") result.created++;
 		if (eventResult.action === "updated") result.updated++;
 		if (eventResult.action === "skipped") result.skipped++;
+	}
+
+	result.calendars.push({
+		name: calendar?.name ?? null,
+		fetched: result.fetched,
+		created: result.created,
+		updated: result.updated,
+		skipped: result.skipped,
+	});
+
+	return result;
+}
+
+export async function syncLumaCalendarEvents(options: SyncOptions = {}) {
+	const apiKeys = getLumaApiKeys();
+	const result: SyncResult = {
+		fetched: 0,
+		created: 0,
+		updated: 0,
+		skipped: 0,
+		calendars: [],
+		events: [],
+	};
+
+	for (const apiKey of apiKeys) {
+		const calendarResult = await syncSingleLumaCalendar(apiKey, options);
+		result.fetched += calendarResult.fetched;
+		result.created += calendarResult.created;
+		result.updated += calendarResult.updated;
+		result.skipped += calendarResult.skipped;
+		result.calendars.push(...calendarResult.calendars);
+		result.events.push(...calendarResult.events);
 	}
 
 	return result;
