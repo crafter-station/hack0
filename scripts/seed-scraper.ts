@@ -1,30 +1,17 @@
 import "dotenv/config";
-import { db } from "@/lib/db";
-import { events } from "@/lib/db/schema";
-import { normalizeHackathon } from "@/lib/scraper/normalizer";
+import { ingestEventCandidates } from "@/lib/ingestion/ingest";
+import { parseIngestionMode } from "@/lib/ingestion/safety";
 import { scrapeDevpost } from "@/lib/scraper/sources/devpost";
 
 async function main() {
-	console.log("🌱 Seeding scraper events from Devpost...\n");
+	const mode = parseIngestionMode(process.argv.slice(2));
+	console.log(`[seed-scraper] collecting Devpost candidates (${mode})`);
 	const raw = await scrapeDevpost();
-	console.log(`✅ ${raw.length} raw events`);
-	const isValidDate = (d: unknown) =>
-		d instanceof Date && !Number.isNaN(d.getTime());
-	const newEvents = raw.map(normalizeHackathon).filter((e) => {
-		if (e.startDate && !isValidDate(e.startDate)) return false;
-		if (e.endDate && !isValidDate(e.endDate)) return false;
-		if (e.registrationDeadline && !isValidDate(e.registrationDeadline))
-			return false;
-		return true;
-	});
-	if (newEvents.length > 0) {
-		await db.insert(events).values(newEvents).onConflictDoNothing();
-		console.log(
-			`✅ Inserted ${newEvents.length} events with approvalStatus: pending`,
-		);
-	} else {
-		console.log("⚠️  No new events to insert");
-	}
+	const result = await ingestEventCandidates(raw, { mode });
+	console.log(JSON.stringify(result, null, 2));
 }
 
-main().catch(console.error);
+main().catch((error) => {
+	console.error(error);
+	process.exit(1);
+});

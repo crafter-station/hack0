@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { parse } from "dotenv";
+import { parseIngestionMode } from "@/lib/ingestion/safety";
 import { syncLumaCalendarEvents } from "@/lib/luma/calendar-sync";
 
 for (const path of [".env.vercel.local", ".env.local", ".env"]) {
@@ -11,13 +12,17 @@ for (const path of [".env.vercel.local", ".env.local", ".env"]) {
 	}
 }
 
-const dryRun = process.argv.includes("--dry-run");
+const mode = parseIngestionMode(process.argv.slice(2));
 const includePast = !process.argv.includes("--future-only");
 const limitArg = process.argv.find((arg) => arg.startsWith("--limit="));
 const limit = limitArg ? Number(limitArg.split("=")[1]) : 50;
 
 async function main() {
-	const result = await syncLumaCalendarEvents({ dryRun, includePast, limit });
+	const result = await syncLumaCalendarEvents({
+		dryRun: mode === "dry-run",
+		includePast,
+		limit,
+	});
 	console.log(JSON.stringify(result, null, 2));
 }
 

@@ -31,3 +31,6 @@ next-env.d.ts
 
 .trigger
 .env*.local
+
+# local agent memory
+/AGENTS.md

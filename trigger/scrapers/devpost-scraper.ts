@@ -1,15 +1,18 @@
 import { metadata, task } from "@trigger.dev/sdk/v3";
-import { db } from "@/lib/db";
-import { events } from "@/lib/db/schema";
-import { deduplicateAgainstDB } from "@/lib/scraper/deduplicator";
-import { normalizeHackathon } from "@/lib/scraper/normalizer";
+import { ingestEventCandidates } from "@/lib/ingestion/ingest";
+import {
+	type IngestionTaskPayload,
+	ingestionModeFromWriteFlag,
+} from "@/lib/ingestion/safety";
 import { runPostProcessor } from "@/lib/scraper/post-processor";
 import { scrapeDevpost } from "@/lib/scraper/sources/devpost";
 
 export const devpostScraperTask = task({
 	id: "devpost-scraper",
 	maxDuration: 600,
-	run: async () => {
+	run: async (payload: IngestionTaskPayload) => {
+		const mode = ingestionModeFromWriteFlag(payload?.write);
+		metadata.set("mode", mode);
 		metadata.set("step", "scraping");
 		const raw = await scrapeDevpost();
 		metadata.set("found", raw.length);
@@ -24,24 +27,17 @@ export const devpostScraperTask = task({
 		metadata.set("filtered", filtered.length);
 		metadata.set("pipelineLog", JSON.parse(JSON.stringify(log)));
 
-		metadata.set("step", "normalizing");
-		const normalized = filtered.map(normalizeHackathon);
-
-		metadata.set("step", "deduplicating");
-		const newEvents = await deduplicateAgainstDB(normalized);
-		metadata.set("new", newEvents.length);
-
-		if (newEvents.length > 0) {
-			metadata.set("step", "inserting");
-			await db.insert(events).values(newEvents).onConflictDoNothing();
-		}
+		metadata.set("step", "ingesting");
+		const ingestion = await ingestEventCandidates(filtered, { mode });
+		metadata.set("new", ingestion.wouldInsert);
+		metadata.set("inserted", ingestion.inserted);
 
 		metadata.set("step", "done");
 		return {
 			scraped: raw.length,
 			filtered: filtered.length,
 			dropped: droppedNonLatam + droppedNonHackathon,
-			inserted: newEvents.length,
+			...ingestion,
 			log,
 		};
 	},

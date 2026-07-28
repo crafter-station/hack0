@@ -148,18 +148,34 @@ Behavior:
 
 ## Trigger-Free Import Path
 
-Use these commands when Trigger.dev is unavailable or credits are exhausted:
+Use these commands when Trigger.dev is unavailable or credits are exhausted.
+They are read-only by default:
 
 ```bash
 bun run sync:luma --future-only --limit=100
 bun run sync:devpost
 ```
 
-Expected database outcomes:
+The report shows what would be inserted without changing the database. Writes
+require all of the following:
+
+1. Pass `--write` to the sync command.
+2. Set `HACK0_DATABASE_ENV` to `development`, `staging`, or `production`.
+3. Set `HACK0_ALLOW_WRITES=true`.
+4. For production, also set `HACK0_ALLOW_PRODUCTION_WRITES=true`.
+
+Do not keep the production confirmation enabled in local env files. Enable it
+only for an explicitly approved production operation, then remove it.
+
+Expected outcomes in write mode:
 
 - Luma source: approved events from the Hack0 calendar.
 - Devpost source: pending events for manual curation.
 - Deduplication prevents same URL/slug/name-date duplicates from being inserted.
+
+Trigger scraper tasks also default to dry-run. Their orchestrators remain
+read-only until the production deployment phase explicitly enables validated
+sources.
 
 ## Validation
 
@@ -173,8 +189,9 @@ bun run build
 For database-connected scripts, validate env first:
 
 ```bash
-bun run sync:luma --dry-run --future-only --limit=5
-bun run sync:devpost --dry-run --skip-post-process
+bun run test:ingestion
+bun run sync:luma --future-only --limit=5
+bun run sync:devpost --skip-post-process
 ```
 
 ## Notes
