@@ -15,6 +15,13 @@
 			"when": 1779731874337,
 			"tag": "0001_light_enchantress",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1785214463629,
+			"tag": "0002_magenta_lady_deathstrike",
+			"breakpoints": true
 		}
 	]
 }
