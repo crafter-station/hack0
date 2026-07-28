@@ -1,252 +1,540 @@
-import { differenceInDays } from "date-fns";
-import { and, eq, gte, lte, sql } from "drizzle-orm";
+import { createHash } from "node:crypto";
+import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { events } from "@/lib/db/schema";
 import type { NewEvent } from "@/lib/db/schema/events";
-import type { SourceType } from "@/lib/scraper/types";
 
-// ---------------------------------------------------------------------------
-// Text utils (inlined to avoid extra dependency)
-// ---------------------------------------------------------------------------
+const TRACKING_PARAMS = new Set([
+	"fbclid",
+	"gclid",
+	"mc_cid",
+	"mc_eid",
+	"ref",
+	"referrer",
+	"source",
+]);
 
-/** Normalize a string for comparison: lowercase, strip accents, remove punctuation, collapse spaces. */
-function normalizeForComparison(s: string): string {
-	return s
+const URL_HOST_ALIASES: Record<string, string> = {
+	"lu.ma": "luma.com",
+	"www.lu.ma": "luma.com",
+	"www.luma.com": "luma.com",
+};
+
+const EXACT_MATCH_REASONS = ["source_external_id", "canonical_url"] as const;
+
+export type DeduplicationAction = "insert" | "skip" | "review";
+export type DeduplicationConfidence = "exact" | "high" | "possible";
+export type DeduplicationReason =
+	| (typeof EXACT_MATCH_REASONS)[number]
+	| "canonical_url_date_conflict"
+	| "name_date_location"
+	| "ambiguous_name_date"
+	| "new_event";
+
+export interface ComparableEvent {
+	id?: string;
+	slug?: string | null;
+	name: string;
+	startDate?: Date | null;
+	format?: string | null;
+	country?: string | null;
+	city?: string | null;
+	websiteUrl?: string | null;
+	registrationUrl?: string | null;
+	devpostUrl?: string | null;
+	scrapeSource?: string | null;
+	scrapeSourceUrl?: string | null;
+	externalId?: string | null;
+	scrapeRawData?: unknown;
+}
+
+export interface DeduplicationDecision {
+	index: number;
+	eventId?: string;
+	name: string;
+	action: DeduplicationAction;
+	reason: DeduplicationReason;
+	confidence: DeduplicationConfidence;
+	matchedEventId?: string;
+	matchedEventName?: string;
+	slug?: string;
+	evidence?: {
+		startDate?: string;
+		country?: string | null;
+		city?: string | null;
+		url?: string;
+		matchedStartDate?: string;
+		matchedCountry?: string | null;
+		matchedCity?: string | null;
+		matchedUrl?: string;
+	};
+}
+
+export interface DeduplicationReport {
+	newEvents: NewEvent[];
+	decisions: DeduplicationDecision[];
+	summary: {
+		total: number;
+		new: number;
+		duplicates: number;
+		needsReview: number;
+	};
+}
+
+export interface DuplicateAuditReport {
+	decisions: DeduplicationDecision[];
+	summary: {
+		total: number;
+		unique: number;
+		duplicates: number;
+		needsReview: number;
+	};
+}
+
+interface Match {
+	action: Exclude<DeduplicationAction, "insert">;
+	reason: Exclude<DeduplicationReason, "new_event">;
+	confidence: DeduplicationConfidence;
+	existing: ComparableEvent;
+	rank: number;
+}
+
+function normalizeText(value: string): string {
+	return value
 		.toLowerCase()
 		.normalize("NFD")
-		.replace(/[\u0300-\u036f]/g, "") // strip accents
-		.replace(/[^a-z0-9\s]/g, " ") // strip punctuation
+		.replace(/[\u0300-\u036f]/g, "")
+		.replace(/[^a-z0-9\s]/g, " ")
 		.replace(/\s+/g, " ")
 		.trim();
 }
 
-// ---------------------------------------------------------------------------
-// Levenshtein distance implementation (avoids dependency issues)
-// ---------------------------------------------------------------------------
-
 function levenshteinDistance(a: string, b: string): number {
-	const matrix: number[][] = [];
-	for (let i = 0; i <= b.length; i++) matrix[i] = [i];
-	for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+	const previous = Array.from({ length: a.length + 1 }, (_, index) => index);
 
-	for (let i = 1; i <= b.length; i++) {
-		for (let j = 1; j <= a.length; j++) {
-			if (b.charAt(i - 1) === a.charAt(j - 1)) {
-				matrix[i][j] = matrix[i - 1][j - 1];
-			} else {
-				matrix[i][j] = Math.min(
-					matrix[i - 1][j - 1] + 1,
-					matrix[i][j - 1] + 1,
-					matrix[i - 1][j] + 1,
-				);
+	for (let row = 1; row <= b.length; row++) {
+		const current = [row];
+		for (let column = 1; column <= a.length; column++) {
+			current[column] =
+				a[column - 1] === b[row - 1]
+					? previous[column - 1]
+					: Math.min(
+							previous[column - 1] + 1,
+							previous[column] + 1,
+							current[column - 1] + 1,
+						);
+		}
+		previous.splice(0, previous.length, ...current);
+	}
+
+	return previous[a.length];
+}
+
+function tokenSimilarity(a: string, b: string): number {
+	const left = new Set(a.split(" ").filter(Boolean));
+	const right = new Set(b.split(" ").filter(Boolean));
+	const union = new Set([...left, ...right]);
+	if (union.size === 0) return 1;
+
+	let intersection = 0;
+	for (const token of left) {
+		if (right.has(token)) intersection++;
+	}
+	return intersection / union.size;
+}
+
+export function eventNameSimilarity(a: string, b: string): number {
+	const left = normalizeText(a);
+	const right = normalizeText(b);
+	const maxLength = Math.max(left.length, right.length);
+	const levenshtein =
+		maxLength === 0 ? 1 : 1 - levenshteinDistance(left, right) / maxLength;
+	return Math.max(levenshtein, tokenSimilarity(left, right));
+}
+
+export function canonicalizeEventUrl(value: string | null | undefined) {
+	if (!value) return null;
+
+	try {
+		const parsed = new URL(value.trim());
+		if (parsed.protocol !== "http:" && parsed.protocol !== "https:")
+			return null;
+
+		const rawHost = parsed.hostname.toLowerCase();
+		const hostname = URL_HOST_ALIASES[rawHost] ?? rawHost.replace(/^www\./, "");
+		const pathname = parsed.pathname
+			.replace(/\/{2,}/g, "/")
+			.replace(/\/+$/, "");
+
+		for (const key of [...parsed.searchParams.keys()]) {
+			const normalizedKey = key.toLowerCase();
+			if (
+				normalizedKey.startsWith("utm_") ||
+				TRACKING_PARAMS.has(normalizedKey)
+			) {
+				parsed.searchParams.delete(key);
 			}
 		}
+		parsed.searchParams.sort();
+
+		const query = parsed.searchParams.toString();
+		return `${hostname}${pathname || "/"}${query ? `?${query}` : ""}`;
+	} catch {
+		return null;
 	}
-	return matrix[b.length][a.length];
 }
 
-function normalizedLevenshtein(a: string, b: string): number {
-	const maxLen = Math.max(a.length, b.length);
-	if (maxLen === 0) return 0;
-	return levenshteinDistance(a, b) / maxLen;
-}
-
-/**
- * Sort the whitespace-delimited tokens of a string alphabetically.
- * "omega hack 2026 eafit" → "2026 eafit hack omega"
- * This makes the similarity metric robust to word-order variations
- * (e.g. "OmegaHack EAFIT 2026" vs "Omega Hack 2026 EAFIT").
- */
-function tokenSort(s: string): string {
-	return s.split(/\s+/).sort().join(" ");
-}
-
-/**
- * Robust name distance: min(raw Levenshtein, token-sorted Levenshtein).
- * Using the minimum means we reward the best possible alignment between
- * two strings regardless of word order, which is the common real-world
- * variant when the same event is listed on two different platforms.
- */
-function robustNameDistance(a: string, b: string): number {
-	const raw = normalizedLevenshtein(a, b);
-	const sorted = normalizedLevenshtein(tokenSort(a), tokenSort(b));
-	return Math.min(raw, sorted);
-}
-
-function normalizeUrlForDedup(url: string): string {
-	return url.toLowerCase().replace(/\/+$/, "").split("?")[0].split("#")[0];
-}
-
-export interface DeduplicationResult {
-	isNew: boolean;
-	existingId?: string;
-	action: "insert" | "update" | "skip";
-}
-
-export async function findDuplicate(
-	normalized: NewEvent,
-	sourceType: SourceType,
-	sourceUrl: string,
-): Promise<DeduplicationResult> {
-	// Pass 1: Exact slug match
-	if (normalized.slug) {
-		const slugMatch = await db
-			.select()
-			.from(events)
-			.where(eq(events.slug, normalized.slug))
-			.limit(1);
-
-		if (slugMatch.length > 0) {
-			console.info(
-				`[deduplicator] Duplicate found (slug match): ${normalized.slug}`,
-			);
-			return { isNew: false, existingId: slugMatch[0].id, action: "update" };
-		}
+function externalIdentity(event: ComparableEvent) {
+	if (!event.scrapeSource) return null;
+	if (event.externalId?.trim()) {
+		return `${event.scrapeSource.trim().toLowerCase()}:${event.externalId.trim()}`;
+	}
+	if (!event.scrapeRawData) return null;
+	if (
+		typeof event.scrapeRawData !== "object" ||
+		Array.isArray(event.scrapeRawData)
+	) {
+		return null;
 	}
 
-	// Pass 2: Same website URL (normalize both sides for consistent matching)
-	if (normalized.websiteUrl) {
-		const dedupedUrl = normalizeUrlForDedup(normalized.websiteUrl);
-		const urlMatch = await db
-			.select()
-			.from(events)
-			.where(
-				sql`lower(regexp_replace(trim(trailing '/' from coalesce(${events.websiteUrl}, '')), '[?#].*$', '')) = ${dedupedUrl}`,
-			)
-			.limit(1);
+	const externalId = (event.scrapeRawData as Record<string, unknown>)
+		.externalId;
+	if (typeof externalId !== "string" || externalId.trim().length === 0) {
+		return null;
+	}
 
-		if (urlMatch.length > 0) {
-			console.info(
-				`[deduplicator] Duplicate found (URL match): ${normalized.websiteUrl}`,
-			);
-			return { isNew: false, existingId: urlMatch[0].id, action: "update" };
-		}
+	return `${event.scrapeSource.trim().toLowerCase()}:${externalId.trim()}`;
+}
 
-		// Also check scrapeSourceUrl column
-		const sourceUrlMatch = await db
-			.select({ id: events.id })
-			.from(events)
-			.where(
-				sql`lower(regexp_replace(trim(trailing '/' from coalesce(${events.scrapeSourceUrl}, '')), '[?#].*$', '')) = ${dedupedUrl}`,
-			)
-			.limit(1);
+function eventUrls(event: ComparableEvent) {
+	return new Set(
+		[
+			event.websiteUrl,
+			event.scrapeSourceUrl,
+			event.devpostUrl,
+			event.registrationUrl,
+		]
+			.map(canonicalizeEventUrl)
+			.filter((url): url is string => Boolean(url)),
+	);
+}
 
-		if (sourceUrlMatch.length > 0) {
-			console.info(
-				`[deduplicator] Duplicate found (scrapeSourceUrl match): ${normalized.websiteUrl}`,
-			);
+function datesWithinHours(
+	left: Date | null | undefined,
+	right: Date | null | undefined,
+	hours: number,
+) {
+	if (!left || !right) return false;
+	return Math.abs(left.getTime() - right.getTime()) <= hours * 60 * 60 * 1000;
+}
+
+function locationRelationship(
+	left: ComparableEvent,
+	right: ComparableEvent,
+): "same" | "unknown" | "conflict" {
+	if (left.format === "virtual" && right.format === "virtual") return "same";
+	if (
+		(left.format === "virtual" && right.format === "in-person") ||
+		(left.format === "in-person" && right.format === "virtual")
+	) {
+		return "conflict";
+	}
+
+	const leftCountry = normalizeText(left.country ?? "");
+	const rightCountry = normalizeText(right.country ?? "");
+	if (leftCountry && rightCountry && leftCountry !== rightCountry) {
+		return "conflict";
+	}
+
+	const leftCity = normalizeText(left.city ?? "");
+	const rightCity = normalizeText(right.city ?? "");
+	if (leftCity && rightCity && leftCity !== rightCity) return "conflict";
+	if (leftCity && rightCity && leftCity === rightCity) return "same";
+	if (leftCity || rightCity) return "unknown";
+	if (leftCountry && rightCountry && leftCountry === rightCountry)
+		return "same";
+
+	return "unknown";
+}
+
+function compareEvents(
+	incoming: ComparableEvent,
+	existing: ComparableEvent,
+): Match | null {
+	const incomingExternalIdentity = externalIdentity(incoming);
+	const existingExternalIdentity = externalIdentity(existing);
+	if (
+		incomingExternalIdentity &&
+		incomingExternalIdentity === existingExternalIdentity
+	) {
+		return {
+			action: "skip",
+			reason: "source_external_id",
+			confidence: "exact",
+			existing,
+			rank: 100,
+		};
+	}
+
+	const incomingUrls = eventUrls(incoming);
+	const existingUrls = eventUrls(existing);
+	for (const url of incomingUrls) {
+		if (existingUrls.has(url)) {
+			if (
+				incoming.startDate &&
+				existing.startDate &&
+				!datesWithinHours(incoming.startDate, existing.startDate, 72)
+			) {
+				return {
+					action: "review",
+					reason: "canonical_url_date_conflict",
+					confidence: "possible",
+					existing,
+					rank: 70,
+				};
+			}
 			return {
-				isNew: false,
-				existingId: sourceUrlMatch[0].id,
-				action: "update",
+				action: "skip",
+				reason: "canonical_url",
+				confidence: "exact",
+				existing,
+				rank: 90,
 			};
 		}
 	}
 
-	// Pass 3: Fuzzy name match within date window
-	if (normalized.startDate && normalized.name) {
-		const threeDaysBefore = new Date(normalized.startDate);
-		threeDaysBefore.setDate(threeDaysBefore.getDate() - 3);
-		const threeDaysAfter = new Date(normalized.startDate);
-		threeDaysAfter.setDate(threeDaysAfter.getDate() + 3);
+	if (!incoming.startDate || !existing.startDate) return null;
+	const similarity = eventNameSimilarity(incoming.name, existing.name);
+	const location = locationRelationship(incoming, existing);
 
-		const candidates = await db
-			.select()
-			.from(events)
-			.where(
-				and(
-					gte(events.startDate, threeDaysBefore),
-					lte(events.startDate, threeDaysAfter),
-				),
-			);
-
-		const normalizedName = normalizeForComparison(normalized.name);
-
-		for (const candidate of candidates) {
-			const candidateName = normalizeForComparison(candidate.name);
-			const distance = robustNameDistance(normalizedName, candidateName);
-
-			if (distance < 0.2) {
-				console.info(
-					`[deduplicator] Duplicate found (fuzzy match): "${normalized.name}" ≈ "${candidate.name}" (distance: ${distance.toFixed(3)})`,
-				);
-				return { isNew: false, existingId: candidate.id, action: "update" };
-			}
-		}
+	if (
+		similarity >= 0.9 &&
+		datesWithinHours(incoming.startDate, existing.startDate, 6) &&
+		location === "same"
+	) {
+		return {
+			action: "skip",
+			reason: "name_date_location",
+			confidence: "high",
+			existing,
+			rank: 80 + similarity,
+		};
 	}
 
-	return { isNew: true, action: "insert" };
-}
-
-/**
- * Filter an array of normalized events to only those that are not already in
- * the database. Checks each event via findDuplicate and returns only new ones.
- */
-export async function deduplicateAgainstDB(
-	normalized: NewEvent[],
-): Promise<NewEvent[]> {
-	const newEvents: NewEvent[] = [];
-
-	for (const event of normalized) {
-		const sourceType = (event.scrapeSource ?? "other") as SourceType;
-		const sourceUrl = event.scrapeSourceUrl ?? event.websiteUrl ?? "";
-		const result = await findDuplicate(event, sourceType, sourceUrl);
-		if (result.isNew) {
-			newEvents.push(event);
-		}
+	if (
+		similarity >= 0.78 &&
+		datesWithinHours(incoming.startDate, existing.startDate, 72) &&
+		location !== "conflict"
+	) {
+		return {
+			action: "review",
+			reason: "ambiguous_name_date",
+			confidence: "possible",
+			existing,
+			rank: 50 + similarity,
+		};
 	}
 
-	console.info(
-		`[deduplicateAgainstDB] ${normalized.length} in → ${newEvents.length} new`,
-	);
-	return newEvents;
-}
-
-/**
- * Check whether a normalized event already exists in the current in-flight
- * batch (same scraper run). This catches same-URL or near-identical name+date
- * duplicates that appear across different source URLs within the same run
- * before they are both inserted into the DB.
- *
- * Returns the existing batch entry's id if a duplicate is found, null otherwise.
- */
-export function findInBatch(
-	normalized: NewEvent,
-	batch: Array<{
-		id: string;
-		normalized: NewEvent;
-		sourceType: SourceType;
-		sourceUrl: string;
-	}>,
-): string | null {
-	for (const b of batch) {
-		// URL match
-		if (
-			normalized.websiteUrl &&
-			b.normalized.websiteUrl &&
-			normalized.websiteUrl === b.normalized.websiteUrl
-		) {
-			return b.id;
-		}
-
-		// Fuzzy name + close date
-		if (
-			normalized.startDate &&
-			b.normalized.startDate &&
-			normalized.name &&
-			b.normalized.name
-		) {
-			const dateDiff = Math.abs(
-				differenceInDays(normalized.startDate, b.normalized.startDate),
-			);
-			if (dateDiff <= 3) {
-				const dist = robustNameDistance(
-					normalizeForComparison(normalized.name),
-					normalizeForComparison(b.normalized.name),
-				);
-				if (dist < 0.2) return b.id;
-			}
-		}
-	}
 	return null;
+}
+
+function bestMatch(incoming: ComparableEvent, existing: ComparableEvent[]) {
+	let best: Match | null = null;
+	for (const candidate of existing) {
+		const match = compareEvents(incoming, candidate);
+		if (match && (!best || match.rank > best.rank)) best = match;
+	}
+	return best;
+}
+
+function matchEvidence(
+	incoming: ComparableEvent,
+	existing: ComparableEvent,
+): NonNullable<DeduplicationDecision["evidence"]> {
+	return {
+		startDate: incoming.startDate?.toISOString(),
+		country: incoming.country,
+		city: incoming.city,
+		url: [...eventUrls(incoming)][0],
+		matchedStartDate: existing.startDate?.toISOString(),
+		matchedCountry: existing.country,
+		matchedCity: existing.city,
+		matchedUrl: [...eventUrls(existing)][0],
+	};
+}
+
+function shortIdentityHash(event: ComparableEvent) {
+	const identity =
+		externalIdentity(event) ??
+		[...eventUrls(event)][0] ??
+		`${normalizeText(event.name)}:${event.startDate?.toISOString() ?? "undated"}:${event.country ?? ""}:${event.city ?? ""}`;
+	return createHash("sha256").update(identity).digest("hex").slice(0, 12);
+}
+
+function allocateSlug(event: NewEvent, usedSlugs: Set<string>) {
+	const base = event.slug ?? "event";
+	if (!usedSlugs.has(base)) {
+		usedSlugs.add(base);
+		return base;
+	}
+
+	const year = event.startDate?.getUTCFullYear();
+	const country = event.country?.toLowerCase();
+	const readableSuffix = [year, country].filter(Boolean).join("-");
+	const readable = readableSuffix ? `${base}-${readableSuffix}` : base;
+	if (!usedSlugs.has(readable)) {
+		usedSlugs.add(readable);
+		return readable;
+	}
+
+	const hashed = `${readable}-${shortIdentityHash(event)}`;
+	usedSlugs.add(hashed);
+	return hashed;
+}
+
+function newEventId(event: NewEvent) {
+	return typeof event.id === "string" ? event.id : undefined;
+}
+
+export function deduplicateEvents(
+	incoming: NewEvent[],
+	existing: ComparableEvent[],
+): DeduplicationReport {
+	const decisions: DeduplicationDecision[] = [];
+	const newEvents: NewEvent[] = [];
+	const acceptedBatch: ComparableEvent[] = [];
+	const usedSlugs = new Set(
+		existing
+			.map((event) => event.slug)
+			.filter((slug): slug is string => !!slug),
+	);
+
+	for (const [index, event] of incoming.entries()) {
+		const match = bestMatch(event as ComparableEvent, [
+			...existing,
+			...acceptedBatch,
+		]);
+
+		if (match) {
+			decisions.push({
+				index,
+				eventId: newEventId(event),
+				name: event.name,
+				action: match.action,
+				reason: match.reason,
+				confidence: match.confidence,
+				matchedEventId: match.existing.id,
+				matchedEventName: match.existing.name,
+				evidence: matchEvidence(event as ComparableEvent, match.existing),
+			});
+			continue;
+		}
+
+		const slug = allocateSlug(event, usedSlugs);
+		const prepared = { ...event, slug };
+		newEvents.push(prepared);
+		acceptedBatch.push({
+			...(prepared as ComparableEvent),
+			id: `batch:${index}`,
+		});
+		decisions.push({
+			index,
+			eventId: newEventId(event),
+			name: event.name,
+			action: "insert",
+			reason: "new_event",
+			confidence: "exact",
+			slug,
+		});
+	}
+
+	return {
+		newEvents,
+		decisions,
+		summary: {
+			total: incoming.length,
+			new: newEvents.length,
+			duplicates: decisions.filter((decision) => decision.action === "skip")
+				.length,
+			needsReview: decisions.filter((decision) => decision.action === "review")
+				.length,
+		},
+	};
+}
+
+export function auditEventCollection(
+	collection: ComparableEvent[],
+): DuplicateAuditReport {
+	const accepted: ComparableEvent[] = [];
+	const decisions: DeduplicationDecision[] = [];
+
+	for (const [index, event] of collection.entries()) {
+		const match = bestMatch(event, accepted);
+		if (match) {
+			decisions.push({
+				index,
+				eventId: event.id,
+				name: event.name,
+				action: match.action,
+				reason: match.reason,
+				confidence: match.confidence,
+				matchedEventId: match.existing.id,
+				matchedEventName: match.existing.name,
+				evidence: matchEvidence(event, match.existing),
+			});
+			if (match.action === "review") accepted.push(event);
+			continue;
+		}
+
+		accepted.push(event);
+		decisions.push({
+			index,
+			eventId: event.id,
+			name: event.name,
+			action: "insert",
+			reason: "new_event",
+			confidence: "exact",
+		});
+	}
+
+	return {
+		decisions,
+		summary: {
+			total: collection.length,
+			unique: accepted.length,
+			duplicates: decisions.filter((decision) => decision.action === "skip")
+				.length,
+			needsReview: decisions.filter((decision) => decision.action === "review")
+				.length,
+		},
+	};
+}
+
+async function loadExistingEvents(): Promise<ComparableEvent[]> {
+	return db
+		.select({
+			id: events.id,
+			slug: events.slug,
+			name: events.name,
+			startDate: events.startDate,
+			format: events.format,
+			country: events.country,
+			city: events.city,
+			websiteUrl: events.websiteUrl,
+			registrationUrl: events.registrationUrl,
+			devpostUrl: events.devpostUrl,
+			scrapeSource: events.scrapeSource,
+			scrapeSourceUrl: events.scrapeSourceUrl,
+			externalId: sql<
+				string | null
+			>`${events.scrapeRawData} ->> 'externalId'`.as("external_id"),
+		})
+		.from(events);
+}
+
+export async function deduplicateAgainstDBWithReport(
+	normalized: NewEvent[],
+): Promise<DeduplicationReport> {
+	const existing = await loadExistingEvents();
+	return deduplicateEvents(normalized, existing);
 }

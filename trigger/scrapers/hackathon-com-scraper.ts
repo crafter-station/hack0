@@ -6,9 +6,11 @@ import {
 } from "@/lib/ingestion/safety";
 import { runPostProcessor } from "@/lib/scraper/post-processor";
 import { scrapeHackathonCom } from "@/lib/scraper/sources/hackathon-com";
+import { eventIngestionQueue } from "@/trigger/event-ingestion-queue";
 
 export const hackathonComScraperTask = task({
 	id: "hackathon-com-scraper",
+	queue: eventIngestionQueue,
 	maxDuration: 300,
 	retry: {
 		maxAttempts: 2,

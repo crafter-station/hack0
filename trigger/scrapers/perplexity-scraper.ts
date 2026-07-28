@@ -6,9 +6,11 @@ import {
 } from "@/lib/ingestion/safety";
 import { runPostProcessor } from "@/lib/scraper/post-processor";
 import { scrapePerplexity } from "@/lib/scraper/sources/perplexity";
+import { eventIngestionQueue } from "@/trigger/event-ingestion-queue";
 
 export const perplexityScraperTask = task({
 	id: "perplexity-scraper",
+	queue: eventIngestionQueue,
 	maxDuration: 300,
 	retry: {
 		maxAttempts: 2,

@@ -171,11 +171,17 @@ Expected outcomes in write mode:
 
 - Luma source: approved events from the Hack0 calendar.
 - Devpost source: pending events for manual curation.
-- Deduplication prevents same URL/slug/name-date duplicates from being inserted.
+- Deduplication checks provider IDs, canonical URLs, and name/date/location.
+- Possible matches are held for review instead of being inserted.
+- Slug collisions receive a deterministic suffix; a shared slug alone is not
+  considered proof that two events are the same.
 
 Trigger scraper tasks also default to dry-run. Their orchestrators remain
 read-only until the production deployment phase explicitly enables validated
 sources.
+
+The complete per-source validation and release gate is documented in
+[`event-ingestion-rollout.md`](./event-ingestion-rollout.md).
 
 ## Validation
 

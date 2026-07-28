@@ -16,6 +16,7 @@ import {
 	ensureUniqueShortCode,
 	generateSlug,
 } from "@/lib/slug-utils";
+import { eventIngestionQueue } from "@/trigger/event-ingestion-queue";
 
 async function fetchLumaEventDetails(
 	eventId: string,
@@ -280,6 +281,7 @@ async function resolveOrCreateOrganization(
 
 export const lumaWebhookProcessorTask = task({
 	id: "luma-webhook-processor",
+	queue: eventIngestionQueue,
 	maxDuration: 120,
 	run: async (payload: LumaWebhookTaskPayload) => {
 		const { event_type, data } = payload;

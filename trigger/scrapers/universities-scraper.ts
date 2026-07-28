@@ -6,9 +6,11 @@ import {
 } from "@/lib/ingestion/safety";
 import { runPostProcessor } from "@/lib/scraper/post-processor";
 import { scrapeUniversities } from "@/lib/scraper/sources/universities";
+import { eventIngestionQueue } from "@/trigger/event-ingestion-queue";
 
 export const universitiesScraperTask = task({
 	id: "universities-scraper",
+	queue: eventIngestionQueue,
 	maxDuration: 600,
 	retry: {
 		maxAttempts: 2,

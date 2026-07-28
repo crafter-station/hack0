@@ -10,9 +10,11 @@ import {
 	type LumaExtractedData,
 } from "@/lib/scraper/luma-schema";
 import { createUniqueSlug } from "@/lib/slug-utils";
+import { eventIngestionQueue } from "@/trigger/event-ingestion-queue";
 
 export const eventImportTask = task({
 	id: "event-import",
+	queue: eventIngestionQueue,
 	maxDuration: 120,
 	run: async (payload: {
 		jobId: string;

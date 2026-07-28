@@ -6,9 +6,11 @@ import {
 } from "@/lib/ingestion/safety";
 import { runPostProcessor } from "@/lib/scraper/post-processor";
 import { scrapeMlh } from "@/lib/scraper/sources/mlh";
+import { eventIngestionQueue } from "@/trigger/event-ingestion-queue";
 
 export const mlhScraperTask = task({
 	id: "mlh-scraper",
+	queue: eventIngestionQueue,
 	maxDuration: 300,
 	run: async (payload: IngestionTaskPayload) => {
 		const mode = ingestionModeFromWriteFlag(payload?.write);

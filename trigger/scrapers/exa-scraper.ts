@@ -6,9 +6,11 @@ import {
 } from "@/lib/ingestion/safety";
 import { runPostProcessor } from "@/lib/scraper/post-processor";
 import { scrapeExa } from "@/lib/scraper/sources/exa";
+import { eventIngestionQueue } from "@/trigger/event-ingestion-queue";
 
 export const exaScraperTask = task({
 	id: "exa-scraper",
+	queue: eventIngestionQueue,
 	maxDuration: 300,
 	retry: {
 		maxAttempts: 2,

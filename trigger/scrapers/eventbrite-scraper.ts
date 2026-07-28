@@ -6,9 +6,11 @@ import {
 } from "@/lib/ingestion/safety";
 import { runPostProcessor } from "@/lib/scraper/post-processor";
 import { scrapeEventbrite } from "@/lib/scraper/sources/eventbrite";
+import { eventIngestionQueue } from "@/trigger/event-ingestion-queue";
 
 export const eventbriteScraperTask = task({
 	id: "eventbrite-scraper",
+	queue: eventIngestionQueue,
 	maxDuration: 600,
 	run: async (payload: IngestionTaskPayload) => {
 		const mode = ingestionModeFromWriteFlag(payload?.write);

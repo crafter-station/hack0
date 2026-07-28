@@ -2,6 +2,10 @@
 
 > Arquitectura/decisión: [`consolidation-plan.md`](./consolidation-plan.md). Este doc = la secuencia de ejecución (fases con gate + rollback), **todo en el repo hack0, por branches con PR**. **Estado:** aprobado; implementación de features aún no iniciada. **Fecha:** 2026-07-27.
 
+> La estabilización e incorporación gradual de fuentes de eventos se ejecuta
+> primero según [`event-ingestion-rollout.md`](./event-ingestion-rollout.md).
+> Ninguna fuente se agenda en producción hasta pasar su gate individual.
+
 ## Principios
 - **Stack de hack0 sin cambios** (Next.js/Neon/Clerk/Vercel/Trigger.dev). Reusar lo existente antes de crear.
 - **Branches + PR por fase**, cada una con su gate de verificación; merge solo con gate verde.
