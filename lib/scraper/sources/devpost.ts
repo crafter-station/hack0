@@ -385,22 +385,86 @@ function parseDevpostApiResponse(json: unknown): {
 	return { hackathons, meta };
 }
 
-function apiHackathonToRaw(item: DevpostApiHackathon): RawHackathon {
-	let startDate: string | undefined;
-	let endDate: string | undefined;
+const MONTH_NUMBERS: Record<string, string> = {
+	jan: "01",
+	feb: "02",
+	mar: "03",
+	apr: "04",
+	may: "05",
+	jun: "06",
+	jul: "07",
+	aug: "08",
+	sep: "09",
+	oct: "10",
+	nov: "11",
+	dec: "12",
+};
 
-	if (item.submission_period_dates) {
-		const dateStr = item.submission_period_dates;
-		const dashIndex = dateStr.indexOf(" - ");
-		if (dashIndex > 0) {
-			startDate = dateStr.slice(0, dashIndex).trim();
-			endDate = dateStr.slice(dashIndex + 3).trim();
-			if (endDate.match(/\d{4}/) && !startDate.match(/\d{4}/)) {
-				const yearMatch = endDate.match(/(\d{4})/);
-				if (yearMatch) startDate = `${startDate}, ${yearMatch[1]}`;
-			}
-		}
+function isoDateFromParts(month: string, day: string, year: string) {
+	const monthNumber = MONTH_NUMBERS[month.toLowerCase().slice(0, 3)];
+	if (!monthNumber) return undefined;
+	const dayNumber = Number(day);
+	const yearNumber = Number(year);
+	if (
+		!Number.isInteger(dayNumber) ||
+		dayNumber < 1 ||
+		dayNumber > 31 ||
+		!Number.isInteger(yearNumber)
+	) {
+		return undefined;
 	}
+	return `${yearNumber.toString().padStart(4, "0")}-${monthNumber}-${dayNumber
+		.toString()
+		.padStart(2, "0")}T00:00:00.000Z`;
+}
+
+export function parseDevpostDateRange(value: string): {
+	startDate?: string;
+	endDate?: string;
+} {
+	const rangeMatch = value
+		.trim()
+		.match(
+			/^([A-Za-z]{3,9})\s+(\d{1,2})(?:,\s*(\d{4}))?\s+-\s+(?:(?:([A-Za-z]{3,9})\s+)?(\d{1,2}),\s*(\d{4}))$/,
+		);
+	if (rangeMatch) {
+		const [, startMonth, startDay, startYear, endMonth, endDay, endYear] =
+			rangeMatch;
+		const resolvedEndMonth = endMonth || startMonth;
+		const inferredStartYear =
+			!startYear &&
+			Number(MONTH_NUMBERS[resolvedEndMonth.toLowerCase().slice(0, 3)]) <
+				Number(MONTH_NUMBERS[startMonth.toLowerCase().slice(0, 3)])
+				? String(Number(endYear) - 1)
+				: endYear;
+		return {
+			startDate: isoDateFromParts(
+				startMonth,
+				startDay,
+				startYear || inferredStartYear,
+			),
+			endDate: isoDateFromParts(resolvedEndMonth, endDay, endYear),
+		};
+	}
+
+	const singleMatch = value
+		.trim()
+		.match(/^([A-Za-z]{3,9})\s+(\d{1,2}),\s*(\d{4})$/);
+	if (!singleMatch) return {};
+	const date = isoDateFromParts(singleMatch[1], singleMatch[2], singleMatch[3]);
+	return { startDate: date, endDate: date };
+}
+
+export function normalizeDevpostAssetUrl(value?: string) {
+	if (!value) return undefined;
+	if (value.startsWith("//")) return `https:${value}`;
+	return /^https?:\/\//i.test(value) ? value : undefined;
+}
+
+function apiHackathonToRaw(item: DevpostApiHackathon): RawHackathon {
+	const { startDate, endDate } = parseDevpostDateRange(
+		item.submission_period_dates,
+	);
 
 	let city: string | undefined;
 	let country: string | undefined;
@@ -481,7 +545,8 @@ function apiHackathonToRaw(item: DevpostApiHackathon): RawHackathon {
 		country,
 		eligibility: eligibilityHint,
 		websiteUrl: item.url,
-		imageUrl: item.thumbnail_url,
+		registrationUrl: item.url,
+		imageUrl: normalizeDevpostAssetUrl(item.thumbnail_url),
 		prizePool: item.prize_amount
 			? item.prize_amount.replace(/<[^>]+>/g, "").trim()
 			: undefined,
@@ -494,7 +559,7 @@ function apiHackathonToRaw(item: DevpostApiHackathon): RawHackathon {
 	};
 }
 
-function parseDevpostDetailPage(
+export function parseDevpostDetailPage(
 	html: string,
 	_url: string,
 ): Partial<RawHackathon> {
@@ -510,6 +575,17 @@ function parseDevpostDetailPage(
 			const data = JSON.parse(raw) as Record<string, unknown>;
 			const location = data.location as Record<string, unknown> | undefined;
 			const address = location?.address as Record<string, unknown> | undefined;
+			const structuredStart = data.startDate;
+			const structuredEnd = data.endDate;
+			if (typeof structuredStart === "string") {
+				const date = new Date(structuredStart);
+				if (!Number.isNaN(date.getTime()))
+					result.startDate = date.toISOString();
+			}
+			if (typeof structuredEnd === "string") {
+				const date = new Date(structuredEnd);
+				if (!Number.isNaN(date.getTime())) result.endDate = date.toISOString();
+			}
 
 			// Venue name from ld+json — only use if it's a real venue, not the event name
 			// Online events set location.name to the event title which is not useful
@@ -561,20 +637,14 @@ function parseDevpostDetailPage(
 	if (headerEl.length > 0) {
 		const style = headerEl.attr("style") ?? "";
 		const bgMatch = style.match(/url\(["']?([^"')]+)["']?\)/);
-		if (bgMatch)
-			result.bannerUrl = bgMatch[1].startsWith("//")
-				? `https:${bgMatch[1]}`
-				: bgMatch[1];
+		if (bgMatch) result.bannerUrl = normalizeDevpostAssetUrl(bgMatch[1]);
 	}
 	// Also try the full-width challenge photo inside the header
 	if (!result.bannerUrl) {
 		const headerImg = $("#challenge-header img, .challenge-header img")
 			.first()
 			.attr("src");
-		if (headerImg)
-			result.bannerUrl = headerImg.startsWith("//")
-				? `https:${headerImg}`
-				: headerImg;
+		if (headerImg) result.bannerUrl = normalizeDevpostAssetUrl(headerImg);
 	}
 
 	// ---------------------------------------------------------------------------
@@ -752,8 +822,23 @@ function parseDevpostDetailPage(
 		}
 	}
 
-	const regLink = $('a[href*="register"], a[href*="signup"]').attr("href");
-	if (regLink) result.registrationUrl = regLink;
+	try {
+		const detailHost = new URL(_url).hostname;
+		$('a[href*="register"]').each((_, element) => {
+			if (result.registrationUrl) return;
+			const href = $(element).attr("href");
+			if (!href) return;
+			const candidate = new URL(href, _url);
+			if (
+				candidate.hostname === detailHost &&
+				candidate.pathname.replace(/\/+$/, "") === "/register"
+			) {
+				result.registrationUrl = candidate.toString();
+			}
+		});
+	} catch {
+		// The canonical Devpost event URL remains the registration fallback.
+	}
 
 	// ---------------------------------------------------------------------------
 	// Registration deadline
@@ -762,14 +847,26 @@ function parseDevpostDetailPage(
 		".deadline, [data-deadline], .submission-period-dates, .dates-deadline",
 	).first();
 	if (deadlineEl.length > 0) {
-		const deadlineText = deadlineEl.text().trim();
-		if (deadlineText) result.registrationDeadline = deadlineText;
+		const structuredDeadline = deadlineEl
+			.find("time[datetime]")
+			.first()
+			.attr("datetime");
+		if (structuredDeadline) {
+			const date = new Date(structuredDeadline);
+			if (!Number.isNaN(date.getTime())) {
+				result.registrationDeadline = date.toISOString();
+			}
+		}
 	}
 	if (!result.registrationDeadline) {
 		const regCloseMatch = bodyHtml.match(
 			/(?:registration(?:\s+closes)?|submissions?\s+(?:close|due|end)):?\s*([a-z]+ \d{1,2},?\s*\d{4})/i,
 		);
-		if (regCloseMatch) result.registrationDeadline = regCloseMatch[1].trim();
+		if (regCloseMatch) {
+			result.registrationDeadline = parseDevpostDateRange(
+				regCloseMatch[1].replace(/(\d{1,2})\s+(\d{4})$/, "$1, $2"),
+			).endDate;
+		}
 	}
 
 	// ---------------------------------------------------------------------------
