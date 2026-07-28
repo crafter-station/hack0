@@ -136,6 +136,7 @@
 	"scripts": {
 		"build": "next build",
 		"check": "biome check",
+		"audit:duplicates": "bun run scripts/audit-event-duplicates.ts",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:push": "drizzle-kit push",

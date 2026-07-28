@@ -6,9 +6,11 @@ import {
 } from "@/lib/ingestion/safety";
 import { runPostProcessor } from "@/lib/scraper/post-processor";
 import { scrapeHaiku } from "@/lib/scraper/sources/haiku";
+import { eventIngestionQueue } from "@/trigger/event-ingestion-queue";
 
 export const haikuScraperTask = task({
 	id: "haiku-scraper",
+	queue: eventIngestionQueue,
 	maxDuration: 300,
 	retry: {
 		maxAttempts: 2,

@@ -48,12 +48,13 @@ Diagnosed 2026-07-23 (see MAK-186 comment for full detail):
 - **Root cause:** the Trigger.dev pipeline (hourly Luma cron `trigger/luma-calendar-sync.ts` + daily/weekly scrapers) **does not run in prod**. There is no `trigger:deploy` script and no CI workflow to deploy it; Trigger.dev v3 crons only fire in the cloud after a deploy. Plus credits were exhausted (MAK-186).
 - **Secondary cause:** scraped events enter as `pending` (`isApproved:false`, `lib/scraper/normalizer.ts`) and stay invisible until curated in `/god/events`. (Luma sync auto-approves.)
 
-**Fix checklist** (not yet executed):
-1. Restore Trigger.dev credits + add `trigger:deploy` to `package.json` and a CI workflow running `trigger.dev deploy` on push to main.
-2. Verify prod env parity: `DATABASE_URL` (Trigger prod == Vercel Neon), `LUMA_API_KEY`/`LUMA_API_KEYS`, `TRIGGER_PROJECT_ID`, `FIRECRAWL_API_KEY`.
-3. Register/verify the Luma webhook (`app/(app)/api/webhooks/luma/route.ts`) for on-demand freshness.
-4. Operate the curation queue (`/god/events`) or auto-approve trusted sources.
-5. Stopgap: run `bun run sync:luma` against the prod DB.
+**Fix checklist** (incremental rollout):
+1. Complete the shared validation, write-safety, deduplication, and consistency foundations.
+2. Add secure two-way Hack0-Luma synchronization so every published Hack0 event is represented in the Hack0 calendar without creating duplicate registrations.
+3. Add and validate one source at a time using the gate in [`event-ingestion-rollout.md`](./event-ingestion-rollout.md).
+4. Deploy Trigger.dev versions without promotion, inspect manual runs, then activate only the approved source schedule.
+5. Verify production env parity before any promoted run: `DATABASE_URL` (Trigger prod == Vercel Neon), `LUMA_API_KEY`/`LUMA_API_KEYS`, `TRIGGER_PROJECT_ID`, `FIRECRAWL_API_KEY`.
+6. Operate the curation queue (`/god/events`) or auto-approve only explicitly trusted sources.
 
 ## 5. Design — SSOT is `brand.md` (v0.2)
 

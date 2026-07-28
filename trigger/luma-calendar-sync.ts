@@ -1,8 +1,10 @@
 import { metadata, schedules } from "@trigger.dev/sdk/v3";
 import { syncLumaCalendarEvents } from "@/lib/luma/calendar-sync";
+import { eventIngestionQueue } from "@/trigger/event-ingestion-queue";
 
 export const lumaCalendarSyncTask = schedules.task({
 	id: "luma-calendar-sync",
+	queue: eventIngestionQueue,
 	cron: "0 * * * *",
 	maxDuration: 300,
 	run: async () => {

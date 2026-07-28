@@ -6,9 +6,11 @@ import {
 } from "@/lib/ingestion/safety";
 import { runPostProcessor } from "@/lib/scraper/post-processor";
 import { scrapeMeetup } from "@/lib/scraper/sources/meetup";
+import { eventIngestionQueue } from "@/trigger/event-ingestion-queue";
 
 export const meetupScraperTask = task({
 	id: "meetup-scraper",
+	queue: eventIngestionQueue,
 	maxDuration: 300,
 	run: async (payload: IngestionTaskPayload) => {
 		const mode = ingestionModeFromWriteFlag(payload?.write);

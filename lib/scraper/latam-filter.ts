@@ -130,6 +130,7 @@ export const LATAM_CITIES: Record<string, string> = {
 	campinas: "BR",
 	florianópolis: "BR",
 	florianopolis: "BR",
+	"nova lima": "BR",
 
 	// Chile
 	santiago: "CL",
