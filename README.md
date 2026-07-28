@@ -1,17 +1,17 @@
 <div align="center">
 
-```
- ██╗  ██╗  █████╗   ██████╗ ██╗  ██╗  ██████╗
- ██║  ██║ ██╔══██╗ ██╔════╝ ██║ ██╔╝ ██╔═████╗
- ███████║ ███████║ ██║      █████╔╝  ██║██╔██║
- ██╔══██║ ██╔══██║ ██║      ██╔═██╗  ████╔╝██║
- ██║  ██║ ██║  ██║ ╚██████╗ ██║  ██╗ ╚██████╔╝
- ╚═╝  ╚═╝ ╚═╝  ╚═╝  ╚═════╝ ╚═╝  ╚═╝  ╚═════╝
-```
+<pre>
+██╗  ██╗ █████╗  ██████╗██╗  ██╗ ██████╗
+██║  ██║██╔══██╗██╔════╝██║ ██╔╝██╔═████╗
+███████║███████║██║     █████╔╝ ██║██╔██║
+██╔══██║██╔══██║██║     ██╔═██╗ ████╔╝██║
+██║  ██║██║  ██║╚██████╗██║  ██╗╚██████╔╝
+╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝ ╚═════╝
+</pre>
 
-# hack0 · LATAM Builder Index
+### LATAM Builder Index
 
-**The public, always-fresh map of the LATAM builder ecosystem** — events, hackathons, communities, labs, grants, and the people building across Latin America.
+**The public, always-fresh map of the Latin American builder ecosystem** — events, hackathons, communities, labs, grants, and the people building.
 
 [![hack0.dev](https://img.shields.io/badge/live-hack0.dev-16A34A)](https://hack0.dev)
 [![Roadmap](https://img.shields.io/badge/roadmap-hack0.dev%2Froadmap-000000)](https://hack0.dev/roadmap)
@@ -26,30 +26,30 @@
 
 hack0.dev maps **who's building in Latin America and what's happening** — in one public index, kept fresh automatically from community calendars (Luma) and the web. No more scattered event links: the LATAM builder signal, in one place.
 
-- **Eventos** — every tech event, hackathon and meetup across LATAM, auto-detected and filterable.
-- **Comunidades** — the public directory of communities, universities and labs, country by country.
+- **Events** — every tech event, hackathon and meetup across LATAM, auto-detected and filterable.
+- **Communities** — the public directory of communities, universities and labs, country by country.
 - **Builders & hosts** — the people who organize, teach, convene and move communities: a practical signal of who's active.
-- **Programas** — incubators, accelerators, funds and grants that help LATAM builders find support and capital.
+- **Programs** — incubators, accelerators, funds and grants that help LATAM builders find support and capital.
 
-### Eventos
+### [Events →](https://hack0.dev/events)
 Auto-detected and curated, always current.
 
-![Eventos](.github/assets/events.png)
+![Events](.github/assets/events.png)
 
-### Comunidades
+### [Communities →](https://hack0.dev/c)
 Regional coverage — which countries already have mapped communities, and where signal is still missing.
 
-![Comunidades](.github/assets/communities.png)
+![Communities](.github/assets/communities.png)
 
-### Builders & hosts
+### [Builders & hosts →](https://hack0.dev/builders)
 Profiles derived from event hosts — who's building, teaching and convening across the region.
 
 ![Builders & hosts](.github/assets/builders.png)
 
-### Programas, grants e inversión
-Incubators, accelerators, funds and angel networks that help builders get support, capital or distribution.
+### [Programs, grants & investment →](https://hack0.dev/opportunities)
+Incubators, accelerators, funds and angel networks that help builders find support, capital or distribution.
 
-![Programas](.github/assets/programs.png)
+![Programs](.github/assets/programs.png)
 
 ## Roadmap & where it's going
 
