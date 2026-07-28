@@ -13,9 +13,9 @@ export const hack0DailyOrchestrator = schedules.task({
 	maxDuration: 60,
 	run: async () => {
 		const [devpost, mlh, eventbrite] = await Promise.all([
-			devpostScraperTask.trigger(),
-			mlhScraperTask.trigger(),
-			eventbriteScraperTask.trigger(),
+			devpostScraperTask.trigger({ write: false }),
+			mlhScraperTask.trigger({ write: false }),
+			eventbriteScraperTask.trigger({ write: false }),
 		]);
 		return {
 			triggered: {

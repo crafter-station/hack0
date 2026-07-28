@@ -1,6 +1,7 @@
 import { and, eq, notInArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { eventHosts, events, organizations } from "@/lib/db/schema";
+import { assertWriteAllowed } from "@/lib/ingestion/safety";
 import { resolveLumaEventLocation } from "@/lib/luma/location";
 import { inferEventType } from "@/lib/scraper/luma-schema";
 import {
@@ -504,7 +505,8 @@ async function syncEvent(
 
 async function syncSingleLumaCalendar(apiKey: string, options: SyncOptions) {
 	const limit = options.limit ?? 50;
-	const dryRun = options.dryRun ?? false;
+	const dryRun = options.dryRun ?? true;
+	if (!dryRun) assertWriteAllowed("write");
 	const calendar = await fetchCalendar(apiKey);
 	const organization = await resolveCalendarOrganization(calendar, dryRun);
 	const lumaEvents = await listCalendarEvents(

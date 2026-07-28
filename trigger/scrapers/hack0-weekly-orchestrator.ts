@@ -21,8 +21,8 @@ export const hack0WeeklyOrchestrator = schedules.task({
 	maxDuration: 60,
 	run: async () => {
 		const [meetup, exa] = await Promise.all([
-			meetupScraperTask.trigger(),
-			exaScraperTask.trigger(),
+			meetupScraperTask.trigger({ write: false }),
+			exaScraperTask.trigger({ write: false }),
 		]);
 		return { triggered: { meetup: meetup.id, exa: exa.id } };
 	},

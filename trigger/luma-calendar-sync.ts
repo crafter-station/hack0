@@ -8,9 +8,11 @@ export const lumaCalendarSyncTask = schedules.task({
 	run: async () => {
 		metadata.set("step", "syncing");
 		const result = await syncLumaCalendarEvents({
+			dryRun: true,
 			includePast: false,
 			limit: 100,
 		});
+		metadata.set("mode", "dry-run");
 		metadata.set("fetched", result.fetched);
 		metadata.set("created", result.created);
 		metadata.set("updated", result.updated);
