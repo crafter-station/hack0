@@ -1,4 +1,4 @@
-import { LATAM_CITIES, LATAM_COUNTRY_NAMES } from "@/lib/scraper/latam-filter";
+import { inferLatamLocationFromText } from "@/lib/geo/latam-location";
 
 export type ConsistencySeverity = "warning" | "review" | "reject";
 export type ConsistencyIssueCode =
@@ -27,28 +27,6 @@ export interface ConsistencyIssue {
 export interface ConsistencyResult {
 	status: "valid" | "review" | "reject";
 	issues: ConsistencyIssue[];
-}
-
-function normalizeLocationText(value: string) {
-	return ` ${value
-		.toLowerCase()
-		.normalize("NFD")
-		.replace(/[\u0300-\u036f]/g, "")
-		.replace(/[^a-z0-9]+/g, " ")
-		.trim()} `;
-}
-
-function inferCountryFromName(name: string) {
-	const normalizedName = normalizeLocationText(name);
-	const places = [
-		...Object.entries(LATAM_COUNTRY_NAMES),
-		...Object.entries(LATAM_CITIES),
-	].sort(([left], [right]) => right.length - left.length);
-
-	for (const [place, country] of places) {
-		if (normalizedName.includes(normalizeLocationText(place))) return country;
-	}
-	return null;
 }
 
 export function checkEventConsistency(
@@ -100,7 +78,7 @@ export function checkEventConsistency(
 		});
 	}
 
-	const countryFromName = inferCountryFromName(event.name);
+	const countryFromName = inferLatamLocationFromText(event.name)?.country;
 	if (
 		event.country &&
 		countryFromName &&

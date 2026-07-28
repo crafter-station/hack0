@@ -5,6 +5,7 @@ import { UTApi } from "uploadthing/server";
 import { db } from "@/lib/db";
 import { eventHosts, events, organizations } from "@/lib/db/schema";
 import { normalizeCountryCode } from "@/lib/event-utils";
+import { getEventSourceSuppression } from "@/lib/ingestion/manual-overrides";
 import type {
 	LumaApiEvent,
 	LumaHost,
@@ -290,6 +291,18 @@ export const lumaWebhookProcessorTask = task({
 		metadata.set("lumaEventId", data.api_id);
 		metadata.set("lumaEventName", data.name);
 		metadata.set("calendarSlug", data.calendar?.slug || "unknown");
+
+		const suppression = getEventSourceSuppression(data.url);
+		if (suppression) {
+			metadata.set("step", "event_source_suppressed");
+			metadata.set("canonicalEventId", suppression.canonicalEventId);
+			return {
+				success: true,
+				skipped: true,
+				reason: `Suppressed ${suppression.reason}`,
+				eventId: suppression.canonicalEventId,
+			};
+		}
 
 		const org = await resolveOrCreateOrganization(data);
 

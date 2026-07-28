@@ -81,3 +81,22 @@ bun run audit:duplicates
 
 The command only selects the event identity fields required by the matcher. It
 does not call external source APIs and does not insert, update, or delete rows.
+Duplicate and consistency results cover the approved public index; the report
+also shows how many historical, pending, or rejected rows were excluded.
+
+## Manual source suppression
+
+Confirmed duplicate source URLs that could be re-approved by a direct provider
+sync are recorded in `lib/ingestion/manual-overrides.ts`. A suppression must
+name its canonical event and explain the reason. The historical duplicate row
+is retained as rejected for auditability instead of being hard-deleted.
+
+One-off reviewed data corrections use:
+
+```bash
+bun run remediate:event-audit
+```
+
+The command defaults to dry-run and verifies exact IDs and prior values before
+any update. Production execution additionally requires all write-safety
+environment confirmations.
