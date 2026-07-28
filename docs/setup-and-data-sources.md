@@ -69,6 +69,8 @@ Use only the services needed for the workflow being tested.
 - `FAL_API_KEY`: fal.ai image tasks.
 - `LUMA_API_KEY`: Luma calendar sync for one calendar.
 - `LUMA_API_KEYS`: comma-separated Luma calendar API keys for multiple calendars.
+- `EVENT_ROUTER_API_URL` and `EVENT_ROUTER_API_TOKEN`: canonical Luma,
+  Eventbrite, and Meetup feed from Luma Badge Studio.
 - `LUMA_CONNECTION_ENCRYPTION_KEY`: encrypted Luma connection storage.
 
 ## Luma Calendar Source
@@ -145,6 +147,40 @@ Behavior:
 - Detail enrichment does not use Firecrawl credits; it uses native HTML fetch.
 - Post-processing is still recommended because global Devpost results can include
   non-LATAM or non-hackathon events.
+
+## Calendar Router Source
+
+The calendar router is a user-scoped canonical feed produced by Luma Badge
+Studio. It can combine connected and external Luma, Eventbrite, and Meetup
+calendars while preserving the original provider, calendar, ownership, and
+event identifiers.
+
+Configure a newly rotated token:
+
+```bash
+EVENT_ROUTER_API_URL=https://your-event-router.example
+EVENT_ROUTER_API_TOKEN=luma_sk_...
+```
+
+Run the safe checkpoint:
+
+```bash
+bun run sync:event-router --dry-run --max-events=20
+bun run sync:event-router --dry-run --owned=true
+```
+
+Behavior:
+
+- The client reads canonical, upcoming events and follows the API cursor safely.
+- The first response timestamp is reused across pages so pagination is stable.
+- Malformed source rows are reported without exposing the API token.
+- Hack0 revalidates and deduplicates every candidate against Neon.
+- Router candidates remain pending by default, including connected calendars.
+  Connected ownership is not the same as consent to publish.
+- Autoapproval requires a separate explicit opt-in for each Hack0 calendar.
+- `event-router-scraper` is an unscheduled Trigger task until its source gate
+  passes. Do not deploy it with writes enabled before the two-way Luma
+  foundation is complete.
 
 ## Trigger-Free Import Path
 
