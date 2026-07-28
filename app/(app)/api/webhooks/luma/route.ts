@@ -1,26 +1,60 @@
 import { tasks } from "@trigger.dev/sdk/v3";
 import { NextResponse } from "next/server";
-import type { LumaWebhookPayload } from "@/lib/luma/types";
+import { parseLumaWebhookPayload } from "@/lib/luma/webhook-payload";
+import {
+	getLumaWebhookSecrets,
+	verifyLumaWebhookSignature,
+} from "@/lib/luma/webhook-security";
 import type { lumaWebhookProcessorTask } from "@/trigger/luma-webhook-processor";
 
 export async function POST(request: Request) {
 	try {
 		const rawBody = await request.text();
-		console.log("[Luma Webhook] Raw payload:", rawBody);
+		const webhookId = request.headers.get("webhook-id");
+		const secrets = getLumaWebhookSecrets();
 
-		const body = JSON.parse(rawBody) as LumaWebhookPayload;
-
-		if (!body.type) {
-			console.error("[Luma Webhook] Missing type. Keys:", Object.keys(body));
+		if (secrets.length === 0) {
+			console.error("[Luma Webhook] No webhook secret configured");
 			return NextResponse.json(
-				{ error: "Invalid webhook payload: missing type" },
+				{ error: "Webhook is not configured" },
+				{ status: 503 },
+			);
+		}
+
+		const verification = verifyLumaWebhookSignature({
+			secrets,
+			signatureHeader: request.headers.get("webhook-signature"),
+			rawBody,
+		});
+		if (!verification.valid) {
+			console.warn("[Luma Webhook] Rejected request", {
+				webhookId,
+				reason: verification.reason,
+			});
+			return NextResponse.json(
+				{ error: "Invalid webhook signature" },
+				{ status: 401 },
+			);
+		}
+
+		if (!webhookId) {
+			return NextResponse.json(
+				{ error: "Missing webhook delivery ID" },
+				{ status: 400 },
+			);
+		}
+
+		const body = parseLumaWebhookPayload(rawBody);
+		if (!body) {
+			return NextResponse.json(
+				{ error: "Invalid webhook payload" },
 				{ status: 400 },
 			);
 		}
 
 		console.log(`[Luma Webhook] Received: ${body.type}`, {
+			webhookId,
 			eventId: body.data?.api_id,
-			eventName: body.data?.name,
 			calendarId: body.data?.calendar?.id,
 		});
 
@@ -29,6 +63,10 @@ export async function POST(request: Request) {
 			{
 				event_type: body.type,
 				data: body.data,
+			},
+			{
+				idempotencyKey: webhookId,
+				idempotencyKeyTTL: "30d",
 			},
 		);
 
