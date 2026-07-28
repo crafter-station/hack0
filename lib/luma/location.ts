@@ -1,4 +1,5 @@
 import { normalizeCountryCode } from "@/lib/event-utils";
+import { inferLatamLocationFromText } from "@/lib/geo/latam-location";
 
 type LumaGeoAddress = {
 	city?: string | null;
@@ -173,14 +174,6 @@ function hasVirtualLocationSignal(...values: Array<string | null | undefined>) {
 	].some((pattern) => haystack.includes(pattern));
 }
 
-function normalizeCity(
-	value: string | null | undefined,
-	fallback?: string | null,
-) {
-	const place = inferPeruPlace(value);
-	return place?.city || cleanText(value) || fallback || null;
-}
-
 function normalizeDepartment(
 	value: string | null | undefined,
 	fallback?: string | null,
@@ -231,17 +224,31 @@ export function resolveLumaEventLocation(
 		geo?.address,
 		geo?.full_address,
 	);
-	const inferredPlace = inferPeruPlace(
+	const inferredLatamLocation = inferLatamLocationFromText(
 		input.eventName,
 		geo?.city,
 		geo?.region,
 		geo?.city_state,
 		venue,
 	);
-	const city = normalizeCity(geo?.city, inferredPlace?.city);
+	const inferredPeruPlace =
+		inferredLatamLocation?.country === "PE"
+			? inferPeruPlace(
+					input.eventName,
+					geo?.city,
+					geo?.region,
+					geo?.city_state,
+					venue,
+				)
+			: null;
+	const city =
+		cleanText(geo?.city) ||
+		inferredLatamLocation?.city ||
+		inferredPeruPlace?.city ||
+		null;
 	const department = normalizeDepartment(
 		geo?.region,
-		inferredPlace?.department,
+		inferredPeruPlace?.department,
 	);
 	const meetingUrl = cleanText(input.meetingUrl);
 	const locationType = locationTypeFrom(input, geo);
@@ -256,6 +263,7 @@ export function resolveLumaEventLocation(
 	);
 	const country =
 		normalizeCountryCode(geo?.country_code || geo?.country || null) ||
+		inferredLatamLocation?.country ||
 		input.countryFallback ||
 		"PE";
 	const format = resolveFormat(

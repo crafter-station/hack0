@@ -149,6 +149,7 @@
 		"lint:fix": "biome lint --write",
 		"migrate:personal-orgs": "bun run scripts/migrate-personal-orgs.ts",
 		"prepare": "simple-git-hooks",
+		"remediate:event-audit": "bun run scripts/remediate-event-audit-findings.ts",
 		"seed:ecosystem-websites": "bun run scripts/seed-ecosystem-websites.ts",
 		"seed:peru-universities": "bun run scripts/seed-peru-universities.ts",
 		"sync:devpost": "bun run scripts/sync-devpost.ts",

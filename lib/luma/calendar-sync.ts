@@ -1,6 +1,7 @@
 import { and, eq, notInArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { eventHosts, events, organizations } from "@/lib/db/schema";
+import { getEventSourceSuppression } from "@/lib/ingestion/manual-overrides";
 import { assertWriteAllowed } from "@/lib/ingestion/safety";
 import { resolveLumaEventLocation } from "@/lib/luma/location";
 import { inferEventType } from "@/lib/scraper/luma-schema";
@@ -368,6 +369,16 @@ async function syncEvent(
 	fallbackHosts: LumaHost[],
 	apiKey: string,
 ) {
+	const suppression = getEventSourceSuppression(event.url);
+	if (suppression) {
+		return {
+			name: event.name,
+			url: event.url,
+			action: "skipped" as const,
+			reason: `suppressed_${suppression.reason}:${suppression.canonicalEventId}`,
+		};
+	}
+
 	if (shouldSkipEvent(event)) {
 		return {
 			name: event.name,

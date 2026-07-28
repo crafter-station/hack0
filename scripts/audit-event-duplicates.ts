@@ -22,16 +22,21 @@ async function main() {
 			devpostUrl: events.devpostUrl,
 			scrapeSource: events.scrapeSource,
 			scrapeSourceUrl: events.scrapeSourceUrl,
+			isApproved: events.isApproved,
+			approvalStatus: events.approvalStatus,
 			externalId: sql<
 				string | null
 			>`${events.scrapeRawData} ->> 'externalId'`.as("external_id"),
 		})
 		.from(events);
-	const duplicateReport = auditEventCollection(existing);
+	const publicEvents = existing.filter(
+		(event) => event.isApproved === true && event.approvalStatus === "approved",
+	);
+	const duplicateReport = auditEventCollection(publicEvents);
 	const duplicateFindings = duplicateReport.decisions.filter(
 		(decision) => decision.action !== "insert",
 	);
-	const consistencyFindings = existing
+	const consistencyFindings = publicEvents
 		.map((event) => ({
 			eventId: event.id,
 			name: event.name,
@@ -43,6 +48,11 @@ async function main() {
 		JSON.stringify(
 			{
 				mode: "read-only",
+				scope: {
+					databaseEvents: existing.length,
+					publicIndexEvents: publicEvents.length,
+					excludedFromPublicIndex: existing.length - publicEvents.length,
+				},
 				duplicates: {
 					...duplicateReport.summary,
 					findings: duplicateFindings.slice(0, 100),
