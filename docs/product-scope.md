@@ -1,6 +1,10 @@
 # Product Scope
 
-hack0 is being reset around the Peru Agentic Builder Index. The active product is a public, searchable map of events, communities, hackathons, university labs, grants, active builders, demo projects, and useful AI workflows in Peru.
+> **Consolidation notice (2026-07-27):** **hack0 stays the base** — repo and stack (Next.js/Neon/Clerk/Vercel/Trigger.dev) unchanged. We're **adding the community/badge layer** (H2: Luma Badge + per-event design kit + frictionless Luma import) in place, under `/c/<slug>`. (An earlier idea to move onto luma-card/Lovable Cloud was evaluated and discarded.) See [`docs/consolidation-plan.md`](./consolidation-plan.md) and `ROADMAP.md` §7.
+
+> Updated 2026-07-23: north star confirmed as **LATAM-first**. The earlier "Peru reset" framing is superseded — Peru is the beachhead/featured view, not the total scope. See `docs/ROADMAP.md` for the consolidated direction.
+
+hack0 is the **LATAM Agentic Builder Index**. The active product is a public, searchable map of events, communities, hackathons, university labs, grants, active builders, demo projects, and useful AI workflows across Latin America. It launches from Peru (the initial coverage beachhead) and expands country by country; coverage per country is real and DB-driven (`getLatamCountryCoverage`, `lib/latam-country-coverage.ts`).
 
 ## Active Now
 
@@ -39,4 +43,4 @@ These modules are removed from the public product until they have real usage, ow
 2. Drop empty tables and schema branches that belong to removed modules.
 3. Consolidate ingestion around one source event pipeline.
 4. Turn TypeScript errors back into build failures.
-5. Make the public Peru Agentic Builder Index the primary homepage and SEO surface.
+5. Make the public LATAM Agentic Builder Index the primary homepage and SEO surface (Peru as the featured/default coverage view).

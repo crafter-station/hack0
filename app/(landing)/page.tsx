@@ -803,7 +803,7 @@ function EventCompactCard({
 			href={eventUrl}
 			className="group overflow-hidden border bg-card transition-colors hover:border-brand-green/40 hover:bg-muted/20"
 		>
-			<div className="relative aspect-[16/9] bg-muted">
+			<div className="relative aspect-square bg-muted">
 				<EventCover
 					event={event}
 					className="h-full w-full"

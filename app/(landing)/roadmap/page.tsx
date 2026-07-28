@@ -52,6 +52,14 @@ const phases = [
 			{ text: "Filtro por país y banderas correctas", done: true },
 			{ text: "Dashboard para organizadores", done: false },
 			{ text: "Analytics básicos de eventos", done: false },
+			{
+				text: "Auto-detección de eventos (scrapers + sync de Luma)",
+				done: true,
+			},
+			{
+				text: "Índice siempre actualizado (auto-sync programado)",
+				done: false,
+			},
 		],
 	},
 	{
@@ -76,6 +84,25 @@ const phases = [
 			{ text: "Historial y logros de participantes", done: false },
 			{ text: "Conexiones entre comunidades", done: false },
 			{ text: "Reportes del ecosistema tech", done: false },
+		],
+	},
+	{
+		title: "Fase 5: Toolkit de comunidades",
+		status: "planned" as const,
+		description:
+			"Herramientas para que las comunidades crezcan con su contenido",
+		items: [
+			{
+				text: "Publicación sin fricción (pega un link de Luma → al índice)",
+				done: false,
+			},
+			{
+				text: "Design-kit por evento: badges, certificados y gráficos para RRSS",
+				done: false,
+			},
+			{ text: "Plantillas mejoradas con IA", done: false },
+			{ text: "Multi-calendario por comunidad", done: false },
+			{ text: "Certificados y tokenización de asistencia", done: false },
 		],
 	},
 ];
