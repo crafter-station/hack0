@@ -85,6 +85,10 @@ and Meetup, including source calendars and ownership evidence.
 - Router candidates remain `pending` by default. `ownership=connected` is
   evidence, not consent. Automatic approval requires a separate, explicit
   Hack0 opt-in allowlist for the calendar.
+- Hack0 accepts only events with a physical LATAM location, plus online events
+  whose router language metadata identifies Spanish. Accepted online events
+  receive LATAM scope; other regions and non-Spanish online events are reported
+  as out of scope before database deduplication.
 - Rotate any token shared in chat before storing it in Vercel or Trigger.dev.
 
 ## Read-only duplicate audit

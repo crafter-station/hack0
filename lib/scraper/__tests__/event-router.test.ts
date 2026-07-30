@@ -3,6 +3,7 @@ import { describe, test } from "node:test";
 import { deduplicateEvents } from "@/lib/scraper/deduplicator";
 import { normalizeHackathon } from "@/lib/scraper/normalizer";
 import {
+	eventRouterEligibility,
 	eventRouterEventToCandidate,
 	fetchEventRouterCandidates,
 } from "@/lib/scraper/sources/event-router";
@@ -138,6 +139,72 @@ describe("eventRouterEventToCandidate", () => {
 		assert.equal(report.summary.duplicates, 1);
 		assert.equal(report.decisions[1].reason, "source_external_id");
 	});
+
+	test("accepts Spanish online events as LATAM scope", () => {
+		const onlineEvent = event({
+			name: "IA para todos",
+			description: "Encuentro virtual para builders",
+			city: null,
+			enrichment: {
+				countryCode: null,
+				languageCode: "es",
+				languages: ["Español"],
+				isOnline: true,
+				format: "online",
+				topics: ["AI"],
+			},
+		});
+		const eligibility = eventRouterEligibility(onlineEvent);
+		const candidate = eventRouterEventToCandidate(
+			onlineEvent,
+			"2026-07-28T14:00:00.000Z",
+		);
+
+		assert.equal(eligibility.accepted, true);
+		assert.equal(eligibility.reason, "online_spanish");
+		assert.equal(candidate.modality, "virtual");
+		assert.equal(candidate.scopeHint, "latam");
+		assert.ok(candidate.themes?.includes("Latam"));
+	});
+
+	test("rejects physical events outside LATAM and non-Spanish online events", () => {
+		assert.deepEqual(
+			eventRouterEligibility(
+				event({
+					name: "Madrid Tech Night",
+					city: "Madrid, Spain",
+					enrichment: {
+						countryCode: "ES",
+						languageCode: "es",
+						isOnline: false,
+						format: "in_person",
+					},
+				}),
+			),
+			{
+				accepted: false,
+				reason: "outside_latam",
+				countryCode: "ES",
+				city: "Madrid, Spain",
+				isOnline: false,
+			},
+		);
+		assert.equal(
+			eventRouterEligibility(
+				event({
+					name: "Global AI Online",
+					description: "Online event for global builders",
+					city: null,
+					enrichment: {
+						languageCode: "en",
+						isOnline: true,
+						format: "online",
+					},
+				}),
+			).reason,
+			"online_not_spanish",
+		);
+	});
 });
 
 describe("fetchEventRouterCandidates", () => {
@@ -194,6 +261,40 @@ describe("fetchEventRouterCandidates", () => {
 		assert.equal(result.candidates.length, 1);
 		assert.equal(result.rejections.length, 1);
 		assert.match(result.rejections[0].issues.join(" "), /url/);
+	});
+
+	test("reports valid events excluded by the LATAM policy", async () => {
+		const fetchImpl = (async () =>
+			Response.json(
+				page(
+					[
+						event(),
+						event({
+							name: "London Tech Night",
+							city: "London, UK",
+							url: "https://lu.ma/london-tech",
+							enrichment: {
+								countryCode: "GB",
+								languageCode: "en",
+								isOnline: false,
+							},
+						}),
+					],
+					null,
+					0,
+					2,
+				),
+			)) as typeof fetch;
+
+		const result = await fetchEventRouterCandidates({
+			baseUrl: "https://router.example",
+			token: "test-token",
+			fetchImpl,
+		});
+
+		assert.equal(result.candidates.length, 1);
+		assert.equal(result.exclusions.length, 1);
+		assert.equal(result.exclusions[0].reason, "outside_latam");
 	});
 
 	test("allows the terminal page to match the page safety limit", async () => {

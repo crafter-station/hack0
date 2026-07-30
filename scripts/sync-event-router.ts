@@ -44,6 +44,8 @@ async function main() {
 				collected: collection.candidates.length,
 				adapterRejected: collection.rejections.length,
 				adapterRejections: collection.rejections.slice(0, 25),
+				outOfScope: collection.exclusions.length,
+				exclusions: collection.exclusions.slice(0, 25),
 				source: collection.metadata,
 				sample: collection.candidates.slice(0, 10).map((candidate) => ({
 					name: candidate.name,
@@ -56,6 +58,12 @@ async function main() {
 						typeof candidate.raw === "object" &&
 						"ownership" in candidate.raw
 							? candidate.raw.ownership
+							: null,
+					eligibility:
+						candidate.raw &&
+						typeof candidate.raw === "object" &&
+						"hack0Eligibility" in candidate.raw
+							? candidate.raw.hack0Eligibility
 							: null,
 				})),
 				...ingestion,

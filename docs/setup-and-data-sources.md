@@ -174,6 +174,10 @@ Behavior:
 - The client reads canonical, upcoming events and follows the API cursor safely.
 - The first response timestamp is reused across pages so pagination is stable.
 - Malformed source rows are reported without exposing the API token.
+- Physical events must resolve to a LATAM country. Online events must be
+  identified as Spanish by the router's language metadata; accepted online
+  events receive LATAM scope.
+- Valid events outside that policy are reported separately as out of scope.
 - Hack0 revalidates and deduplicates every candidate against Neon.
 - Router candidates remain pending by default, including connected calendars.
   Connected ownership is not the same as consent to publish.

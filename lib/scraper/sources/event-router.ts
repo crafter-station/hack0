@@ -7,6 +7,35 @@ const ownershipSchema = z.enum(["connected", "external"]);
 const dateStringSchema = z
 	.string()
 	.refine((value) => !Number.isNaN(Date.parse(value)), "Invalid date");
+const LATAM_COUNTRY_CODES = new Set([
+	"AR",
+	"BO",
+	"BR",
+	"BZ",
+	"CL",
+	"CO",
+	"CR",
+	"CU",
+	"DO",
+	"EC",
+	"GF",
+	"GP",
+	"GT",
+	"GY",
+	"HN",
+	"HT",
+	"MQ",
+	"MX",
+	"NI",
+	"PA",
+	"PE",
+	"PR",
+	"PY",
+	"SR",
+	"SV",
+	"UY",
+	"VE",
+]);
 
 const eventSourceSchema = z
 	.object({
@@ -42,6 +71,27 @@ const externalIdsSchema = z
 	})
 	.passthrough();
 
+const eventEnrichmentSchema = z
+	.object({
+		languageCode: z.string().nullable().optional(),
+		languages: z.array(z.string()).optional(),
+		countryCode: z.string().nullable().optional(),
+		region: z.string().nullable().optional(),
+		venueName: z.string().nullable().optional(),
+		venueAddress: z.string().nullable().optional(),
+		latitude: z.number().nullable().optional(),
+		longitude: z.number().nullable().optional(),
+		isOnline: z.boolean().nullable().optional(),
+		format: z.string().nullable().optional(),
+		topics: z.array(z.string()).optional(),
+		audience: z.array(z.string()).optional(),
+		level: z.string().nullable().optional(),
+		organizer: z.string().nullable().optional(),
+		confidence: z.number().nullable().optional(),
+		sources: z.record(z.string(), z.string()).optional(),
+	})
+	.passthrough();
+
 const eventRouterEventSchema = z
 	.object({
 		id: z.string().min(1),
@@ -55,6 +105,9 @@ const eventRouterEventSchema = z
 			.optional(),
 		city: z.string().nullable().optional(),
 		description: z.string().nullable().optional(),
+		timezone: z.string().nullable().optional(),
+		enrichment: eventEnrichmentSchema.optional(),
+		updatedAt: dateStringSchema.nullable().optional(),
 		externalIds: externalIdsSchema.nullable().optional(),
 		sources: z.array(eventSourceSchema).nullable().optional(),
 		sourceCount: z.number().int().nonnegative().optional(),
@@ -89,9 +142,39 @@ export interface EventRouterRejection {
 	issues: string[];
 }
 
+export type EventRouterExclusionReason =
+	| "outside_latam"
+	| "online_not_spanish"
+	| "missing_location_and_language";
+
+export interface EventRouterExclusion {
+	page: number;
+	index: number;
+	name: string;
+	url: string;
+	reason: EventRouterExclusionReason;
+}
+
+type EventRouterEligibility =
+	| {
+			accepted: true;
+			reason: "latam_location" | "online_spanish";
+			countryCode: string | null;
+			city: string | null;
+			isOnline: boolean;
+	  }
+	| {
+			accepted: false;
+			reason: EventRouterExclusionReason;
+			countryCode: string | null;
+			city: string | null;
+			isOnline: boolean;
+	  };
+
 export interface EventRouterCollection {
 	candidates: EventCandidate[];
 	rejections: EventRouterRejection[];
+	exclusions: EventRouterExclusion[];
 	metadata: {
 		pages: number;
 		reportedTotal: number;
@@ -127,6 +210,7 @@ function uniqueOrganizers(event: EventRouterEvent) {
 	const seen = new Set<string>();
 	const organizers: Array<{ name: string }> = [];
 	const names = [
+		event.enrichment?.organizer,
 		...(event.sourceCalendars ?? []).map((calendar) => calendar.name),
 		...(event.sources ?? []).map((source) => source.hostName),
 	];
@@ -139,6 +223,102 @@ function uniqueOrganizers(event: EventRouterEvent) {
 	}
 
 	return organizers;
+}
+
+function normalizedLanguage(value: string) {
+	return value
+		.toLowerCase()
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.trim();
+}
+
+function isSpanishLanguage(event: EventRouterEvent) {
+	const languages = [
+		event.enrichment?.languageCode,
+		...(event.enrichment?.languages ?? []),
+	]
+		.filter((value): value is string => Boolean(value))
+		.map(normalizedLanguage);
+
+	return languages.some(
+		(language) =>
+			language === "es" ||
+			language.startsWith("es-") ||
+			language === "spanish" ||
+			language === "espanol" ||
+			language === "castellano",
+	);
+}
+
+function hasOnlineSignal(event: EventRouterEvent) {
+	if (
+		event.enrichment?.isOnline !== null &&
+		event.enrichment?.isOnline !== undefined
+	) {
+		return event.enrichment.isOnline;
+	}
+	return /\b(online|virtual|remote|remoto|remota|en linea)\b/i.test(
+		[event.enrichment?.format, event.city].filter(Boolean).join(" "),
+	);
+}
+
+export function eventRouterEligibility(
+	event: EventRouterEvent,
+): EventRouterEligibility {
+	const inferredLocation = inferLatamLocationFromText(
+		event.city,
+		event.enrichment?.region,
+		event.enrichment?.venueName,
+		event.enrichment?.venueAddress,
+		event.name,
+		event.description,
+	);
+	const declaredCountry =
+		event.enrichment?.countryCode?.trim().toUpperCase() || null;
+	const countryCode = declaredCountry ?? inferredLocation?.country ?? null;
+	const isLatamLocation = declaredCountry
+		? LATAM_COUNTRY_CODES.has(declaredCountry)
+		: Boolean(inferredLocation);
+	const isOnline = hasOnlineSignal(event);
+
+	if (isLatamLocation) {
+		return {
+			accepted: true,
+			reason: "latam_location",
+			countryCode,
+			city: inferredLocation?.city ?? event.city?.trim() ?? null,
+			isOnline,
+		};
+	}
+	if (isOnline && isSpanishLanguage(event)) {
+		return {
+			accepted: true,
+			reason: "online_spanish",
+			countryCode: null,
+			city: null,
+			isOnline: true,
+		};
+	}
+
+	const hasLocationEvidence = Boolean(
+		declaredCountry ||
+			event.city?.trim() ||
+			event.enrichment?.region?.trim() ||
+			event.enrichment?.venueName?.trim() ||
+			event.enrichment?.venueAddress?.trim(),
+	);
+	return {
+		accepted: false,
+		reason: isOnline
+			? "online_not_spanish"
+			: hasLocationEvidence
+				? "outside_latam"
+				: "missing_location_and_language",
+		countryCode,
+		city: event.city?.trim() ?? null,
+		isOnline,
+	};
 }
 
 function primaryProvider(event: EventRouterEvent) {
@@ -173,15 +353,8 @@ export function eventRouterEventToCandidate(
 	event: EventRouterEvent,
 	generatedAt: string,
 ): EventCandidate {
-	const inferredLocation = inferLatamLocationFromText(
-		event.city,
-		event.name,
-		event.description,
-	);
+	const eligibility = eventRouterEligibility(event);
 	const provider = primaryProvider(event);
-	const location = event.city?.trim();
-	const hasVirtualLocation =
-		/\b(online|virtual|remote|remoto|remota|en linea)\b/i.test(location ?? "");
 	const calendars = event.sourceCalendars ?? [];
 	const ownership = calendars.some(
 		(calendar) => calendar.ownership === "connected",
@@ -197,25 +370,41 @@ export function eventRouterEventToCandidate(
 		description: event.description ?? undefined,
 		startDate: event.startAt,
 		endDate: event.endAt ?? undefined,
-		modality: hasVirtualLocation
-			? inferredLocation
+		timezone: event.timezone ?? undefined,
+		modality: eligibility.isOnline
+			? eligibility.reason === "latam_location" && eligibility.city
 				? "hybrid"
 				: "virtual"
-			: location
-				? "in-person"
-				: undefined,
-		country: inferredLocation?.country,
-		city:
-			inferredLocation?.city ??
-			(hasVirtualLocation ? undefined : (location ?? undefined)),
+			: "in-person",
+		country: eligibility.countryCode ?? undefined,
+		city: eligibility.city ?? undefined,
+		venue: event.enrichment?.venueName ?? undefined,
+		fullAddress: event.enrichment?.venueAddress ?? undefined,
 		websiteUrl: event.url,
 		registrationUrl: event.url,
 		imageUrl: event.coverUrl ?? undefined,
 		themes: [
+			"Latam",
 			...new Set([...(event.tags ?? []), ...(event.suggestedTags ?? [])]),
+			...(event.enrichment?.topics ?? []),
+		],
+		languages: [
+			...new Set(
+				[
+					event.enrichment?.languageCode,
+					...(event.enrichment?.languages ?? []),
+				].filter((value): value is string => Boolean(value)),
+			),
 		],
 		organizers: uniqueOrganizers(event),
-		scopeHint: inferredLocation ? "latam" : "global",
+		scopeHint: "latam",
+		classifyConfidence:
+			event.enrichment?.confidence === null ||
+			event.enrichment?.confidence === undefined
+				? undefined
+				: event.enrichment.confidence <= 1
+					? event.enrichment.confidence * 100
+					: Math.min(event.enrichment.confidence, 100),
 		discoveredAt: generatedAt,
 		raw: {
 			routerEventId: event.id,
@@ -225,6 +414,8 @@ export function eventRouterEventToCandidate(
 			calendars,
 			sources: event.sources ?? [],
 			externalIds: event.externalIds ?? null,
+			enrichment: event.enrichment ?? {},
+			hack0Eligibility: eligibility.reason,
 		},
 	};
 }
@@ -261,6 +452,7 @@ export async function fetchEventRouterCandidates(
 
 	const candidates: EventCandidate[] = [];
 	const rejections: EventRouterRejection[] = [];
+	const exclusions: EventRouterExclusion[] = [];
 	const seenCursors = new Set<string>();
 	let cursor: string | null = null;
 	let generatedAt: string | null = null;
@@ -335,6 +527,18 @@ export async function fetchEventRouterCandidates(
 				continue;
 			}
 
+			const eligibility = eventRouterEligibility(parsed.data);
+			if (!eligibility.accepted) {
+				exclusions.push({
+					page: pages,
+					index,
+					name: parsed.data.name,
+					url: parsed.data.url,
+					reason: eligibility.reason,
+				});
+				continue;
+			}
+
 			candidates.push(eventRouterEventToCandidate(parsed.data, generatedAt));
 			if (maxEvents && candidates.length >= maxEvents) break;
 		}
@@ -360,6 +564,7 @@ export async function fetchEventRouterCandidates(
 	return {
 		candidates,
 		rejections,
+		exclusions,
 		metadata: { pages, reportedTotal, generatedAt },
 	};
 }

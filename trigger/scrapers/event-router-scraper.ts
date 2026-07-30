@@ -26,6 +26,7 @@ export const eventRouterScraperTask = task({
 		});
 		metadata.set("found", collection.candidates.length);
 		metadata.set("adapterRejected", collection.rejections.length);
+		metadata.set("outOfScope", collection.exclusions.length);
 
 		metadata.set("step", "ingesting");
 		const ingestion = await ingestEventCandidates(collection.candidates, {
@@ -38,6 +39,7 @@ export const eventRouterScraperTask = task({
 		return {
 			collected: collection.candidates.length,
 			adapterRejected: collection.rejections.length,
+			outOfScope: collection.exclusions.length,
 			source: collection.metadata,
 			...ingestion,
 		};
