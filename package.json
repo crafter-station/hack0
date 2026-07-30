@@ -155,6 +155,7 @@
 		"sync:devpost": "bun run scripts/sync-devpost.ts",
 		"sync:luma": "bun run scripts/sync-luma-calendar.ts",
 		"test:ingestion": "bun test lib/ingestion/__tests__",
+		"test:luma": "bun test lib/luma/__tests__",
 		"start": "next start"
 	},
 	"simple-git-hooks": {

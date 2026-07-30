@@ -39,6 +39,7 @@ bun run dev
 | **Firecrawl** `FIRECRAWL_API_KEY` | Web scraping / page extraction for event & organization discovery (Devpost detail, universities, org scraping). | **1 — feature** (scraping) | `lib/scraper/firecrawl.ts`, `lib/scraper/sources/*`, `trigger/*` | Any scraper/import that uses Firecrawl fails. | firecrawl.dev — ✅ free tier |
 | **Trigger.dev** `TRIGGER_PROJECT_ID`, `TRIGGER_SECRET_KEY` | Background jobs & cron: hourly Luma sync, daily/weekly scrapers, webhook processing. `PROJECT_ID` is read by the Trigger CLI (`trigger.config.ts:14`, throws only there); `SECRET_KEY` used at runtime to enqueue jobs. | **1 — feature** (jobs) | `trigger.config.ts`, `lib/actions/import.ts`, `app/(app)/api/webhooks/luma/route.ts` | Background/scheduled jobs don't run. **`bun run dev` is unaffected** (the Next app doesn't import the config). Use the Trigger-free sync commands instead. | cloud.trigger.dev — ✅ free tier |
 | **Luma** `LUMA_API_KEY` / `LUMA_API_KEYS` | **Primary event source.** Pulls events from owned Luma calendars; imported events are auto-approved. | **1 — feature** (real data) | `lib/luma/calendar-sync.ts` (throws if no key exists), `trigger/luma-webhook-processor.ts` | Luma sync/webhook throws. Get it to load real events. | Luma calendar → Developer/API settings. **Requires Luma Plus**, each key scoped to one calendar. |
+| **Luma webhook** `LUMA_WEBHOOK_SECRET` / `LUMA_WEBHOOK_SECRETS` | Verifies that incoming Luma event changes are authentic and recent. | **1 — feature** (two-way sync) | `app/(app)/api/webhooks/luma/route.ts` | Webhook returns `503` and does not enqueue unverified data. | Luma calendar → Settings → Developer → Webhooks. One `whsec_...` secret per webhook/calendar. |
 | **UploadThing** `UPLOADTHING_TOKEN` | Image/file uploads (event banners, avatars). | **1 — feature** (uploads) | `app/(app)/api/uploadthing/core.ts` | Uploads fail at upload time. | uploadthing.com — ✅ free tier |
 | **Resend** `RESEND_API_KEY` | Transactional email: community invites, Luma email verification. | **1 — feature** (email) | `lib/email/resend.ts:8` (only `console.warn` if missing) | Email sends fail silently at send time; **no boot error**. | resend.com — ✅ free tier |
 | **Exa** `EXA_API_KEY` | Optional scraper **discovery** source (finds candidate events via search). | **2 — optional** | `lib/scraper/sources/exa.ts:340` | That one discovery source is skipped. | exa.ai — paid/limited free |
@@ -90,7 +91,9 @@ bun run sync:devpost                                   # full; events land as "p
 Scraped events go to the curation queue (`approvalStatus: pending`) — approve them in `/god/events` (set `ADMIN_EMAILS` to your email first).
 
 **D. "Full stack incl. background jobs / prod-like"**
-→ C + `TRIGGER_PROJECT_ID` + `TRIGGER_SECRET_KEY` + `UPLOADTHING_TOKEN` + `RESEND_API_KEY`. Run the worker with `bun run trigger:dev`.
+→ C + `TRIGGER_PROJECT_ID` + `TRIGGER_SECRET_KEY` +
+`LUMA_WEBHOOK_SECRET` (or `LUMA_WEBHOOK_SECRETS`) + `UPLOADTHING_TOKEN` +
+`RESEND_API_KEY`. Run the worker with `bun run trigger:dev`.
 
 ---
 
