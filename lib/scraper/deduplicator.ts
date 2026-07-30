@@ -165,6 +165,12 @@ export function canonicalizeEventUrl(value: string | null | undefined) {
 		const pathname = parsed.pathname
 			.replace(/\/{2,}/g, "/")
 			.replace(/\/+$/, "");
+		if (
+			hostname === "secure.devpost.com" &&
+			pathname.toLowerCase() === "/users/register"
+		) {
+			return null;
+		}
 
 		for (const key of [...parsed.searchParams.keys()]) {
 			const normalizedKey = key.toLowerCase();
