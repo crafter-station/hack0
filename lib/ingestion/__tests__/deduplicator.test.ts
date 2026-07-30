@@ -50,6 +50,15 @@ describe("canonicalizeEventUrl", () => {
 			"events.example.com/view?id=42",
 		);
 	});
+
+	test("ignores Devpost's shared account registration page", () => {
+		assert.equal(
+			canonicalizeEventUrl(
+				"https://secure.devpost.com/users/register?ref_content=signup_global_nav",
+			),
+			null,
+		);
+	});
 });
 
 describe("eventNameSimilarity", () => {
