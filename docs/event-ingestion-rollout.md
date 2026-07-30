@@ -120,3 +120,15 @@ bun run remediate:event-audit
 The command defaults to dry-run and verifies exact IDs and prior values before
 any update. Production execution additionally requires all write-safety
 environment confirmations.
+
+## Remote event identity
+
+`event_source_links` records provider identities separately from the Hack0 event
+row. An `origin` link identifies where the event is managed. A
+`calendar_listing` link identifies an additional calendar where the same event
+is listed. The deterministic `identity_key` is unique, so repeating a sync
+targets the same remote relationship instead of creating a second one.
+
+The table is provider-neutral and supports inbound, outbound, or bidirectional
+sync. Luma calendar connections are optional references; external discovery
+sources can use the same identity model without storing credentials.

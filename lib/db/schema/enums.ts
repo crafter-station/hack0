@@ -176,3 +176,21 @@ export const eventScopeEnum = pgEnum("event_scope", [
 	"latam",
 	"global_latam_eligible",
 ]);
+
+export const eventSourceLinkTypeEnum = pgEnum("event_source_link_type", [
+	"origin",
+	"calendar_listing",
+]);
+
+export const eventSourceSyncModeEnum = pgEnum("event_source_sync_mode", [
+	"inbound",
+	"outbound",
+	"bidirectional",
+]);
+
+export const eventSourceLinkStatusEnum = pgEnum("event_source_link_status", [
+	"pending",
+	"active",
+	"error",
+	"removed",
+]);
