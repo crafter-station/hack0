@@ -87,8 +87,15 @@ and Meetup, including source calendars and ownership evidence.
   Hack0 opt-in allowlist for the calendar.
 - Hack0 accepts only events with a physical LATAM location, plus online events
   whose router language metadata identifies Spanish. Accepted online events
-  receive LATAM scope; other regions and non-Spanish online events are reported
-  as out of scope before database deduplication.
+  receive LATAM scope.
+- Events with missing language/location or weak geography inferred only from a
+  title, description, or calendar name enter the pending admin queue with a
+  scope-review warning. They are never auto-published.
+- Explicit non-LATAM physical events and explicitly non-Spanish online events
+  are reported as out of scope before database deduplication.
+- The router URL must return API JSON directly. Redirects, including a Lovable
+  `auth-bridge` login redirect, are rejected so the bearer token is never sent
+  to another host.
 - Rotate any token shared in chat before storing it in Vercel or Trigger.dev.
 
 ## Read-only duplicate audit

@@ -191,7 +191,12 @@ Behavior:
 - Physical events must resolve to a LATAM country. Online events must be
   identified as Spanish by the router's language metadata; accepted online
   events receive LATAM scope.
-- Valid events outside that policy are reported separately as out of scope.
+- Missing language/location and weak LATAM hints from titles, descriptions, or
+  calendar names remain pending with a visible scope-review warning.
+- Explicit non-LATAM physical events and explicitly non-Spanish online events
+  are reported separately as out of scope.
+- The base URL must return JSON directly. The client rejects redirects such as
+  Lovable's `auth-bridge` to avoid forwarding the bearer token to another host.
 - Hack0 revalidates and deduplicates every candidate against Neon.
 - Router candidates remain pending by default, including connected calendars.
   Connected ownership is not the same as consent to publish.

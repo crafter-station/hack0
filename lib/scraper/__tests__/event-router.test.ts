@@ -182,6 +182,7 @@ describe("eventRouterEventToCandidate", () => {
 				}),
 			),
 			{
+				status: "excluded",
 				accepted: false,
 				reason: "outside_latam",
 				countryCode: "ES",
@@ -204,6 +205,54 @@ describe("eventRouterEventToCandidate", () => {
 			).reason,
 			"online_not_spanish",
 		);
+	});
+
+	test("routes weak and incomplete evidence to manual review", () => {
+		const weakEvent = event({
+			name: "The BMAD Method",
+			description: "Context engineering for AI development.",
+			city: null,
+			enrichment: {
+				countryCode: "PE",
+				languageCode: "en",
+				isOnline: null,
+				sources: { countryCode: "calendar_name" },
+			},
+		});
+		const missingEvent = event({
+			name: "Claude Community Session",
+			description: "A community conversation for builders.",
+			city: null,
+			enrichment: {},
+		});
+		const onlineWithoutLanguage = event({
+			name: "AI Builders Online",
+			description: "A virtual session for builders.",
+			city: null,
+			enrichment: { isOnline: true },
+		});
+
+		assert.equal(eventRouterEligibility(weakEvent).status, "review");
+		assert.equal(
+			eventRouterEligibility(weakEvent).reason,
+			"weak_latam_evidence",
+		);
+		assert.equal(
+			eventRouterEligibility(missingEvent).reason,
+			"missing_location_and_language",
+		);
+		assert.equal(
+			eventRouterEligibility(onlineWithoutLanguage).reason,
+			"online_missing_language",
+		);
+
+		const candidate = eventRouterEventToCandidate(
+			weakEvent,
+			"2026-07-28T14:00:00.000Z",
+		);
+		assert.equal(candidate.scopeHint, "global");
+		assert.equal(candidate.scopeReviewReason, "weak_latam_evidence");
+		assert.ok(!candidate.themes?.includes("Latam"));
 	});
 });
 
@@ -293,8 +342,55 @@ describe("fetchEventRouterCandidates", () => {
 		});
 
 		assert.equal(result.candidates.length, 1);
+		assert.equal(result.reviews.length, 0);
 		assert.equal(result.exclusions.length, 1);
 		assert.equal(result.exclusions[0].reason, "outside_latam");
+	});
+
+	test("keeps incomplete events as pending review candidates", async () => {
+		const fetchImpl = (async () =>
+			Response.json(
+				page(
+					[
+						event(),
+						event({
+							id: "evt-weak",
+							name: "The BMAD Method",
+							url: "https://lu.ma/bmad",
+							city: null,
+							enrichment: {
+								countryCode: "PE",
+								sources: { countryCode: "calendar_name" },
+							},
+						}),
+						event({
+							id: "evt-missing",
+							name: "Claude Community Session",
+							url: "https://lu.ma/claude-session",
+							city: null,
+							description: "A community conversation for builders.",
+							enrichment: {},
+						}),
+					],
+					null,
+					0,
+					3,
+				),
+			)) as typeof fetch;
+
+		const result = await fetchEventRouterCandidates({
+			baseUrl: "https://router.example",
+			token: "test-token",
+			fetchImpl,
+		});
+
+		assert.equal(result.candidates.length, 3);
+		assert.equal(result.reviews.length, 2);
+		assert.deepEqual(
+			result.reviews.map((review) => review.reason),
+			["weak_latam_evidence", "missing_location_and_language"],
+		);
+		assert.equal(result.exclusions.length, 0);
 	});
 
 	test("allows the terminal page to match the page safety limit", async () => {

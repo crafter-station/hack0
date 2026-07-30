@@ -1,9 +1,13 @@
 "use client";
 
-import { Check, Pencil, X } from "lucide-react";
+import { Check, Pencil, TriangleAlert, X } from "lucide-react";
 import { SOURCE_COLORS } from "@/components/admin/scraper-constants";
 import type { Event } from "@/lib/db/schema";
 import { getCountryFlag, getEventTypeLabel } from "@/lib/event-utils";
+import {
+	EVENT_SCOPE_REVIEW_LABELS,
+	scopeReviewReasonFromRaw,
+} from "@/lib/ingestion/scope-review";
 
 interface ScraperTableProps {
 	events: Event[];
@@ -102,6 +106,9 @@ export function ScraperTable({
 											: "bg-red-500";
 							const isLoading = loading === event.id;
 							const isSelected = selected.has(event.id);
+							const scopeReviewReason = scopeReviewReasonFromRaw(
+								event.scrapeRawData,
+							);
 
 							const formattedDate = event.startDate
 								? new Date(event.startDate).toLocaleDateString("es-PE", {
@@ -131,6 +138,14 @@ export function ScraperTable({
 										<div className="truncate text-xs text-muted-foreground">
 											{getEventTypeLabel(event.eventType)}
 										</div>
+										{scopeReviewReason && (
+											<div className="mt-1 flex items-center gap-1 text-xs text-amber-700">
+												<TriangleAlert className="h-3 w-3 shrink-0" />
+												<span>
+													{EVENT_SCOPE_REVIEW_LABELS[scopeReviewReason]}
+												</span>
+											</div>
+										)}
 									</td>
 									<td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">
 										{event.country

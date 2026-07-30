@@ -26,6 +26,7 @@ export const eventRouterScraperTask = task({
 		});
 		metadata.set("found", collection.candidates.length);
 		metadata.set("adapterRejected", collection.rejections.length);
+		metadata.set("needsScopeReview", collection.reviews.length);
 		metadata.set("outOfScope", collection.exclusions.length);
 
 		metadata.set("step", "ingesting");
@@ -39,6 +40,8 @@ export const eventRouterScraperTask = task({
 		return {
 			collected: collection.candidates.length,
 			adapterRejected: collection.rejections.length,
+			needsScopeReview: collection.reviews.length,
+			scopeReviews: collection.reviews.slice(0, 25),
 			outOfScope: collection.exclusions.length,
 			source: collection.metadata,
 			...ingestion,

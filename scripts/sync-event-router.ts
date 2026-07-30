@@ -44,6 +44,8 @@ async function main() {
 				collected: collection.candidates.length,
 				adapterRejected: collection.rejections.length,
 				adapterRejections: collection.rejections.slice(0, 25),
+				needsScopeReview: collection.reviews.length,
+				scopeReviews: collection.reviews.slice(0, 25),
 				outOfScope: collection.exclusions.length,
 				exclusions: collection.exclusions.slice(0, 25),
 				source: collection.metadata,
@@ -65,6 +67,7 @@ async function main() {
 						"hack0Eligibility" in candidate.raw
 							? candidate.raw.hack0Eligibility
 							: null,
+					scopeReviewReason: candidate.scopeReviewReason ?? null,
 				})),
 				...ingestion,
 			},
