@@ -69,6 +69,8 @@ Use only the services needed for the workflow being tested.
 - `FAL_API_KEY`: fal.ai image tasks.
 - `LUMA_API_KEY`: Luma calendar sync for one calendar.
 - `LUMA_API_KEYS`: comma-separated Luma calendar API keys for multiple calendars.
+- `LUMA_WEBHOOK_SECRET`: signing secret for one Luma webhook.
+- `LUMA_WEBHOOK_SECRETS`: comma-separated signing secrets for multiple calendars.
 - `LUMA_CONNECTION_ENCRYPTION_KEY`: encrypted Luma connection storage.
 
 ## Luma Calendar Source
@@ -85,6 +87,18 @@ Luma API keys are scoped to one calendar and require Luma Plus. Create each key
 from the calendar's developer/API key settings and store it only in `.env.local`
 or your deployment secret store. Use `LUMA_API_KEY` for one calendar or
 `LUMA_API_KEYS` for multiple comma-separated calendar keys.
+
+For inbound changes, create a webhook in each Luma calendar under Settings →
+Developer → Webhooks, targeting:
+
+```text
+https://hack0.dev/api/webhooks/luma
+```
+
+Store its `whsec_...` signing secret as `LUMA_WEBHOOK_SECRET`, or use
+comma-separated `LUMA_WEBHOOK_SECRETS` when several calendars send to the same
+endpoint. The endpoint rejects unsigned requests, signatures older than five
+minutes, malformed event payloads, and repeated `Webhook-Id` deliveries.
 
 Run without Trigger:
 
