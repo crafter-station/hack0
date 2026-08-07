@@ -1,9 +1,20 @@
 "use client";
 
-import { Check, ExternalLink, Pencil, Trophy, X } from "lucide-react";
+import {
+	Check,
+	ExternalLink,
+	Pencil,
+	TriangleAlert,
+	Trophy,
+	X,
+} from "lucide-react";
 import { SOURCE_COLORS } from "@/components/admin/scraper-constants";
 import type { Event } from "@/lib/db/schema";
 import { getCountryFlag, getEventTypeLabel } from "@/lib/event-utils";
+import {
+	EVENT_SCOPE_REVIEW_LABELS,
+	scopeReviewReasonFromRaw,
+} from "@/lib/ingestion/scope-review";
 
 const SOURCE_GRADIENT: Record<string, string> = {
 	devpost: "from-red-950/40 to-red-900/20",
@@ -60,6 +71,7 @@ export function ScraperCard({
 	const sourceColor = SOURCE_COLORS[source] ?? "bg-gray-500/10 text-gray-600";
 	const gradient = SOURCE_GRADIENT[source] ?? "from-gray-950/40 to-gray-900/20";
 	const isLoading = loading === event.id;
+	const scopeReviewReason = scopeReviewReasonFromRaw(event.scrapeRawData);
 
 	const domains = (event.domains ?? []).slice(0, 3);
 
@@ -136,6 +148,13 @@ export function ScraperCard({
 					)}
 					{event.format && <span className="capitalize">{event.format}</span>}
 				</div>
+
+				{scopeReviewReason && (
+					<div className="flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1.5 text-xs text-amber-700">
+						<TriangleAlert className="h-3.5 w-3.5 shrink-0" />
+						<span>{EVENT_SCOPE_REVIEW_LABELS[scopeReviewReason]}</span>
+					</div>
+				)}
 
 				{/* Prize */}
 				{event.prizePool && (

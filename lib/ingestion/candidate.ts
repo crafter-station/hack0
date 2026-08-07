@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { EVENT_SCOPE_REVIEW_REASONS } from "@/lib/ingestion/scope-review";
 import { EVENT_SOURCE_TYPES, type EventCandidate } from "@/lib/ingestion/types";
 
 const optionalDateString = z
@@ -23,6 +24,7 @@ export const eventCandidateSchema = z
 		imageUrl: optionalUrl.optional(),
 		bannerUrl: optionalUrl.optional(),
 		scopeHint: z.enum(["latam", "global"]).optional(),
+		scopeReviewReason: z.enum(EVENT_SCOPE_REVIEW_REASONS).optional(),
 		classifyConfidence: z.number().min(0).max(100).optional(),
 		discoveredAt: optionalDateString.optional(),
 	})

@@ -1,3 +1,5 @@
+import type { EventScopeReviewReason } from "@/lib/ingestion/scope-review";
+
 export const EVENT_SOURCE_TYPES = [
 	"devpost",
 	"mlh",
@@ -78,6 +80,7 @@ export interface EventCandidate {
 	resources?: Array<{ title: string; url: string }>;
 	contactEmail?: string;
 	scopeHint?: "latam" | "global";
+	scopeReviewReason?: EventScopeReviewReason;
 	classifyConfidence?: number;
 	discoveredAt?: string;
 	raw?: unknown;

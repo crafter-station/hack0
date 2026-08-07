@@ -153,6 +153,7 @@
 		"seed:ecosystem-websites": "bun run scripts/seed-ecosystem-websites.ts",
 		"seed:peru-universities": "bun run scripts/seed-peru-universities.ts",
 		"sync:devpost": "bun run scripts/sync-devpost.ts",
+		"sync:event-router": "bun run scripts/sync-event-router.ts",
 		"sync:luma": "bun run scripts/sync-luma-calendar.ts",
 		"test:ingestion": "bun test lib/ingestion/__tests__",
 		"test:luma": "bun test lib/luma/__tests__",

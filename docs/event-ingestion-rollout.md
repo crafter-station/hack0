@@ -71,6 +71,33 @@ fuzzy match also requires a close date and compatible location.
 Two-way Hack0-Luma synchronization is a shared foundation that must be complete
 before unattended source writes are enabled.
 
+### Calendar router operating policy
+
+The router is consumed through `EVENT_ROUTER_API_URL` and
+`EVENT_ROUTER_API_TOKEN`. It returns canonical events across Luma, Eventbrite,
+and Meetup, including source calendars and ownership evidence.
+
+- `bun run sync:event-router --dry-run` is the manual validation path.
+- `--max-events=20` limits a checkpoint sample.
+- `--owned=true` inspects only events backed by a connected organizer source.
+- The Trigger task `event-router-scraper` has no schedule until its source gate
+  passes.
+- Router candidates remain `pending` by default. `ownership=connected` is
+  evidence, not consent. Automatic approval requires a separate, explicit
+  Hack0 opt-in allowlist for the calendar.
+- Hack0 accepts only events with a physical LATAM location, plus online events
+  whose router language metadata identifies Spanish. Accepted online events
+  receive LATAM scope.
+- Events with missing language/location or weak geography inferred only from a
+  title, description, or calendar name enter the pending admin queue with a
+  scope-review warning. They are never auto-published.
+- Explicit non-LATAM physical events and explicitly non-Spanish online events
+  are reported as out of scope before database deduplication.
+- The router URL must return API JSON directly. Redirects, including a Lovable
+  `auth-bridge` login redirect, are rejected so the bearer token is never sent
+  to another host.
+- Rotate any token shared in chat before storing it in Vercel or Trigger.dev.
+
 ## Read-only duplicate audit
 
 Run the following command to inspect the current database without modifying it:
