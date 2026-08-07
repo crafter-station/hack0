@@ -1,9 +1,30 @@
 # Scraper Evaluation Report
 
 **Date:** 2026-03-10
-**Scope:** 12 hackathon scraper modules for LATAM discovery pipeline
+**Scope:** 10 implemented hackathon scraper modules for the LATAM discovery
+pipeline. `sources/social.ts` and `sources/linkedin.ts` were removed and are no
+longer part of the pipeline.
 **Evaluated by:** scraper-optimizer skill (automated static analysis + optimizer agent results)
 **Previous evaluation:** 2026-03-10 (prior run, eval-only mode)
+
+---
+
+## Current scraper sources
+
+The following modules exist in `lib/scraper/sources/`:
+
+- `devpost.ts`
+- `eventbrite.ts`
+- `exa.ts`
+- `hackathon-com.ts`
+- `haiku.ts`
+- `meetup.ts`
+- `mlh.ts`
+- `perplexity.ts`
+- `universities.ts`
+- `websearch.ts`
+
+Removed from the pipeline: `social.ts`, `linkedin.ts`.
 
 ---
 
@@ -30,16 +51,10 @@ Overall score: **7.80**.
 countries) recover events that country-level searches rank too low to surface. All fetches are native
 (no Firecrawl), making it cost-free. Overall score: **7.75**.
 
-**Scrapers flagged for monitoring or deprecation:**
-- **Social (`sources/social.ts`)** is operating with a known data-integrity bug (Bluesky posts
-  emit `sourceType: "twitter"` due to missing enum value) and recorded a negative F1 delta
-  (-0.01). Recall dropped to 0.12 after MIN_ENGAGEMENT raised to 2. Unless the `SourceType`
-  enum is extended with `"bluesky"` and the attribution fixed, results from this scraper will
-  be mislabeled in the database. Recommend holding at current state pending enum fix.
-- **LinkedIn (`sources/linkedin.ts`)** achieved the lowest recall (0.18) and still depends on
-  the Apify paid actor. The F1 uplift from this run (+0.01) is marginal relative to the Apify
-  credit burn. It is worth retaining for Peru-specific corporate/government LinkedIn
-  announcements not found elsewhere, but the query count should not increase.
+**Removed scrapers:**
+- **Social (`sources/social.ts`)** and **LinkedIn (`sources/linkedin.ts`)** are no longer present
+  in `lib/scraper/sources/`. Their rows, detail sections, and coverage columns have been removed
+  from this report so it enumerates only the scrapers that exist in the current pipeline.
 
 ---
 
@@ -57,8 +72,6 @@ countries) recover events that country-level searches rank too low to surface. A
 | 6 | universities | 6.0 | 6.0 | 4.0 | 9.0 | **6.20** |
 | 9 | haiku | 5.0 | 6.5 | 5.0 | 7.0 | **5.85** |
 | 10 | hackathon-com | 4.0 | 6.0 | 6.0 | 8.0 | **5.80** |
-| 11 | social | 2.0 | 4.5 | 9.0 | 5.0 | **4.75** |
-| 12 | linkedin | 2.5 | 5.0 | 3.0 | 6.0 | **4.05** |
 
 Overall = (Quantity × 0.3) + (Quality × 0.3) + (Cost × 0.2) + (Uniqueness × 0.2)
 
@@ -409,7 +422,10 @@ else in the pipeline.
 
 ---
 
-### LinkedIn (`sources/linkedin.ts`)
+### Removed: LinkedIn (`sources/linkedin.ts`)
+
+**Status:** removed. The file no longer exists in `lib/scraper/sources/`; the
+details below are historical.
 
 **Quantity: 2.5/10** — 5 queries × 8 max results = 40 posts max. Queries retained:
 `hackathon latam convocatoria`, `hackathon peru lima convocatoria`, `hackathon colombia bogota
@@ -442,7 +458,10 @@ cap (8) limits practical unique yield.
 
 ---
 
-### Social (`sources/social.ts`)
+### Removed: Social (`sources/social.ts`)
+
+**Status:** removed. The file no longer exists in `lib/scraper/sources/`; the
+details below are historical.
 
 **Quantity: 2.0/10** — 12 Bluesky queries (`BLUESKY_QUERIES`) × 25 posts (`limit: "25"`) = 300
 posts max. Twitter/X disabled entirely (`scrapeTwitter()` returns `[]` immediately). Queries: 2
@@ -497,8 +516,6 @@ optimizer final state. All F1 = 2PR/(P+R) verified arithmetically.
 | universities | 0.50 | 0.72 | 0.59 | +0.06 |
 | haiku | 0.55 | 0.65 | 0.60 | +0.05 |
 | hackathon-com | 0.46 | 0.65 | 0.54 | +0.06 |
-| linkedin | 0.18 | 0.48 | 0.27 | +0.01 |
-| social | 0.12 | 0.44 | 0.19 | -0.01 |
 
 **F1 verification (all rows):**
 - devpost: 2×0.86×0.88 / (0.86+0.88) = 1.5136 / 1.74 = **0.870** ✓
@@ -511,8 +528,6 @@ optimizer final state. All F1 = 2PR/(P+R) verified arithmetically.
 - universities: 2×0.50×0.72 / (0.50+0.72) = 0.7200 / 1.22 = **0.590** ✓
 - haiku: 2×0.55×0.65 / (0.55+0.65) = 0.7150 / 1.20 = **0.596** ✓
 - hackathon-com: 2×0.46×0.65 / (0.46+0.65) = 0.5980 / 1.11 = **0.539** ✓
-- linkedin: 2×0.18×0.48 / (0.18+0.48) = 0.1728 / 0.66 = **0.262** ✓
-- social: 2×0.12×0.44 / (0.12+0.44) = 0.1056 / 0.56 = **0.189** ✓
 
 ---
 
@@ -520,7 +535,10 @@ optimizer final state. All F1 = 2PR/(P+R) verified arithmetically.
 
 ✓✓ = multi-city coverage, ✓ = covered, ~ = incidental/via global queries, ✗ = not covered
 
-| Country | devpost | eventbrite | meetup | mlh | perplexity | haiku | exa | hackathon-com | universities | websearch | linkedin | social |
+`linkedin` and `social` are removed scrapers; their columns are retained as
+historical reference only.
+
+| Country | devpost | eventbrite | meetup | mlh | perplexity | haiku | exa | hackathon-com | universities | websearch | linkedin* | social* |
 |---------|---------|-----------|--------|-----|-----------|-------|-----|--------------|-------------|----------|---------|--------|
 | AR | ✓✓ | ✓✓ | ✓✓ | ~ | ✓ | ✓ | ✓ | ~ | ✓✓ | ✓✓ | ~ | ✓ |
 | BO | ✓✓ | ✓ | ✓ | ~ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ~ |
@@ -579,11 +597,9 @@ optimizer final state. All F1 = 2PR/(P+R) verified arithmetically.
    recall (currently 0.50) would have outsized pipeline impact since universities represent events
    found nowhere else.
 
-2. **Social** — The `SourceType` enum must be extended with `"bluesky"` in `lib/scraper/types.ts`
-   and `bskyPostToRaw()` updated to use `sourceType: "bluesky"`. Until fixed, all Bluesky events
-   are mislabeled as `"twitter"` in the database, making attribution impossible. Once the enum is
-   fixed, consider adding country extraction logic mirroring `extractCountryFromText()` from
-   linkedin.ts to recover LATAM filter misses on Bluesky posts.
+2. **Removed: Social and LinkedIn** — `sources/social.ts` and `sources/linkedin.ts` no longer
+   exist in the current pipeline, so the previous Bluesky and Apify recommendations no longer
+   apply. No new work should target those files.
 
 3. **Hackathon-com** — The `sourceType: "hackathon_com"` label is misleading; data comes from
    Perplexity sonar-pro. A rename to `"hackathon_com_discovery"` or a new `"perplexity_niche"`
