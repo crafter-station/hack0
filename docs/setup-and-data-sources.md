@@ -69,6 +69,9 @@ Use only the services needed for the workflow being tested.
 - `FAL_API_KEY`: fal.ai image tasks.
 - `LUMA_API_KEY`: Luma calendar sync for one calendar.
 - `LUMA_API_KEYS`: comma-separated Luma calendar API keys for multiple calendars.
+- `HACK0_LUMA_CALENDAR_API_KEY`: dedicated calendar-scoped key for publishing
+  approved Hack0 events to the official Hack0 Luma calendar. It is separate
+  from discovery keys to prevent writes to the wrong calendar.
 - `LUMA_WEBHOOK_SECRET`: signing secret for one Luma webhook.
 - `LUMA_WEBHOOK_SECRETS`: comma-separated signing secrets for multiple calendars.
 - `LUMA_CONNECTION_ENCRYPTION_KEY`: encrypted Luma connection storage.

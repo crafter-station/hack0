@@ -112,3 +112,18 @@ targets the same remote relationship instead of creating a second one.
 The table is provider-neutral and supports inbound, outbound, or bidirectional
 sync. Luma calendar connections are optional references; external discovery
 sources can use the same identity model without storing credentials.
+
+## Outbound Hack0 calendar publication
+
+`luma-calendar-publisher` adds one approved Hack0 event to the official Hack0
+Luma calendar. It uses Luma's native "Add Event" API: Luma URLs are resolved and
+added as existing Luma events, while other URLs are added as external events.
+The task checks the target calendar before writing and records the resulting
+`calendar_listing` in `event_source_links`.
+
+The target calendar uses the dedicated
+`HACK0_LUMA_CALENDAR_API_KEY`; it never guesses from `LUMA_API_KEYS`. Task
+payloads default to dry-run. A real write requires `{ "write": true }` plus the
+standard Hack0 write-safety environment confirmations. F3.3 intentionally has
+no schedule: run one canary manually and review it before implementing
+continuous reconciliation.
