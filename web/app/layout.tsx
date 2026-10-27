@@ -7,6 +7,7 @@ const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["500", "700", "800"],
 const THEME_SCRIPT = `try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
 
 export const metadata = {
+  metadataBase: new URL("https://hack0.dev"),
   title: "hack0 · Mapeando el ecosistema tech de LATAM",
   description: "Damos visibilidad a comunidades y eventos tech de LATAM: hackathones, conferencias, workshops y meetups.",
 };

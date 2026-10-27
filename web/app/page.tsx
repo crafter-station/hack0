@@ -110,7 +110,9 @@ export default async function Home() {
 
       <footer>
         <span>hack0 by Crafter Station</span>
-        <a href="https://github.com/crafter-station/hack0">github</a>
+        <span>
+          <a href="/brand">brand</a> · <a href="https://github.com/crafter-station/hack0">github</a>
+        </span>
       </footer>
     </main>
   );
