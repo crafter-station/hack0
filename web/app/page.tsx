@@ -19,49 +19,28 @@ export default async function Home() {
           <Wordmark size={26} />
         </a>
         <nav>
-          <a href="#workshops">workshops</a>
           <a href="#eventos">eventos</a>
+          <a href="#organizadores">organizadores</a>
           <a href={LUMA}>luma</a>
         </nav>
       </header>
 
       <div className="hero">
         <h1>
-          Desarma.
+          Mapeando el ecosistema
           <br />
-          Nombra. <em>Construye.</em>
+          tech de <em>LATAM.</em>
         </h1>
-        <p>El calendario de eventos tech de LATAM y workshops prácticos para construir con IA. Te llevas algo que funciona.</p>
+        <p>Damos visibilidad a comunidades y eventos tech. Hackathones, conferencias, workshops y meetups, todo en un solo lugar.</p>
         <div className="actions">
           <a className="btn primary" href={LUMA}>
             Suscríbete al calendario
           </a>
-          <a className="btn" href="#workshops">
-            Ver workshops
+          <a className="btn" href="#eventos">
+            Explorar eventos
           </a>
         </div>
       </div>
-
-      <section id="workshops">
-        <div className="label">
-          <span>workshops</span>
-          <b>01</b>
-        </div>
-        <div className="workshop">
-          <div>
-            <span className="tag">online · 90 min · próximamente</span>
-            <h2>Taste hacking</h2>
-            <p>
-              Desarma cualquier web, animación o video y reconstrúyelo con IA. Técnica en vivo, vocabulario para nombrar lo que ves y una
-              skill para tu agente.
-            </p>
-            <code className="cmd">npx @crafter/hack0 list</code>
-          </div>
-          <a className="btn primary" href={LUMA}>
-            Avísame
-          </a>
-        </div>
-      </section>
 
       <section id="eventos">
         <div className="label">
@@ -91,6 +70,29 @@ export default async function Home() {
             La agenda vive en <a href={LUMA}>luma.com/hack0</a>.
           </p>
         )}
+      </section>
+
+      <section id="organizadores">
+        <div className="label">
+          <span>organizadores</span>
+        </div>
+        <div className="workshop">
+          <div>
+            <h2>¿Organizas eventos tech?</h2>
+            <p>Súmalos al calendario para que más gente se entere y el ecosistema tenga continuidad.</p>
+          </div>
+          <a className="btn primary" href={LUMA}>
+            Subir evento
+          </a>
+        </div>
+      </section>
+
+      <section id="workshops">
+        <div className="label">
+          <span>workshops online</span>
+          <b>pronto</b>
+        </div>
+        <p className="soon">Workshops prácticos con lo mejor que pueda contar el ponente de turno. Te llevas algo que funciona.</p>
       </section>
 
       <footer>

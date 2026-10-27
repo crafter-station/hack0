@@ -203,3 +203,7 @@ footer {
     text-align: left;
   }
 }
+.soon {
+  color: var(--mute);
+  max-width: 560px;
+}
