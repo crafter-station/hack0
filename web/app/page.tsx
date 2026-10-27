@@ -1,27 +1,33 @@
+import { EventList } from "@/components/event-list";
 import { Globe } from "@/components/globe";
+import { JsonLd } from "@/components/json-ld";
 import { Wordmark } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { type CalendarEvent, eventSpots, upcomingEvents } from "@/lib/calendar";
+import { eventSpots, upcomingEvents } from "@/lib/calendar";
+import { SITE } from "@/lib/site";
 
 const LUMA = "https://luma.com/hack0";
-
-function formatDate(e: CalendarEvent) {
-  const d = new Date(e.startAt);
-  const day = new Intl.DateTimeFormat("es", { day: "2-digit", month: "short", timeZone: e.timezone }).format(d);
-  const time = new Intl.DateTimeFormat("es", { hour: "2-digit", minute: "2-digit", timeZone: e.timezone }).format(d);
-  return { day, time };
-}
 
 export default async function Home() {
   const [events, spots] = await Promise.all([upcomingEvents(), eventSpots()]);
   return (
     <main>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "hack0",
+          url: SITE,
+          logo: `${SITE}/icon.svg`,
+          sameAs: [LUMA, "https://github.com/crafter-station/hack0"],
+        }}
+      />
       <header className="top">
         <a href="/" aria-label="hack0" style={{ textDecoration: "none" }}>
           <Wordmark size={26} />
         </a>
         <nav>
-          <a href="#eventos">eventos</a>
+          <a href="/eventos">eventos</a>
           <a href="#organizadores">organizadores</a>
           <a href={LUMA}>luma</a>
           <ThemeToggle />
@@ -58,26 +64,10 @@ export default async function Home() {
       <section id="eventos">
         <div className="label">
           <span>próximos eventos</span>
-          <span>{events ? `${events.length}` : ""}</span>
+          <a href="/eventos">ver todos y el archivo</a>
         </div>
         {events && events.length > 0 ? (
-          <ul className="events">
-            {events.map((e) => {
-              const { day, time } = formatDate(e);
-              return (
-                <li key={e.id}>
-                  <a href={e.url}>
-                    <span className="date">
-                      {day}
-                      <span>{time}</span>
-                    </span>
-                    <span className="name">{e.name}</span>
-                    <span className="where">{e.city ?? (e.online ? "online" : "")}</span>
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
+          <EventList events={events} />
         ) : (
           <p className="empty">
             La agenda vive en <a href={LUMA}>luma.com/hack0</a>.
@@ -111,7 +101,7 @@ export default async function Home() {
       <footer>
         <span>hack0 by Crafter Station</span>
         <span>
-          <a href="/brand">brand</a> · <a href="https://github.com/crafter-station/hack0">github</a>
+          <a href="/eventos">eventos</a> · <a href="/brand">brand</a> · <a href="https://github.com/crafter-station/hack0">github</a>
         </span>
       </footer>
     </main>

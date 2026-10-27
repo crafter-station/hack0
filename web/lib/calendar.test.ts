@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { groupSpots, toEvent } from "./calendar";
+import { groupSpots, metroOf, toEvent } from "./calendar";
 
 test("maps a Luma entry with a relative url and city", () => {
   const e = toEvent({
@@ -40,7 +40,20 @@ test("accepts the flat event shape the API returns today", () => {
 });
 
 test("groups nearby events into one spot and flags upcoming ones", () => {
-  const base = { name: "x", url: "y", timezone: "UTC", city: null, online: false, coverUrl: null };
+  const base = {
+    name: "x",
+    url: "y",
+    timezone: "UTC",
+    city: null,
+    online: false,
+    coverUrl: null,
+    slug: "x",
+    endAt: null,
+    country: null,
+    metro: null,
+    address: null,
+    tags: [],
+  };
   const spots = groupSpots(
     [
       { ...base, id: "1", startAt: "2026-01-01T00:00:00Z", location: [-12.09, -77.03] },
@@ -57,4 +70,34 @@ test("reads the Luma coordinate", () => {
   expect(toEvent({ name: "x", url: "y", start_at: "2026-01-01", coordinate: { latitude: -12, longitude: -77 } })?.location).toEqual([
     -12, -77,
   ]);
+});
+
+test("builds a stable slug, public-only address and clean tags", () => {
+  const e = toEvent({
+    api_id: "evt-2",
+    name: "Cursor Meetup: Lima Edición",
+    url: "https://luma.com/1z4no5h8",
+    start_at: "2026-01-01",
+    visibility: "public",
+    location_visibility: "guests-only",
+    geo_address_json: { city: "Lima", country: "PE", full_address: "Av. Secreta 123" },
+    tags: [{ name: "Cursor" }, { name: "🇵🇪 Perú" }, { name: "📍 Online" }],
+  });
+  expect(e?.slug).toBe("cursor-meetup-lima-edicion-1z4no5h8");
+  expect(e?.address).toBeNull();
+  expect(e?.tags).toEqual(["Cursor"]);
+});
+
+test("drops private events", () => {
+  expect(toEvent({ name: "x", url: "y", start_at: "2026-01-01", visibility: "private" })).toBeNull();
+});
+
+test("rolls districts up to their metro area", () => {
+  expect(metroOf("Barranco", "Provincia de Lima")).toBe("Lima");
+  expect(metroOf("Cayma", "Arequipa")).toBe("Arequipa");
+  expect(metroOf("Medellín", "Antioquia")).toBe("Medellín");
+  expect(metroOf("Bellavista", "Provincia Constitucional del Callao")).toBe("Callao");
+  expect(metroOf("Miraflores", "Lima Province")).toBe("Lima");
+  expect(metroOf("Vitacura", "Región Metropolitana")).toBe("Santiago");
+  expect(metroOf("M5519BDK", "Mendoza")).toBe("Mendoza");
 });
