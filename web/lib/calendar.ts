@@ -11,27 +11,28 @@ export type CalendarEvent = {
   coverUrl: string | null;
 };
 
-type Entry = {
-  status?: string;
-  event?: {
-    api_id?: string;
-    name?: string;
-    url?: string;
-    start_at?: string;
-    timezone?: string;
-    cover_url?: string | null;
-    meeting_url?: string | null;
-    geo_address_json?: { city?: string; country?: string } | null;
-  };
+type LumaEvent = {
+  id?: string;
+  api_id?: string;
+  name?: string;
+  url?: string;
+  start_at?: string;
+  timezone?: string;
+  cover_url?: string | null;
+  meeting_url?: string | null;
+  geo_address_json?: { city?: string; country?: string } | null;
 };
 
+/** Luma returns flat events; older responses wrapped them as `{ event }`. */
+type Entry = LumaEvent & { status?: string; event?: LumaEvent };
+
 export function toEvent(entry: Entry): CalendarEvent | null {
-  const e = entry.event;
+  const e = entry.event ?? entry;
   if (!e?.name || !e.url || !e.start_at) return null;
   if (entry.status && entry.status !== "approved") return null;
   const geo = e.geo_address_json;
   return {
-    id: e.api_id ?? e.url,
+    id: e.api_id ?? e.id ?? e.url,
     name: e.name,
     url: e.url.startsWith("http") ? e.url : `https://luma.com/${e.url.replace(/^\/+/, "")}`,
     startAt: e.start_at,
@@ -52,6 +53,8 @@ export async function upcomingEvents(limit = 60): Promise<CalendarEvent[] | null
     const url = new URL(LIST_URL);
     url.searchParams.set("pagination_limit", "50");
     url.searchParams.set("status", "approved");
+    for (const p of ["luma", "external"]) url.searchParams.append("platforms", p);
+    for (const a of ["manage", "view"]) url.searchParams.append("access", a);
     url.searchParams.set("sort_column", "start_at");
     url.searchParams.set("sort_direction", "asc");
     url.searchParams.set("after", new Date().toISOString());
