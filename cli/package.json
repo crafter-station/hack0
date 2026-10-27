@@ -1,0 +1,21 @@
+{
+  "name": "@crafter/hack0",
+  "version": "0.1.0",
+  "description": "Install hack0 workshop skills and materials into your coding agent",
+  "type": "module",
+  "license": "MIT",
+  "bin": { "hack0": "./bin/hack0.js" },
+  "files": ["dist", "bin", "skills", "README.md"],
+  "scripts": {
+    "build": "bun build src/cli.ts --target=node --outdir dist --format esm",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "lint": "biome check .",
+    "prepublishOnly": "bun run build && bun test"
+  },
+  "engines": { "node": ">=20" },
+  "devDependencies": { "@types/bun": "^1.3.14", "typescript": "^5.9.3" },
+  "repository": { "type": "git", "url": "git+https://github.com/crafter-station/hack0.git", "directory": "cli" },
+  "author": "Railly Hugo",
+  "publishConfig": { "access": "public" }
+}

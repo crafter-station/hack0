@@ -1,0 +1,5 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "files": { "includes": ["cli/src/**", "web/app/**", "web/lib/**"] },
+  "formatter": { "indentStyle": "space", "lineWidth": 140 }
+}
