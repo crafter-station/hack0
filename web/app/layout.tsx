@@ -9,6 +9,8 @@ const THEME_SCRIPT = `try{var t=localStorage.getItem("theme");if(t==="light"||t=
 export const metadata = {
   metadataBase: new URL("https://hack0.dev"),
   twitter: { card: "summary_large_image" },
+  alternates: { canonical: "/" },
+  openGraph: { siteName: "hack0", locale: "es_419", type: "website" },
   title: "hack0 · Mapeando el ecosistema tech de LATAM",
   description: "Damos visibilidad a comunidades y eventos tech de LATAM: hackathones, conferencias, workshops y meetups.",
 };
