@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { toEvent } from "./calendar";
+import { groupSpots, toEvent } from "./calendar";
 
 test("maps a Luma entry with a relative url and city", () => {
   const e = toEvent({
@@ -37,4 +37,24 @@ test("accepts the flat event shape the API returns today", () => {
   });
   expect(e?.id).toBe("evt-2");
   expect(e?.city).toBe("San Isidro, Peru");
+});
+
+test("groups nearby events into one spot and flags upcoming ones", () => {
+  const base = { name: "x", url: "y", timezone: "UTC", city: null, online: false, coverUrl: null };
+  const spots = groupSpots(
+    [
+      { ...base, id: "1", startAt: "2026-01-01T00:00:00Z", location: [-12.09, -77.03] },
+      { ...base, id: "2", startAt: "2026-12-01T00:00:00Z", location: [-12.1, -77.04] },
+      { ...base, id: "3", startAt: "2026-12-01T00:00:00Z", location: null },
+    ],
+    Date.parse("2026-10-27T00:00:00Z"),
+  );
+  expect(spots).toHaveLength(1);
+  expect(spots[0]).toMatchObject({ count: 2, upcoming: true });
+});
+
+test("reads the Luma coordinate", () => {
+  expect(toEvent({ name: "x", url: "y", start_at: "2026-01-01", coordinate: { latitude: -12, longitude: -77 } })?.location).toEqual([
+    -12, -77,
+  ]);
 });

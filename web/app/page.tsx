@@ -1,5 +1,7 @@
+import { Globe } from "@/components/globe";
 import { Wordmark } from "@/components/logo";
-import { type CalendarEvent, upcomingEvents } from "@/lib/calendar";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { type CalendarEvent, eventSpots, upcomingEvents } from "@/lib/calendar";
 
 const LUMA = "https://luma.com/hack0";
 
@@ -11,7 +13,7 @@ function formatDate(e: CalendarEvent) {
 }
 
 export default async function Home() {
-  const events = await upcomingEvents();
+  const [events, spots] = await Promise.all([upcomingEvents(), eventSpots()]);
   return (
     <main>
       <header className="top">
@@ -22,24 +24,35 @@ export default async function Home() {
           <a href="#eventos">eventos</a>
           <a href="#organizadores">organizadores</a>
           <a href={LUMA}>luma</a>
+          <ThemeToggle />
         </nav>
       </header>
 
       <div className="hero">
-        <h1>
-          Mapeando el ecosistema
-          <br />
-          tech de <em>LATAM.</em>
-        </h1>
-        <p>Damos visibilidad a comunidades y eventos tech. Hackathones, conferencias, workshops y meetups, todo en un solo lugar.</p>
-        <div className="actions">
-          <a className="btn primary" href={LUMA}>
-            Suscríbete al calendario
-          </a>
-          <a className="btn" href="#eventos">
-            Explorar eventos
-          </a>
+        <div className="hero-copy">
+          <h1>
+            Mapeando el ecosistema
+            <br />
+            tech de <em>LATAM.</em>
+          </h1>
+          <p>Damos visibilidad a comunidades y eventos tech. Hackathones, conferencias, workshops y meetups, todo en un solo lugar.</p>
+          <div className="actions">
+            <a className="btn primary" href={LUMA}>
+              Suscríbete al calendario
+            </a>
+            <a className="btn" href="#eventos">
+              Explorar eventos
+            </a>
+          </div>
         </div>
+        {spots.length > 0 && (
+          <figure className="hero-globe">
+            <Globe spots={spots} />
+            <figcaption>
+              <b>●</b> próximos · <span>●</span> realizados · {spots.length} lugares
+            </figcaption>
+          </figure>
+        )}
       </div>
 
       <section id="eventos">

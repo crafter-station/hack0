@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   --paper: #f3f0e8;
   --ink: #111;
   --acc: #ff3d00;
@@ -57,7 +58,7 @@ header.top nav a:hover {
   color: var(--ink);
 }
 .hero h1 {
-  font-size: clamp(36px, 7vw, 72px);
+  font-size: clamp(34px, 5.4vw, 60px);
   font-weight: 800;
   letter-spacing: -0.045em;
   line-height: 0.98;
@@ -206,4 +207,88 @@ footer {
 .soon {
   color: var(--mute);
   max-width: 560px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #111110;
+    --ink: #f3f0e8;
+    --mute: #9a988f;
+    --rule: #f3f0e822;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #111110;
+  --ink: #f3f0e8;
+  --mute: #9a988f;
+  --rule: #f3f0e822;
+}
+.hero {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+  align-items: center;
+}
+.hero-globe {
+  margin: 0;
+  text-align: center;
+}
+.globe {
+  width: 100%;
+  aspect-ratio: 1;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  cursor: grab;
+  touch-action: pan-y;
+}
+.globe:active {
+  cursor: grabbing;
+}
+.hero-globe figcaption {
+  font-size: 12px;
+  color: var(--mute);
+}
+.hero-globe figcaption b {
+  color: var(--acc);
+}
+.hero-globe figcaption span {
+  color: var(--ink);
+}
+.theme {
+  display: inline-flex;
+  border: 1px solid var(--rule);
+}
+.theme button {
+  font: inherit;
+  font-size: 12px;
+  background: none;
+  border: 0;
+  color: var(--mute);
+  padding: 2px 8px;
+  cursor: pointer;
+}
+.theme button[aria-checked="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+.btn.primary {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+@media (max-width: 760px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+  .hero-globe {
+    max-width: 360px;
+    margin: 8px auto 0;
+  }
+  header.top nav {
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
 }
