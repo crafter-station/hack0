@@ -18,7 +18,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
       </header>
       {children}
       <footer>
-        <span>hack0 by Crafter Station</span>
+        <span>
+          hack0 by <a href="https://crafter.run">Crafter Station</a>
+        </span>
         <span>
           <a href="/eventos">eventos</a> · <a href="/brand">brand</a> · <a href="https://github.com/crafter-station/hack0">github</a>
         </span>

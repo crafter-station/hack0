@@ -17,4 +17,7 @@ test("a venue district with the group's city as region joins that metro, unless 
   expect(eventMetro("Arequipa", "Lima")).toBe("Arequipa");
   expect(eventMetro("LIMA")).toBe("Lima");
   expect(eventMetro("SANTA CRUZ")).toBe("Santa Cruz");
+  expect(eventMetro("Online, al")).toBeNull();
+  expect(eventMetro("Sesion Online")).toBeNull();
+  expect(eventMetro("CABA, Ch")).toBe("Buenos Aires");
 });

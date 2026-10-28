@@ -456,3 +456,129 @@ footer {
   justify-content: center;
   padding: 24px 0;
 }
+.flag {
+  width: 1.25em;
+  height: 0.94em;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px var(--rule);
+  vertical-align: -0.1em;
+  flex-shrink: 0;
+}
+.filters {
+  background: var(--paper);
+  margin: 24px 0 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+  display: grid;
+  gap: 12px;
+}
+.filter-search {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 8px;
+}
+.filter-search input,
+.filter-search select {
+  font: inherit;
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--rule);
+  background: transparent;
+  color: inherit;
+  min-width: 0;
+}
+.filter-search input:focus,
+.filter-search select:focus {
+  outline: none;
+  border-color: var(--acc);
+}
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.segment {
+  display: inline-flex;
+  border: 1.5px solid var(--rule);
+}
+.segment a {
+  padding: 6px 12px;
+  font-size: 13px;
+  text-decoration: none;
+  color: var(--mute);
+}
+.segment a[aria-current="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+.country-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.country-chips a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  padding: 6px 10px;
+  font-size: 13px;
+  border: 1.5px solid var(--rule);
+  text-decoration: none;
+}
+.country-chips a span {
+  color: var(--mute);
+}
+.country-chips a[aria-current="true"] {
+  border-color: var(--acc);
+  color: var(--acc);
+}
+.filter-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.filter-summary .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+}
+.filter-summary .clear {
+  color: var(--mute);
+}
+.events .where {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+@media (max-width: 640px) {
+  .filter-search {
+    grid-template-columns: 1fr 1fr;
+  }
+  .filter-search input {
+    grid-column: 1 / -1;
+  }
+  .filter-search button {
+    grid-column: 1 / -1;
+  }
+}
+.results {
+  margin-top: 0;
+}
+/* Sticky only where the bar is short enough to leave the list visible. */
+@media (min-width: 641px) {
+  .filters {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+}

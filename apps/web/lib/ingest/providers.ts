@@ -102,9 +102,9 @@ function meetupPublicProviderEvent(event: MeetupPublicEventNode): ProviderEvent 
   if (event.status === "CANCELLED" || !event.id || !event.title || !event.eventUrl || !event.dateTime) {
     return null;
   }
-  const city = [event.venue?.city, event.venue?.state]
-    .filter((value, index, values) => value && values.indexOf(value) === index)
-    .join(", ");
+  // Meetup often sends a truncated state ("al", "Ch"); anything that short is noise, not a region.
+  const state = event.venue?.state && event.venue.state.length > 2 ? event.venue.state : undefined;
+  const city = [event.venue?.city, state].filter((value, index, values) => value && values.indexOf(value) === index).join(", ");
   return {
     event: {
       id: event.id,
@@ -119,7 +119,7 @@ function meetupPublicProviderEvent(event: MeetupPublicEventNode): ProviderEvent 
       enrichment: {
         countryCode: providerCountryCode(event.venue?.country),
         // Venues often name only the district; the group's city places it in a metro.
-        region: event.venue?.state || event.group?.city || event.venue?.city || null,
+        region: state || event.group?.city || event.venue?.city || null,
         venueName: event.venue?.name ?? null,
         latitude: event.venue?.lat ?? null,
         longitude: event.venue?.lon ?? null,

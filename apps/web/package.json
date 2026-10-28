@@ -17,6 +17,7 @@
     "@neondatabase/serverless": "^1.2.0",
     "cobe": "2.0.1",
     "drizzle-orm": "^0.45.4",
+    "flag-icons": "7.6.0",
     "franc-min": "^6.2.0",
     "mcp-handler": "2.3.0",
     "next": "^16.4.3",

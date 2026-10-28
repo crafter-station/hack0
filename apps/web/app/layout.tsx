@@ -1,5 +1,6 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { JetBrains_Mono } from "next/font/google";
+import "flag-icons/css/flag-icons.min.css";
 import "./globals.css";
 
 const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["500", "700", "800"], variable: "--font-mono" });

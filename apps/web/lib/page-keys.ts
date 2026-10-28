@@ -17,8 +17,16 @@ export function splitCity(raw: string | null | undefined): { city: string | null
   return { city: city || null, region: region || undefined };
 }
 
+/** Names providers use for places that are not cities. */
+const NOT_A_PLACE = /\b(online|virtual|remot[oa]|sesi[oó]n online|webinar)\b/i;
+
+/** Abbreviations that name a metro. */
+const ALIASES: Record<string, string> = { caba: "Buenos Aires" };
+
 export function eventMetro(rawCity: string | null | undefined, region?: string | null) {
   const split = splitCity(rawCity);
-  if (!split.city) return null;
+  if (!split.city || NOT_A_PLACE.test(split.city)) return null;
+  const alias = ALIASES[split.city.toLowerCase()];
+  if (alias) return alias;
   return metroOf(split.city, split.region ?? region ?? undefined);
 }
