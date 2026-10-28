@@ -1,0 +1,22 @@
+{
+  "name": "hack0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun --filter hack0-web dev",
+    "build": "bun --filter '*' build",
+    "typecheck": "bun --filter '*' typecheck",
+    "test": "bun --filter '*' test",
+    "lint": "biome check .",
+    "quality": "crafter-lint check",
+    "quality:changed": "crafter-lint check --changed"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "@crafter/lint": "0.2.1"
+  }
+}
