@@ -1,4 +1,4 @@
-import { boolean, doublePrecision, index, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { boolean, doublePrecision, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import type { EventEnrichment } from "@/lib/canonical/canonical-events";
 
 const timestamps = {
@@ -19,6 +19,10 @@ export const sources = pgTable(
     providerSourceId: text("provider_source_id").notNull(),
     url: text("url").notNull(),
     name: text("name"),
+    /** `latam` vouches for every event it lists; `global` events must prove LATAM by country or language. */
+    scope: text("scope", { enum: ["latam", "global"] })
+      .notNull()
+      .default("global"),
     lumaCalendarId: text("luma_calendar_id"),
     /** Luma API key for calendars synced through the API, encrypted at rest. */
     apiKeyCiphertext: text("api_key_ciphertext"),
@@ -40,6 +44,9 @@ export const canonicalEvents = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     canonicalKey: text("canonical_key").notNull(),
+    /** Public page path segment, derived from the name and the source URL code. */
+    slug: text("slug").notNull(),
+    metro: text("metro"),
     identityFingerprint: text("identity_fingerprint").notNull(),
     lumaEventId: text("luma_event_id"),
     externalIds: jsonb("external_ids").$type<Record<string, unknown>>().notNull().default({}),
@@ -69,6 +76,10 @@ export const canonicalEvents = pgTable(
     enrichedAt: timestamp("enriched_at", { withTimezone: true }),
     /** Picked for hack0: gets a page, the Luma calendar and the newsletter. */
     curated: boolean("curated").notNull().default(false),
+    /** Some source still lists it; false once every source dropped it (cancelled or deleted upstream). */
+    active: boolean("active").notNull().default(true),
+    /** Belongs on hack0: held in LATAM, listed by a LATAM source, or online in Spanish or Portuguese. */
+    listed: boolean("listed").notNull().default(false),
     lumaSubmissionId: text("luma_submission_id"),
     lumaSubmittedAt: timestamp("luma_submitted_at", { withTimezone: true }),
     /** Why the event could not go to the hack0 Luma calendar, e.g. no end time. */
@@ -81,6 +92,9 @@ export const canonicalEvents = pgTable(
     uniqueIndex("canonical_events_luma_event_id_key").on(t.lumaEventId),
     index("canonical_events_start_at_idx").on(t.startAt),
     index("canonical_events_country_start_idx").on(t.countryCode, t.startAt),
+    index("canonical_events_slug_idx").on(t.slug),
+    index("canonical_events_listed_start_idx").on(t.listed, t.active, t.startAt),
+    index("canonical_events_metro_idx").on(t.metro),
   ],
 );
 
@@ -102,6 +116,8 @@ export const eventSources = pgTable(
     hostName: text("host_name"),
     payload: jsonb("payload").$type<Record<string, unknown>>().notNull().default({}),
     lastSyncedAt: timestamp("last_synced_at", { withTimezone: true }).notNull().defaultNow(),
+    /** Set when a complete sync of the source no longer lists this upcoming event. */
+    removedAt: timestamp("removed_at", { withTimezone: true }),
     ...timestamps,
   },
   (t) => [
@@ -120,6 +136,9 @@ export const apiTokens = pgTable(
     prefix: text("prefix").notNull(),
     scopes: text("scopes").array().notNull().default(["events:read", "calendars:read"]),
     lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+    /** Fixed one-minute window for the per-token rate limit. */
+    windowStart: timestamp("window_start", { withTimezone: true }),
+    windowCount: integer("window_count").notNull().default(0),
     revokedAt: timestamp("revoked_at", { withTimezone: true }),
     ...timestamps,
   },

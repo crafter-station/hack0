@@ -5,22 +5,16 @@ import { EventList } from "@/components/event-list";
 import { JsonLd } from "@/components/json-ld";
 import { Markdown } from "@/components/markdown";
 import { Shell } from "@/components/shell";
-import { cityKey, eventDescription, placeLabel, slugify } from "@/lib/calendar";
-import { catalog, eventJsonLd, formatDate, SITE } from "@/lib/site";
+import { cityKey, placeLabel, slugify } from "@/lib/calendar";
+import { findEvent, indexable, relatedEvents } from "@/lib/catalog";
+import { optimizable } from "@/lib/images";
+import { eventJsonLd, formatDate, SITE } from "@/lib/site";
 
 export const revalidate = 3600;
 
-export async function generateStaticParams() {
-  const { events } = await catalog();
-  return events.map((e) => ({ slug: e.slug }));
-}
-
-async function find(slug: string) {
-  const { events } = await catalog();
-  const event = events.find((e) => e.slug === slug);
-  // Names can change on Luma; the trailing short code stays the same.
-  const moved = event ? null : events.find((e) => slug.endsWith(`-${e.slug.split("-").pop()}`));
-  return { event, moved, events };
+/** Rendered on first request and cached; the catalog is too large to prebuild every event. */
+export function generateStaticParams() {
+  return [];
 }
 
 function summary(name: string, when: string, where: string) {
@@ -29,14 +23,16 @@ function summary(name: string, when: string, where: string) {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const { event: e } = await find(slug);
-  if (!e) return {};
+  const { page } = await findEvent(slug);
+  if (!page) return {};
+  const e = page.event;
   const where = placeLabel(e);
   const description = summary(e.name, formatDate(e).day, where);
   return {
     title: `${e.name}${e.metro ? ` · ${e.metro}` : ""} | hack0`,
     description,
     alternates: { canonical: `/eventos/${e.slug}` },
+    robots: indexable(page) ? undefined : { index: false, follow: true },
     openGraph: {
       title: e.name,
       description,
@@ -49,17 +45,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function EventPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const { event: e, moved, events } = await find(slug);
-  if (moved) permanentRedirect(`/eventos/${moved.slug}`);
-  if (!e) notFound();
-  const description = await eventDescription(e.id);
+  const { page, movedTo } = await findEvent(slug);
+  if (movedTo) permanentRedirect(`/eventos/${movedTo}`);
+  if (!page) notFound();
+  const { event: e, description } = page;
   const { day, time } = formatDate(e);
   const past = new Date(e.endAt ?? e.startAt).getTime() < Date.now();
   const city = cityKey(e);
-  const related = events
-    .filter((o) => o.id !== e.id && ((city && cityKey(o) === city) || o.tags.some((t) => e.tags.includes(t))))
-    .slice(-6)
-    .reverse();
+  const related = await relatedEvents(e);
   return (
     <Shell>
       <JsonLd data={eventJsonLd(e, description)} />
@@ -122,6 +115,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
             width={960}
             height={480}
             sizes="(max-width: 960px) 100vw, 960px"
+            unoptimized={!optimizable(e.coverUrl)}
           />
         )}
         {description && <Markdown source={description} />}

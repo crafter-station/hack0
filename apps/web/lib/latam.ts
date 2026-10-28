@@ -1,0 +1,23 @@
+/** Spanish and Portuguese speaking countries of the Americas, ISO 3166-1 alpha-2. */
+export const LATAM_COUNTRIES = [
+  "AR",
+  "BO",
+  "BR",
+  "CL",
+  "CO",
+  "CR",
+  "CU",
+  "DO",
+  "EC",
+  "GT",
+  "HN",
+  "MX",
+  "NI",
+  "PA",
+  "PE",
+  "PR",
+  "PY",
+  "SV",
+  "UY",
+  "VE",
+];

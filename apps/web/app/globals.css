@@ -442,3 +442,12 @@ footer {
   white-space: pre-wrap;
   margin: 8px 0 12px;
 }
+.admin-form .check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.admin-table small.meta {
+  color: var(--mute);
+}

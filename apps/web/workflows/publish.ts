@@ -5,14 +5,24 @@ import { getDb } from "@/lib/db/client";
 import { canonicalEvents, contentDrafts } from "@/lib/db/schema";
 import { submitToCalendar, toSubmission } from "@/lib/publish/luma-calendar";
 
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Monday 00:00 UTC of the week holding `now`, and its ISO week label (2026-W45). */
+export function isoWeek(now: Date) {
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  start.setUTCDate(start.getUTCDate() - ((start.getUTCDay() + 6) % 7));
+  const thursday = new Date(start.getTime() + 3 * DAY_MS);
+  const yearStart = new Date(Date.UTC(thursday.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(((thursday.getTime() - yearStart.getTime()) / DAY_MS + 1) / 7);
+  return { start, end: new Date(start.getTime() + 7 * DAY_MS), label: `${thursday.getUTCFullYear()}-W${String(week).padStart(2, "0")}` };
+}
 
 async function pendingSubmissions() {
   "use step";
   return getDb()
     .select({ id: canonicalEvents.id })
     .from(canonicalEvents)
-    .where(and(eq(canonicalEvents.curated, true), isNull(canonicalEvents.lumaSubmissionId), isNull(canonicalEvents.lumaSubmitError), gte(canonicalEvents.startAt, new Date())));
+    .where(and(eq(canonicalEvents.curated, true), eq(canonicalEvents.active, true), isNull(canonicalEvents.lumaSubmissionId), isNull(canonicalEvents.lumaSubmitError), gte(canonicalEvents.startAt, new Date())));
 }
 
 async function submitOne(id: string) {
@@ -45,11 +55,11 @@ async function upsertDraft(draft: { kind: "agenda" | "event_post"; key: string; 
 
 export async function writeDrafts(now: Date) {
   "use step";
-  const weekEnd = new Date(now.getTime() + WEEK_MS);
+  const week = isoWeek(now);
   const rows = await getDb()
     .select()
     .from(canonicalEvents)
-    .where(and(eq(canonicalEvents.curated, true), gte(canonicalEvents.startAt, now), lt(canonicalEvents.startAt, weekEnd)));
+    .where(and(eq(canonicalEvents.curated, true), eq(canonicalEvents.active, true), gte(canonicalEvents.startAt, now), lt(canonicalEvents.startAt, week.end)));
   const events = rows.map(rowToEvent);
   // A draft someone already approved or discarded keeps its decision; only open drafts get rewritten.
   const decided = await getDb()
@@ -57,16 +67,15 @@ export async function writeDrafts(now: Date) {
     .from(contentDrafts)
     .where(inArray(contentDrafts.status, ["approved", "discarded"]));
   const skip = new Set(decided.map((d) => d.key));
-  const day = now.toISOString().slice(0, 10);
   const drafts = [
-    ...(events.length ? [{ kind: "agenda" as const, key: `agenda:${day}`, ...agendaDraft(events, now), eventIds: rows.map((r) => r.id) }] : []),
+    ...(events.length ? [{ kind: "agenda" as const, key: `agenda:${week.label}`, ...agendaDraft(events, week.start), eventIds: rows.map((r) => r.id) }] : []),
     ...rows.map((r, i) => ({ kind: "event_post" as const, key: `post:${r.id}`, ...eventPostDraft(events[i] as (typeof events)[number]), eventIds: [r.id] })),
   ].filter((d) => !skip.has(d.key));
   for (const d of drafts) await upsertDraft(d);
   return { drafts: drafts.length };
 }
 
-/** Rewrites the week's agenda and per-event post drafts from the curated catalog. */
+/** Rewrites this ISO week's agenda (one draft per week, refreshed daily) and per-event post drafts from the curated catalog. */
 export async function generateContent(now: Date) {
   "use workflow";
   return writeDrafts(now);

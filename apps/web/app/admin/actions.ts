@@ -6,8 +6,10 @@ import { start } from "workflow/api";
 import { requireAdmin } from "@/lib/admin/auth";
 import { createToken, revokeToken } from "@/lib/api/tokens";
 import { detectProviderImportTarget } from "@/lib/canonical/event-providers";
+import { encrypt } from "@/lib/crypto";
 import { getDb } from "@/lib/db/client";
 import { canonicalEvents, contentDrafts, sources } from "@/lib/db/schema";
+import { refreshListing } from "@/lib/ingest/persist";
 import { syncSource } from "@/workflows/sync-source";
 
 export async function syncNow(formData: FormData) {
@@ -33,9 +35,10 @@ export async function toggleSync(formData: FormData) {
 export async function addSource(formData: FormData) {
   await requireAdmin();
   const url = String(formData.get("url") ?? "").trim();
+  const apiKey = String(formData.get("apiKey") ?? "").trim();
   const target = url ? detectProviderImportTarget(url) : null;
-  // Single events and Luma profiles need their own fetchers; calendars, groups and organizers sync.
-  if (!target || target.kind === "event" || target.kind === "profile") return;
+  // Luma single events and profiles need fetchers that do not exist yet; everything else syncs.
+  if (!target || target.kind === "profile" || (target.provider === "luma" && target.kind === "event")) return;
   await getDb()
     .insert(sources)
     .values({
@@ -44,9 +47,22 @@ export async function addSource(formData: FormData) {
       providerSourceId: target.providerSourceId,
       url: target.normalizedUrl,
       name: String(formData.get("name") ?? "").trim() || null,
+      scope: formData.get("scope") === "latam" ? "latam" : "global",
       lumaCalendarId: target.provider === "luma" ? (url.match(/cal-[A-Za-z0-9]+/)?.[0] ?? null) : null,
+      apiKeyCiphertext: apiKey && target.provider === "luma" ? encrypt(apiKey) : null,
     })
     .onConflictDoNothing({ target: sources.providerSourceId });
+  revalidatePath("/admin");
+}
+
+export async function toggleScope(formData: FormData) {
+  await requireAdmin();
+  const latam = formData.get("scope") === "latam";
+  await getDb()
+    .update(sources)
+    .set({ scope: latam ? "global" : "latam" })
+    .where(eq(sources.id, String(formData.get("id"))));
+  await refreshListing(getDb());
   revalidatePath("/admin");
 }
 

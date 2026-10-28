@@ -5,7 +5,7 @@ const COUNTRY_HINTS: Array<[string, string[]]> = [
   ["AR", ["argentina", "buenos aires", "cordoba", "mendoza", "rosario", "salta"]],
   ["BO", ["bolivia", "la paz", "santa cruz de la sierra", "cochabamba"]],
   ["BR", ["brasil", "brazil", "sao paulo", "rio de janeiro", "porto alegre"]],
-  ["CL", ["chile", "santiago de chile", "valparaiso"]],
+  ["CL", ["chile", "santiago de chile", "valparaiso", "region metropolitana"]],
   ["CO", ["colombia", "bogota", "medellin", "barranquilla", "cali", "cartagena"]],
   ["CR", ["costa rica", "san jose costa rica"]],
   ["CU", ["cuba", "la habana", "havana"]],

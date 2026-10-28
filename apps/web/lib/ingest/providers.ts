@@ -49,12 +49,14 @@ type MeetupEventNode = {
   duration?: string;
   eventHosts?: Array<{ name?: string }>;
   featuredEventPhoto?: { id?: string; baseUrl?: string };
-  group?: { id?: string; name?: string; urlname?: string; timezone?: string | null };
+  group?: { id?: string; name?: string; urlname?: string; timezone?: string | null; city?: string | null };
   venue?: {
     name?: string;
     city?: string;
     state?: string;
     country?: string;
+    lat?: number | null;
+    lon?: number | null;
   } | null;
 };
 
@@ -116,8 +118,11 @@ function meetupPublicProviderEvent(event: MeetupPublicEventNode): ProviderEvent 
       description: event.description,
       enrichment: {
         countryCode: providerCountryCode(event.venue?.country),
-        region: event.venue?.state ?? event.venue?.city ?? null,
+        // Venues often name only the district; the group's city places it in a metro.
+        region: event.venue?.state || event.group?.city || event.venue?.city || null,
         venueName: event.venue?.name ?? null,
+        latitude: event.venue?.lat ?? null,
+        longitude: event.venue?.lon ?? null,
         isOnline: typeof event.venue?.name === "string" ? /online|virtual/i.test(event.venue.name) : null,
         organizer: event.eventHosts?.[0]?.name ?? null,
         confidence: event.venue ? 1 : null,
@@ -213,8 +218,8 @@ function meetupPublicEventsQuery(sort: "ASC" | "DESC"): string {
             status
             eventHosts { memberId name }
             featuredEventPhoto { id baseUrl highResUrl }
-            venue { name city state country }
-            group { id name urlname timezone }
+            venue { name city state country lat lon }
+            group { id name urlname timezone city }
           }
         }
       }

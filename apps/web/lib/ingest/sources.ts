@@ -15,12 +15,13 @@ function sourceIdForLuma(url: string) {
 
 /** Inserts the seed calendars once; existing rows are left as they are. */
 export async function seedSources(db: Db) {
-  const rows = SEED_CALENDARS.map(([name, url]) => ({
+  const rows = SEED_CALENDARS.map(([name, url, scope]) => ({
     provider: "luma" as const,
     kind: "calendar" as const,
     providerSourceId: sourceIdForLuma(url),
     url,
     name,
+    scope,
     lumaCalendarId: url.match(/cal-[A-Za-z0-9]+/)?.[0] ?? null,
   }));
   return db.insert(sources).values(rows).onConflictDoNothing({ target: sources.providerSourceId }).returning({ id: sources.id });

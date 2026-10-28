@@ -1,21 +1,41 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
+import { decrypt } from "@/lib/crypto";
 import { getDb } from "@/lib/db/client";
-import { sources } from "@/lib/db/schema";
+import { canonicalEvents, eventSources, sources } from "@/lib/db/schema";
+import { fetchManagedDescription, fetchManagedEvents } from "@/lib/ingest/luma-api";
 import { fetchCalendarEvents, resolveCalendarId } from "@/lib/ingest/luma-public";
 import { lumaInputs, normalizeBatch, providerInputs } from "@/lib/ingest/normalize";
-import { persistBatch } from "@/lib/ingest/persist";
+import { markRemoved, persistBatch, refreshListing } from "@/lib/ingest/persist";
 import { fetchPublicProviderSnapshot } from "@/lib/ingest/providers";
 import { REFRESH_INTERVAL_MS } from "@/lib/ingest/sources";
 
-async function loadSource(sourceId: string) {
+type Loaded = {
+  id: string;
+  provider: "luma" | "meetup" | "eventbrite";
+  name: string | null;
+  url: string;
+  calendarId: string | null;
+  hasKey: boolean;
+  firstSync: boolean;
+};
+
+async function loadSource(sourceId: string): Promise<Loaded> {
   "use step";
-  const [source] = await getDb().select().from(sources).where(eq(sources.id, sourceId));
-  if (!source) throw new Error(`source ${sourceId} not found`);
+  const [s] = await getDb().select().from(sources).where(eq(sources.id, sourceId));
+  if (!s) throw new Error(`source ${sourceId} not found`);
   await getDb().update(sources).set({ syncStatus: "running", syncError: null }).where(eq(sources.id, sourceId));
-  return { id: source.id, provider: source.provider, name: source.name, url: source.url, calendarId: source.lumaCalendarId };
+  return {
+    id: s.id,
+    provider: s.provider,
+    name: s.name,
+    url: s.url,
+    calendarId: s.lumaCalendarId,
+    hasKey: Boolean(s.apiKeyCiphertext),
+    firstSync: !s.lastSyncedAt,
+  };
 }
 
-async function ensureCalendarId(source: { id: string; url: string; calendarId: string | null }) {
+async function ensureCalendarId(source: Loaded) {
   "use step";
   if (source.calendarId) return source.calendarId;
   const calendarId = await resolveCalendarId(source.url);
@@ -24,18 +44,50 @@ async function ensureCalendarId(source: { id: string; url: string; calendarId: s
   return calendarId;
 }
 
-async function ingest(source: { id: string; name: string | null }, calendarId: string) {
-  "use step";
-  const events = await fetchCalendarEvents(calendarId);
-  const batch = normalizeBatch(lumaInputs(events, { id: source.id, name: source.name, calendarId }));
-  return persistBatch(getDb(), batch, source.id);
+async function apiKeyOf(sourceId: string) {
+  const [row] = await getDb().select({ sealed: sources.apiKeyCiphertext }).from(sources).where(eq(sources.id, sourceId));
+  if (!row?.sealed) throw new Error("source has no API key");
+  return decrypt(row.sealed);
 }
 
-async function ingestProvider(source: { id: string; provider: "meetup" | "eventbrite"; name: string | null; url: string }) {
+/** Reads the source and writes it. Incremental after the first sync: upcoming events only. */
+async function ingest(source: Loaded, calendarId: string | null, syncStart: Date) {
   "use step";
-  const snapshot = await fetchPublicProviderSnapshot(source.provider, source.url, null);
-  const batch = normalizeBatch(providerInputs(snapshot.events, source.provider, { id: source.id, name: source.name ?? snapshot.name, calendarId: null }));
-  return persistBatch(getDb(), batch, source.id);
+  const ref = { id: source.id, name: source.name, calendarId };
+  const after = source.firstSync ? undefined : syncStart;
+  let inputs: ReturnType<typeof lumaInputs>;
+  if (source.provider === "luma" && source.hasKey) inputs = await fetchManagedEvents(await apiKeyOf(source.id), ref, after);
+  else if (source.provider === "luma" && calendarId) inputs = lumaInputs(await fetchCalendarEvents(calendarId, { past: source.firstSync }), ref);
+  else if (source.provider !== "luma") {
+    const snapshot = await fetchPublicProviderSnapshot(source.provider, source.url, null, { after: after?.toISOString() });
+    // An incomplete snapshot cannot prove an event is gone, so it never marks removals.
+    const result = await persistBatch(getDb(), normalizeBatch(providerInputs(snapshot.events, source.provider, { ...ref, name: source.name ?? snapshot.name })), source.id);
+    return { ...result, complete: snapshot.complete };
+  } else throw new Error("Luma source without a calendar id");
+  return { ...(await persistBatch(getDb(), normalizeBatch(inputs), source.id)), complete: true };
+}
+
+/** Fills missing descriptions for events a keyed Luma calendar manages; public feeds carry none. */
+async function fillDescriptions(sourceId: string) {
+  "use step";
+  const key = await apiKeyOf(sourceId);
+  const missing = await getDb()
+    .selectDistinct({ id: canonicalEvents.id, lumaId: canonicalEvents.lumaEventId })
+    .from(canonicalEvents)
+    .innerJoin(eventSources, eq(eventSources.canonicalEventId, canonicalEvents.id))
+    .where(and(eq(eventSources.sourceId, sourceId), isNull(canonicalEvents.description), sql`${canonicalEvents.lumaEventId} is not null`));
+  for (const row of missing) {
+    if (!row.lumaId) continue;
+    const description = await fetchManagedDescription(key, row.lumaId);
+    if (description) await getDb().update(canonicalEvents).set({ description }).where(eq(canonicalEvents.id, row.id));
+  }
+  return missing.length;
+}
+
+async function settle(sourceId: string, syncStart: Date, complete: boolean) {
+  "use step";
+  if (complete) await markRemoved(getDb(), sourceId, syncStart);
+  await refreshListing(getDb());
 }
 
 async function finish(sourceId: string, error: string | null) {
@@ -43,28 +95,40 @@ async function finish(sourceId: string, error: string | null) {
   const now = new Date();
   await getDb()
     .update(sources)
-    .set({
-      syncStatus: error ? "failed" : "completed",
-      syncError: error,
-      lastSyncedAt: error ? undefined : now,
-      nextSyncAt: new Date(now.getTime() + REFRESH_INTERVAL_MS),
-    })
+    .set(
+      error
+        ? // A failed source goes back in the queue for the next daily run instead of waiting three days.
+          { syncStatus: "failed", syncError: error, nextSyncAt: null }
+        : { syncStatus: "completed", syncError: null, lastSyncedAt: now, nextSyncAt: new Date(now.getTime() + REFRESH_INTERVAL_MS) },
+    )
     .where(eq(sources.id, sourceId));
 }
 
-/** Pulls one source (Luma calendar, Meetup group or Eventbrite organizer) into the catalog. Each step retries on its own; the run is safe to replay. */
-export async function syncSource(sourceId: string) {
-  "use workflow";
+async function runSource(sourceId: string, syncStart: Date) {
   const source = await loadSource(sourceId);
   try {
-    const result =
-      source.provider === "luma"
-        ? await ingest(source, await ensureCalendarId(source))
-        : await ingestProvider({ ...source, provider: source.provider });
+    const calendarId = source.provider === "luma" && !source.hasKey ? await ensureCalendarId(source) : source.calendarId;
+    const result = await ingest(source, calendarId, syncStart);
+    if (source.hasKey) await fillDescriptions(sourceId);
+    await settle(sourceId, syncStart, result.complete);
     await finish(sourceId, null);
-    return { sourceId, ...result };
+    return { sourceId, created: result.created, updated: result.updated };
   } catch (error) {
     await finish(sourceId, error instanceof Error ? error.message : String(error));
-    throw error;
+    return { sourceId, error: error instanceof Error ? error.message : String(error) };
   }
+}
+
+/** One source, from the admin's sync button. */
+export async function syncSource(sourceId: string) {
+  "use workflow";
+  return runSource(sourceId, new Date());
+}
+
+/** Every due source, one at a time: no burst against a provider and no two runs racing to insert the same event. */
+export async function syncAll(sourceIds: string[]) {
+  "use workflow";
+  const results = [];
+  for (const id of sourceIds) results.push(await runSource(id, new Date()));
+  return results;
 }

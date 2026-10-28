@@ -10,6 +10,8 @@ export async function sourcesOverview() {
       name: sources.name,
       url: sources.url,
       syncEnabled: sources.syncEnabled,
+      scope: sources.scope,
+      keyed: sql<boolean>`${sources.apiKeyCiphertext} is not null`,
       syncStatus: sources.syncStatus,
       syncError: sources.syncError,
       lastSyncedAt: sources.lastSyncedAt,

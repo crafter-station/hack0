@@ -83,12 +83,12 @@ async function readPeriod(calendarId: string, period: "future" | "past", into: M
 }
 
 /**
- * Every event a public calendar lists, upcoming and past.
+ * Every event a public calendar lists: upcoming always, past only when asked (the first sync).
  * A feed counts as complete only when Luma returns `has_more: false`; a missing or repeated cursor throws.
  */
-export async function fetchCalendarEvents(calendarId: string): Promise<PublicLumaEvent[]> {
+export async function fetchCalendarEvents(calendarId: string, opts: { past: boolean } = { past: true }): Promise<PublicLumaEvent[]> {
   const byId = new Map<string, PublicLumaEvent>();
   await readPeriod(calendarId, "future", byId);
-  await readPeriod(calendarId, "past", byId);
+  if (opts.past) await readPeriod(calendarId, "past", byId);
   return [...byId.values()];
 }

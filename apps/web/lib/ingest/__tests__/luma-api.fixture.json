@@ -1,0 +1,27 @@
+{
+  "entries": [
+    {
+      "id": "evt-h5eMfSXQM70IvUE",
+      "name": "Casual Code Brew: Chatting Open Source, Vibe Coding & AI",
+      "url": "https://luma.com/1z4no5h8",
+      "start_at": "2025-09-19T21:00:00.000Z",
+      "end_at": "2025-09-20T00:00:00.000Z",
+      "timezone": "America/Lima",
+      "cover_url": "https://images.lumacdn.com/gallery-images/xy/13fae58d-87bd-455a-8c6d-c1ba52df7767",
+      "visibility": "public",
+      "location_visibility": "guests-only",
+      "meeting_url": null,
+      "coordinate": {
+        "longitude": -76.9854149,
+        "latitude": -12.1235029
+      },
+      "geo_address_json": {
+        "city": "Lima",
+        "region": "Provincia de Lima",
+        "country": "PE",
+        "full_address": "Lucio Caffè Caminos del Inca, Av. Caminos del Inca 1320, Lima 15039, Peru"
+      }
+    }
+  ],
+  "has_more": false
+}

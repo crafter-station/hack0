@@ -1,38 +1,7 @@
-import { allEvents, type CalendarEvent, cityKey, placeLabel, slugify } from "./calendar";
+import { type CalendarEvent, placeLabel } from "./calendar";
 
 export const SITE = "https://hack0.dev";
 export const LUMA = "https://luma.com/hack0";
-
-export type Hub = { slug: string; name: string; events: CalendarEvent[] };
-
-function group(events: CalendarEvent[], keys: (e: CalendarEvent) => [string, string][]): Hub[] {
-  const hubs = new Map<string, Hub>();
-  for (const e of events) {
-    for (const [slug, name] of keys(e)) {
-      const hub = hubs.get(slug) ?? { slug, name, events: [] };
-      hub.events.push(e);
-      hubs.set(slug, hub);
-    }
-  }
-  return [...hubs.values()].sort((a, b) => b.events.length - a.events.length);
-}
-
-/** Calendar snapshot plus the city and topic hubs derived from it. */
-export async function catalog() {
-  const events = (await allEvents()) ?? [];
-  const cities = group(events, (e) => {
-    const key = cityKey(e);
-    return key && e.metro ? [[key, e.metro]] : [];
-  });
-  const tags = group(events, (e) => e.tags.map((t) => [slugify(t), t] as [string, string]));
-  return { events, cities, tags };
-}
-
-export function splitByTime(events: CalendarEvent[], now = Date.now()) {
-  const upcoming = events.filter((e) => new Date(e.endAt ?? e.startAt).getTime() >= now);
-  const past = events.filter((e) => new Date(e.endAt ?? e.startAt).getTime() < now).reverse();
-  return { upcoming, past };
-}
 
 export function formatDate(e: CalendarEvent) {
   const d = new Date(e.startAt);

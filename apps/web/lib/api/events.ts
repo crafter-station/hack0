@@ -46,7 +46,8 @@ export function parseEventQuery(params: URLSearchParams): EventQuery {
 }
 
 function filters(q: EventQuery, now: Date): SQL[] {
-  const where: SQL[] = [];
+  // Events every source dropped (cancelled or deleted upstream) are not served.
+  const where: SQL[] = [eq(canonicalEvents.active, true)];
   const ends = sql`coalesce(${canonicalEvents.endAt}, ${canonicalEvents.startAt})`;
   // Raw SQL has no column type to encode a Date with, so the instant goes in as an ISO timestamp.
   const at = sql`${now.toISOString()}::timestamptz`;
@@ -164,4 +165,24 @@ export async function listCalendars() {
     .groupBy(sources.id)
     .orderBy(asc(sources.name));
   return rows.map((r) => ({ ...r, lastSyncedAt: r.lastSyncedAt?.toISOString() ?? null }));
+}
+
+const CSV_COLUMNS = ["id", "name", "startAt", "endAt", "city", "countryCode", "languageCode", "url", "sourceCount", "tags"] as const;
+
+function csvCell(value: unknown) {
+  const text = Array.isArray(value) ? value.join(" ") : value === null || value === undefined ? "" : String(value);
+  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+/** Every event matching the query, walking pages of the documented maximum size. */
+export async function exportEvents(q: EventQuery, format: "csv" | "json") {
+  const all: ReturnType<typeof eventDto>[] = [];
+  for (let offset = 0; ; offset += LIMIT_MAX) {
+    const page = await listEvents({ ...q, limit: LIMIT_MAX, offset });
+    all.push(...page.events);
+    if (!page.page.nextCursor) break;
+  }
+  if (format === "json") return JSON.stringify(all, null, 2);
+  const rows = all.map((e) => CSV_COLUMNS.map((c) => csvCell(e[c])).join(","));
+  return [CSV_COLUMNS.join(","), ...rows].join("\n");
 }

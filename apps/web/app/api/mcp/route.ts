@@ -1,7 +1,7 @@
 import { createMcpHandler, withMcpAuth } from "mcp-handler";
 import { z } from "zod";
 import { getEvent, listCalendars, listEvents, parseEventQuery } from "@/lib/api/events";
-import { verifyToken } from "@/lib/api/tokens";
+import { RATE_LIMIT, verifyToken } from "@/lib/api/tokens";
 
 const text = (value: unknown) => ({ content: [{ type: "text" as const, text: JSON.stringify(value, null, 2) }] });
 
@@ -50,7 +50,8 @@ const handler = withMcpAuth(
   mcp,
   async (_req, token) => {
     const row = await verifyToken(token);
-    return row ? { token: token ?? "", clientId: row.id, scopes: row.scopes } : undefined;
+    // Over the per-minute limit counts as unauthenticated until the window resets.
+    return row && row.used <= RATE_LIMIT ? { token: token ?? "", clientId: row.id, scopes: row.scopes } : undefined;
   },
   { required: true },
 );

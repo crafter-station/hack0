@@ -1,6 +1,8 @@
 import { eq, or, sql } from "drizzle-orm";
 import type { getDb } from "@/lib/db/client";
 import { canonicalEvents, eventSources } from "@/lib/db/schema";
+import { LATAM_COUNTRIES } from "@/lib/latam";
+import { eventMetro, eventSlug } from "@/lib/page-keys";
 import type { NormalizedEvent } from "./normalize";
 
 type Db = ReturnType<typeof getDb>;
@@ -10,6 +12,8 @@ function eventRow(n: NormalizedEvent) {
   const e = event.enrichment ?? {};
   return {
     canonicalKey: n.canonicalKey,
+    slug: eventSlug(event.name, event.url),
+    metro: eventMetro(event.city, e.region),
     identityFingerprint: n.fingerprint,
     lumaEventId: event.externalIds.lumaEventId ?? null,
     externalIds: event.externalIds,
@@ -104,7 +108,13 @@ async function upsertSources(db: Db, n: NormalizedEvent, canonicalEventId: strin
     .values(rows)
     .onConflictDoUpdate({
       target: [eventSources.sourceType, eventSources.sourceKey],
-      set: { canonicalEventId, lastSyncedAt: sql`excluded.last_synced_at`, calendarName: sql`excluded.calendar_name` },
+      set: {
+        canonicalEventId,
+        sourceId,
+        lastSyncedAt: sql`excluded.last_synced_at`,
+        calendarName: sql`excluded.calendar_name`,
+        removedAt: null,
+      },
     });
 }
 
@@ -119,4 +129,37 @@ export async function persistBatch(db: Db, batch: NormalizedEvent[], sourceId: s
     result[created ? "created" : "updated"]++;
   }
   return result;
+}
+
+/**
+ * After a complete read of a source, its upcoming sightings not seen since `syncStart` were cancelled or deleted upstream.
+ * Past sightings are left alone: incremental syncs do not read history.
+ */
+export async function markRemoved(db: Db, sourceId: string, syncStart: Date) {
+  await db.execute(sql`
+    update event_sources s set removed_at = now()
+    from canonical_events c
+    where s.canonical_event_id = c.id
+      and s.source_id = ${sourceId}
+      and s.removed_at is null
+      and s.last_synced_at < ${syncStart.toISOString()}::timestamptz
+      and c.start_at >= ${syncStart.toISOString()}::timestamptz`);
+}
+
+const LATAM = sql.raw(LATAM_COUNTRIES.map((c) => `'${c}'`).join(","));
+
+/**
+ * Recomputes which events are live and which belong on hack0.
+ * Listed: held in a LATAM country, or no known country but seen in a `latam` source, or online in Spanish or Portuguese.
+ */
+export async function refreshListing(db: Db) {
+  await db.execute(sql`
+    update canonical_events c set
+      active = exists (select 1 from event_sources s where s.canonical_event_id = c.id and s.removed_at is null),
+      -- coalesce: a null country makes the comparison null, and SQL's three-valued logic would carry it to the column.
+      listed = coalesce(c.country_code in (${LATAM}), false)
+        or (c.country_code is null and (
+          exists (select 1 from event_sources s join sources so on so.id = s.source_id
+                  where s.canonical_event_id = c.id and so.scope = 'latam')
+          or (c.is_online is true and coalesce(c.language_code in ('es', 'pt'), false))))`);
 }

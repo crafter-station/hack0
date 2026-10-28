@@ -3,13 +3,15 @@ import { Globe } from "@/components/globe";
 import { JsonLd } from "@/components/json-ld";
 import { Wordmark } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { eventSpots, upcomingEvents } from "@/lib/calendar";
+import { eventSpots } from "@/lib/calendar";
+import { mappedEvents, upcomingEvents } from "@/lib/catalog";
 import { SITE } from "@/lib/site";
 
 const LUMA = "https://luma.com/hack0";
 
 export default async function Home() {
-  const [events, spots] = await Promise.all([upcomingEvents(), eventSpots()]);
+  const [events, mapped] = await Promise.all([upcomingEvents(60), mappedEvents()]);
+  const spots = await eventSpots(mapped);
   return (
     <main>
       <JsonLd

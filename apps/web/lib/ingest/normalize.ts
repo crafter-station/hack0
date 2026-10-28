@@ -2,10 +2,11 @@ import type { CanonicalEventDTO, SourceEventInput } from "@/lib/canonical/canoni
 import { canonicalizeEvents, canonicalKeyFor, eventIdentityFingerprint, sourceKeyFor } from "@/lib/canonical/canonical-events";
 import { enrichEventForRouting } from "@/lib/canonical/event-routing-enrichment";
 import { classifyEventTags } from "@/lib/canonical/event-tagging";
+import { eventMetro } from "@/lib/page-keys";
 import type { PublicLumaEvent } from "./luma-public";
 import type { ProviderEvent } from "./providers";
 
-type SourceRef = { id: string; name: string | null; calendarId: string | null };
+export type SourceRef = { id: string; name: string | null; calendarId: string | null };
 
 export function lumaInputs(events: PublicLumaEvent[], source: SourceRef, now = new Date().toISOString()): SourceEventInput[] {
   return events.flatMap((e) =>
@@ -70,8 +71,11 @@ export type NormalizedEvent = {
 };
 
 /** Dedupes one batch, then enriches and tags each canonical event with the calendars that list it. */
+/** Metro of the event's city, so "Barranco, Lima" on Luma and "Lima" on Eventbrite match. */
+const placeOf = (input: SourceEventInput) => eventMetro(input.event.city, input.event.enrichment?.region);
+
 export function normalizeBatch(inputs: SourceEventInput[]): NormalizedEvent[] {
-  const canonical = canonicalizeEvents(inputs);
+  const canonical = canonicalizeEvents(inputs, placeOf);
   return canonical.map((event) => {
     const mine = inputs.filter((input) => event.sources.some((s) => s.sourceKey === sourceKeyFor(input)));
     const first = mine[0] ?? inputs[0];
@@ -87,7 +91,7 @@ export function normalizeBatch(inputs: SourceEventInput[]): NormalizedEvent[] {
       event: { ...event, enrichment },
       inputs: mine,
       canonicalKey: first ? canonicalKeyFor(first) : `luma:${event.id}`,
-      fingerprint: first ? eventIdentityFingerprint(first) : event.id,
+      fingerprint: first ? eventIdentityFingerprint(first, placeOf) : event.id,
       tags,
     };
   });

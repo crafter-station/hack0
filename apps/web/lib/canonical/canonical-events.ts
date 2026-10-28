@@ -117,7 +117,10 @@ function stableEventHash(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
-export function eventIdentityFingerprint(input: SourceEventInput): string {
+/** Resolves where an event happens, so same-name events at the same time in different cities stay apart. */
+type PlaceOf = (input: SourceEventInput) => string | null;
+
+export function eventIdentityFingerprint(input: SourceEventInput, placeOf?: PlaceOf): string {
   const normalizedName = input.event.name
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -126,7 +129,8 @@ export function eventIdentityFingerprint(input: SourceEventInput): string {
     .toLowerCase();
   const start = Date.parse(input.event.startAt);
   const normalizedStart = Number.isFinite(start) ? new Date(Math.floor(start / 60_000) * 60_000).toISOString() : input.event.startAt.trim();
-  return stableEventHash(`${normalizedName}|${normalizedStart}`);
+  const place = placeOf?.(input)?.toLowerCase() ?? "";
+  return stableEventHash(`${normalizedName}|${normalizedStart}|${place}`);
 }
 
 export function canonicalKeyFor(input: SourceEventInput): string {
@@ -179,9 +183,9 @@ function lumaIdOf(input: SourceEventInput): string | undefined {
   return /^evt-/i.test(id) ? id : undefined;
 }
 
-function aliasesFor(input: SourceEventInput, key: string): string[] {
+function aliasesFor(input: SourceEventInput, key: string, placeOf?: PlaceOf): string[] {
   const normalizedUrl = normalizeCanonicalUrl(input.sourceUrl ?? input.event.url);
-  return [key, ...(normalizedUrl ? [`url:${normalizedUrl}`] : []), `fingerprint:${eventIdentityFingerprint(input)}`];
+  return [key, ...(normalizedUrl ? [`url:${normalizedUrl}`] : []), `fingerprint:${eventIdentityFingerprint(input, placeOf)}`];
 }
 
 function createCanonical(input: SourceEventInput, key: string): CanonicalEventDTO {
@@ -218,12 +222,12 @@ function mergeSighting(target: CanonicalEventDTO, input: SourceEventInput): void
   }
 }
 
-export function canonicalizeEvents(inputs: SourceEventInput[]): CanonicalEventDTO[] {
+export function canonicalizeEvents(inputs: SourceEventInput[], placeOf?: PlaceOf): CanonicalEventDTO[] {
   const byAlias = new Map<string, CanonicalEventDTO>();
   const output: CanonicalEventDTO[] = [];
   for (const input of inputs) {
     const key = canonicalKeyFor(input);
-    const aliases = aliasesFor(input, key);
+    const aliases = aliasesFor(input, key, placeOf);
     const existing = aliases.map((alias) => byAlias.get(alias)).find(Boolean);
     const target = existing ?? createCanonical(input, key);
     if (existing) mergeSighting(existing, input);

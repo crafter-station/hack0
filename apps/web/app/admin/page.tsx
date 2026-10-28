@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Shell } from "@/components/shell";
 import { requireAdmin } from "@/lib/admin/auth";
 import { eventsForReview, openDrafts, sourcesOverview, tokensOverview } from "@/lib/admin/queries";
-import { addSource, decideDraft, revokeApiToken, syncNow, toggleCurated, toggleSync } from "./actions";
+import { addSource, decideDraft, revokeApiToken, syncNow, toggleCurated, toggleScope, toggleSync } from "./actions";
 import { TokenForm } from "./token-form";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +19,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
       <div className="hero-copy hub">
         <h1>Admin</h1>
         <p>
-          {rows.length} fuentes · {events.length} eventos próximos para curar
+          {rows.length} fuentes · {events.length} {events.length === 1 ? "evento próximo" : "eventos próximos"} para curar
         </p>
       </div>
 
@@ -30,6 +30,10 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
         <form action={addSource} className="admin-form">
           <input name="url" placeholder="https://luma.com/... · meetup.com/... · eventbrite.com/o/..." required />
           <input name="name" placeholder="nombre (opcional)" />
+          <input name="apiKey" type="password" placeholder="API key de Luma (opcional, calendarios privados)" autoComplete="off" />
+          <label className="check">
+            <input type="checkbox" name="scope" value="latam" /> es de LATAM
+          </label>
           <button className="btn primary" type="submit">
             Agregar
           </button>
@@ -59,12 +63,23 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
                   {s.syncError && <small className="error">{s.syncError}</small>}
                 </td>
                 <td>{s.events}</td>
-                <td>{s.syncEnabled ? s.syncStatus : "pausada"}</td>
+                <td>
+                  {s.syncEnabled ? s.syncStatus : "pausada"}
+                  <small className="meta">
+                    {s.scope}
+                    {s.keyed ? " · con key" : ""}
+                  </small>
+                </td>
                 <td>{when(s.lastSyncedAt)}</td>
                 <td className="row-actions">
                   <form action={syncNow}>
                     <input type="hidden" name="id" value={s.id} />
                     <button type="submit">sync</button>
+                  </form>
+                  <form action={toggleScope}>
+                    <input type="hidden" name="id" value={s.id} />
+                    <input type="hidden" name="scope" value={s.scope} />
+                    <button type="submit">{s.scope === "latam" ? "global" : "latam"}</button>
                   </form>
                   <form action={toggleSync}>
                     <input type="hidden" name="id" value={s.id} />

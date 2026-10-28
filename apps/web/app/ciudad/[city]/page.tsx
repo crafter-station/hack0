@@ -1,42 +1,45 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { HubPage } from "@/components/hub-page";
-import { catalog } from "@/lib/site";
+import { hubEvents, hubIndex } from "@/lib/catalog";
+import { pastPage } from "@/lib/hub-params";
 
 export const revalidate = 3600;
 
-export async function generateStaticParams() {
-  const { cities } = await catalog();
-  return cities.map((h) => ({ city: h.slug }));
+/** Rendered on first request and cached; the catalog is too large to prebuild every hub. */
+export function generateStaticParams() {
+  return [];
 }
 
-async function find(slug: string) {
-  const { cities } = await catalog();
-  return { hub: cities.find((h) => h.slug === slug), all: cities };
-}
+type Props = { params: Promise<{ city: string }>; searchParams: Promise<{ pagina?: string }> };
 
-export async function generateMetadata({ params }: { params: Promise<{ city: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city } = await params;
-  const { hub } = await find(city);
-  if (!hub) return {};
+  const hub = await hubEvents("ciudad", city);
+  if (!hub?.name) return {};
   return {
-    title: `${`Eventos tech en ${hub.name}`} | hack0`,
-    description: `Hackathones, meetups, workshops y conferencias de tecnología en ${hub.name}. ${hub.events.length} eventos en el calendario de hack0, con fechas, lugares y registro.`,
-    alternates: { canonical: `/ciudad/${hub.slug}` },
+    title: `Eventos tech en ${hub.name} | hack0`,
+    description: `Hackathones, meetups, workshops y conferencias de tecnología en ${hub.name}, con fechas, lugares y registro.`,
+    alternates: { canonical: `/ciudad/${city}` },
   };
 }
 
-export default async function Page({ params }: { params: Promise<{ city: string }> }) {
+export default async function Page({ params, searchParams }: Props) {
   const { city } = await params;
-  const { hub, all } = await find(city);
-  if (!hub) notFound();
+  const page = pastPage(await searchParams);
+  const [hub, links] = await Promise.all([hubEvents("ciudad", city, page), hubIndex("ciudad")]);
+  if (!hub?.name) notFound();
   return (
     <HubPage
       title={`Eventos tech en ${hub.name}`}
-      intro={`Hackathones, meetups, workshops y conferencias de tecnología en ${hub.name}. ${hub.events.length} eventos en el calendario de hack0, con fechas, lugares y registro.`}
-      path="/ciudad"
-      hub={hub}
-      links={all.filter((h) => h.slug !== hub.slug).slice(0, 24)}
+      intro={`Hackathones, meetups, workshops y conferencias de tecnología en ${hub.name}, con fechas, lugares y registro.`}
+      path={`/ciudad/${city}`}
+      upcoming={hub.upcoming}
+      past={hub.past}
+      pastTotal={hub.pastTotal}
+      page={page}
+      links={links.filter((h) => h.slug !== city).slice(0, 24)}
+      linkPath="/ciudad"
     />
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { HubPage } from "@/components/hub-page";
-import { catalog } from "@/lib/site";
+import { hubEvents, hubIndex } from "@/lib/catalog";
+import { pastPage } from "@/lib/hub-params";
 
 export const revalidate = 3600;
 
@@ -13,7 +14,21 @@ export const metadata: Metadata = {
   alternates: { canonical: "/eventos" },
 };
 
-export default async function Eventos() {
-  const { events, cities, tags } = await catalog();
-  return <HubPage title={TITLE} intro={INTRO} path="/ciudad" hub={{ slug: "", name: TITLE, events }} links={cities} tagLinks={tags} />;
+export default async function Eventos({ searchParams }: { searchParams: Promise<{ pagina?: string }> }) {
+  const page = pastPage(await searchParams);
+  const [hub, cities, tags] = await Promise.all([hubEvents(null, null, page), hubIndex("ciudad"), hubIndex("tema")]);
+  return (
+    <HubPage
+      title={TITLE}
+      intro={INTRO}
+      path="/eventos"
+      upcoming={hub?.upcoming ?? []}
+      past={hub?.past ?? []}
+      pastTotal={hub?.pastTotal ?? 0}
+      page={page}
+      links={cities}
+      linkPath="/ciudad"
+      tagLinks={tags}
+    />
+  );
 }

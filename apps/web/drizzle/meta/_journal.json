@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1793147135220,
-      "tag": "0000_marvelous_mauler",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1793148542987,
-      "tag": "0001_sad_mastermind",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1793148753251,
-      "tag": "0002_worthless_forge",
+      "when": 1793151210647,
+      "tag": "0000_motionless_monster_badoon",
       "breakpoints": true
     }
   ]

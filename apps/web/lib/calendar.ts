@@ -82,8 +82,22 @@ const REGION_METROS: Record<string, string> = {
   "New York": "New York",
 };
 
+const KNOWN_METROS = new Set(Object.values(REGION_METROS));
+const METRO_BY_LOWER = new Map([...KNOWN_METROS].map((m) => [m.toLowerCase(), m]));
+
+/** "LIMA" and "lima" are Lima; an unknown all-caps name gets title case. */
+function tidyPlace(name: string) {
+  const known = METRO_BY_LOWER.get(name.toLowerCase());
+  if (known) return known;
+  return name === name.toUpperCase() ? name.toLowerCase().replace(/(^|\s)\p{L}/gu, (c) => c.toUpperCase()) : name;
+}
+
 /** Luma stores the district as the city; districts must roll up to one hub per metro. */
-export function metroOf(city: string, region?: string): string {
+export function metroOf(rawCity: string, rawRegion?: string): string {
+  const city = tidyPlace(rawCity);
+  const region = rawRegion ? tidyPlace(rawRegion) : undefined;
+  // A city that is itself a metro stays put, even when the region names another one.
+  if (KNOWN_METROS.has(city)) return city;
   if (!region) return city;
   const province = region.match(/^Provincia(?: Constitucional)? del? (.+)$/) ?? region.match(/^(.+) Province$/);
   if (province) return province[1];
@@ -141,12 +155,8 @@ async function listEvents(params: { after?: string; limit: number }): Promise<Ca
   return events.slice(0, params.limit);
 }
 
-/** Every public event, oldest first: the aggregator catalog when a database is set, else the hack0 Luma calendar. */
-export async function allEvents(limit = 1000) {
-  if (process.env.DATABASE_URL) {
-    const { latamEvents } = await import("./catalog-db");
-    return latamEvents();
-  }
+/** Every public event of the hack0 Luma calendar, oldest first. */
+export function allEvents(limit = 1000) {
   return listEvents({ limit });
 }
 
@@ -174,21 +184,13 @@ export function placeLabel(e: CalendarEvent) {
   return district && district !== e.metro ? `${district}, ${e.metro}` : e.metro;
 }
 
-/** Upcoming approved events of the hack0 Luma calendar, cached for an hour. */
-export async function upcomingEvents(limit = 60) {
-  if (process.env.DATABASE_URL) {
-    const { latamEvents } = await import("./catalog-db");
-    return (await latamEvents({ after: new Date() })).slice(0, limit);
-  }
-  return listEvents({ after: new Date().toISOString(), limit });
-}
-
 export type Spot = { location: [number, number]; count: number; upcoming: boolean };
 
 /** Every event the calendar has mapped, grouped by place, for the globe. */
-export async function eventSpots(limit = 1000): Promise<Spot[]> {
+/** Every place with an event, grouped for the globe: the hack0 calendar plus mapped catalog events. */
+export async function eventSpots(extra: CalendarEvent[] = [], limit = 1000): Promise<Spot[]> {
   const events = (await listEvents({ limit })) ?? [];
-  return groupSpots(events, Date.now());
+  return groupSpots([...events, ...extra], Date.now());
 }
 
 export function groupSpots(events: CalendarEvent[], now: number): Spot[] {
