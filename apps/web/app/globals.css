@@ -67,6 +67,7 @@ header.top {
 }
 header.top nav {
   display: flex;
+  align-items: center;
   gap: 20px;
   font-size: 13px;
 }
