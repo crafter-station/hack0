@@ -134,7 +134,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
           <aside className="event-head">
             <ul className="when-where">
               <li>
-                <span className="tile cal" aria-hidden="true">
+                <span className="ww-tile cal" aria-hidden="true">
                   <b>{when.month}</b>
                   <span>{when.dayNumber}</span>
                 </span>
@@ -146,7 +146,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                 </span>
               </li>
               <li>
-                <span className="tile" aria-hidden="true">
+                <span className="ww-tile" aria-hidden="true">
                   <PinIcon online={e.online} />
                 </span>
                 <span>
