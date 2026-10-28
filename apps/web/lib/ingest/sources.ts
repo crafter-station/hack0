@@ -30,7 +30,7 @@ export async function seedSources(db: Db) {
 /** Enabled sources whose next sync is due, never synced first. */
 export async function dueSources(db: Db, now = new Date()) {
   return db
-    .select({ id: sources.id })
+    .select({ id: sources.id, provider: sources.provider })
     .from(sources)
     .where(and(eq(sources.syncEnabled, true), or(isNull(sources.nextSyncAt), lte(sources.nextSyncAt, now))))
     .orderBy(asc(sources.lastSyncedAt));
