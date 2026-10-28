@@ -16,7 +16,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div>
           <h1>Admin</h1>
           <p>
-            {c.sources} fuentes · {c.upcoming} eventos próximos · {c.curated} curados
+            {c.sources} fuentes · {c.upcoming} eventos próximos · {c.curated} destacados
           </p>
         </div>
         <a className="btn" href="/eventos">

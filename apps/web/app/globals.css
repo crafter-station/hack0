@@ -1088,3 +1088,58 @@ button.btn,
   gap: 8px;
   margin-top: 6px;
 }
+.ghost.fix {
+  color: var(--ink);
+  border-color: var(--rule);
+}
+.fix-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border: 1px solid var(--rule);
+  font-size: 13px;
+}
+.feature {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  padding: 6px 12px;
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--mute);
+  cursor: pointer;
+}
+.feature:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.feature.on {
+  background: var(--acc);
+  border-color: var(--acc);
+  color: #fff;
+}
+.feature {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  padding: 6px 12px;
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--mute);
+  cursor: pointer;
+}
+.feature:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.feature.on {
+  background: var(--acc);
+  border-color: var(--acc);
+  color: #fff;
+}

@@ -7,7 +7,7 @@ type Props = { searchParams: Promise<{ q?: string; vista?: string }> };
 
 const VIEWS: { value: CurationView; label: string }[] = [
   { value: "pendientes", label: "Pendientes" },
-  { value: "curados", label: "Curados" },
+  { value: "curados", label: "Destacados" },
   { value: "todos", label: "Todos" },
 ];
 
@@ -32,6 +32,10 @@ export default async function CurationTab({ searchParams }: Props) {
     `/admin/curacion?${new URLSearchParams({ ...(q ? { q } : {}), ...(v !== "pendientes" ? { vista: v } : {}) })}`;
   return (
     <>
+      <p className="lead">
+        Destacar un evento lo pone en la agenda semanal y le arma un post listo para publicar. Lo que no destaques igual aparece en el
+        sitio.
+      </p>
       <div className="toolbar">
         <form className="search">
           <input type="search" name="q" defaultValue={q} placeholder="Buscar evento" aria-label="Buscar evento" />
@@ -61,10 +65,10 @@ export default async function CurationTab({ searchParams }: Props) {
         ) : view === "pendientes" ? (
           <EmptyState
             art="done"
-            title="Todo curado"
+            title="Todo revisado"
             action={
               <a className="btn" href={href("curados")}>
-                Ver curados
+                Ver destacados
               </a>
             }
           >
@@ -73,10 +77,10 @@ export default async function CurationTab({ searchParams }: Props) {
         ) : view === "curados" ? (
           <EmptyState
             art="calendar"
-            title="Aún no curaste ninguno"
+            title="Aún no destacaste ninguno"
             action={
               <a className="btn primary" href={href("pendientes")}>
-                Empezar a curar
+                Ver pendientes
               </a>
             }
           >
@@ -114,14 +118,8 @@ export default async function CurationTab({ searchParams }: Props) {
               <form action={toggleCurated}>
                 <input type="hidden" name="id" value={e.id} />
                 <input type="hidden" name="curated" value={String(e.curated)} />
-                <button
-                  type="submit"
-                  className="switch"
-                  role="switch"
-                  aria-checked={e.curated}
-                  aria-label={e.curated ? "Quitar de curados" : "Curar"}
-                >
-                  <span />
+                <button type="submit" className={`feature${e.curated ? " on" : ""}`} aria-pressed={e.curated}>
+                  {e.curated ? "✓ Destacado" : "+ Destacar"}
                 </button>
               </form>
             </div>

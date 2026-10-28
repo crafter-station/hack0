@@ -1,3 +1,4 @@
+import { FatalError } from "workflow";
 import type { CanonicalBaseEvent, EventProvider } from "@/lib/canonical/canonical-events";
 import { providerEventId } from "@/lib/canonical/event-providers";
 import { inferRoutingCountryCode } from "@/lib/canonical/event-routing-enrichment";
@@ -543,6 +544,8 @@ async function tryMeetupFeed(
     return { snapshot: await enrichSnapshotBranding(sourceUrl, snapshot), error: null };
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
+    // A group Meetup says does not exist will not appear by retrying or by scraping: fail once, without Firecrawl.
+    if (/not found or is not publicly accessible/i.test(err.message)) throw new FatalError(err.message);
     console.warn("[meetup] public GraphQL failed; trying Firecrawl", err.message);
     return { snapshot: null, error: err };
   }
