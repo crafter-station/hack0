@@ -5,9 +5,10 @@ import { GET as exportRoute } from "@/app/api/v1/events/export/route";
 import { GET as events } from "@/app/api/v1/events/route";
 import { GET as health } from "@/app/api/v1/health/route";
 import { getDb } from "@/lib/db/client";
+import { seedCatalog } from "@/lib/testing/catalog-fixture";
 import { createToken, revokeToken, verifyToken } from "../tokens";
 
-// Needs the catalog the ingest integration test writes: TEST_DATABASE_URL=... bun test
+// Runs against a throwaway Postgres: TEST_DATABASE_URL=postgres://localhost/hack0_test bun test
 const url = process.env.TEST_DATABASE_URL;
 const run = url ? describe : describe.skip;
 
@@ -16,8 +17,10 @@ const get = (path: string, auth = token) =>
   new Request(`http://localhost${path}`, { headers: auth ? { authorization: `Bearer ${auth}` } : {} });
 
 beforeAll(async () => {
+  if (!url) return;
   process.env.DATABASE_URL = url;
-  if (url) token = await createToken("api test");
+  await seedCatalog();
+  token = await createToken("api test");
 });
 
 run("REST API", () => {
@@ -33,7 +36,7 @@ run("REST API", () => {
   test("events page with a cursor until the end", async () => {
     const first = await (await events(get("/api/v1/events?limit=1"))).json();
     expect(first.events).toHaveLength(1);
-    expect(first.page.total).toBeGreaterThanOrEqual(2);
+    expect(first.page.total).toBe(3);
     const second = await (await events(get(`/api/v1/events?limit=1&cursor=${first.page.nextCursor}`))).json();
     expect(second.events[0].id).not.toBe(first.events[0].id);
   });
@@ -49,8 +52,8 @@ run("REST API", () => {
     const res = await eventById(get("/api/v1/events/evt-1"), { params: Promise.resolve({ id: "evt-1" }) });
     const { event } = await res.json();
     expect(event.name).toBe("Cursor Meetup Lima");
-    expect(event.sourceCount).toBeGreaterThanOrEqual(1);
-    expect(event.sources).toHaveLength(event.sourceCount);
+    expect(event.sourceCount).toBe(2);
+    expect(event.sources).toHaveLength(2);
   });
 
   test("a revoked token stops working", async () => {

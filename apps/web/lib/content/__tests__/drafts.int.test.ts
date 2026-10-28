@@ -1,7 +1,8 @@
 import { beforeAll, describe, expect, test } from "bun:test";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { canonicalEvents, contentDrafts } from "@/lib/db/schema";
+import { seedCatalog } from "@/lib/testing/catalog-fixture";
 import { writeDrafts } from "@/workflows/publish";
 
 const url = process.env.TEST_DATABASE_URL;
@@ -11,8 +12,7 @@ const NOW = new Date("2026-11-02T12:00:00Z");
 beforeAll(async () => {
   if (!url) return;
   process.env.DATABASE_URL = url;
-  await getDb().execute(sql`truncate content_drafts`);
-  await getDb().update(canonicalEvents).set({ curated: false });
+  await seedCatalog();
   await getDb().update(canonicalEvents).set({ curated: true }).where(eq(canonicalEvents.name, "Cursor Meetup Lima"));
 });
 
