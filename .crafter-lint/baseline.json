@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "rules": {
+    "biome": {
+      "apps/web/app/brand/brand.css#lint/complexity/noImportantStyles": 1,
+      "apps/web/app/brand/brand.css#lint/style/noDescendingSpecificity": 2,
+      "apps/web/app/globals.css#lint/style/noDescendingSpecificity": 10
+    }
+  }
+}

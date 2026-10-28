@@ -4,3 +4,4 @@ dist/
 .env*
 *.tsbuildinfo
 next-env.d.ts
+.crafter-lint/events.jsonl
