@@ -1,25 +1,30 @@
 import { EventList } from "@/components/event-list";
 import { JsonLd } from "@/components/json-ld";
 import { Shell } from "@/components/shell";
-import type { Hub } from "@/lib/site";
-import { SITE, splitByTime } from "@/lib/site";
+import type { CalendarEvent } from "@/lib/calendar";
+import { ARCHIVE_PAGE, type HubLink } from "@/lib/catalog";
+import { SITE } from "@/lib/site";
 
-export function HubPage({
-  title,
-  intro,
-  path,
-  hub,
-  links,
-  tagLinks = [],
-}: {
+/** Hubs page as /ciudad/lima/2 so ISR can cache each page; the whole-catalog archive keeps ?pagina=2. */
+function pageHref(path: string, n: number) {
+  return path === "/eventos" ? `${path}?pagina=${n}` : `${path}/${n}`;
+}
+
+type Props = {
   title: string;
   intro: string;
   path: string;
-  hub: Hub;
-  links: Hub[];
-  tagLinks?: Hub[];
-}) {
-  const { upcoming, past } = splitByTime(hub.events);
+  upcoming: CalendarEvent[];
+  past: CalendarEvent[];
+  pastTotal: number;
+  page: number;
+  links: HubLink[];
+  linkPath: string;
+  tagLinks?: HubLink[];
+};
+
+export function HubPage({ title, intro, path, upcoming, past, pastTotal, page, links, linkPath, tagLinks = [] }: Props) {
+  const pages = Math.ceil(pastTotal / ARCHIVE_PAGE);
   return (
     <Shell>
       <JsonLd
@@ -27,7 +32,11 @@ export function HubPage({
           "@context": "https://schema.org",
           "@type": "ItemList",
           name: title,
-          itemListElement: hub.events.map((e, i) => ({ "@type": "ListItem", position: i + 1, url: `${SITE}/eventos/${e.slug}` })),
+          itemListElement: [...upcoming, ...past].map((e, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            url: `${SITE}/eventos/${e.slug}`,
+          })),
         }}
       />
       <div className="hero-copy hub">
@@ -52,31 +61,38 @@ export function HubPage({
         <section>
           <div className="label">
             <span>realizados</span>
-            <span>{past.length}</span>
+            <span>{pastTotal}</span>
           </div>
           <EventList events={past} />
+          {pages > 1 && (
+            <p className="chips">
+              {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
+                <a key={n} href={n === 1 ? path : pageHref(path, n)} aria-current={n === page + 1 ? "page" : undefined}>
+                  {n}
+                </a>
+              ))}
+            </p>
+          )}
         </section>
       )}
-      {links.length > 0 && (
+      {(links.length > 0 || tagLinks.length > 0) && (
         <section>
           <div className="label">
             <span>explorar</span>
           </div>
-          <p className="chips">
-            {links.map((l) => (
-              <a key={l.slug} href={`${path}/${l.slug}`}>
-                {l.name} <span>{l.events.length}</span>
-              </a>
-            ))}
-          </p>
-          {tagLinks.length > 0 && (
-            <p className="chips">
-              {tagLinks.map((l) => (
-                <a key={l.slug} href={`/tema/${l.slug}`}>
-                  {l.name} <span>{l.events.length}</span>
-                </a>
-              ))}
-            </p>
+          {[
+            [links, linkPath],
+            [tagLinks, "/tema"],
+          ].map(([list, base]) =>
+            (list as HubLink[]).length > 0 ? (
+              <p className="chips" key={base as string}>
+                {(list as HubLink[]).map((l) => (
+                  <a key={l.slug} href={`${base}/${l.slug}`}>
+                    {l.name} <span>{l.count}</span>
+                  </a>
+                ))}
+              </p>
+            ) : null,
           )}
         </section>
       )}

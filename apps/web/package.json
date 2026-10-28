@@ -7,21 +7,32 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.9.20",
+    "@modelcontextprotocol/server": "^2",
     "@neondatabase/serverless": "^1.2.0",
     "cobe": "2.0.1",
+    "drizzle-orm": "^0.45.4",
+    "flag-icons": "7.6.0",
+    "franc-min": "^6.2.0",
+    "mcp-handler": "2.3.0",
     "next": "^16.4.3",
     "postgres": "^3.4.9",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "resend": "^6.34.1"
+    "resend": "^6.34.1",
+    "workflow": "5.2.3",
+    "zod": "^4"
   },
   "devDependencies": {
     "@types/bun": "^1.4.4",
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
+    "drizzle-kit": "^0.31.11",
     "typescript": "^7.0.2"
   }
 }

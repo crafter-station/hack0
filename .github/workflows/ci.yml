@@ -8,13 +8,26 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: hack0_test
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/hack0_test
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
+      - name: lockfile uses the public registry
+        run: "! grep -q 'vercel.security' bun.lock"
       - run: bun run lint
+      - run: DATABASE_URL=$TEST_DATABASE_URL bun run --filter hack0-web db:migrate
       - run: bun run typecheck
       - run: bun run test
       - run: bun run quality
