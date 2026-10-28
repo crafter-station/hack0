@@ -1,4 +1,13 @@
-import { RetryableError } from "workflow";
+import { getStepMetadata, RetryableError } from "workflow";
+
+function backoff() {
+  try {
+    return getStepMetadata().attempt ** 2 * 60_000;
+  } catch {
+    // Called outside a workflow step (scripts, tests): no attempt count to scale by.
+    return 60_000;
+  }
+}
 
 const LUMA_ORIGIN = "https://luma.com";
 const LUMA_API = "https://api.lu.ma";
@@ -60,10 +69,10 @@ async function fetchPage(calendarId: string, period: "future" | "past", cursor?:
   const res = await fetch(`${LUMA_API}/calendar/get-items?${qs}`, { headers: { accept: "application/json" } });
   if (res.status === 429) {
     const seconds = Number(res.headers.get("retry-after"));
-    const message = `Luma rate limited get-items for ${calendarId}`;
-    throw Number.isFinite(seconds) && seconds > 0
-      ? new RetryableError(message, { retryAfter: seconds * 1000 })
-      : new RetryableError(message);
+    // Without Retry-After, back off quadratically per attempt (1, 4, 9 minutes), the pattern the Workflow docs show.
+    throw new RetryableError(`Luma rate limited get-items for ${calendarId}`, {
+      retryAfter: Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : backoff(),
+    });
   }
   if (!res.ok) throw new Error(`Luma get-items failed for ${calendarId} (${res.status})`);
   return (await res.json()) as Page;

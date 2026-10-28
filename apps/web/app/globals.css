@@ -451,3 +451,8 @@ footer {
 .admin-table small.meta {
   color: var(--mute);
 }
+.sign-in {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}

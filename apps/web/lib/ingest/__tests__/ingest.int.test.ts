@@ -30,6 +30,7 @@ const FEEDS: Record<string, { future: unknown[]; past: unknown[] }> = {
 const realFetch = globalThis.fetch;
 
 beforeAll(async () => {
+  if (!url) return;
   process.env.DATABASE_URL = url;
   globalThis.fetch = (async (input: string | URL) => {
     const u = new URL(String(input));
