@@ -20,7 +20,8 @@
     "postgres": "^3.4.9",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "resend": "^6.34.1"
+    "resend": "^6.34.1",
+    "workflow": "5.2.3"
   },
   "devDependencies": {
     "@types/bun": "^1.4.4",

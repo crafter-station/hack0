@@ -68,7 +68,7 @@ type CanonicalEventSourceDTO = {
   lastSyncedAt: string;
 };
 
-type CanonicalEventDTO = CanonicalBaseEvent & {
+export type CanonicalEventDTO = CanonicalBaseEvent & {
   externalIds: {
     lumaEventId?: string;
     eventbriteEventId?: string;
@@ -117,7 +117,7 @@ function stableEventHash(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
-function eventIdentityFingerprint(input: SourceEventInput): string {
+export function eventIdentityFingerprint(input: SourceEventInput): string {
   const normalizedName = input.event.name
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -140,7 +140,7 @@ export function canonicalKeyFor(input: SourceEventInput): string {
   return `hash:${stableEventHash(fallback)}`;
 }
 
-function sourceKeyFor(input: SourceEventInput): string {
+export function sourceKeyFor(input: SourceEventInput): string {
   if (input.sourceKey) return input.sourceKey;
   const calendar = input.calendarId ?? input.event.calendarId ?? "standalone";
   return [input.sourceType, calendar, input.externalEventId ?? input.event.id].join(":");
