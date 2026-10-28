@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gte, inArray, lte, or, type SQL, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, gte, inArray, lte, or, type SQL, sql } from "drizzle-orm";
 import { eventDurationMinutes, eventTemporalStatus } from "@/lib/canonical/event-time";
 import { getDb } from "@/lib/db/client";
 import { canonicalEvents, eventSources, sources } from "@/lib/db/schema";
@@ -185,4 +185,46 @@ export async function exportEvents(q: EventQuery, format: "csv" | "json") {
   if (format === "json") return JSON.stringify(all, null, 2);
   const rows = all.map((e) => CSV_COLUMNS.map((c) => csvCell(e[c])).join(","));
   return [CSV_COLUMNS.join(","), ...rows].join("\n");
+}
+
+const CHANGES_MAX = 500;
+
+/**
+ * Everything that changed after `since`, in order, for consumers that keep a copy: live events as upserts,
+ * events every source dropped as delete tombstones. `nextCursor` is the `since` of the next call.
+ */
+export async function listChanges(since: number, limit = CHANGES_MAX, now = new Date()) {
+  const size = Math.min(Math.max(Math.trunc(limit) || CHANGES_MAX, 1), CHANGES_MAX);
+  const rows = await getDb()
+    .select()
+    .from(canonicalEvents)
+    .where(gt(canonicalEvents.changeSeq, since))
+    .orderBy(asc(canonicalEvents.changeSeq))
+    .limit(size + 1);
+  const page = rows.slice(0, size);
+  const changedAt = (row: EventRow) => row.updatedAt.toISOString();
+  return {
+    upserts: page
+      .filter((row) => row.active)
+      .map((row) => ({
+        canonicalId: row.id,
+        name: row.name,
+        url: row.url,
+        coverUrl: row.coverUrl,
+        startAt: row.startAt.toISOString(),
+        endAt: row.endAt?.toISOString() ?? null,
+        city: row.city,
+        description: row.description,
+        hostName: row.hostName,
+        timezone: row.timezone,
+        enrichment: row.enrichment,
+        externalIds: row.externalIds,
+        updatedAt: changedAt(row),
+        changedAt: changedAt(row),
+      })),
+    deletes: page.filter((row) => !row.active).map((row) => ({ canonicalId: row.id, changedAt: changedAt(row) })),
+    nextCursor: String(page.at(-1)?.changeSeq ?? since),
+    hasMore: rows.length > size,
+    generatedAt: now.toISOString(),
+  };
 }

@@ -18,7 +18,7 @@ The map of tech events in Latin America.
 
 </div>
 
-hack0 reads hackathons, meetups, workshops and conferences from Luma calendars, Meetup groups and Eventbrite organizers, merges the same event seen in several places into one, and publishes a page for every event, city and topic. Curators feature the best ones for a weekly agenda; apps and agents read the same catalog through a REST API and an MCP server.
+hack0 reads hackathons, meetups, workshops and conferences from Luma calendars, profiles and single events, Meetup groups and Eventbrite organizers, merges the same event seen in several places into one, and publishes a page for every event, city and topic. Curators feature the best ones for a weekly agenda; apps and agents read the same catalog through a REST API and an MCP server.
 
 ## Develop
 
@@ -60,6 +60,7 @@ curl -H "Authorization: Bearer hack0_sk_..." \
 | `GET /api/v1/events` | Events, filtered by `status`, `country`, `provider`, `calendar`, `from`, `to`; paged with `cursor` |
 | `GET /api/v1/events/:id` | One event with every source that lists it |
 | `GET /api/v1/events/export` | The filtered catalog as CSV or JSON |
+| `GET /api/v1/events/changes?since=0` | Incremental sync: upserts and delete tombstones after a cursor; pass `nextCursor` back as `since` |
 | `GET /api/v1/calendars` | Sources and their sync state |
 | `POST /api/mcp` | MCP server: `list_events`, `get_event`, `list_calendars` |
 

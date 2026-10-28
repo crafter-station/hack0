@@ -1,0 +1,154 @@
+{
+  "calendar": {
+    "kind": "calendar",
+    "data": {
+      "calendar": {
+        "api_id": "cal-HBdmsARYSzYhpuc"
+      },
+      "upcoming": {
+        "entries": [
+          {
+            "event": {
+              "api_id": "evt-rFhHBy45FdesNLY",
+              "name": "Del dato a la nube: Introducción a SQL y AWS",
+              "url": "5z2nzojb",
+              "cover_url": "https://images.lumacdn.com/uploads/rv/f45dd119-b20e-4a3c-b867-3ef1aee290e1.png",
+              "start_at": "2026-10-29T21:00:00.000Z",
+              "end_at": "2026-10-30T00:00:00.000Z",
+              "timezone": "America/Lima",
+              "location_type": "offline",
+              "geo_address_info": {
+                "city": "San Isidro",
+                "region": "Provincia de Lima",
+                "city_state": "San Isidro, Peru",
+                "country_code": "PE",
+                "full_address": "piso 8, Av. Santo Toribio 115, San Isidro 15073, Peru"
+              },
+              "coordinate": {
+                "longitude": -77.0381328,
+                "latitude": -12.0960596
+              }
+            },
+            "hosts": [
+              {
+                "name": "LEAD UTP"
+              }
+            ]
+          },
+          {
+            "event": {
+              "api_id": "evt-Q4R9XnDQPqNQhbn",
+              "name": "Replit Building Nights",
+              "url": "qgaydqcv",
+              "cover_url": "https://images.lumacdn.com/uploads/9h/be8dd7a4-40ab-4c94-be8a-403338671486.png",
+              "start_at": "2026-10-29T23:30:00.000Z",
+              "end_at": "2026-10-30T03:00:00.000Z",
+              "timezone": "America/Lima",
+              "location_type": "offline",
+              "geo_address_info": {
+                "city": "Barranco",
+                "region": "Provincia de Lima",
+                "city_state": "Barranco, Peru",
+                "country_code": "PE",
+                "full_address": "Av. el Sol Oeste 145, Barranco 15063, Peru"
+              },
+              "coordinate": {
+                "longitude": -77.02279639999999,
+                "latitude": -12.1396801
+              }
+            },
+            "hosts": [
+              {
+                "name": "Josecarlos de Lima"
+              }
+            ]
+          }
+        ],
+        "has_more": false
+      },
+      "event_start_ats": ["2026-10-29T21:00:00.000Z", "2026-10-29T23:30:00.000Z"]
+    }
+  },
+  "event": {
+    "kind": "event",
+    "data": {
+      "event": {
+        "api_id": "evt-rFhHBy45FdesNLY",
+        "name": "Del dato a la nube: Introducción a SQL y AWS",
+        "url": "5z2nzojb",
+        "cover_url": "https://images.lumacdn.com/uploads/rv/f45dd119-b20e-4a3c-b867-3ef1aee290e1.png",
+        "start_at": "2026-10-29T21:00:00.000Z",
+        "end_at": "2026-10-30T00:00:00.000Z",
+        "timezone": "America/Lima",
+        "location_type": "offline",
+        "geo_address_info": {
+          "city": "San Isidro",
+          "region": "Provincia de Lima",
+          "city_state": "San Isidro, Peru",
+          "country_code": "PE",
+          "full_address": "piso 8, Av. Santo Toribio 115, San Isidro 15073, Peru"
+        },
+        "coordinate": {
+          "longitude": -77.0381328,
+          "latitude": -12.0960596
+        }
+      },
+      "hosts": [
+        {
+          "name": "LEAD UTP"
+        }
+      ],
+      "description_mirror": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "text": "¿Alguna vez te preguntaste dónde se guardan tus canciones favoritas, tus compras online o los datos que usa tu app favorita cada vez que la abres? 🤔",
+                "type": "text"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "text": "Desde el Pilar de Excelencia Femenina de LEAD UTP, te invitamos a una tarde donde esa pregunta la vas a responder tú misma, con las manos en el teclado.",
+                "type": "text"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "text": "En esta charla aprenderás de forma sencilla y ",
+                "type": "text"
+              },
+              {
+                "text": "sin necesitar conocimientos previos",
+                "type": "text",
+                "marks": [
+                  {
+                    "type": "bold"
+                  }
+                ]
+              },
+              {
+                "text": " cómo funcionan las bases de datos, el lenguaje SQL y los servicios de Amazon Web Services (AWS), y cómo estas tres tecnologías trabajan juntas detrás de casi todo lo que usas en tu día a día.",
+                "type": "text"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "profile": {
+    "user": {
+      "api_id": "usr-WCvZP6ABC54eywD",
+      "username": "theveller"
+    }
+  }
+}
