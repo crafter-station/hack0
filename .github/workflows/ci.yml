@@ -35,6 +35,8 @@ jobs:
         working-directory: apps/web
         env:
           DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+          # Publishable keys are public by design (they ship in the browser bundle); this is the Clerk development instance.
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ZmFpci1sYW1iLTMxLmNsZXJrLmFjY291bnRzLmRldiQ
         run: |
           bun run scripts/seed-fixture.ts
           bun run build
