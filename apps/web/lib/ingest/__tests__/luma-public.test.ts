@@ -8,7 +8,8 @@ const html = (initialData: unknown) =>
 
 const realFetch = globalThis.fetch;
 const serve = (initialData: unknown) => {
-  globalThis.fetch = (async (_input: string | URL) => new Response(html(initialData), { headers: { "content-type": "text/html" } })) as typeof fetch;
+  globalThis.fetch = (async (_input: string | URL) =>
+    new Response(html(initialData), { headers: { "content-type": "text/html" } })) as typeof fetch;
 };
 afterEach(() => {
   globalThis.fetch = realFetch;
