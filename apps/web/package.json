@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "drizzle-kit migrate && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
