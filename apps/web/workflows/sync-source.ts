@@ -30,7 +30,7 @@ async function loadSource(sourceId: string): Promise<Loaded> {
     name: s.name,
     url: s.url,
     calendarId: s.lumaCalendarId,
-    hasKey: Boolean(s.apiKeyCiphertext),
+    hasKey: Boolean(s.apiKeyCiphertext) || isHack0Calendar(s.lumaCalendarId),
     firstSync: !s.lastSyncedAt,
   };
 }
@@ -44,8 +44,17 @@ async function ensureCalendarId(source: Loaded) {
   return calendarId;
 }
 
+/** True for hack0's own Luma calendar, which syncs with the project's LUMA_API_KEY instead of a stored key. */
+function isHack0Calendar(calendarId: string | null) {
+  return Boolean(calendarId && calendarId === process.env.HACK0_LUMA_CALENDAR_API_ID && process.env.LUMA_API_KEY);
+}
+
 async function apiKeyOf(sourceId: string) {
-  const [row] = await getDb().select({ sealed: sources.apiKeyCiphertext }).from(sources).where(eq(sources.id, sourceId));
+  const [row] = await getDb()
+    .select({ sealed: sources.apiKeyCiphertext, calendarId: sources.lumaCalendarId })
+    .from(sources)
+    .where(eq(sources.id, sourceId));
+  if (row && isHack0Calendar(row.calendarId)) return process.env.LUMA_API_KEY as string;
   if (!row?.sealed) throw new Error("source has no API key");
   return decrypt(row.sealed);
 }
