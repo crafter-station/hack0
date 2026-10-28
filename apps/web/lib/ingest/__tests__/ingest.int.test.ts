@@ -5,6 +5,7 @@ import { canonicalEvents, eventSources, sources } from "@/lib/db/schema";
 import { fetchCalendarEvents } from "../luma-public";
 import { lumaInputs, normalizeBatch, providerInputs } from "../normalize";
 import { markRemoved, persistBatch, refreshListing } from "../persist";
+import { dueSources } from "../sources";
 
 // Runs against a throwaway Postgres: TEST_DATABASE_URL=postgres://localhost/hack0_test bun test
 const url = process.env.TEST_DATABASE_URL;
@@ -183,5 +184,22 @@ run("ingest into Postgres", () => {
     expect(online?.listed).toBe(true);
     await getDb().update(canonicalEvents).set({ countryCode: "PE", isOnline: false }).where(eq(canonicalEvents.lumaEventId, "evt-1"));
     await refreshListing(getDb());
+  });
+
+  test("the cron skips a source a live run holds, and frees it once that run goes quiet a whole day", async () => {
+    const [held] = await getDb()
+      .insert(sources)
+      .values({
+        provider: "meetup",
+        kind: "group",
+        providerSourceId: "meetup:test/held",
+        url: "https://meetup.com/held",
+        syncStatus: "queued",
+      })
+      .returning({ id: sources.id });
+    if (!held) throw new Error("no source");
+    const ids = async (now: Date) => (await dueSources(getDb(), now)).map((s) => s.id);
+    expect(await ids(new Date())).not.toContain(held.id);
+    expect(await ids(new Date(Date.now() + 25 * 60 * 60 * 1000))).toContain(held.id);
   });
 });

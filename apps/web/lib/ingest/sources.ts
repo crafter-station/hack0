@@ -1,9 +1,12 @@
-import { and, asc, eq, isNull, lte, or } from "drizzle-orm";
+import { and, asc, eq, isNull, lt, lte, notInArray, or } from "drizzle-orm";
 import type { getDb } from "@/lib/db/client";
 import { sources } from "@/lib/db/schema";
 import { SEED_CALENDARS } from "./seed";
 
 type Db = ReturnType<typeof getDb>;
+
+/** The sync cron runs daily (vercel.json). */
+const CRON_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 /** How often each source refreshes; Event Aggregator's rule. */
 export const REFRESH_INTERVAL_MS = 3 * 24 * 60 * 60 * 1000;
@@ -32,6 +35,13 @@ export async function dueSources(db: Db, now = new Date()) {
   return db
     .select({ id: sources.id, provider: sources.provider })
     .from(sources)
-    .where(and(eq(sources.syncEnabled, true), or(isNull(sources.nextSyncAt), lte(sources.nextSyncAt, now))))
+    .where(
+      and(
+        eq(sources.syncEnabled, true),
+        or(isNull(sources.nextSyncAt), lte(sources.nextSyncAt, now)),
+        // A source another run holds is skipped, unless that run went quiet for a whole cron interval (it died).
+        or(notInArray(sources.syncStatus, ["queued", "running"]), lt(sources.updatedAt, new Date(now.getTime() - CRON_INTERVAL_MS))),
+      ),
+    )
     .orderBy(asc(sources.lastSyncedAt));
 }
