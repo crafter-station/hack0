@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.20",
+    "@clerk/ui": "^1.41.2",
     "@modelcontextprotocol/server": "^2",
     "@neondatabase/serverless": "^1.2.0",
     "cobe": "2.0.1",

@@ -41,7 +41,7 @@ async function dbEvent(slug: string): Promise<{ page: EventPage | null; movedTo:
 }
 
 function hubFilter(kind: HubKind, name: string): SQL {
-  return kind === "ciudad" ? eq(canonicalEvents.metro, name) : sql`${name} = any(${canonicalEvents.tags})`;
+  return kind === "ciudad" ? sql`lower(${canonicalEvents.metro}) = lower(${name})` : sql`${name} = any(${canonicalEvents.tags})`;
 }
 
 async function dbHubIndex(kind: HubKind): Promise<HubLink[]> {
@@ -59,7 +59,15 @@ async function dbHubIndex(kind: HubKind): Promise<HubLink[]> {
           .where(live)
           .groupBy(sql`1`)
           .orderBy(desc(count()));
-  return rows.flatMap((r) => (r.name ? [{ slug: slugify(r.name), name: r.name, count: r.count }] : []));
+  // "Lima" and "LIMA" share a slug: one hub, named by the most common spelling, counting both.
+  const bySlug = new Map<string, HubLink>();
+  for (const r of rows) {
+    if (!r.name) continue;
+    const slug = slugify(r.name);
+    const hub = bySlug.get(slug);
+    bySlug.set(slug, hub ? { ...hub, count: hub.count + r.count } : { slug, name: r.name, count: r.count });
+  }
+  return [...bySlug.values()].sort((a, b) => b.count - a.count);
 }
 
 async function dbHubEvents(where: SQL, pastPage: number) {

@@ -7,6 +7,26 @@
   --mute: #6b6b63;
   --rule: #11111122;
 }
+/* shadcn's variable names, read by Clerk's shadcn theme; derived from the tokens so dark mode follows. */
+:root {
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--paper);
+  --card-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --muted: var(--rule);
+  --muted-foreground: var(--mute);
+  --border: var(--rule);
+  --input: var(--rule);
+  --ring: var(--acc);
+  --destructive: var(--acc);
+  --color-black: #000;
+  --font-weight-normal: 500;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 700;
+  --radius: 0;
+}
 * {
   box-sizing: border-box;
   margin: 0;
@@ -581,4 +601,15 @@ footer {
     top: 0;
     z-index: 5;
   }
+}
+/* Native arrows sit flush against the border; draw one with room to breathe, in the text color. */
+.filter-search select {
+  appearance: none;
+  padding-right: 36px;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 19px) 50%,
+    calc(100% - 14px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
 }

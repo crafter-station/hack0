@@ -1,4 +1,5 @@
 import { ClerkProvider } from "@clerk/nextjs";
+import { shadcn } from "@clerk/ui/themes";
 import { JetBrains_Mono } from "next/font/google";
 import "flag-icons/css/flag-icons.min.css";
 import "./globals.css";
@@ -25,7 +26,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body>
-        <ClerkProvider>{children}</ClerkProvider>
+        <ClerkProvider
+          appearance={{
+            theme: shadcn,
+            variables: { fontFamily: "var(--font-mono), ui-monospace, monospace", borderRadius: "0" },
+          }}
+        >
+          {children}
+        </ClerkProvider>
       </body>
     </html>
   );

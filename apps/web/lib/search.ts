@@ -63,6 +63,16 @@ export const countryName = (code: string) => {
   }
 };
 
+/** Spellings of one place ("Lima", "LIMA") collapse into one facet. */
+function mergeBySlug(facets: Facet[]): Facet[] {
+  const merged = new Map<string, Facet>();
+  for (const f of facets) {
+    const seen = merged.get(f.value);
+    merged.set(f.value, seen ? { ...seen, count: seen.count + f.count } : f);
+  }
+  return [...merged.values()].sort((a, b) => b.count - a.count);
+}
+
 // ---------- Postgres ----------
 
 type Facets = "pais" | "ciudad" | "tema";
@@ -84,7 +94,7 @@ async function dbConditions(f: Filters, omit?: Facets): Promise<SQL> {
     omit !== "pais" && f.pais ? eq(canonicalEvents.countryCode, f.pais) : undefined,
   ];
   const metro = omit !== "ciudad" ? await names("ciudad", f.ciudad) : undefined;
-  if (metro) where.push(eq(canonicalEvents.metro, metro));
+  if (metro) where.push(sql`lower(${canonicalEvents.metro}) = lower(${metro})`);
   const tag = omit !== "tema" ? await names("tema", f.tema) : undefined;
   if (tag) where.push(sql`${tag} = any(${canonicalEvents.tags})`);
   return and(...where.filter((c): c is SQL => c !== undefined)) as SQL;
@@ -126,7 +136,7 @@ async function dbSearch(f: Filters): Promise<SearchResult> {
     total: total?.n ?? 0,
     facets: {
       paises: paises.flatMap((r) => (r.value ? [{ value: r.value, label: countryName(r.value), count: r.count }] : [])),
-      ciudades: ciudades.flatMap((r) => (r.value ? [{ value: slugify(r.value), label: r.value, count: r.count }] : [])),
+      ciudades: mergeBySlug(ciudades.flatMap((r) => (r.value ? [{ value: slugify(r.value), label: r.value, count: r.count }] : []))),
       temas: temas.map((r) => ({ value: slugify(r.value), label: r.value, count: r.count })),
     },
   };
