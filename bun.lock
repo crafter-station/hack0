@@ -6,7 +6,7 @@
       "name": "hack0",
       "devDependencies": {
         "@biomejs/biome": "2.5.14",
-        "@crafter/lint": "0.2.1",
+        "@crafter/lint": "0.3.0",
       },
     },
     "apps/web": {
@@ -132,7 +132,7 @@
 
     "@crafter/hack0": ["@crafter/hack0@workspace:packages/cli"],
 
-    "@crafter/lint": ["@crafter/lint@0.2.1", "", { "dependencies": { "picomatch": "4.0.7", "typescript": "5.9.3" }, "bin": { "crafter-lint": "dist/bin.js" } }, "sha512-qMSrw5/0JtIEbdXSRFe5XHXqW8c0BvcwbT+RP1zuFxhVQoBWlro5iUVv7oRCXBrN4SIb8KVGXC3aQJUIyX6PDw=="],
+    "@crafter/lint": ["@crafter/lint@0.3.0", "", { "dependencies": { "picomatch": "4.0.7", "typescript": "5.9.3" }, "bin": { "crafter-lint": "dist/bin.js" } }, "sha512-LjeOc0Hke50a5EcPPCqnB6NVeCdaB2/BNaH9Hs2ayuXetJCNaQY08zmHKLt7W+cp7HYl4Am45QON8bM8Ei9ytQ=="],
 
     "@drizzle-team/brocli": ["@drizzle-team/brocli@0.10.2", "", {}, "sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w=="],
 
