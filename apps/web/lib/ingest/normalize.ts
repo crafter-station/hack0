@@ -1,4 +1,4 @@
-import type { CanonicalEventDTO, SourceEventInput } from "@/lib/canonical/canonical-events";
+import type { CanonicalEventDTO, EventEnrichment, SourceEventInput } from "@/lib/canonical/canonical-events";
 import { canonicalizeEvents, canonicalKeyFor, eventIdentityFingerprint, sourceKeyFor } from "@/lib/canonical/canonical-events";
 import { enrichEventForRouting } from "@/lib/canonical/event-routing-enrichment";
 import { classifyEventTags } from "@/lib/canonical/event-tagging";
@@ -8,12 +8,33 @@ import type { ProviderEvent } from "./providers";
 
 export type SourceRef = { id: string; name: string | null; calendarId: string | null };
 
-export function lumaInputs(events: PublicLumaEvent[], source: SourceRef, now = new Date().toISOString()): SourceEventInput[] {
+/** Provider facts a public Luma page carries; unknown ones stay out so routing can still infer them. */
+function lumaEnrichment(e: PublicLumaEvent) {
+  const known = {
+    countryCode: e.countryCode,
+    region: e.region,
+    venueAddress: e.venueAddress,
+    latitude: e.latitude,
+    longitude: e.longitude,
+    isOnline: e.isOnline,
+  };
+  const enrichment = Object.fromEntries(Object.entries(known).filter(([, v]) => v !== null && v !== undefined));
+  if (Object.keys(enrichment).length === 0) return undefined;
+  const sources: Record<string, string> = e.countryCode ? { countryCode: "provider" } : {};
+  return { ...enrichment, sources } as EventEnrichment;
+}
+
+export function lumaInputs(
+  events: PublicLumaEvent[],
+  source: SourceRef,
+  now = new Date().toISOString(),
+  sourceType: "calendar_scrape" | "profile_scrape" | "event_scrape" = "calendar_scrape",
+): SourceEventInput[] {
   return events.flatMap((e) =>
     e.startAt
       ? [
           {
-            sourceType: "calendar_scrape" as const,
+            sourceType,
             provider: "luma" as const,
             calendarRowId: source.id,
             calendarId: source.calendarId,
@@ -31,6 +52,9 @@ export function lumaInputs(events: PublicLumaEvent[], source: SourceRef, now = n
               startAt: e.startAt,
               endAt: e.endAt ?? undefined,
               city: e.city ?? undefined,
+              description: e.description ?? undefined,
+              timezone: e.timezone ?? null,
+              enrichment: lumaEnrichment(e),
               calendarId: source.calendarId ?? undefined,
               calendarName: source.name ?? undefined,
             },

@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, ilike, or } from "drizzle-orm";
+import { and, eq, ilike, notInArray, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { start } from "workflow/api";
 import { requireAdmin } from "@/lib/admin/auth";
@@ -9,14 +9,20 @@ import { detectProviderImportTarget } from "@/lib/canonical/event-providers";
 import { encrypt } from "@/lib/crypto";
 import { getDb } from "@/lib/db/client";
 import { canonicalEvents, contentDrafts, sources } from "@/lib/db/schema";
+import { lumaPageKind } from "@/lib/ingest/luma-public";
 import { refreshListing } from "@/lib/ingest/persist";
 import { syncSource } from "@/workflows/sync-source";
 
 export async function syncNow(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id"));
-  await getDb().update(sources).set({ syncStatus: "queued" }).where(eq(sources.id, id));
-  await start(syncSource, [id]);
+  // Claims the source first, so a second click or the cron cannot start another run that races this one.
+  const claimed = await getDb()
+    .update(sources)
+    .set({ syncStatus: "queued" })
+    .where(and(eq(sources.id, id), notInArray(sources.syncStatus, ["queued", "running"])))
+    .returning({ id: sources.id });
+  if (claimed.length > 0) await start(syncSource, [id]);
   revalidatePath("/admin", "layout");
 }
 
@@ -36,9 +42,14 @@ export async function addSource(formData: FormData) {
   await requireAdmin();
   const url = String(formData.get("url") ?? "").trim();
   const apiKey = String(formData.get("apiKey") ?? "").trim();
-  const target = url ? detectProviderImportTarget(url) : null;
-  // Luma single events and profiles need fetchers that do not exist yet; everything else syncs.
-  if (!target || target.kind === "profile" || (target.provider === "luma" && target.kind === "event")) return;
+  const detected = url ? detectProviderImportTarget(url) : null;
+  if (!detected) return;
+  // A short luma.com link may be a calendar or one event; the page says which.
+  const kind =
+    detected.provider === "luma" && detected.confidence === "inferred"
+      ? ((await lumaPageKind(detected.normalizedUrl)) ?? detected.kind)
+      : detected.kind;
+  const target = { ...detected, kind };
   await getDb()
     .insert(sources)
     .values({
@@ -48,7 +59,7 @@ export async function addSource(formData: FormData) {
       url: target.normalizedUrl,
       name: String(formData.get("name") ?? "").trim() || null,
       scope: formData.get("scope") === "latam" ? "latam" : "global",
-      lumaCalendarId: target.provider === "luma" ? (url.match(/cal-[A-Za-z0-9]+/)?.[0] ?? null) : null,
+      lumaCalendarId: target.provider === "luma" && kind === "calendar" ? (url.match(/cal-[A-Za-z0-9]+/)?.[0] ?? null) : null,
       apiKeyCiphertext: apiKey && target.provider === "luma" ? encrypt(apiKey) : null,
     })
     .onConflictDoNothing();

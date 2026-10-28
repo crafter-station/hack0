@@ -76,17 +76,22 @@ function mergeFields(existing: typeof canonicalEvents.$inferSelect, incoming: Ev
   return Object.fromEntries(filled) as Partial<EventFields>;
 }
 
-async function upsertEvent(db: Db, n: NormalizedEvent): Promise<{ id: string; created: boolean }> {
+async function mergeInto(db: Db, existing: typeof canonicalEvents.$inferSelect, n: NormalizedEvent) {
   const { canonicalKey: _key, ...fields } = eventRow(n);
+  const update = mergeFields(existing, fields, existing.canonicalKey === n.canonicalKey);
+  if (Object.keys(update).length > 0) await db.update(canonicalEvents).set(update).where(eq(canonicalEvents.id, existing.id));
+  return { id: existing.id, created: false };
+}
+
+async function upsertEvent(db: Db, n: NormalizedEvent): Promise<{ id: string; created: boolean }> {
   const existing = await findExisting(db, n);
-  if (existing) {
-    const update = mergeFields(existing, fields, existing.canonicalKey === n.canonicalKey);
-    if (Object.keys(update).length > 0) await db.update(canonicalEvents).set(update).where(eq(canonicalEvents.id, existing.id));
-    return { id: existing.id, created: false };
-  }
-  const [created] = await db.insert(canonicalEvents).values(eventRow(n)).returning({ id: canonicalEvents.id });
-  if (!created) throw new Error(`insert returned no row for ${n.canonicalKey}`);
-  return { id: created.id, created: true };
+  if (existing) return mergeInto(db, existing, n);
+  const [created] = await db.insert(canonicalEvents).values(eventRow(n)).onConflictDoNothing().returning({ id: canonicalEvents.id });
+  if (created) return { id: created.id, created: true };
+  // Another run inserted the same event between the lookup and the insert; merge into its row.
+  const winner = await findExisting(db, n);
+  if (!winner) throw new Error(`insert conflicted but no row matches ${n.canonicalKey}`);
+  return mergeInto(db, winner, n);
 }
 
 async function upsertSources(db: Db, n: NormalizedEvent, canonicalEventId: string, sourceId: string | null) {
@@ -153,13 +158,20 @@ const LATAM = sql.raw(LATAM_COUNTRIES.map((c) => `'${c}'`).join(","));
  * Listed: held in a LATAM country, or no known country but seen in a `latam` source, or online in Spanish or Portuguese.
  */
 export async function refreshListing(db: Db) {
+  // Only rows whose flags change are written, so the changes feed and updated_at move for real changes only.
   await db.execute(sql`
-    update canonical_events c set
-      active = exists (select 1 from event_sources s where s.canonical_event_id = c.id and s.removed_at is null),
-      -- coalesce: a null country makes the comparison null, and SQL's three-valued logic would carry it to the column.
-      listed = coalesce(c.country_code in (${LATAM}), false)
-        or (c.country_code is null and (
-          exists (select 1 from event_sources s join sources so on so.id = s.source_id
-                  where s.canonical_event_id = c.id and so.scope = 'latam')
-          or (c.is_online is true and coalesce(c.language_code in ('es', 'pt'), false))))`);
+    with next as (
+      select c.id,
+        exists (select 1 from event_sources s where s.canonical_event_id = c.id and s.removed_at is null) as active,
+        -- coalesce: a null country makes the comparison null, and SQL's three-valued logic would carry it to the column.
+        coalesce(c.country_code in (${LATAM}), false)
+          or (c.country_code is null and (
+            exists (select 1 from event_sources s join sources so on so.id = s.source_id
+                    where s.canonical_event_id = c.id and so.scope = 'latam')
+            or (c.is_online is true and coalesce(c.language_code in ('es', 'pt'), false)))) as listed
+      from canonical_events c
+    )
+    update canonical_events c set active = next.active, listed = next.listed, updated_at = now()
+    from next
+    where c.id = next.id and (c.active, c.listed) is distinct from (next.active, next.listed)`);
 }

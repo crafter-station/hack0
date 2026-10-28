@@ -8,7 +8,11 @@ export function AddSource() {
       <form action={addSource} className="add-form">
         <label>
           <span>URL</span>
-          <input name="url" placeholder="luma.com/… · meetup.com/… · eventbrite.com/o/…" required />
+          <input
+            name="url"
+            placeholder="luma.com/calendario · luma.com/user/… · luma.com/evento · meetup.com/… · eventbrite.com/o/…"
+            required
+          />
         </label>
         <label>
           <span>Nombre</span>

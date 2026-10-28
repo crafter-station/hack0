@@ -56,4 +56,18 @@ const handler = withMcpAuth(
   { required: true },
 );
 
-export { handler as GET, handler as POST };
+/**
+ * A request without a token gets 401 before protocol negotiation: mcp-handler answers 400 when the
+ * mcp-protocol-version header is missing, which hides the real problem from a client that has not negotiated yet.
+ */
+async function guarded(request: Request) {
+  if (!request.headers.get("authorization")) {
+    return Response.json(
+      { error: "invalid_token", error_description: "Missing hack0_sk_ bearer token" },
+      { status: 401, headers: { "www-authenticate": 'Bearer error="invalid_token"' } },
+    );
+  }
+  return handler(request);
+}
+
+export { guarded as GET, guarded as POST };

@@ -1,10 +1,13 @@
 import { beforeAll, describe, expect, test } from "bun:test";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { GET as eventById } from "@/app/api/v1/events/[id]/route";
+import { GET as changes } from "@/app/api/v1/events/changes/route";
 import { GET as exportRoute } from "@/app/api/v1/events/export/route";
 import { GET as events } from "@/app/api/v1/events/route";
 import { GET as health } from "@/app/api/v1/health/route";
 import { getDb } from "@/lib/db/client";
+import { canonicalEvents } from "@/lib/db/schema";
+import { refreshListing } from "@/lib/ingest/persist";
 import { seedCatalog } from "@/lib/testing/catalog-fixture";
 import { createToken, revokeToken, verifyToken } from "../tokens";
 
@@ -80,5 +83,24 @@ run("REST API", () => {
     const lines = (await res.text()).split("\n");
     expect(lines[0]).toBe("id,name,startAt,endAt,city,countryCode,languageCode,url,sourceCount,tags");
     expect(lines.length).toBeGreaterThan(1);
+  });
+
+  test("changes replay the catalog, then only what moved: a resync is not a change, a drop is a tombstone", async () => {
+    const all = await (await changes(get("/api/v1/events/changes?since=0"))).json();
+    expect(all.upserts).toHaveLength(3);
+    expect(all.hasMore).toBe(false);
+    const cursor = all.nextCursor;
+    await refreshListing(getDb());
+    expect((await (await changes(get(`/api/v1/events/changes?since=${cursor}`))).json()).upserts).toHaveLength(0);
+    await getDb().execute(sql`update event_sources set removed_at = now() where external_event_id = 'evt-2'`);
+    await refreshListing(getDb());
+    const after = await (await changes(get(`/api/v1/events/changes?since=${cursor}`))).json();
+    const [dropped] = await getDb()
+      .select({ id: canonicalEvents.id })
+      .from(canonicalEvents)
+      .where(eq(canonicalEvents.lumaEventId, "evt-2"));
+    expect(after.deletes.map((d: { canonicalId: string }) => d.canonicalId)).toEqual([dropped?.id]);
+    expect(after.upserts).toHaveLength(0);
+    expect((await changes(get("/api/v1/events/changes?since=abc"))).status).toBe(400);
   });
 });

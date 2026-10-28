@@ -15,6 +15,13 @@
       "when": 1793157848740,
       "tag": "0001_true_frightful_four",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793164237644,
+      "tag": "0002_events_changes",
+      "breakpoints": true
     }
   ]
 }

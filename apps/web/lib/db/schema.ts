@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, doublePrecision, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { bigint, boolean, doublePrecision, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import type { EventEnrichment } from "@/lib/canonical/canonical-events";
 
 const timestamps = {
@@ -90,11 +90,15 @@ export const canonicalEvents = pgTable(
     lumaSubmittedAt: timestamp("luma_submitted_at", { withTimezone: true }),
     /** Why the event could not go to the hack0 Luma calendar, e.g. no end time. */
     lumaSubmitError: text("luma_submit_error"),
+    /** Moves on every write that changes the event (a trigger skips no-op rewrites); the cursor of /api/v1/events/changes. */
+    changeSeq: bigint("change_seq", { mode: "number" }).notNull().default(sql`nextval('canonical_events_change_seq')`),
     ...timestamps,
   },
   (t) => [
     uniqueIndex("canonical_events_canonical_key_key").on(t.canonicalKey),
-    index("canonical_events_fingerprint_idx").on(t.identityFingerprint),
+    // Same name, start and metro is one event: concurrent runs (an admin sync next to the cron) insert it once.
+    uniqueIndex("canonical_events_fingerprint_key").on(t.identityFingerprint),
+    index("canonical_events_change_seq_idx").on(t.changeSeq),
     uniqueIndex("canonical_events_luma_event_id_key").on(t.lumaEventId),
     index("canonical_events_start_at_idx").on(t.startAt),
     index("canonical_events_country_start_idx").on(t.countryCode, t.startAt),
