@@ -78,5 +78,20 @@ describe("public Luma pages", () => {
       ],
     };
     expect(proseToMarkdown(doc)).toBe("### Agenda\n\n- SQL");
+    const linked = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            { type: "text", text: "¿Consultas? " },
+            { type: "text", text: "Escríbeme aquí", marks: [{ type: "link", attrs: { href: "https://wa.me/51999" } }] },
+            { type: "text", text: " o ", marks: [] },
+            { type: "text", text: "gratis", marks: [{ type: "bold" }] },
+          ],
+        },
+      ],
+    };
+    expect(proseToMarkdown(linked)).toBe("¿Consultas? [Escríbeme aquí](https://wa.me/51999) o **gratis**");
   });
 });

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Flag } from "@/components/flag";
 import { type CalendarEvent, placeLabel } from "@/lib/calendar";
 import { formatDate } from "@/lib/site";
@@ -9,7 +10,7 @@ export function EventList({ events }: { events: CalendarEvent[] }) {
         const { day, time } = formatDate(e);
         return (
           <li key={e.id}>
-            <a href={`/eventos/${e.slug}`}>
+            <Link href={`/eventos/${e.slug}`}>
               <span className="date">
                 {day}
                 <span>{time}</span>
@@ -18,7 +19,7 @@ export function EventList({ events }: { events: CalendarEvent[] }) {
               <span className="where">
                 <Flag code={e.country} /> {placeLabel(e)}
               </span>
-            </a>
+            </Link>
           </li>
         );
       })}

@@ -1,3 +1,5 @@
+import Form from "next/form";
+import Link from "next/link";
 import { toggleCurated } from "@/app/admin/actions";
 import { EmptyState } from "@/components/empty-state";
 import { Flag } from "@/components/flag";
@@ -37,15 +39,15 @@ export default async function CurationTab({ searchParams }: Props) {
         sitio.
       </p>
       <div className="toolbar">
-        <form className="search">
+        <Form action="/admin/curacion" className="search">
           <input type="search" name="q" defaultValue={q} placeholder="Buscar evento" aria-label="Buscar evento" />
           {view !== "pendientes" && <input type="hidden" name="vista" value={view} />}
-        </form>
+        </Form>
         <nav className="segment" aria-label="Vista">
           {VIEWS.map((v) => (
-            <a key={v.value} href={href(v.value)} aria-current={v.value === view ? "true" : undefined}>
+            <Link key={v.value} href={href(v.value)} aria-current={v.value === view ? "true" : undefined}>
               {v.label}
-            </a>
+            </Link>
           ))}
         </nav>
       </div>
@@ -55,9 +57,9 @@ export default async function CurationTab({ searchParams }: Props) {
             art="search"
             title={`Ningún evento con “${q}”`}
             action={
-              <a className="btn" href={href(view)}>
+              <Link className="btn" href={href(view)}>
                 Borrar búsqueda
-              </a>
+              </Link>
             }
           >
             La búsqueda mira el nombre de los eventos próximos.
@@ -67,9 +69,9 @@ export default async function CurationTab({ searchParams }: Props) {
             art="done"
             title="Todo revisado"
             action={
-              <a className="btn" href={href("curados")}>
+              <Link className="btn" href={href("curados")}>
                 Ver destacados
-              </a>
+              </Link>
             }
           >
             No quedan eventos próximos por revisar. Los nuevos aparecen aquí después de cada sync.
@@ -79,9 +81,9 @@ export default async function CurationTab({ searchParams }: Props) {
             art="calendar"
             title="Aún no destacaste ninguno"
             action={
-              <a className="btn primary" href={href("pendientes")}>
+              <Link className="btn primary" href={href("pendientes")}>
                 Ver pendientes
-              </a>
+              </Link>
             }
           >
             Un evento curado entra en la agenda semanal, tiene su post y puede ir al calendario de Luma.
@@ -104,9 +106,9 @@ export default async function CurationTab({ searchParams }: Props) {
                 <span className="thumb empty-thumb" aria-hidden="true" />
               )}
               <span className="body">
-                <a className="title" href={`/eventos/${e.slug}`} target="_blank" rel="noreferrer">
+                <Link className="title" href={`/eventos/${e.slug}`} target="_blank" rel="noreferrer">
                   {e.name}
-                </a>
+                </Link>
                 <span className="meta">
                   {e.hostName && <span>{e.hostName}</span>}
                   <span>

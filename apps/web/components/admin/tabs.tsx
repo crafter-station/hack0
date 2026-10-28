@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export type Tab = { href: string; label: string; count?: number };
@@ -12,10 +13,10 @@ export function AdminTabs({ tabs }: { tabs: Tab[] }) {
       {tabs.map((t) => {
         const on = t.href === "/admin" ? path === "/admin" : path.startsWith(t.href);
         return (
-          <a key={t.href} href={t.href} aria-current={on ? "page" : undefined}>
+          <Link key={t.href} href={t.href} aria-current={on ? "page" : undefined}>
             {t.label}
             {t.count ? <span>{t.count}</span> : null}
-          </a>
+          </Link>
         );
       })}
     </nav>

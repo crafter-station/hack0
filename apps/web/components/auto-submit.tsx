@@ -1,11 +1,12 @@
 "use client";
 
+import Form from "next/form";
 import type { ReactNode } from "react";
 
 /** A GET form that submits itself when a select changes; without JS it still works with its button. */
 export function AutoSubmitForm({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <form
+    <Form
       action="/eventos"
       className={className}
       onChange={(e) => {
@@ -13,6 +14,6 @@ export function AutoSubmitForm({ children, className }: { children: ReactNode; c
       }}
     >
       {children}
-    </form>
+    </Form>
   );
 }

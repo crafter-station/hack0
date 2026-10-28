@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Mark, Wordmark } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import "./brand.css";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "hack0 · brand",
@@ -52,11 +53,11 @@ export default function Brand() {
   return (
     <main>
       <header className="top">
-        <a href="/" aria-label="hack0" style={{ textDecoration: "none" }}>
+        <Link href="/" aria-label="hack0" style={{ textDecoration: "none" }}>
           <Wordmark size={26} />
-        </a>
+        </Link>
         <nav>
-          <a href="/">inicio</a>
+          <Link href="/">inicio</Link>
           <a href="#assets">descargas</a>
           <ThemeToggle />
         </nav>
@@ -208,7 +209,7 @@ export default function Brand() {
 
       <footer>
         <span>hack0 by Crafter Station</span>
-        <a href="/">hack0.dev</a>
+        <Link href="/">hack0.dev</Link>
       </footer>
     </main>
   );

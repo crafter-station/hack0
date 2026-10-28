@@ -1,6 +1,7 @@
 "use client";
 
 import { UserButton, useAuth } from "@clerk/nextjs";
+import Link from "next/link";
 
 /**
  * Admin link and Clerk's account menu (with sign out) for signed-in visitors.
@@ -11,7 +12,7 @@ export function AccountNav() {
   if (!isLoaded || !isSignedIn) return null;
   return (
     <>
-      <a href="/admin">admin</a>
+      <Link href="/admin">admin</Link>
       <UserButton />
     </>
   );

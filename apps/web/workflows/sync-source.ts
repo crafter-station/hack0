@@ -78,7 +78,7 @@ async function apiKeyOf(sourceId: string) {
   return decrypt(row.sealed);
 }
 
-type Totals = { created: number; updated: number; complete: boolean };
+type Totals = { created: number; updated: number; complete: boolean; historyError?: string };
 
 const refOf = (source: Loaded, calendarId: string | null) => ({ id: source.id, name: source.name, calendarId });
 
@@ -159,7 +159,14 @@ async function ingestLumaPublic(source: Loaded, calendarId: string | null): Prom
     totals.created += fromPage.created;
     totals.updated += fromPage.updated;
   } else await ingestFeed(source, feedId, "future", totals);
-  if (source.firstSync) await ingestFeed(source, feedId, "past", totals);
+  if (source.firstSync) {
+    // History only comes from api.lu.ma, which can rate limit for hours; upcoming events must not wait on it.
+    try {
+      await ingestFeed(source, feedId, "past", totals);
+    } catch (error) {
+      totals.historyError = error instanceof Error ? error.message : String(error);
+    }
+  }
   return totals;
 }
 
@@ -210,16 +217,20 @@ async function settle(sourceId: string, syncStart: Date, complete: boolean) {
   await refreshListing(getDb());
 }
 
-async function finish(sourceId: string, error: string | null) {
+/** `historyError` keeps the source on its first sync (history is retried next run) while its upcoming events are current. */
+async function finish(sourceId: string, error: string | null, historyError?: string) {
   "use step";
   const now = new Date();
+  const next = new Date(now.getTime() + (historyError ? 0 : REFRESH_INTERVAL_MS));
   await getDb()
     .update(sources)
     .set(
       error
         ? // A failed source goes back in the queue for the next daily run instead of waiting three days.
           { syncStatus: "failed", syncError: error, nextSyncAt: null }
-        : { syncStatus: "completed", syncError: null, lastSyncedAt: now, nextSyncAt: new Date(now.getTime() + REFRESH_INTERVAL_MS) },
+        : historyError
+          ? { syncStatus: "completed", syncError: `historial pendiente: ${historyError}`, nextSyncAt: next }
+          : { syncStatus: "completed", syncError: null, lastSyncedAt: now, nextSyncAt: next },
     )
     .where(eq(sources.id, sourceId));
 }
@@ -233,7 +244,7 @@ async function runSource(sourceId: string, syncStart: Date) {
     if (source.hasKey) await fillDescriptions(sourceId);
     else if (source.provider === "luma") await fillPageDescriptions(sourceId, syncStart);
     await settle(sourceId, syncStart, result.complete);
-    await finish(sourceId, null);
+    await finish(sourceId, null, "historyError" in result ? result.historyError : undefined);
     return { sourceId, created: result.created, updated: result.updated };
   } catch (error) {
     await finish(sourceId, error instanceof Error ? error.message : String(error));

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
 import { EventFilters } from "@/components/event-filters";
 import { EventList } from "@/components/event-list";
@@ -44,13 +45,13 @@ export default async function Eventos({ searchParams }: Props) {
             title={filters.q ? `Nada con “${filters.q}”` : "Ningún evento con estos filtros"}
             action={
               <>
-                <a className="btn" href={filterHref({ cuando: filters.cuando, page: 0 }, {})}>
+                <Link className="btn" href={filterHref({ cuando: filters.cuando, page: 0 }, {})}>
                   Quitar filtros
-                </a>
+                </Link>
                 {filters.cuando === "proximos" && (
-                  <a className="btn" href={filterHref(filters, { cuando: "pasados" })}>
+                  <Link className="btn" href={filterHref(filters, { cuando: "pasados" })}>
                     Buscar en pasados
-                  </a>
+                  </Link>
                 )}
               </>
             }
@@ -63,9 +64,9 @@ export default async function Eventos({ searchParams }: Props) {
         {pages > 1 && (
           <nav className="chips" aria-label="Páginas">
             {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
-              <a key={n} href={filterHref(filters, { page: n - 1 })} aria-current={n === filters.page + 1 ? "page" : undefined}>
+              <Link key={n} href={filterHref(filters, { page: n - 1 })} aria-current={n === filters.page + 1 ? "page" : undefined}>
                 {n}
-              </a>
+              </Link>
             ))}
           </nav>
         )}
@@ -81,9 +82,9 @@ export default async function Eventos({ searchParams }: Props) {
         ].map(([list, base]) => (
           <p className="chips" key={base as string}>
             {(list as typeof cities).map((l) => (
-              <a key={l.slug} href={`${base}/${l.slug}`}>
+              <Link key={l.slug} href={`${base}/${l.slug}`}>
                 {l.name} <span>{l.count}</span>
-              </a>
+              </Link>
             ))}
           </p>
         ))}

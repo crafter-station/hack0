@@ -23,7 +23,7 @@ function inline(text: string): ReactNode[] {
 }
 
 export function Markdown({ source }: { source: string }) {
-  const blocks = source.replace(/\\([*_#\-.])/g, "$1").split(/\n{2,}/);
+  const blocks = source.replace(/\\([*_#\-.|()[\]!])/g, "$1").split(/\n{2,}/);
   return (
     <div className="prose">
       {blocks.map((block) => {
@@ -39,7 +39,17 @@ export function Markdown({ source }: { source: string }) {
         }
         const h = block.match(/^#{1,6}\s+(.*)/);
         if (h) return <h3 key={block}>{inline(h[1])}</h3>;
-        return <p key={block}>{inline(lines.join(" "))}</p>;
+        // Single line breaks are the host's own layout (one fact per line), so they stay.
+        return (
+          <p key={block}>
+            {lines.map((l, i) => (
+              <span key={l}>
+                {i > 0 && <br />}
+                {inline(l)}
+              </span>
+            ))}
+          </p>
+        );
       })}
     </div>
   );

@@ -1143,3 +1143,303 @@ button.btn,
   border-color: var(--acc);
   color: #fff;
 }
+
+/* Event page. --tint is the event's own color (its Luma theme or its cover's accent); text uses a
+   lightness-clamped version so links stay readable on paper and on ink. */
+.event {
+  --tint: var(--acc);
+  --tint-ink: var(--tint);
+  --tint-on: #fff;
+  position: relative;
+}
+@supports (color: oklch(from red l c h)) {
+  .event {
+    --tint-ink: oklch(from var(--tint) min(l, 0.52) max(c, 0.06) h);
+    /* Black text on light tints, white on dark ones. */
+    --tint-on: oklch(from var(--tint) clamp(0, (0.68 - l) * 1000, 1) 0 0);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .event {
+      --tint-ink: oklch(from var(--tint) max(l, 0.8) c h);
+    }
+  }
+  :root[data-theme="dark"] .event {
+    --tint-ink: oklch(from var(--tint) max(l, 0.8) c h);
+  }
+}
+.event::before {
+  content: "";
+  position: absolute;
+  inset: -120px 0 auto;
+  height: 520px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(60% 70% at 30% 0%, color-mix(in oklch, var(--tint) 16%, transparent), transparent 70%);
+}
+.event ::selection {
+  background: color-mix(in oklch, var(--tint) 35%, transparent);
+}
+.event :focus-visible {
+  outline: 2px solid var(--tint-ink);
+  outline-offset: 3px;
+}
+.event-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+  gap: 40px;
+  align-items: start;
+}
+.event > h1 {
+  margin-bottom: 28px;
+  max-width: 22ch;
+}
+.event-head {
+  position: sticky;
+  top: 24px;
+}
+.event .cover {
+  margin-top: 0;
+  border: 1.5px solid var(--ink);
+  box-shadow: 6px 6px 0 color-mix(in oklch, var(--tint) 55%, transparent);
+}
+.cover-empty {
+  aspect-ratio: 2 / 1;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  background: color-mix(in oklch, var(--tint) 14%, var(--paper));
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+.cover-empty span:first-child {
+  font-size: 64px;
+  line-height: 1;
+  color: var(--tint-ink);
+}
+.cover-empty span:last-child {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 13px;
+}
+.event h1 {
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.event .badge {
+  display: inline-block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1.5px solid var(--rule);
+  color: var(--mute);
+  padding: 3px 8px;
+  margin-bottom: 14px;
+}
+.when-where {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+.when-where li {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 14px;
+  align-items: center;
+}
+.when-where strong {
+  display: block;
+  font-weight: 700;
+}
+.when-where strong::first-letter {
+  text-transform: uppercase;
+}
+.when-where li > span:last-child > span {
+  color: var(--mute);
+  font-size: 13px;
+}
+.tile {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--rule);
+  color: var(--tint-ink);
+}
+.tile.cal {
+  grid-template-rows: 16px 1fr;
+  place-items: stretch;
+  text-align: center;
+  overflow: hidden;
+}
+.tile.cal b {
+  font-size: 10px;
+  line-height: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: var(--tint);
+  color: var(--tint-on);
+}
+.tile.cal span {
+  font-weight: 800;
+  font-size: 17px;
+  line-height: 24px;
+  color: var(--ink);
+}
+.register {
+  margin-top: 28px;
+  padding: 18px;
+  border: 1.5px solid var(--rule);
+  background: color-mix(in oklch, var(--tint) 6%, transparent);
+  display: grid;
+  gap: 14px;
+}
+.btn.tint {
+  background: var(--tint);
+  border-color: var(--tint);
+  color: var(--tint-on);
+  text-align: center;
+  padding: 14px 18px;
+  font-size: 15px;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+.btn.tint:hover {
+  background: var(--tint);
+  border-color: var(--tint);
+  color: var(--tint-on);
+  transform: translate(-2px, -2px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.btn.tint:active {
+  transform: none;
+  box-shadow: none;
+}
+.register .add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  font-size: 13px;
+}
+.register .add a,
+.register .add .ghost {
+  color: var(--mute);
+  text-decoration: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.register .add a:hover,
+.register .add .ghost:hover {
+  color: var(--tint-ink);
+}
+.topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 20px;
+}
+.topics a {
+  font-size: 12px;
+  padding: 4px 9px;
+  border: 1.5px solid var(--rule);
+  text-decoration: none;
+  color: var(--mute);
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
+}
+.topics a::before {
+  content: "#";
+  color: var(--tint-ink);
+  margin-right: 1px;
+}
+.topics a:hover {
+  color: var(--ink);
+  border-color: var(--tint-ink);
+}
+.about {
+  margin-top: 48px;
+}
+.about .prose {
+  margin-top: 0;
+  max-width: 68ch;
+  overflow-wrap: anywhere;
+}
+.event .prose a {
+  color: var(--tint-ink);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in oklch, var(--tint-ink) 40%, transparent);
+  transition: text-decoration-color 120ms ease;
+}
+.event .prose a:hover {
+  text-decoration-color: currentColor;
+}
+.event .prose b {
+  color: var(--ink);
+}
+.crumbs a:hover {
+  color: var(--tint-ink, var(--acc));
+}
+.event-bar {
+  display: none;
+}
+@media (max-width: 760px) {
+  .event-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  /* One column: cover, then when/where/register, then the description. */
+  .event-media {
+    display: contents;
+  }
+  .event-head {
+    position: static;
+    order: 1;
+  }
+  .event .about {
+    order: 2;
+    margin-top: 8px;
+  }
+  .event .cover {
+    box-shadow: 4px 4px 0 color-mix(in oklch, var(--tint) 55%, transparent);
+  }
+  .event-bar {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    background: color-mix(in oklch, var(--paper) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--rule);
+    font-size: 13px;
+    transform: translateY(110%);
+    transition: transform 200ms ease;
+  }
+  .event-bar[data-shown="true"] {
+    transform: none;
+  }
+  .event-bar b::first-letter {
+    text-transform: uppercase;
+  }
+  main:has(.event-bar) {
+    padding-bottom: 120px;
+  }
+  .event-bar .btn {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+  .event ~ section,
+  .event .about {
+    margin-bottom: 24px;
+  }
+}

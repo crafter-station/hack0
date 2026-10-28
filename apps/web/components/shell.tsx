@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AccountNav } from "@/components/account-nav";
 import { Wordmark } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -7,12 +8,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
   return (
     <main>
       <header className="top">
-        <a href="/" aria-label="hack0" style={{ textDecoration: "none" }}>
+        <Link href="/" aria-label="hack0" style={{ textDecoration: "none" }}>
           <Wordmark size={26} />
-        </a>
+        </Link>
         <nav>
-          <a href="/eventos">eventos</a>
-          <a href="/#organizadores">organizadores</a>
+          <Link href="/eventos">eventos</Link>
+          <Link href="/#organizadores">organizadores</Link>
           <a href={LUMA}>luma</a>
           <AccountNav />
           <ThemeToggle />
@@ -24,7 +25,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
           hack0 by <a href="https://crafter.run">Crafter Station</a>
         </span>
         <span>
-          <a href="/eventos">eventos</a> · <a href="/brand">brand</a> · <a href="https://github.com/crafter-station/hack0">github</a>
+          <Link href="/eventos">eventos</Link> · <Link href="/brand">brand</Link> ·{" "}
+          <a href="https://github.com/crafter-station/hack0">github</a>
         </span>
       </footer>
     </main>

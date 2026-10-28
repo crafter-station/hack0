@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
 import { EventList } from "@/components/event-list";
 import { JsonLd } from "@/components/json-ld";
@@ -42,7 +43,7 @@ export function HubPage({ title, intro, path, upcoming, past, pastTotal, page, l
       />
       <div className="hero-copy hub">
         <p className="crumbs">
-          <a href="/eventos">eventos</a>
+          <Link href="/eventos">eventos</Link>
         </p>
         <h1>{title}</h1>
         <p>{intro}</p>
@@ -78,9 +79,9 @@ export function HubPage({ title, intro, path, upcoming, past, pastTotal, page, l
           {pages > 1 && (
             <p className="chips">
               {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
-                <a key={n} href={n === 1 ? path : pageHref(path, n)} aria-current={n === page + 1 ? "page" : undefined}>
+                <Link key={n} href={n === 1 ? path : pageHref(path, n)} aria-current={n === page + 1 ? "page" : undefined}>
                   {n}
-                </a>
+                </Link>
               ))}
             </p>
           )}
@@ -98,9 +99,9 @@ export function HubPage({ title, intro, path, upcoming, past, pastTotal, page, l
             (list as HubLink[]).length > 0 ? (
               <p className="chips" key={base as string}>
                 {(list as HubLink[]).map((l) => (
-                  <a key={l.slug} href={`${base}/${l.slug}`}>
+                  <Link key={l.slug} href={`${base}/${l.slug}`}>
                     {l.name} <span>{l.count}</span>
-                  </a>
+                  </Link>
                 ))}
               </p>
             ) : null,
