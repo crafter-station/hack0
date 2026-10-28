@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Install hack0 workshop skills and materials into your coding agent",
   "type": "module",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "bin": { "hack0": "./bin/hack0.js" },
   "files": ["dist", "bin", "skills", "README.md"],
   "scripts": {
