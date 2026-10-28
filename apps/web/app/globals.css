@@ -373,3 +373,54 @@ footer {
 .chips a:hover {
   border-color: var(--acc);
 }
+.admin-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.admin-form input {
+  flex: 1 1 220px;
+  font: inherit;
+  padding: 10px 12px;
+  border: 1.5px solid var(--rule);
+  background: transparent;
+  color: inherit;
+}
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.admin-table th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--mute);
+  padding: 6px 8px 6px 0;
+}
+.admin-table td {
+  border-top: 1px solid var(--rule);
+  padding: 8px 8px 8px 0;
+  vertical-align: top;
+}
+.admin-table small {
+  display: block;
+  color: var(--acc);
+}
+.row-actions {
+  display: flex;
+  gap: 6px;
+}
+.row-actions button {
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 8px;
+  border: 1.5px solid var(--rule);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.row-actions button[aria-pressed="true"] {
+  border-color: var(--acc);
+  color: var(--acc);
+}
