@@ -42,7 +42,7 @@ export function syncTone(status: string, enabled: boolean): { tone: Tone; label:
   return { tone: "off", label: "Sin sincronizar" };
 }
 
-export type ErrorKind = "gone" | "duplicate" | "rate" | "other";
+type ErrorKind = "gone" | "duplicate" | "rate" | "other";
 
 /** What kind of failure this is decides the one-click fix: pause what is gone, wait out limits, retry the rest. */
 export function errorKind(raw: string | null): ErrorKind | null {

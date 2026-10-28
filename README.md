@@ -12,6 +12,7 @@ The map of tech events in Latin America.
 [![ci](https://img.shields.io/github/actions/workflow/status/crafter-station/hack0/ci.yml?branch=main&style=flat-square&labelColor=111110&color=ff3d00&label=ci)](https://github.com/crafter-station/hack0/actions/workflows/ci.yml)
 [![site](https://img.shields.io/badge/hack0.dev-live-ff3d00?style=flat-square&labelColor=111110)](https://hack0.dev)
 [![luma](https://img.shields.io/badge/luma-hack0-ff3d00?style=flat-square&labelColor=111110)](https://luma.com/hack0)
+[![license](https://img.shields.io/badge/license-Apache--2.0-ff3d00?style=flat-square&labelColor=111110)](LICENSE)
 
 [hack0.dev](https://hack0.dev)
 
@@ -77,4 +78,4 @@ docs/              architecture and the workshop distribution contract
 - [docs/architecture.md](docs/architecture.md): how sources become pages, and what decides a listing
 - [docs/contract.md](docs/contract.md): workshop distribution
 
-Built by [Crafter Station](https://crafter.run).
+Built by [Crafter Station](https://crafter.run). [Apache-2.0](LICENSE)
