@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Shell } from "@/components/shell";
 import { requireAdmin } from "@/lib/admin/auth";
-import { eventsForReview, sourcesOverview } from "@/lib/admin/queries";
-import { addSource, syncNow, toggleCurated, toggleSync } from "./actions";
+import { eventsForReview, sourcesOverview, tokensOverview } from "@/lib/admin/queries";
+import { addSource, revokeApiToken, syncNow, toggleCurated, toggleSync } from "./actions";
+import { TokenForm } from "./token-form";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "admin | hack0", robots: { index: false, follow: false } };
@@ -12,7 +13,7 @@ const when = (d: Date | null) => (d ? new Intl.DateTimeFormat("es", { dateStyle:
 export default async function Admin({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   await requireAdmin();
   const { q } = await searchParams;
-  const [rows, events] = await Promise.all([sourcesOverview(), eventsForReview(q)]);
+  const [rows, events, tokens] = await Promise.all([sourcesOverview(), eventsForReview(q), tokensOverview()]);
   return (
     <Shell>
       <div className="hero-copy hub">
@@ -105,6 +106,34 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
                       {e.curated ? "curado" : "curar"}
                     </button>
                   </form>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+      <section>
+        <div className="label">
+          <span>tokens de API y MCP</span>
+          <span>{tokens.filter((t) => !t.revokedAt).length} activos</span>
+        </div>
+        <TokenForm />
+        <table className="admin-table">
+          <tbody>
+            {tokens.map((t) => (
+              <tr key={t.id}>
+                <td>{t.name}</td>
+                <td>
+                  <code>{t.prefix}…</code>
+                </td>
+                <td>{t.revokedAt ? "revocado" : `usado ${when(t.lastUsedAt)}`}</td>
+                <td className="row-actions">
+                  {!t.revokedAt && (
+                    <form action={revokeApiToken}>
+                      <input type="hidden" name="id" value={t.id} />
+                      <button type="submit">revocar</button>
+                    </form>
+                  )}
                 </td>
               </tr>
             ))}

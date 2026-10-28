@@ -60,8 +60,9 @@ async function upsertEvent(db: Db, n: NormalizedEvent): Promise<{ id: string; cr
   const row = eventRow(n);
   const existing = await findExisting(db, n);
   if (existing) {
-    // The first sighting keeps its key; later ones only fill what is missing or changed upstream.
-    const { canonicalKey: _key, ...update } = row;
+    // The first sighting keeps its key, and a source that lacks a field never blanks what another source filled.
+    const { canonicalKey: _key, ...fields } = row;
+    const update = Object.fromEntries(Object.entries(fields).filter(([, value]) => value !== null && value !== undefined));
     await db.update(canonicalEvents).set(update).where(eq(canonicalEvents.id, existing));
     return { id: existing, created: false };
   }

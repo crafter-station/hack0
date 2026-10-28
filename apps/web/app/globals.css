@@ -424,3 +424,11 @@ footer {
   border-color: var(--acc);
   color: var(--acc);
 }
+.token-once {
+  font-size: 13px;
+  margin-bottom: 16px;
+  word-break: break-all;
+}
+.token-once code {
+  color: var(--acc);
+}

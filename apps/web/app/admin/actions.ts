@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { start } from "workflow/api";
 import { requireAdmin } from "@/lib/admin/auth";
+import { createToken, revokeToken } from "@/lib/api/tokens";
 import { detectProviderImportTarget } from "@/lib/canonical/event-providers";
 import { getDb } from "@/lib/db/client";
 import { canonicalEvents, sources } from "@/lib/db/schema";
@@ -53,5 +54,20 @@ export async function toggleCurated(formData: FormData) {
   await requireAdmin();
   const { id, next } = flipped(formData, "curated");
   await getDb().update(canonicalEvents).set({ curated: next }).where(eq(canonicalEvents.id, id));
+  revalidatePath("/admin");
+}
+
+export async function issueToken(_prev: string | null, formData: FormData): Promise<string | null> {
+  await requireAdmin();
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) return null;
+  const raw = await createToken(name);
+  revalidatePath("/admin");
+  return raw;
+}
+
+export async function revokeApiToken(formData: FormData) {
+  await requireAdmin();
+  await revokeToken(String(formData.get("id")));
   revalidatePath("/admin");
 }

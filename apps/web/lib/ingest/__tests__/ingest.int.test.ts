@@ -89,5 +89,7 @@ run("ingest into Postgres", () => {
     expect(await persistBatch(getDb(), batch, null)).toEqual({ created: 0, updated: 1 });
     expect(await getDb().select().from(canonicalEvents)).toHaveLength(3);
     expect(await getDb().select().from(eventSources)).toHaveLength(5);
+    const rows = await getDb().select({ name: canonicalEvents.name, lumaEventId: canonicalEvents.lumaEventId }).from(canonicalEvents);
+    expect(rows.find((r) => r.name === "Cursor Meetup Lima")?.lumaEventId).toBe("evt-1");
   });
 });

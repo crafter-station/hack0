@@ -1,6 +1,6 @@
 import { and, asc, count, desc, eq, gte, ilike, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
-import { canonicalEvents, eventSources, sources } from "@/lib/db/schema";
+import { apiTokens, canonicalEvents, eventSources, sources } from "@/lib/db/schema";
 
 /** Every source with how many catalog events it contributes. */
 export async function sourcesOverview() {
@@ -40,4 +40,17 @@ export async function eventsForReview(q: string | undefined) {
     .where(q ? and(upcoming, ilike(canonicalEvents.name, `%${q}%`)) : upcoming)
     .orderBy(asc(canonicalEvents.startAt))
     .limit(200);
+}
+
+export async function tokensOverview() {
+  return getDb()
+    .select({
+      id: apiTokens.id,
+      name: apiTokens.name,
+      prefix: apiTokens.prefix,
+      lastUsedAt: apiTokens.lastUsedAt,
+      revokedAt: apiTokens.revokedAt,
+    })
+    .from(apiTokens)
+    .orderBy(desc(apiTokens.createdAt));
 }

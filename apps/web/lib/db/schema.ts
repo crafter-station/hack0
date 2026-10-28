@@ -105,3 +105,19 @@ export const eventSources = pgTable(
     index("event_sources_canonical_event_idx").on(t.canonicalEventId),
   ],
 );
+
+/** Read tokens for the REST API and MCP server. Only the sha256 of the raw token is stored. */
+export const apiTokens = pgTable(
+  "api_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    tokenHash: text("token_hash").notNull(),
+    prefix: text("prefix").notNull(),
+    scopes: text("scopes").array().notNull().default(["events:read", "calendars:read"]),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex("api_tokens_token_hash_key").on(t.tokenHash)],
+);
