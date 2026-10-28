@@ -1,3 +1,5 @@
+import { Show, UserButton } from "@clerk/nextjs";
+import { Suspense } from "react";
 import { EventList } from "@/components/event-list";
 import { Globe } from "@/components/globe";
 import { JsonLd } from "@/components/json-ld";
@@ -32,6 +34,12 @@ export default async function Home() {
           <a href="/eventos">eventos</a>
           <a href="#organizadores">organizadores</a>
           <a href={LUMA}>luma</a>
+          <Suspense>
+            <Show when="signed-in">
+              <a href="/admin">admin</a>
+              <UserButton />
+            </Show>
+          </Suspense>
           <ThemeToggle />
         </nav>
       </header>
