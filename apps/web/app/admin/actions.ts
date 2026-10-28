@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq, ilike, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { start } from "workflow/api";
 import { requireAdmin } from "@/lib/admin/auth";
@@ -95,5 +95,24 @@ export async function decideDraft(formData: FormData) {
     .update(contentDrafts)
     .set({ status })
     .where(eq(contentDrafts.id, String(formData.get("id"))));
+  revalidatePath("/admin", "layout");
+}
+
+/** Pauses every failing source whose page is gone or that duplicates another; retrying cannot fix those. */
+export async function pauseUnfixable() {
+  await requireAdmin();
+  await getDb()
+    .update(sources)
+    .set({ syncEnabled: false })
+    .where(
+      and(
+        eq(sources.syncStatus, "failed"),
+        or(
+          ilike(sources.syncError, "%not found or is not publicly accessible%"),
+          ilike(sources.syncError, "%no Luma calendar behind%"),
+          ilike(sources.syncError, "%duplicate of source%"),
+        ),
+      ),
+    );
   revalidatePath("/admin", "layout");
 }

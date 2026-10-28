@@ -7,18 +7,18 @@ export default async function ContentTab() {
   const drafts = await openDrafts();
   return (
     <>
-      <p className="lead">Agenda semanal y un post por evento curado. Se generan cada día; nada se publica solo.</p>
+      <p className="lead">Agenda semanal y un post por evento destacado. Se generan cada día; nada se publica solo.</p>
       {drafts.length === 0 && (
         <EmptyState
           art="drafts"
           title="Sin borradores por ahora"
           action={
             <a className="btn primary" href="/admin/curacion">
-              Curar eventos
+              Destacar eventos
             </a>
           }
         >
-          Cura eventos de esta semana: cada mañana se arma la agenda semanal y un post por evento, listos para revisar.
+          Destaca eventos de esta semana: cada mañana se arma la agenda semanal y un post por evento, listos para revisar.
         </EmptyState>
       )}
       <div className="drafts">

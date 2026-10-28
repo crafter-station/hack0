@@ -31,3 +31,13 @@ jobs:
       - run: bun run typecheck
       - run: bun run test
       - run: bun run quality
+      - name: build and smoke-test the production site
+        working-directory: apps/web
+        env:
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+        run: |
+          bun run scripts/seed-fixture.ts
+          bun run build
+          bun run start -p 3000 &
+          for i in $(seq 1 30); do curl -s -o /dev/null http://localhost:3000 && break; sleep 1; done
+          bun run scripts/smoke.ts http://localhost:3000

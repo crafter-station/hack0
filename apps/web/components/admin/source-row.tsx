@@ -1,5 +1,6 @@
 import { syncNow, toggleScope, toggleSync } from "@/app/admin/actions";
-import { fullDate, humanError, relative, syncTone } from "@/lib/admin/format";
+import { RowMenu } from "@/components/admin/row-menu";
+import { errorKind, fullDate, humanError, relative, syncTone } from "@/lib/admin/format";
 
 type Source = {
   id: string;
@@ -21,6 +22,7 @@ const PROVIDER: Record<string, string> = { luma: "Luma", meetup: "Meetup", event
 export function SourceRow({ s }: { s: Source }) {
   const state = syncTone(s.syncStatus, s.syncEnabled);
   const error = s.syncEnabled ? humanError(s.syncError) : null;
+  const kind = s.syncEnabled && s.syncStatus === "failed" ? errorKind(s.syncError) : null;
   return (
     <li className="row">
       <div className="cell grow">
@@ -47,30 +49,42 @@ export function SourceRow({ s }: { s: Source }) {
         {relative(s.lastSyncedAt)}
       </div>
       <div className="cell actions">
-        <form action={syncNow}>
-          <input type="hidden" name="id" value={s.id} />
-          <button type="submit" className="ghost" disabled={!s.syncEnabled}>
-            Sync
-          </button>
-        </form>
-        <details className="menu">
-          <summary aria-label={`Más acciones para ${s.name ?? s.url}`}>⋯</summary>
-          <div className="menu-panel">
-            <form action={toggleScope}>
-              <input type="hidden" name="id" value={s.id} />
-              <input type="hidden" name="scope" value={s.scope} />
-              <button type="submit">{s.scope === "latam" ? "Marcar como global" : "Marcar como LATAM"}</button>
-            </form>
-            <form action={toggleSync}>
-              <input type="hidden" name="id" value={s.id} />
-              <input type="hidden" name="enabled" value={String(s.syncEnabled)} />
-              <button type="submit">{s.syncEnabled ? "Pausar" : "Reanudar"}</button>
-            </form>
-            <a href={s.url} target="_blank" rel="noreferrer">
-              Abrir en {PROVIDER[s.provider] ?? "origen"} ↗
-            </a>
-          </div>
-        </details>
+        {kind === "gone" || kind === "duplicate" ? (
+          <form action={toggleSync}>
+            <input type="hidden" name="id" value={s.id} />
+            <input type="hidden" name="enabled" value="true" />
+            <button type="submit" className="ghost fix" title="Ya no se puede leer; pausarla la saca de los syncs sin borrarla">
+              Pausar
+            </button>
+          </form>
+        ) : (
+          <form action={syncNow}>
+            <input type="hidden" name="id" value={s.id} />
+            <button
+              type="submit"
+              className={`ghost${kind === "other" ? " fix" : ""}`}
+              disabled={!s.syncEnabled || kind === "rate"}
+              title={kind === "rate" ? "Luma está limitando; el próximo sync automático lo reintenta" : undefined}
+            >
+              {kind === "other" ? "Reintentar" : "Sync"}
+            </button>
+          </form>
+        )}
+        <RowMenu label={`Más acciones para ${s.name ?? s.url}`}>
+          <form action={toggleScope}>
+            <input type="hidden" name="id" value={s.id} />
+            <input type="hidden" name="scope" value={s.scope} />
+            <button type="submit">{s.scope === "latam" ? "Marcar como global" : "Marcar como LATAM"}</button>
+          </form>
+          <form action={toggleSync}>
+            <input type="hidden" name="id" value={s.id} />
+            <input type="hidden" name="enabled" value={String(s.syncEnabled)} />
+            <button type="submit">{s.syncEnabled ? "Pausar" : "Reanudar"}</button>
+          </form>
+          <a href={s.url} target="_blank" rel="noreferrer">
+            Abrir en {PROVIDER[s.provider] ?? "origen"} ↗
+          </a>
+        </RowMenu>
       </div>
     </li>
   );

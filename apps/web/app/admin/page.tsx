@@ -1,6 +1,8 @@
+import { pauseUnfixable } from "@/app/admin/actions";
 import { AddSource } from "@/components/admin/add-source";
 import { SourceRow } from "@/components/admin/source-row";
 import { EmptyState } from "@/components/empty-state";
+import { errorKind } from "@/lib/admin/format";
 import { type SourceView, sourcesOverview } from "@/lib/admin/queries";
 
 type Props = { searchParams: Promise<{ q?: string; vista?: string }> };
@@ -15,6 +17,10 @@ export default async function SourcesTab({ searchParams }: Props) {
   const { q, vista } = await searchParams;
   const view = VIEWS.find((v) => v.value === vista)?.value ?? "todas";
   const rows = await sourcesOverview({ q, view });
+  const unfixable = rows.filter((r) => {
+    const kind = r.syncEnabled && r.syncStatus === "failed" ? errorKind(r.syncError) : null;
+    return kind === "gone" || kind === "duplicate";
+  }).length;
   const href = (v: SourceView) => `/admin?${new URLSearchParams({ ...(q ? { q } : {}), ...(v !== "todas" ? { vista: v } : {}) })}`;
   return (
     <>
@@ -32,6 +38,19 @@ export default async function SourcesTab({ searchParams }: Props) {
         </nav>
         <AddSource />
       </div>
+      {view === "error" && unfixable > 0 && (
+        <div className="fix-bar">
+          <span>
+            {unfixable} {unfixable === 1 ? "fuente ya no existe o está duplicada" : "fuentes ya no existen o están duplicadas"}. Reintentar
+            no las arregla.
+          </span>
+          <form action={pauseUnfixable}>
+            <button type="submit" className="btn primary">
+              Pausar {unfixable === 1 ? "esa fuente" : `las ${unfixable}`}
+            </button>
+          </form>
+        </div>
+      )}
       {rows.length > 0 && (
         <ul className="table" aria-label="Fuentes">
           <li className="row head" aria-hidden="true">

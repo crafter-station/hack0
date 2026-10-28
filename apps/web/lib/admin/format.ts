@@ -41,3 +41,14 @@ export function syncTone(status: string, enabled: boolean): { tone: Tone; label:
   if (status === "failed") return { tone: "warn", label: "Con error" };
   return { tone: "off", label: "Sin sincronizar" };
 }
+
+export type ErrorKind = "gone" | "duplicate" | "rate" | "other";
+
+/** What kind of failure this is decides the one-click fix: pause what is gone, wait out limits, retry the rest. */
+export function errorKind(raw: string | null): ErrorKind | null {
+  if (!raw) return null;
+  if (/not found or is not publicly accessible|no Luma calendar behind/i.test(raw)) return "gone";
+  if (/duplicate of source/i.test(raw)) return "duplicate";
+  if (/rate limit/i.test(raw)) return "rate";
+  return "other";
+}

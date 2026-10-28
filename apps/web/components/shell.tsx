@@ -1,5 +1,4 @@
-import { Show, UserButton } from "@clerk/nextjs";
-import { Suspense } from "react";
+import { AccountNav } from "@/components/account-nav";
 import { Wordmark } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LUMA } from "@/lib/site";
@@ -15,13 +14,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <a href="/eventos">eventos</a>
           <a href="/#organizadores">organizadores</a>
           <a href={LUMA}>luma</a>
-          {/* Only admins sign in; once they do, the panel link and Clerk's menu (with sign out) appear. */}
-          <Suspense>
-            <Show when="signed-in">
-              <a href="/admin">admin</a>
-              <UserButton />
-            </Show>
-          </Suspense>
+          <AccountNav />
           <ThemeToggle />
         </nav>
       </header>
