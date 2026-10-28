@@ -35,6 +35,7 @@ const values = rows.flatMap((r) => {
 
 const db = getDb();
 const seeded = await seedSources(db);
-const imported = await db.insert(sources).values(values).onConflictDoNothing({ target: sources.providerSourceId }).returning({ id: sources.id });
+const imported = await db.insert(sources).values(values)// Any unique key: the same URL, or the same Luma calendar under another URL.
+  .onConflictDoNothing().returning({ id: sources.id });
 console.log(`seed: ${seeded.length} new · aggregator: ${imported.length} new of ${values.length} importable, ${rows.length - values.length} skipped`);
 process.exit(0);

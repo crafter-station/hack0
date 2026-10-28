@@ -1,4 +1,5 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
+import { FatalError } from "workflow";
 import { decrypt } from "@/lib/crypto";
 import { getDb } from "@/lib/db/client";
 import { canonicalEvents, eventSources, sources } from "@/lib/db/schema";
@@ -8,6 +9,8 @@ import { lumaInputs, normalizeBatch, providerInputs } from "@/lib/ingest/normali
 import { markRemoved, persistBatch, refreshListing } from "@/lib/ingest/persist";
 import { fetchPublicProviderSnapshot } from "@/lib/ingest/providers";
 import { REFRESH_INTERVAL_MS } from "@/lib/ingest/sources";
+
+const LUMA_REQUEST_GAP_MS = 60_000 / 200;
 
 type Loaded = {
   id: string;
@@ -40,6 +43,12 @@ async function ensureCalendarId(source: Loaded) {
   if (source.calendarId) return source.calendarId;
   const calendarId = await resolveCalendarId(source.url);
   if (!calendarId) throw new Error(`no Luma calendar behind ${source.url}`);
+  const [twin] = await getDb().select({ id: sources.id }).from(sources).where(eq(sources.lumaCalendarId, calendarId));
+  if (twin && twin.id !== source.id) {
+    // Same calendar added under another URL: keep the existing source and stop this one.
+    await getDb().update(sources).set({ syncEnabled: false }).where(eq(sources.id, source.id));
+    throw new FatalError(`duplicate of source ${twin.id} (same Luma calendar)`);
+  }
   await getDb().update(sources).set({ lumaCalendarId: calendarId }).where(eq(sources.id, source.id));
   return calendarId;
 }
@@ -87,6 +96,8 @@ async function fillDescriptions(sourceId: string) {
     .where(and(eq(eventSources.sourceId, sourceId), isNull(canonicalEvents.description), sql`${canonicalEvents.lumaEventId} is not null`));
   for (const row of missing) {
     if (!row.lumaId) continue;
+    // Luma allows 200 requests per minute per calendar key: one every 300 ms stays under it.
+    await new Promise((resolve) => setTimeout(resolve, LUMA_REQUEST_GAP_MS));
     const description = await fetchManagedDescription(key, row.lumaId);
     if (description) await getDb().update(canonicalEvents).set({ description }).where(eq(canonicalEvents.id, row.id));
   }

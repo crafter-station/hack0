@@ -98,6 +98,11 @@ export async function fetchManagedEvents(apiKey: string, source: SourceRef, afte
 
 /** Markdown description; only events the key's calendar manages return one. */
 export async function fetchManagedDescription(apiKey: string, eventId: string): Promise<string | null> {
-  const data = await call<{ event?: { description_md?: string | null } }>(apiKey, `/event/get?id=${encodeURIComponent(eventId)}`);
+  const res = await fetch(`${API}/event/get?id=${encodeURIComponent(eventId)}`, { headers: { "x-luma-api-key": apiKey } });
+  // A calendar lists events other calendars manage; Luma answers those with 403 or 404, and they simply have no description here.
+  if (res.status === 403 || res.status === 404) return null;
+  if (res.status === 429) throw new RetryableError("Luma rate limited /event/get", { retryAfter: "1m" });
+  if (!res.ok) throw new Error(`Luma /event/get failed (${res.status})`);
+  const data = (await res.json()) as { event?: { description_md?: string | null } };
   return data.event?.description_md?.trim() || null;
 }

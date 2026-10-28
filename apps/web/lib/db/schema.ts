@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { boolean, doublePrecision, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import type { EventEnrichment } from "@/lib/canonical/canonical-events";
 
@@ -35,7 +36,12 @@ export const sources = pgTable(
     nextSyncAt: timestamp("next_sync_at", { withTimezone: true }),
     ...timestamps,
   },
-  (t) => [uniqueIndex("sources_provider_source_id_key").on(t.providerSourceId), index("sources_next_sync_at_idx").on(t.nextSyncAt)],
+  (t) => [
+    uniqueIndex("sources_provider_source_id_key").on(t.providerSourceId),
+    // One source per Luma calendar, whichever URL it was added by (slug or cal- id).
+    uniqueIndex("sources_luma_calendar_id_key").on(t.lumaCalendarId).where(sql`${t.lumaCalendarId} is not null`),
+    index("sources_next_sync_at_idx").on(t.nextSyncAt),
+  ],
 );
 
 /** One real-world event, deduplicated across every source that lists it. */

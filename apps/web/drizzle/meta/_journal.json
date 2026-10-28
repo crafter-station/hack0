@@ -8,6 +8,13 @@
       "when": 1793151210647,
       "tag": "0000_motionless_monster_badoon",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793157848740,
+      "tag": "0001_true_frightful_four",
+      "breakpoints": true
     }
   ]
 }

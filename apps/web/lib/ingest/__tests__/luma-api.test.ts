@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "bun:test";
-import { fetchManagedEvents } from "../luma-api";
+import { fetchManagedDescription, fetchManagedEvents } from "../luma-api";
 import fixture from "./luma-api.fixture.json";
 
 const realFetch = globalThis.fetch;
@@ -17,4 +17,9 @@ test("a real Luma list entry maps to a sighting with country, timezone and coord
   expect(input?.event.enrichment?.latitude).toBeNumber();
   // The fixture's host keeps the address to guests only, so it must not leak.
   expect(input?.event.enrichment?.venueAddress).toBeNull();
+});
+
+test("an event the calendar only lists answers 403 and has no description, without failing", async () => {
+  globalThis.fetch = Object.assign(async () => new Response("forbidden", { status: 403 }), { preconnect: realFetch.preconnect });
+  expect(await fetchManagedDescription("key", "evt-x")).toBeNull();
 });

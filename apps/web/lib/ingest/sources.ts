@@ -24,7 +24,7 @@ export async function seedSources(db: Db) {
     scope,
     lumaCalendarId: url.match(/cal-[A-Za-z0-9]+/)?.[0] ?? null,
   }));
-  return db.insert(sources).values(rows).onConflictDoNothing({ target: sources.providerSourceId }).returning({ id: sources.id });
+  return db.insert(sources).values(rows).onConflictDoNothing().returning({ id: sources.id });
 }
 
 /** Enabled sources whose next sync is due, never synced first. */

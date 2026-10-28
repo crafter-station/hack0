@@ -51,7 +51,7 @@ export async function addSource(formData: FormData) {
       lumaCalendarId: target.provider === "luma" ? (url.match(/cal-[A-Za-z0-9]+/)?.[0] ?? null) : null,
       apiKeyCiphertext: apiKey && target.provider === "luma" ? encrypt(apiKey) : null,
     })
-    .onConflictDoNothing({ target: sources.providerSourceId });
+    .onConflictDoNothing();
   revalidatePath("/admin");
 }
 
