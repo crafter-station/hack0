@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AutoSubmitForm } from "@/components/auto-submit";
 import { Flag } from "@/components/flag";
 import { countryName, type Filters, filterHref, type SearchResult } from "@/lib/search";
@@ -8,9 +9,9 @@ function Segment({ items, current }: { items: { label: string; href: string; on:
   return (
     <nav className="segment" aria-label={current}>
       {items.map((i) => (
-        <a key={i.label} href={i.href} aria-current={i.on ? "true" : undefined}>
+        <Link key={i.label} href={i.href} aria-current={i.on ? "true" : undefined}>
           {i.label}
-        </a>
+        </Link>
       ))}
     </nav>
   );
@@ -83,9 +84,9 @@ export function EventFilters({ filters: f, result }: Props) {
           {result.facets.paises.map((p) => {
             const on = f.pais === p.value;
             return (
-              <a key={p.value} href={filterHref(f, { pais: on ? undefined : p.value })} aria-current={on ? "true" : undefined}>
+              <Link key={p.value} href={filterHref(f, { pais: on ? undefined : p.value })} aria-current={on ? "true" : undefined}>
                 <Flag code={p.value} /> {p.label} <span>{p.count}</span>
-              </a>
+              </Link>
             );
           })}
         </nav>
@@ -96,14 +97,14 @@ export function EventFilters({ filters: f, result }: Props) {
           {result.total} {result.total === 1 ? "evento" : "eventos"}
         </b>
         {active.map((a) => (
-          <a key={a.href} href={a.href} className="pill" aria-label={`Quitar filtro ${a.label}`}>
+          <Link key={a.href} href={a.href} className="pill" aria-label={`Quitar filtro ${a.label}`}>
             {a.flag && <Flag code={a.flag} />} {a.label} <span aria-hidden="true">×</span>
-          </a>
+          </Link>
         ))}
         {active.length > 0 && (
-          <a href={filterHref({ cuando: f.cuando, page: 0 }, {})} className="clear">
+          <Link href={filterHref({ cuando: f.cuando, page: 0 }, {})} className="clear">
             limpiar
-          </a>
+          </Link>
         )}
       </p>
     </section>

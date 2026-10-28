@@ -1,3 +1,5 @@
+import Form from "next/form";
+import Link from "next/link";
 import { pauseUnfixable } from "@/app/admin/actions";
 import { AddSource } from "@/components/admin/add-source";
 import { SourceRow } from "@/components/admin/source-row";
@@ -25,15 +27,15 @@ export default async function SourcesTab({ searchParams }: Props) {
   return (
     <>
       <div className="toolbar">
-        <form className="search">
+        <Form action="/admin" className="search">
           <input type="search" name="q" defaultValue={q} placeholder="Buscar fuente" aria-label="Buscar fuente" />
           {view !== "todas" && <input type="hidden" name="vista" value={view} />}
-        </form>
+        </Form>
         <nav className="segment" aria-label="Vista">
           {VIEWS.map((v) => (
-            <a key={v.value} href={href(v.value)} aria-current={v.value === view ? "true" : undefined}>
+            <Link key={v.value} href={href(v.value)} aria-current={v.value === view ? "true" : undefined}>
               {v.label}
-            </a>
+            </Link>
           ))}
         </nav>
         <AddSource />
@@ -71,9 +73,9 @@ export default async function SourcesTab({ searchParams }: Props) {
             art="search"
             title={`Nada que se llame “${q}”`}
             action={
-              <a className="btn" href={href(view)}>
+              <Link className="btn" href={href(view)}>
                 Borrar búsqueda
-              </a>
+              </Link>
             }
           >
             Prueba con parte del nombre o busca en todas las fuentes.

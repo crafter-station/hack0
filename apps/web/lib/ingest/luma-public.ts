@@ -56,7 +56,22 @@ type RawEntry = { event?: RawEvent; hosts?: { name?: string }[] };
 
 type Page = { entries?: RawEntry[]; has_more?: boolean; next_cursor?: string };
 
-type ProseNode = { type?: string; text?: string; content?: ProseNode[]; attrs?: { level?: number } };
+type ProseNode = {
+  type?: string;
+  text?: string;
+  content?: ProseNode[];
+  attrs?: { level?: number };
+  marks?: { type?: string; attrs?: { href?: string } }[];
+};
+
+/** A text node with its bold and link marks as markdown. */
+function markedText(n: ProseNode): string {
+  let text = n.text ?? "";
+  if (!text.trim()) return text;
+  if (n.marks?.some((m) => m.type === "bold")) text = `**${text}**`;
+  const href = n.marks?.find((m) => m.type === "link")?.attrs?.href;
+  return href && /^https?:\/\//.test(href) ? `[${text}](${href})` : text;
+}
 
 /** Luma's public pages embed their data as Next.js page props; `kind` says what the page is. */
 type PageData =
@@ -64,7 +79,7 @@ type PageData =
       kind: "calendar";
       data: { calendar?: { api_id?: string }; upcoming?: Page; event_start_ats?: string[]; has_upcoming_events?: boolean };
     }
-  | { kind: "event"; data: { event?: RawEvent; hosts?: { name?: string }[]; description_mirror?: ProseNode } }
+  | { kind: "event"; data: { event?: RawEvent; hosts?: { name?: string }[]; description_mirror?: ProseNode; tint_color?: string | null } }
   | { kind: "user"; data: { user?: { api_id?: string } } };
 
 /** The page props of a public Luma page, or null when the page is gone or its shape changed. */
@@ -173,7 +188,7 @@ export async function resolveProfileId(url: string): Promise<string | null> {
 }
 
 function inline(nodes: ProseNode[] = []): string {
-  return nodes.map((n) => (n.type === "text" ? (n.text ?? "") : n.type === "hard_break" ? "\n" : inline(n.content))).join("");
+  return nodes.map((n) => (n.type === "text" ? markedText(n) : n.type === "hard_break" ? "\n" : inline(n.content))).join("");
 }
 
 function listItems(node: ProseNode, marker: (i: number) => string): string {
@@ -197,6 +212,13 @@ export function proseToMarkdown(doc: ProseNode | undefined): string | null {
     .join("\n\n")
     .trim();
   return text || null;
+}
+
+/** The accent color the host picked for a public Luma event page, such as `#cb2c6f`. */
+export async function fetchEventTint(url: string): Promise<string | null> {
+  const page = await readPage(url);
+  const tint = page?.kind === "event" ? page.data.tint_color : null;
+  return tint && /^#[0-9a-f]{6}$/i.test(tint) ? tint : null;
 }
 
 /** One public event page: the event with its description, or null when the URL is not an event. */

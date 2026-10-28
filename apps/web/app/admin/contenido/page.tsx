@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { decideDraft } from "@/app/admin/actions";
 import { EmptyState } from "@/components/empty-state";
 import { relative } from "@/lib/admin/format";
@@ -13,9 +14,9 @@ export default async function ContentTab() {
           art="drafts"
           title="Sin borradores por ahora"
           action={
-            <a className="btn primary" href="/admin/curacion">
+            <Link className="btn primary" href="/admin/curacion">
               Destacar eventos
-            </a>
+            </Link>
           }
         >
           Destaca eventos de esta semana: cada mañana se arma la agenda semanal y un post por evento, listos para revisar.

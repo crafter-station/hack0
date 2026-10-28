@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { AdminTabs } from "@/components/admin/tabs";
 import { Shell } from "@/components/shell";
 import { requireAdmin } from "@/lib/admin/auth";
@@ -19,9 +20,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             {c.sources} fuentes · {c.upcoming} eventos próximos · {c.curated} destacados
           </p>
         </div>
-        <a className="btn" href="/eventos">
+        <Link className="btn" href="/eventos">
           Ver sitio ↗
-        </a>
+        </Link>
       </header>
       <AdminTabs
         tabs={[

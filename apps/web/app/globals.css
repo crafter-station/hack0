@@ -34,8 +34,58 @@
 html {
   background: var(--paper);
   color: var(--ink);
+  /* Touch: no gray flash over tapped links (each control has its own :active), no font inflation in landscape. */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+/* Controls fire on tap without the double-tap-zoom wait, and a long press does not select their label. Content text stays selectable. */
+button,
+.btn,
+summary,
+.theme,
+.admin-tabs a,
+.chips a,
+.topics a,
+.segment a,
+.country-chips a {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+a {
+  touch-action: manipulation;
+}
+/* iOS zooms into any field under 16px and does not zoom back out. */
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+/* Press feedback on finger-down, for touch and mouse alike. */
+.btn,
+.ghost,
+.events li a,
+.chips a,
+.topics a {
+  transition:
+    transform 120ms ease-out,
+    background-color 120ms ease-out,
+    color 120ms ease-out,
+    border-color 120ms ease-out;
+}
+.btn:active,
+.chips a:active,
+.topics a:active {
+  transform: scale(0.97);
+}
+.events li a:active .name {
+  color: var(--acc);
 }
 body {
+  /* Full-bleed decoration (the event page's tint glow) must not add a horizontal scroll. */
+  overflow-x: clip;
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 15px;
   line-height: 1.55;
@@ -47,7 +97,8 @@ a {
 main {
   max-width: 960px;
   margin: 0 auto;
-  padding: 32px 16px 96px;
+  /* Landscape phones: keep content off the notch and rounded corners (needs viewport-fit=cover). */
+  padding: 32px max(16px, env(safe-area-inset-right, 0px)) 96px max(16px, env(safe-area-inset-left, 0px));
 }
 .wordmark {
   display: inline-flex;
@@ -75,8 +126,10 @@ header.top nav a {
   text-decoration: none;
   color: var(--mute);
 }
-header.top nav a:hover {
-  color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  header.top nav a:hover {
+    color: var(--ink);
+  }
 }
 .hero h1 {
   font-size: clamp(34px, 5.4vw, 60px);
@@ -111,10 +164,12 @@ header.top nav a:hover {
   background: var(--ink);
   color: var(--paper);
 }
-.btn:hover {
-  background: var(--acc);
-  border-color: var(--acc);
-  color: #fff;
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    background: var(--acc);
+    border-color: var(--acc);
+    color: #fff;
+  }
 }
 section {
   margin-top: 80px;
@@ -180,8 +235,10 @@ code.cmd {
   border-bottom: 1px solid var(--rule);
   text-decoration: none;
 }
-.events li a:hover .name {
-  color: var(--acc);
+@media (hover: hover) and (pointer: fine) {
+  .events li a:hover .name {
+    color: var(--acc);
+  }
 }
 .events .date {
   font-size: 13px;
@@ -391,8 +448,10 @@ footer {
 .chips a span {
   color: var(--mute);
 }
-.chips a:hover {
-  border-color: var(--acc);
+@media (hover: hover) and (pointer: fine) {
+  .chips a:hover {
+    border-color: var(--acc);
+  }
 }
 .sign-in {
   display: flex;
@@ -574,8 +633,10 @@ footer {
   margin-bottom: -1px;
   white-space: nowrap;
 }
-.admin-tabs a:hover {
-  color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .admin-tabs a:hover {
+    color: var(--ink);
+  }
 }
 .admin-tabs a[aria-current="page"] {
   color: var(--ink);
@@ -637,16 +698,20 @@ footer {
   color: var(--mute);
   cursor: pointer;
 }
-.ghost:hover:not(:disabled) {
-  color: var(--ink);
-  border-color: var(--rule);
+@media (hover: hover) and (pointer: fine) {
+  .ghost:hover:not(:disabled) {
+    color: var(--ink);
+    border-color: var(--rule);
+  }
 }
 .ghost:disabled {
   opacity: 0.4;
   cursor: default;
 }
-.ghost.danger:hover {
-  color: var(--acc);
+@media (hover: hover) and (pointer: fine) {
+  .ghost.danger:hover {
+    color: var(--acc);
+  }
 }
 .table {
   border-top: 1px solid var(--rule);
@@ -660,8 +725,10 @@ footer {
   border-bottom: 1px solid var(--rule);
   font-size: 13px;
 }
-.table .row:not(.head):hover {
-  background: color-mix(in srgb, var(--ink) 4%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .table .row:not(.head):hover {
+    background: color-mix(in srgb, var(--ink) 4%, transparent);
+  }
 }
 .table .row.head {
   font-size: 11px;
@@ -780,9 +847,11 @@ footer {
 .menu summary::-webkit-details-marker {
   display: none;
 }
-.menu[open] summary,
-.menu summary:hover {
-  color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .menu[open] summary,
+  .menu summary:hover {
+    color: var(--ink);
+  }
 }
 .menu-panel {
   position: absolute;
@@ -809,9 +878,11 @@ footer {
   text-decoration: none;
   cursor: pointer;
 }
-.menu-panel button:hover,
-.menu-panel a:hover {
-  background: color-mix(in srgb, var(--ink) 6%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .menu-panel button:hover,
+  .menu-panel a:hover {
+    background: color-mix(in srgb, var(--ink) 6%, transparent);
+  }
 }
 .add-source summary {
   list-style: none;
@@ -907,8 +978,10 @@ footer {
   padding: 10px 4px;
   border-bottom: 1px solid var(--rule);
 }
-.curate-row:hover {
-  background: color-mix(in srgb, var(--ink) 4%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .curate-row:hover {
+    background: color-mix(in srgb, var(--ink) 4%, transparent);
+  }
 }
 .curate-row .time {
   font-size: 12px;
@@ -938,8 +1011,10 @@ footer {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.curate-row .title:hover {
-  color: var(--acc);
+@media (hover: hover) and (pointer: fine) {
+  .curate-row .title:hover {
+    color: var(--acc);
+  }
 }
 .switch {
   width: 36px;
@@ -1114,9 +1189,11 @@ button.btn,
   color: var(--mute);
   cursor: pointer;
 }
-.feature:hover {
-  color: var(--ink);
-  border-color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .feature:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
 }
 .feature.on {
   background: var(--acc);
@@ -1134,12 +1211,327 @@ button.btn,
   color: var(--mute);
   cursor: pointer;
 }
-.feature:hover {
-  color: var(--ink);
-  border-color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .feature:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
 }
 .feature.on {
   background: var(--acc);
   border-color: var(--acc);
   color: #fff;
+}
+
+/* Event page. --tint is the event's own color (its Luma theme or its cover's accent); text uses a
+   lightness-clamped version so links stay readable on paper and on ink. */
+.event {
+  --tint: var(--acc);
+  --tint-ink: var(--tint);
+  --tint-on: #fff;
+  position: relative;
+}
+@supports (color: oklch(from red l c h)) {
+  .event {
+    --tint-ink: oklch(from var(--tint) min(l, 0.52) max(c, 0.06) h);
+    /* Black text on light tints, white on dark ones. */
+    --tint-on: oklch(from var(--tint) clamp(0, (0.68 - l) * 1000, 1) 0 0);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .event {
+      --tint-ink: oklch(from var(--tint) max(l, 0.8) c h);
+    }
+  }
+  :root[data-theme="dark"] .event {
+    --tint-ink: oklch(from var(--tint) max(l, 0.8) c h);
+  }
+}
+.event::before {
+  content: "";
+  position: absolute;
+  /* From the very top of the page (above the header), so the glow has no top edge. */
+  top: -260px;
+  left: calc(50% - 50vw);
+  width: 100vw;
+  height: 760px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(60% 60% at 35% 20%, color-mix(in oklch, var(--tint) 16%, transparent), transparent 70%);
+}
+.event ::selection {
+  background: color-mix(in oklch, var(--tint) 35%, transparent);
+}
+.event :focus-visible {
+  outline: 2px solid var(--tint-ink);
+  outline-offset: 3px;
+}
+.event-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+  gap: 40px;
+  align-items: start;
+}
+.event > h1 {
+  margin-bottom: 28px;
+  max-width: 22ch;
+}
+.event-head {
+  position: sticky;
+  top: 24px;
+}
+.event .cover {
+  margin-top: 0;
+  border: 1.5px solid var(--ink);
+  box-shadow: 6px 6px 0 color-mix(in oklch, var(--tint) 55%, transparent);
+}
+.cover-empty {
+  aspect-ratio: 2 / 1;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  background: color-mix(in oklch, var(--tint) 14%, var(--paper));
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+.cover-empty span:first-child {
+  font-size: 64px;
+  line-height: 1;
+  color: var(--tint-ink);
+}
+.cover-empty span:last-child {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 13px;
+}
+.event h1 {
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.event .badge {
+  display: inline-block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1.5px solid var(--rule);
+  color: var(--mute);
+  padding: 3px 8px;
+  margin-bottom: 14px;
+}
+.when-where {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+.when-where li {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 14px;
+  align-items: center;
+}
+.when-where strong {
+  display: block;
+  font-weight: 700;
+}
+.when-where strong::first-letter {
+  text-transform: uppercase;
+}
+.when-where li > span:last-child > span {
+  color: var(--mute);
+  font-size: 13px;
+}
+.tile {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--rule);
+  color: var(--tint-ink);
+}
+.tile.cal {
+  grid-template-rows: 16px 1fr;
+  place-items: stretch;
+  text-align: center;
+  overflow: hidden;
+}
+.tile.cal b {
+  font-size: 10px;
+  line-height: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: var(--tint);
+  color: var(--tint-on);
+}
+.tile.cal span {
+  font-weight: 800;
+  font-size: 17px;
+  line-height: 24px;
+  color: var(--ink);
+}
+.register {
+  margin-top: 28px;
+  padding: 18px;
+  border: 1.5px solid var(--rule);
+  background: color-mix(in oklch, var(--tint) 6%, transparent);
+  display: grid;
+  gap: 14px;
+}
+.btn.tint {
+  background: var(--tint);
+  border-color: var(--tint);
+  color: var(--tint-on);
+  text-align: center;
+  padding: 14px 18px;
+  font-size: 15px;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn.tint:hover {
+    background: var(--tint);
+    border-color: var(--tint);
+    color: var(--tint-on);
+    transform: translate(-2px, -2px);
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+}
+.btn.tint:active {
+  transform: none;
+  box-shadow: none;
+}
+.register .add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  font-size: 13px;
+}
+.register .add a,
+.register .add .ghost {
+  color: var(--mute);
+  text-decoration: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+@media (hover: hover) and (pointer: fine) {
+  .register .add a:hover,
+  .register .add .ghost:hover {
+    color: var(--tint-ink);
+  }
+}
+.topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 20px;
+}
+.topics a {
+  font-size: 12px;
+  padding: 4px 9px;
+  border: 1.5px solid var(--rule);
+  text-decoration: none;
+  color: var(--mute);
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
+}
+.topics a::before {
+  content: "#";
+  color: var(--tint-ink);
+  margin-right: 1px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .topics a:hover {
+    color: var(--ink);
+    border-color: var(--tint-ink);
+  }
+}
+.about {
+  margin-top: 48px;
+}
+.about .prose {
+  margin-top: 0;
+  max-width: 68ch;
+  overflow-wrap: anywhere;
+}
+.event .prose a {
+  color: var(--tint-ink);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in oklch, var(--tint-ink) 40%, transparent);
+  transition: text-decoration-color 120ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .event .prose a:hover {
+    text-decoration-color: currentColor;
+  }
+}
+.event .prose b {
+  color: var(--ink);
+}
+@media (hover: hover) and (pointer: fine) {
+  .crumbs a:hover {
+    color: var(--tint-ink, var(--acc));
+  }
+}
+.event-bar {
+  display: none;
+}
+@media (max-width: 760px) {
+  .event-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  /* One column: cover, then when/where/register, then the description. */
+  .event-media {
+    display: contents;
+  }
+  .event-head {
+    position: static;
+    order: 1;
+  }
+  .event .about {
+    order: 2;
+    margin-top: 8px;
+  }
+  .event .cover {
+    box-shadow: 4px 4px 0 color-mix(in oklch, var(--tint) 55%, transparent);
+  }
+  .event-bar {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    background: color-mix(in oklch, var(--paper) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--rule);
+    font-size: 13px;
+    transform: translateY(110%);
+    transition: transform 200ms ease;
+  }
+  .event-bar[data-shown="true"] {
+    transform: none;
+  }
+  .event-bar b::first-letter {
+    text-transform: uppercase;
+  }
+  main:has(.event-bar) {
+    padding-bottom: 120px;
+  }
+  .event-bar .btn {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+  .event ~ section,
+  .event .about {
+    margin-bottom: 24px;
+  }
 }

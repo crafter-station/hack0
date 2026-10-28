@@ -18,6 +18,7 @@ const hosted = {
 };
 
 const calls: string[] = [];
+let rateLimited = false;
 const realFetch = globalThis.fetch;
 
 beforeAll(async () => {
@@ -33,6 +34,7 @@ beforeAll(async () => {
     if (u.hostname === "api.lu.ma" && u.pathname === "/user/profile/events-hosting") {
       return Response.json({ entries: u.searchParams.get("period") === "future" ? [hosted] : [], has_more: false });
     }
+    if (u.hostname === "api.lu.ma" && rateLimited) return new Response("slow down", { status: 429 });
     if (u.hostname === "api.lu.ma") return Response.json({ entries: [], has_more: false });
     if (u.pathname === "/hack0") return new Response(html(calendar));
     if (u.pathname === "/user/theveller") return new Response(html(fixture.profile));
@@ -79,5 +81,18 @@ run("sync workflow over public Luma pages", () => {
     const id = await addSource("event", "/5z2nzojb");
     // Already in the catalog from the calendar: a new sighting, not a new row.
     expect(await syncSource(id)).toMatchObject({ created: 0, updated: 1 });
+  });
+
+  test("a rate-limited history does not hold back upcoming events, and stays pending for the next run", async () => {
+    await getDb().execute(sql`truncate canonical_events, event_sources, sources cascade`);
+    rateLimited = true;
+    const id = await addSource("calendar", "/hack0");
+    const result = await syncSource(id);
+    rateLimited = false;
+    expect(result).toMatchObject({ created: 2 });
+    const [src] = await getDb().select().from(sources).where(eq(sources.id, id));
+    expect(src?.syncStatus).toBe("completed");
+    expect(src?.lastSyncedAt).toBeNull();
+    expect(src?.syncError).toContain("historial pendiente");
   });
 });

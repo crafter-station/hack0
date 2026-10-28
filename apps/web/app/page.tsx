@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AccountNav } from "@/components/account-nav";
 import { EventList } from "@/components/event-list";
 import { Globe } from "@/components/globe";
@@ -26,11 +27,11 @@ export default async function Home() {
         }}
       />
       <header className="top">
-        <a href="/" aria-label="hack0" style={{ textDecoration: "none" }}>
+        <Link href="/" aria-label="hack0" style={{ textDecoration: "none" }}>
           <Wordmark size={26} />
-        </a>
+        </Link>
         <nav>
-          <a href="/eventos">eventos</a>
+          <Link href="/eventos">eventos</Link>
           <a href="#organizadores">organizadores</a>
           <a href={LUMA}>luma</a>
           <AccountNav />
@@ -68,7 +69,7 @@ export default async function Home() {
       <section id="eventos">
         <div className="label">
           <span>próximos eventos</span>
-          <a href="/eventos">ver todos y el archivo</a>
+          <Link href="/eventos">ver todos y el archivo</Link>
         </div>
         {events && events.length > 0 ? (
           <EventList events={events} />
@@ -107,7 +108,8 @@ export default async function Home() {
           hack0 by <a href="https://crafter.run">Crafter Station</a>
         </span>
         <span>
-          <a href="/eventos">eventos</a> · <a href="/brand">brand</a> · <a href="https://github.com/crafter-station/hack0">github</a>
+          <Link href="/eventos">eventos</Link> · <Link href="/brand">brand</Link> ·{" "}
+          <a href="https://github.com/crafter-station/hack0">github</a>
         </span>
       </footer>
     </main>
