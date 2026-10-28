@@ -49,7 +49,7 @@ type MeetupEventNode = {
   duration?: string;
   eventHosts?: Array<{ name?: string }>;
   featuredEventPhoto?: { id?: string; baseUrl?: string };
-  group?: { id?: string; name?: string; urlname?: string };
+  group?: { id?: string; name?: string; urlname?: string; timezone?: string | null };
   venue?: {
     name?: string;
     city?: string;
@@ -111,6 +111,7 @@ function meetupPublicProviderEvent(event: MeetupPublicEventNode): ProviderEvent 
       url: event.eventUrl,
       startAt: event.dateTime,
       endAt: event.endTime,
+      timezone: event.group?.timezone ?? null,
       city: city || undefined,
       description: event.description,
       enrichment: {
@@ -213,7 +214,7 @@ function meetupPublicEventsQuery(sort: "ASC" | "DESC"): string {
             eventHosts { memberId name }
             featuredEventPhoto { id baseUrl highResUrl }
             venue { name city state country }
-            group { id name urlname }
+            group { id name urlname timezone }
           }
         }
       }

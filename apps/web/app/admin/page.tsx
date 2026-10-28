@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Shell } from "@/components/shell";
 import { requireAdmin } from "@/lib/admin/auth";
-import { eventsForReview, sourcesOverview, tokensOverview } from "@/lib/admin/queries";
-import { addSource, revokeApiToken, syncNow, toggleCurated, toggleSync } from "./actions";
+import { eventsForReview, openDrafts, sourcesOverview, tokensOverview } from "@/lib/admin/queries";
+import { addSource, decideDraft, revokeApiToken, syncNow, toggleCurated, toggleSync } from "./actions";
 import { TokenForm } from "./token-form";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +13,7 @@ const when = (d: Date | null) => (d ? new Intl.DateTimeFormat("es", { dateStyle:
 export default async function Admin({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   await requireAdmin();
   const { q } = await searchParams;
-  const [rows, events, tokens] = await Promise.all([sourcesOverview(), eventsForReview(q), tokensOverview()]);
+  const [rows, events, tokens, drafts] = await Promise.all([sourcesOverview(), eventsForReview(q), tokensOverview(), openDrafts()]);
   return (
     <Shell>
       <div className="hero-copy hub">
@@ -112,6 +112,29 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
           </tbody>
         </table>
       </section>
+      <section>
+        <div className="label">
+          <span>borradores de contenido</span>
+          <span>{drafts.length}</span>
+        </div>
+        {drafts.length === 0 && <p className="empty">Cura eventos de esta semana y el cron arma la agenda y un post por evento.</p>}
+        {drafts.map((d) => (
+          <article key={d.id} className="draft">
+            <p className="crumbs">{d.kind === "agenda" ? "agenda semanal" : "post del evento"}</p>
+            <pre>{d.body}</pre>
+            <div className="row-actions">
+              {(["approved", "discarded"] as const).map((status) => (
+                <form key={status} action={decideDraft}>
+                  <input type="hidden" name="id" value={d.id} />
+                  <input type="hidden" name="status" value={status} />
+                  <button type="submit">{status === "approved" ? "aprobar" : "descartar"}</button>
+                </form>
+              ))}
+            </div>
+          </article>
+        ))}
+      </section>
+
       <section>
         <div className="label">
           <span>tokens de API y MCP</span>

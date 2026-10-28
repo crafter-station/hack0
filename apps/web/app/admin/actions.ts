@@ -7,7 +7,7 @@ import { requireAdmin } from "@/lib/admin/auth";
 import { createToken, revokeToken } from "@/lib/api/tokens";
 import { detectProviderImportTarget } from "@/lib/canonical/event-providers";
 import { getDb } from "@/lib/db/client";
-import { canonicalEvents, sources } from "@/lib/db/schema";
+import { canonicalEvents, contentDrafts, sources } from "@/lib/db/schema";
 import { syncSource } from "@/workflows/sync-source";
 
 export async function syncNow(formData: FormData) {
@@ -69,5 +69,15 @@ export async function issueToken(_prev: string | null, formData: FormData): Prom
 export async function revokeApiToken(formData: FormData) {
   await requireAdmin();
   await revokeToken(String(formData.get("id")));
+  revalidatePath("/admin");
+}
+
+export async function decideDraft(formData: FormData) {
+  await requireAdmin();
+  const status = formData.get("status") === "approved" ? "approved" : "discarded";
+  await getDb()
+    .update(contentDrafts)
+    .set({ status })
+    .where(eq(contentDrafts.id, String(formData.get("id"))));
   revalidatePath("/admin");
 }

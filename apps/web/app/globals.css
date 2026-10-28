@@ -432,3 +432,13 @@ footer {
 .token-once code {
   color: var(--acc);
 }
+.draft {
+  border-top: 1px solid var(--rule);
+  padding: 12px 0;
+}
+.draft pre {
+  font: inherit;
+  font-size: 13px;
+  white-space: pre-wrap;
+  margin: 8px 0 12px;
+}

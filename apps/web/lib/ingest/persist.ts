@@ -40,10 +40,10 @@ function eventRow(n: NormalizedEvent) {
 }
 
 /** The stored event this one already is: same key, same Luma id, or same name and start. */
-async function findExisting(db: Db, n: NormalizedEvent): Promise<string | null> {
+async function findExisting(db: Db, n: NormalizedEvent) {
   const lumaId = n.event.externalIds.lumaEventId;
   const [row] = await db
-    .select({ id: canonicalEvents.id })
+    .select()
     .from(canonicalEvents)
     .where(
       or(
@@ -53,20 +53,34 @@ async function findExisting(db: Db, n: NormalizedEvent): Promise<string | null> 
       ),
     )
     .limit(1);
-  return row?.id ?? null;
+  return row ?? null;
+}
+
+type EventFields = Omit<ReturnType<typeof eventRow>, "canonicalKey">;
+
+/**
+ * The source that created a row may rewrite it (a rename on Luma should show up).
+ * Any other source only fills fields that are still empty, so its URL never replaces the published one.
+ */
+function mergeFields(existing: typeof canonicalEvents.$inferSelect, incoming: EventFields, sameSource: boolean) {
+  const filled = Object.entries(incoming).filter(([key, value]) => {
+    if (value === null || value === undefined) return false;
+    if (sameSource) return true;
+    const current = existing[key as keyof typeof existing];
+    return current === null || (Array.isArray(current) && current.length === 0);
+  });
+  return Object.fromEntries(filled) as Partial<EventFields>;
 }
 
 async function upsertEvent(db: Db, n: NormalizedEvent): Promise<{ id: string; created: boolean }> {
-  const row = eventRow(n);
+  const { canonicalKey: _key, ...fields } = eventRow(n);
   const existing = await findExisting(db, n);
   if (existing) {
-    // The first sighting keeps its key, and a source that lacks a field never blanks what another source filled.
-    const { canonicalKey: _key, ...fields } = row;
-    const update = Object.fromEntries(Object.entries(fields).filter(([, value]) => value !== null && value !== undefined));
-    await db.update(canonicalEvents).set(update).where(eq(canonicalEvents.id, existing));
-    return { id: existing, created: false };
+    const update = mergeFields(existing, fields, existing.canonicalKey === n.canonicalKey);
+    if (Object.keys(update).length > 0) await db.update(canonicalEvents).set(update).where(eq(canonicalEvents.id, existing.id));
+    return { id: existing.id, created: false };
   }
-  const [created] = await db.insert(canonicalEvents).values(row).returning({ id: canonicalEvents.id });
+  const [created] = await db.insert(canonicalEvents).values(eventRow(n)).returning({ id: canonicalEvents.id });
   if (!created) throw new Error(`insert returned no row for ${n.canonicalKey}`);
   return { id: created.id, created: true };
 }

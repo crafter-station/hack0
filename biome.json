@@ -1,5 +1,10 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
-  "files": { "includes": ["packages/cli/src/**", "apps/web/app/**", "apps/web/lib/**", "apps/web/components/**"] },
-  "formatter": { "indentStyle": "space", "lineWidth": 140 }
+  "files": {
+    "includes": ["packages/cli/src/**", "apps/web/app/**", "apps/web/lib/**", "apps/web/components/**", "!apps/web/app/.well-known/**"]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "lineWidth": 140
+  }
 }

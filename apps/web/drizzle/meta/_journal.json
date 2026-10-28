@@ -15,6 +15,13 @@
       "when": 1793148542987,
       "tag": "0001_sad_mastermind",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793148753251,
+      "tag": "0002_worthless_forge",
+      "breakpoints": true
     }
   ]
 }

@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { canonicalEvents, eventSources } from "@/lib/db/schema";
 import { fetchCalendarEvents } from "../luma-public";
@@ -67,6 +67,20 @@ run("ingest into Postgres", () => {
     expect(await getDb().select().from(eventSources)).toHaveLength(4);
   });
 
+  test("a rename on the calendar that owns the event shows up", async () => {
+    const feed = FEEDS["cal-a"];
+    if (!feed) throw new Error("fixture missing");
+    const original = feed.future[1];
+    feed.future[1] = entry("evt-2", "Hackathon IA Perú 2026", "2026-12-01T14:00:00.000Z");
+    await sync("cal-a", "Cursor Lima, Peru");
+    feed.future[1] = original;
+    const [row] = await getDb()
+      .select({ name: canonicalEvents.name })
+      .from(canonicalEvents)
+      .where(eq(canonicalEvents.lumaEventId, "evt-2"));
+    expect(row?.name).toBe("Hackathon IA Perú 2026");
+  });
+
   test("routing enrichment infers the country from the city", async () => {
     const rows = await getDb().select({ name: canonicalEvents.name, country: canonicalEvents.countryCode }).from(canonicalEvents);
     expect(rows.every((r) => r.country === "PE")).toBe(true);
@@ -91,5 +105,7 @@ run("ingest into Postgres", () => {
     expect(await getDb().select().from(eventSources)).toHaveLength(5);
     const rows = await getDb().select({ name: canonicalEvents.name, lumaEventId: canonicalEvents.lumaEventId }).from(canonicalEvents);
     expect(rows.find((r) => r.name === "Cursor Meetup Lima")?.lumaEventId).toBe("evt-1");
+    const [lima] = await getDb().select({ url: canonicalEvents.url }).from(canonicalEvents).where(eq(canonicalEvents.lumaEventId, "evt-1"));
+    expect(lima?.url).toBe("https://luma.com/e-1");
   });
 });

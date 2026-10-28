@@ -1,6 +1,6 @@
 import { and, asc, count, desc, eq, gte, ilike, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
-import { apiTokens, canonicalEvents, eventSources, sources } from "@/lib/db/schema";
+import { apiTokens, canonicalEvents, contentDrafts, eventSources, sources } from "@/lib/db/schema";
 
 /** Every source with how many catalog events it contributes. */
 export async function sourcesOverview() {
@@ -53,4 +53,19 @@ export async function tokensOverview() {
     })
     .from(apiTokens)
     .orderBy(desc(apiTokens.createdAt));
+}
+
+export async function openDrafts() {
+  return getDb()
+    .select({
+      id: contentDrafts.id,
+      kind: contentDrafts.kind,
+      title: contentDrafts.title,
+      body: contentDrafts.body,
+      status: contentDrafts.status,
+    })
+    .from(contentDrafts)
+    .where(eq(contentDrafts.status, "draft"))
+    .orderBy(asc(contentDrafts.kind), desc(contentDrafts.updatedAt))
+    .limit(50);
 }

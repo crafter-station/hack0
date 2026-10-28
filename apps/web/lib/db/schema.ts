@@ -69,6 +69,10 @@ export const canonicalEvents = pgTable(
     enrichedAt: timestamp("enriched_at", { withTimezone: true }),
     /** Picked for hack0: gets a page, the Luma calendar and the newsletter. */
     curated: boolean("curated").notNull().default(false),
+    lumaSubmissionId: text("luma_submission_id"),
+    lumaSubmittedAt: timestamp("luma_submitted_at", { withTimezone: true }),
+    /** Why the event could not go to the hack0 Luma calendar, e.g. no end time. */
+    lumaSubmitError: text("luma_submit_error"),
     ...timestamps,
   },
   (t) => [
@@ -120,4 +124,23 @@ export const apiTokens = pgTable(
     ...timestamps,
   },
   (t) => [uniqueIndex("api_tokens_token_hash_key").on(t.tokenHash)],
+);
+
+/** Generated copy waiting for a person: a weekly agenda or one post per event. Nothing here is sent automatically. */
+export const contentDrafts = pgTable(
+  "content_drafts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    kind: text("kind", { enum: ["agenda", "event_post"] }).notNull(),
+    /** Stable key so a rerun updates the draft instead of adding another, e.g. agenda:2026-11-02. */
+    key: text("key").notNull(),
+    title: text("title").notNull(),
+    body: text("body").notNull(),
+    eventIds: uuid("event_ids").array().notNull().default([]),
+    status: text("status", { enum: ["draft", "approved", "discarded"] })
+      .notNull()
+      .default("draft"),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex("content_drafts_key_key").on(t.key)],
 );
