@@ -72,6 +72,7 @@ export function toEvent(entry: Entry): CalendarEvent | null {
 
 /** Regions whose events cluster in one metro area. */
 const REGION_METROS: Record<string, string> = {
+  Lima: "Lima",
   "La Libertad": "Trujillo",
   Lambayeque: "Chiclayo",
   Arequipa: "Arequipa",
@@ -140,8 +141,12 @@ async function listEvents(params: { after?: string; limit: number }): Promise<Ca
   return events.slice(0, params.limit);
 }
 
-/** Every public event the calendar has ever listed, oldest first. */
-export function allEvents(limit = 1000) {
+/** Every public event, oldest first: the aggregator catalog when a database is set, else the hack0 Luma calendar. */
+export async function allEvents(limit = 1000) {
+  if (process.env.DATABASE_URL) {
+    const { latamEvents } = await import("./catalog-db");
+    return latamEvents();
+  }
   return listEvents({ limit });
 }
 
@@ -170,7 +175,11 @@ export function placeLabel(e: CalendarEvent) {
 }
 
 /** Upcoming approved events of the hack0 Luma calendar, cached for an hour. */
-export function upcomingEvents(limit = 60) {
+export async function upcomingEvents(limit = 60) {
+  if (process.env.DATABASE_URL) {
+    const { latamEvents } = await import("./catalog-db");
+    return (await latamEvents({ after: new Date() })).slice(0, limit);
+  }
   return listEvents({ after: new Date().toISOString(), limit });
 }
 
