@@ -6,27 +6,29 @@ import { pastPage } from "@/lib/hub-params";
 
 export const revalidate = 3600;
 
-/** Rendered on first request and cached; the catalog is too large to prebuild every hub. */
+/** Rendered on first request and cached; the catalog is too large to prebuild every hub. Past pages live at /<hub>/2, not in a query string, so ISR can cache them. */
 export function generateStaticParams() {
   return [];
 }
 
-type Props = { params: Promise<{ tag: string }>; searchParams: Promise<{ pagina?: string }> };
+type Props = { params: Promise<{ tag: string; pagina?: string[] }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { tag } = await params;
+  const { tag, pagina } = await params;
+  // Each page of a paginated hub is its own canonical, as Google asks for paginated series.
+  const path = pagina?.[0] ? `/tema/${tag}/${pagina[0]}` : `/tema/${tag}`;
   const hub = await hubEvents("tema", tag);
   if (!hub?.name) return {};
   return {
     title: `Eventos de ${hub.name} en LATAM | hack0`,
     description: `Meetups, hackathones y workshops sobre ${hub.name} en Latinoamérica, con fechas, lugares y registro.`,
-    alternates: { canonical: `/tema/${tag}` },
+    alternates: { canonical: path },
   };
 }
 
-export default async function Page({ params, searchParams }: Props) {
-  const { tag } = await params;
-  const page = pastPage(await searchParams);
+export default async function Page({ params }: Props) {
+  const { tag, pagina } = await params;
+  const page = pastPage({ pagina: pagina?.[0] });
   const [hub, links] = await Promise.all([hubEvents("tema", tag, page), hubIndex("tema")]);
   if (!hub?.name) notFound();
   return (

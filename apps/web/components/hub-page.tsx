@@ -5,6 +5,11 @@ import type { CalendarEvent } from "@/lib/calendar";
 import { ARCHIVE_PAGE, type HubLink } from "@/lib/catalog";
 import { SITE } from "@/lib/site";
 
+/** Hubs page as /ciudad/lima/2 so ISR can cache each page; the whole-catalog archive keeps ?pagina=2. */
+function pageHref(path: string, n: number) {
+  return path === "/eventos" ? `${path}?pagina=${n}` : `${path}/${n}`;
+}
+
 type Props = {
   title: string;
   intro: string;
@@ -62,7 +67,7 @@ export function HubPage({ title, intro, path, upcoming, past, pastTotal, page, l
           {pages > 1 && (
             <p className="chips">
               {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
-                <a key={n} href={n === 1 ? path : `${path}?pagina=${n}`} aria-current={n === page + 1 ? "page" : undefined}>
+                <a key={n} href={n === 1 ? path : pageHref(path, n)} aria-current={n === page + 1 ? "page" : undefined}>
                   {n}
                 </a>
               ))}
