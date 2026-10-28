@@ -11,5 +11,9 @@
       }
     ]
   },
-  "layers": []
+  "layers": [],
+  "entries": [
+    "apps/web/lib/db/schema.ts",
+    "apps/web/drizzle.config.ts"
+  ]
 }

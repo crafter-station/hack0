@@ -7,11 +7,15 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
     "cobe": "2.0.1",
+    "drizzle-orm": "^0.45.4",
+    "franc-min": "^6.2.0",
     "next": "^16.4.3",
     "postgres": "^3.4.9",
     "react": "^19.3.1",
@@ -22,6 +26,7 @@
     "@types/bun": "^1.4.4",
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
+    "drizzle-kit": "^0.31.11",
     "typescript": "^7.0.2"
   }
 }
