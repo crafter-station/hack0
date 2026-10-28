@@ -1340,7 +1340,7 @@ button.btn,
   color: var(--mute);
   font-size: 13px;
 }
-.tile {
+.ww-tile {
   width: 44px;
   height: 44px;
   display: grid;
@@ -1348,13 +1348,13 @@ button.btn,
   border: 1.5px solid var(--rule);
   color: var(--tint-ink);
 }
-.tile.cal {
+.ww-tile.cal {
   grid-template-rows: 16px 1fr;
   place-items: stretch;
   text-align: center;
   overflow: hidden;
 }
-.tile.cal b {
+.ww-tile.cal b {
   font-size: 10px;
   line-height: 16px;
   text-transform: uppercase;
@@ -1362,7 +1362,7 @@ button.btn,
   background: var(--tint);
   color: var(--tint-on);
 }
-.tile.cal span {
+.ww-tile.cal span {
   font-weight: 800;
   font-size: 17px;
   line-height: 24px;
