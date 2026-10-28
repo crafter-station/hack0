@@ -12,6 +12,7 @@
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.9.20",
     "@modelcontextprotocol/server": "^2",
     "@neondatabase/serverless": "^1.2.0",
     "cobe": "2.0.1",
