@@ -1,9 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { THEME_COLORS } from "@/lib/theme";
 
 const MODES = ["system", "light", "dark"] as const;
 type Mode = (typeof MODES)[number];
+
+/** Points every theme-color tag at the forced theme, or back at its own media query for "system". */
+function syncThemeColor(mode: Mode) {
+  for (const meta of document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
+    const scheme = meta.media.includes("dark") ? "dark" : "light";
+    meta.content = mode === "system" ? THEME_COLORS[scheme] : THEME_COLORS[mode];
+  }
+}
 
 /** Sets `data-theme` on <html>; "system" removes it so prefers-color-scheme decides. */
 export function ThemeToggle() {
@@ -23,6 +32,7 @@ export function ThemeToggle() {
     const root = document.documentElement;
     if (next === "system") delete root.dataset.theme;
     else root.dataset.theme = next;
+    syncThemeColor(next);
     try {
       if (next === "system") localStorage.removeItem("theme");
       else localStorage.setItem("theme", next);

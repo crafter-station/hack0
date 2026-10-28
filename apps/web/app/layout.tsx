@@ -1,13 +1,27 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { shadcn } from "@clerk/ui/themes";
+import type { Viewport } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import "flag-icons/css/flag-icons.min.css";
+import { THEME_COLORS } from "@/lib/theme";
 import "./globals.css";
 
 const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["500", "700", "800"], variable: "--font-mono" });
 
 /** Applies the saved theme before paint so there is no flash. */
-const THEME_SCRIPT = `try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
+const THEME_SCRIPT = `try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark"){document.documentElement.dataset.theme=t;document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.content=t==="dark"?"${THEME_COLORS.dark}":"${THEME_COLORS.light}"})}}catch(e){}`;
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  interactiveWidget: "resizes-content",
+  colorScheme: "light dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: THEME_COLORS.light },
+    { media: "(prefers-color-scheme: dark)", color: THEME_COLORS.dark },
+  ],
+};
 
 export const metadata = {
   metadataBase: new URL("https://hack0.dev"),
