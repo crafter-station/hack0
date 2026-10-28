@@ -24,10 +24,10 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
 
       <section>
         <div className="label">
-          <span>agregar calendario de Luma</span>
+          <span>agregar fuente: calendario de Luma, grupo de Meetup u organizador de Eventbrite</span>
         </div>
         <form action={addSource} className="admin-form">
-          <input name="url" placeholder="https://luma.com/..." required />
+          <input name="url" placeholder="https://luma.com/... · meetup.com/... · eventbrite.com/o/..." required />
           <input name="name" placeholder="nombre (opcional)" />
           <button className="btn primary" type="submit">
             Agregar

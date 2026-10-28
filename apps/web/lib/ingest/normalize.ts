@@ -3,6 +3,7 @@ import { canonicalizeEvents, canonicalKeyFor, eventIdentityFingerprint, sourceKe
 import { enrichEventForRouting } from "@/lib/canonical/event-routing-enrichment";
 import { classifyEventTags } from "@/lib/canonical/event-tagging";
 import type { PublicLumaEvent } from "./luma-public";
+import type { ProviderEvent } from "./providers";
 
 type SourceRef = { id: string; name: string | null; calendarId: string | null };
 
@@ -36,6 +37,28 @@ export function lumaInputs(events: PublicLumaEvent[], source: SourceRef, now = n
         ]
       : [],
   );
+}
+
+/** Meetup and Eventbrite sightings, already in the canonical event shape. */
+export function providerInputs(
+  events: ProviderEvent[],
+  provider: "meetup" | "eventbrite",
+  source: SourceRef,
+  now = new Date().toISOString(),
+): SourceEventInput[] {
+  return events.map((e) => ({
+    sourceType: provider === "meetup" ? ("meetup_public" as const) : ("eventbrite_public" as const),
+    provider,
+    calendarRowId: source.id,
+    calendarId: source.id,
+    calendarName: source.name,
+    externalEventId: e.externalId,
+    sourceUrl: e.event.url,
+    hostName: e.hostName,
+    lastSyncedAt: now,
+    payload: e.payload,
+    event: { ...e.event, calendarId: source.id, calendarName: source.name ?? undefined },
+  }));
 }
 
 export type NormalizedEvent = {

@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { canonicalEvents, eventSources } from "@/lib/db/schema";
 import { fetchCalendarEvents } from "../luma-public";
-import { lumaInputs, normalizeBatch } from "../normalize";
+import { lumaInputs, normalizeBatch, providerInputs } from "../normalize";
 import { persistBatch } from "../persist";
 
 // Runs against a throwaway Postgres: TEST_DATABASE_URL=postgres://localhost/hack0_test bun test
@@ -70,5 +70,24 @@ run("ingest into Postgres", () => {
   test("routing enrichment infers the country from the city", async () => {
     const rows = await getDb().select({ name: canonicalEvents.name, country: canonicalEvents.countryCode }).from(canonicalEvents);
     expect(rows.every((r) => r.country === "PE")).toBe(true);
+  });
+
+  test("the same event on Eventbrite joins the Luma row by name and start", async () => {
+    const listing = {
+      externalId: "998877",
+      hostName: "Cursor Lima",
+      payload: {},
+      event: {
+        id: "998877",
+        name: "Cursor Meetup Lima",
+        url: "https://www.eventbrite.com/e/cursor-meetup-lima-998877",
+        coverUrl: null,
+        startAt: "2026-11-05T23:00:00.000Z",
+      },
+    };
+    const batch = normalizeBatch(providerInputs([listing], "eventbrite", { id: "org-1", name: "Cursor Lima", calendarId: null }));
+    expect(await persistBatch(getDb(), batch, null)).toEqual({ created: 0, updated: 1 });
+    expect(await getDb().select().from(canonicalEvents)).toHaveLength(3);
+    expect(await getDb().select().from(eventSources)).toHaveLength(5);
   });
 });

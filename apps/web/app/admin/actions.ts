@@ -33,17 +33,17 @@ export async function addSource(formData: FormData) {
   await requireAdmin();
   const url = String(formData.get("url") ?? "").trim();
   const target = url ? detectProviderImportTarget(url) : null;
-  // Only Luma calendars sync today; other providers arrive with their fetchers.
-  if (target?.provider !== "luma" || target.kind !== "calendar") return;
+  // Single events and Luma profiles need their own fetchers; calendars, groups and organizers sync.
+  if (!target || target.kind === "event" || target.kind === "profile") return;
   await getDb()
     .insert(sources)
     .values({
-      provider: "luma",
-      kind: "calendar",
+      provider: target.provider,
+      kind: target.kind,
       providerSourceId: target.providerSourceId,
       url: target.normalizedUrl,
       name: String(formData.get("name") ?? "").trim() || null,
-      lumaCalendarId: url.match(/cal-[A-Za-z0-9]+/)?.[0] ?? null,
+      lumaCalendarId: target.provider === "luma" ? (url.match(/cal-[A-Za-z0-9]+/)?.[0] ?? null) : null,
     })
     .onConflictDoNothing({ target: sources.providerSourceId });
   revalidatePath("/admin");
