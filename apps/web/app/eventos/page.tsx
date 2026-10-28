@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { EmptyState } from "@/components/empty-state";
 import { EventFilters } from "@/components/event-filters";
 import { EventList } from "@/components/event-list";
 import { Shell } from "@/components/shell";
@@ -38,9 +39,26 @@ export default async function Eventos({ searchParams }: Props) {
         {result.events.length > 0 ? (
           <EventList events={result.events} />
         ) : (
-          <p className="empty">
-            Nada con estos filtros. <a href={filterHref({ cuando: filters.cuando, page: 0 }, {})}>Ver todos</a>
-          </p>
+          <EmptyState
+            art={filters.q ? "search" : "calendar"}
+            title={filters.q ? `Nada con “${filters.q}”` : "Ningún evento con estos filtros"}
+            action={
+              <>
+                <a className="btn" href={filterHref({ cuando: filters.cuando, page: 0 }, {})}>
+                  Quitar filtros
+                </a>
+                {filters.cuando === "proximos" && (
+                  <a className="btn" href={filterHref(filters, { cuando: "pasados" })}>
+                    Buscar en pasados
+                  </a>
+                )}
+              </>
+            }
+          >
+            {filters.cuando === "proximos"
+              ? "Puede que todavía no haya fechas nuevas así. Mira los realizados o amplía la búsqueda."
+              : "Prueba con menos filtros."}
+          </EmptyState>
         )}
         {pages > 1 && (
           <nav className="chips" aria-label="Páginas">

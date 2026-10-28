@@ -1,9 +1,10 @@
+import { EmptyState } from "@/components/empty-state";
 import { EventList } from "@/components/event-list";
 import { JsonLd } from "@/components/json-ld";
 import { Shell } from "@/components/shell";
 import type { CalendarEvent } from "@/lib/calendar";
 import { ARCHIVE_PAGE, type HubLink } from "@/lib/catalog";
-import { SITE } from "@/lib/site";
+import { LUMA, SITE } from "@/lib/site";
 
 /** Hubs page as /ciudad/lima/2 so ISR can cache each page; the whole-catalog archive keeps ?pagina=2. */
 function pageHref(path: string, n: number) {
@@ -54,7 +55,17 @@ export function HubPage({ title, intro, path, upcoming, past, pastTotal, page, l
         {upcoming.length > 0 ? (
           <EventList events={upcoming} />
         ) : (
-          <p className="empty">No hay fechas nuevas todavía. Suscríbete al calendario para enterarte primero.</p>
+          <EmptyState
+            art="calendar"
+            title="No hay fechas nuevas todavía"
+            action={
+              <a className="btn primary" href={LUMA}>
+                Suscribirme al calendario
+              </a>
+            }
+          >
+            Abajo están los que ya pasaron. Suscríbete y te avisamos cuando salga el próximo.
+          </EmptyState>
         )}
       </section>
       {past.length > 0 && (
