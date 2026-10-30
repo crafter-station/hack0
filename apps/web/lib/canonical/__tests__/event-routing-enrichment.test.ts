@@ -132,4 +132,25 @@ describe("event routing enrichment", () => {
     expect(enrichment.languageCode).toBe("es");
     expect(enrichment.languages).toEqual(["es"]);
   });
+  test("falls back to the timezone when no text names a country", () => {
+    const enrichment = enrichEventForRouting({
+      event: { name: "Aprendizajes en una edtech", timezone: "America/Lima", enrichment: {} },
+    });
+    expect(enrichment.countryCode).toBe("PE");
+    expect(enrichment.sources?.countryCode).toBe("event_timezone");
+  });
+
+  test("a named place beats the timezone", () => {
+    const enrichment = enrichEventForRouting({
+      event: { name: "Cursor Meetup Barranquilla", timezone: "America/Lima", enrichment: {} },
+    });
+    expect(enrichment.countryCode).toBe("CO");
+  });
+
+  test("zones outside LATAM add no country", () => {
+    const enrichment = enrichEventForRouting({
+      event: { name: "Cursor Meetup Vienna", city: "Wien", timezone: "Europe/Vienna", enrichment: {} },
+    });
+    expect(enrichment.countryCode).toBeNull();
+  });
 });
