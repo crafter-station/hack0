@@ -10,7 +10,7 @@ import { Markdown } from "@/components/markdown";
 import { ShareButton } from "@/components/share-button";
 import { Shell } from "@/components/shell";
 import { cityKey, placeLabel, slugify } from "@/lib/calendar";
-import { findEvent, indexable, relatedEvents } from "@/lib/catalog";
+import { eventCommunities, findEvent, indexable, relatedEvents } from "@/lib/catalog";
 import { bodyOf, eventWhen, googleCalendarUrl, providerName } from "@/lib/event-view";
 import { optimizable } from "@/lib/images";
 import { eventJsonLd, formatDate, SITE } from "@/lib/site";
@@ -73,14 +73,14 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   const past = new Date(e.endAt ?? e.startAt).getTime() < Date.now();
   const city = cityKey(e);
   const provider = providerName(e.url);
-  const [related, tint] = await Promise.all([relatedEvents(e), eventTint(e.url, e.coverUrl)]);
+  const [related, tint, communities] = await Promise.all([relatedEvents(e), eventTint(e.url, e.coverUrl), eventCommunities(e.slug)]);
   const body = bodyOf(e.name, description);
   const place = e.online ? "Online" : (e.address ?? e.city ?? "Lugar por confirmar");
   const cta = past ? `Ver en ${provider}` : `Registrarme en ${provider}`;
   const style = tint ? ({ "--tint": tint } as CSSProperties) : undefined;
   return (
     <Shell>
-      <JsonLd data={eventJsonLd(e, description)} />
+      <JsonLd data={eventJsonLd(e, description, communities)} />
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -175,6 +175,16 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                 </p>
               )}
             </div>
+            {communities.length > 0 && (
+              <p className="hosts">
+                <span>Organiza</span>
+                {communities.map((c) => (
+                  <Link key={c.slug} href={`/comunidades/${c.slug}`}>
+                    {c.name}
+                  </Link>
+                ))}
+              </p>
+            )}
             {e.tags.length > 0 && (
               <p className="topics">
                 {e.tags.map((t) => (

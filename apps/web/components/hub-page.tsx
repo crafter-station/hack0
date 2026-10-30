@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { EventList } from "@/components/event-list";
 import { JsonLd } from "@/components/json-ld";
@@ -23,9 +24,24 @@ type Props = {
   links: HubLink[];
   linkPath: string;
   tagLinks?: HubLink[];
+  crumb?: { href: string; label: string };
+  action?: ReactNode;
 };
 
-export function HubPage({ title, intro, path, upcoming, past, pastTotal, page, links, linkPath, tagLinks = [] }: Props) {
+export function HubPage({
+  title,
+  intro,
+  path,
+  upcoming,
+  past,
+  pastTotal,
+  page,
+  links,
+  linkPath,
+  tagLinks = [],
+  crumb = { href: "/eventos", label: "eventos" },
+  action,
+}: Props) {
   const pages = Math.ceil(pastTotal / ARCHIVE_PAGE);
   return (
     <Shell>
@@ -43,10 +59,11 @@ export function HubPage({ title, intro, path, upcoming, past, pastTotal, page, l
       />
       <div className="hero-copy hub">
         <p className="crumbs">
-          <Link href="/eventos">eventos</Link>
+          <Link href={crumb.href}>{crumb.label}</Link>
         </p>
         <h1>{title}</h1>
         <p>{intro}</p>
+        {action && <div className="actions">{action}</div>}
       </div>
       <section>
         <div className="label">

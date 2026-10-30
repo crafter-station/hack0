@@ -13,7 +13,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </Link>
         <nav>
           <Link href="/eventos">eventos</Link>
-          <Link href="/#organizadores">organizadores</Link>
+          <Link href="/comunidades">comunidades</Link>
           <a href={LUMA}>luma</a>
           <AccountNav />
           <ThemeToggle />
@@ -25,7 +25,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           hack0 by <a href="https://crafter.run">Crafter Station</a>
         </span>
         <span>
-          <Link href="/eventos">eventos</Link> · <Link href="/brand">brand</Link> ·{" "}
+          <Link href="/eventos">eventos</Link> · <Link href="/comunidades">comunidades</Link> · <Link href="/brand">brand</Link> ·{" "}
           <a href="https://github.com/crafter-station/hack0">github</a>
         </span>
       </footer>

@@ -32,7 +32,7 @@ export default async function Home() {
         </Link>
         <nav>
           <Link href="/eventos">eventos</Link>
-          <a href="#organizadores">organizadores</a>
+          <Link href="/comunidades">comunidades</Link>
           <a href={LUMA}>luma</a>
           <AccountNav />
           <ThemeToggle />
@@ -108,7 +108,7 @@ export default async function Home() {
           hack0 by <a href="https://crafter.run">Crafter Station</a>
         </span>
         <span>
-          <Link href="/eventos">eventos</Link> · <Link href="/brand">brand</Link> ·{" "}
+          <Link href="/eventos">eventos</Link> · <Link href="/comunidades">comunidades</Link> · <Link href="/brand">brand</Link> ·{" "}
           <a href="https://github.com/crafter-station/hack0">github</a>
         </span>
       </footer>

@@ -11,7 +11,7 @@ export function formatDate(e: CalendarEvent) {
 }
 
 /** JSON-LD for an event, per schema.org/Event. */
-export function eventJsonLd(e: CalendarEvent, description?: string | null) {
+export function eventJsonLd(e: CalendarEvent, description?: string | null, hosts: { name: string; slug: string }[] = []) {
   const place = e.online
     ? { "@type": "VirtualLocation", url: e.url }
     : {
@@ -37,6 +37,8 @@ export function eventJsonLd(e: CalendarEvent, description?: string | null) {
     description: description ? description.replace(/[*_#>`[\]]/g, "").slice(0, 300) : undefined,
     url: `${SITE}/eventos/${e.slug}`,
     offers: { "@type": "Offer", url: e.url, availability: "https://schema.org/InStock" },
-    organizer: { "@type": "Organization", name: "hack0", url: SITE },
+    organizer: hosts.length
+      ? hosts.map((h) => ({ "@type": "Organization", name: h.name, url: `${SITE}/comunidades/${h.slug}` }))
+      : { "@type": "Organization", name: "hack0", url: SITE },
   };
 }

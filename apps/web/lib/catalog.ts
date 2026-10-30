@@ -1,11 +1,14 @@
 import { and, asc, count, desc, eq, like, ne, or, type SQL, sql } from "drizzle-orm";
+import { cache } from "react";
 import { allEvents, type CalendarEvent, cityKey, eventDescription, slugify } from "@/lib/calendar";
 import { rowToEvent } from "@/lib/catalog-db";
 import { getDb } from "@/lib/db/client";
-import { canonicalEvents } from "@/lib/db/schema";
+import { canonicalEvents, eventSources, sources } from "@/lib/db/schema";
+import { LUMA } from "@/lib/site";
 
 export type HubLink = { slug: string; name: string; count: number };
 type HubKind = "ciudad" | "tema";
+export type Community = HubLink & { id: string; url: string; upcoming: number; metros: string[] };
 type EventPage = { event: CalendarEvent; description: string | null; curated: boolean };
 
 /** Page size for the archive's past events, matching the API's default page. */
@@ -207,4 +210,62 @@ export async function mappedEvents(): Promise<CalendarEvent[]> {
     .from(canonicalEvents)
     .where(and(live, sql`${canonicalEvents.latitude} is not null`));
   return rows.map(rowToEvent);
+}
+
+// ---------- communities ----------
+
+/** Listed by the source: a calendar, group or profile that organizes events. */
+const fromSource = (sourceId: string) =>
+  sql`exists (select 1 from ${eventSources} where ${eventSources.canonicalEventId} = ${canonicalEvents.id} and ${eventSources.sourceId} = ${sourceId})`;
+
+/** Every source that organizes listed events, busiest first. The hack0 calendar is the aggregator itself, not a community. */
+export const communityIndex = cache(async (): Promise<Community[]> => {
+  if (!hasDatabase()) return [];
+  const upcoming = sql`${ends} >= ${nowTs()}`;
+  const rows = await getDb()
+    .select({
+      id: sources.id,
+      name: sources.name,
+      url: sources.url,
+      count: sql<number>`count(distinct ${canonicalEvents.id})::int`,
+      upcoming: sql<number>`(count(distinct ${canonicalEvents.id}) filter (where ${upcoming}))::int`,
+      metros: sql<string[]>`array_remove(array_agg(${canonicalEvents.metro} order by ${canonicalEvents.startAt} desc), null)`,
+    })
+    .from(sources)
+    .innerJoin(eventSources, eq(eventSources.sourceId, sources.id))
+    .innerJoin(canonicalEvents, and(eq(canonicalEvents.id, eventSources.canonicalEventId), live))
+    .where(and(ne(sources.kind, "event"), ne(sources.url, LUMA)))
+    .groupBy(sources.id);
+  const bySlug = new Map<string, Community>();
+  for (const r of rows) {
+    if (!r.name) continue;
+    // Most frequent metros first, each once.
+    const freq = new Map<string, number>();
+    // "Online" is not a city; online-only communities group apart on /comunidades.
+    for (const m of r.metros) if (m.toLowerCase() !== "online") freq.set(m, (freq.get(m) ?? 0) + 1);
+    const metros = [...freq.entries()].sort((a, b) => b[1] - a[1]).map(([m]) => m);
+    const base = slugify(r.name);
+    // Two sources with the same name keep separate pages.
+    const slug = bySlug.has(base) ? `${base}-${r.id.slice(0, 6)}` : base;
+    bySlug.set(slug, { slug, id: r.id, name: r.name, url: r.url, count: r.count, upcoming: r.upcoming, metros });
+  }
+  return [...bySlug.values()].sort((a, b) => b.upcoming - a.upcoming || b.count - a.count);
+});
+
+export async function communityEvents(slug: string, pastPage = 0) {
+  const community = (await communityIndex()).find((c) => c.slug === slug);
+  if (!community) return null;
+  return { community, ...(await dbHubEvents(and(live, fromSource(community.id)) as SQL, pastPage)) };
+}
+
+/** The communities that list an event, for its page. */
+export async function eventCommunities(slug: string): Promise<Community[]> {
+  if (!hasDatabase()) return [];
+  const rows = await getDb()
+    .selectDistinct({ id: eventSources.sourceId })
+    .from(eventSources)
+    .innerJoin(canonicalEvents, eq(canonicalEvents.id, eventSources.canonicalEventId))
+    .where(eq(canonicalEvents.slug, slug));
+  const ids = new Set(rows.map((r) => r.id));
+  return (await communityIndex()).filter((c) => ids.has(c.id));
 }
