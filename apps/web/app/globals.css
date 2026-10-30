@@ -865,6 +865,21 @@ footer {
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
   padding: 4px;
 }
+.menu-key {
+  display: grid;
+  gap: 4px;
+  padding: 6px 4px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.menu-key input {
+  font: inherit;
+  font-size: 16px;
+  padding: 6px 8px;
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: inherit;
+}
 .menu-panel button,
 .menu-panel a {
   font: inherit;
