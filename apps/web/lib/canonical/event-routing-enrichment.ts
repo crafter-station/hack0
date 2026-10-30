@@ -120,9 +120,51 @@ function normalizedLanguageCode(value: string | null | undefined): string | null
   return /^[a-z]{2,3}(?:-[a-z]{2})?$/.test(normalized) ? normalized : null;
 }
 
+/** IANA zones used by a single LATAM country. A zone is a weak signal, so it only applies when nothing names a country. */
+const ZONE_COUNTRIES: Record<string, string> = {
+  "America/Lima": "PE",
+  "America/Bogota": "CO",
+  "America/Mexico_City": "MX",
+  "America/Monterrey": "MX",
+  "America/Merida": "MX",
+  "America/Cancun": "MX",
+  "America/Chihuahua": "MX",
+  "America/Hermosillo": "MX",
+  "America/Mazatlan": "MX",
+  "America/Tijuana": "MX",
+  "America/Santiago": "CL",
+  "America/Buenos_Aires": "AR",
+  "America/Sao_Paulo": "BR",
+  "America/Fortaleza": "BR",
+  "America/Recife": "BR",
+  "America/Bahia": "BR",
+  "America/Belem": "BR",
+  "America/Manaus": "BR",
+  "America/Caracas": "VE",
+  "America/Guayaquil": "EC",
+  "America/La_Paz": "BO",
+  "America/Asuncion": "PY",
+  "America/Montevideo": "UY",
+  "America/Guatemala": "GT",
+  "America/El_Salvador": "SV",
+  "America/Tegucigalpa": "HN",
+  "America/Managua": "NI",
+  "America/Costa_Rica": "CR",
+  "America/Panama": "PA",
+  "America/Santo_Domingo": "DO",
+  "America/Havana": "CU",
+  "America/Puerto_Rico": "PR",
+};
+
+export function countryFromTimezone(zone: string | null | undefined): string | null {
+  if (!zone) return null;
+  if (zone.startsWith("America/Argentina/")) return "AR";
+  return ZONE_COUNTRIES[zone] ?? null;
+}
+
 type Signals = { sources: Record<string, string>; confidences: number[] };
 type RoutingInput = {
-  event: Pick<CanonicalBaseEvent, "name" | "description" | "city" | "enrichment">;
+  event: Pick<CanonicalBaseEvent, "name" | "description" | "city" | "enrichment" | "timezone">;
   calendarNames?: string[];
 };
 
@@ -146,7 +188,12 @@ function routeCountry(input: RoutingInput, existing: EventEnrichment, calendarTe
     signals.confidences.push(confidence);
     return code;
   }
-  return null;
+  const zoned = countryFromTimezone(input.event.timezone);
+  if (zoned) {
+    signals.sources.countryCode = "event_timezone";
+    signals.confidences.push(0.4);
+  }
+  return zoned;
 }
 
 function routeLanguage(input: RoutingInput, existing: EventEnrichment, signals: Signals): string | null {
