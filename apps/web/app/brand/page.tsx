@@ -8,6 +8,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "hack0 · brand",
   description: "Logo, colores, tipografía y assets de hack0.",
+  alternates: { canonical: "/brand" },
 };
 
 const COLORS = [
