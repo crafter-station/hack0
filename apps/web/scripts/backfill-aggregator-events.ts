@@ -3,7 +3,7 @@ import { getDb } from "@/lib/db/client";
 import { sources } from "@/lib/db/schema";
 import type { PublicLumaEvent } from "@/lib/ingest/luma-public";
 import { lumaInputs, normalizeBatch } from "@/lib/ingest/normalize";
-import { persistBatch } from "@/lib/ingest/persist";
+import { persistBatch, refreshListing } from "@/lib/ingest/persist";
 
 /**
  * Backfills Luma history from Event Aggregator's database, which api.lu.ma's rate limit keeps the sync from reading.
@@ -51,6 +51,8 @@ for (const { source, events } of groups.values()) {
   }
   console.log(`${batch.length.toString().padStart(5)}  ${source.name ?? source.url}`);
 }
+// New rows start unlisted; the sync recomputes listing after each run, and so does the backfill.
+if (write) await refreshListing(db);
 const mapped = [...groups.values()].reduce((n, g) => n + g.events.length, 0);
 console.log(`\n${groups.size} sources, ${mapped} sightings mapped; ${[...unmatched.values()].reduce((a, b) => a + b, 0)} in ${unmatched.size} calendars with no hack0 source`);
 for (const [k, n] of unmatched) console.log(`  unmatched ${n}  ${k}`);
