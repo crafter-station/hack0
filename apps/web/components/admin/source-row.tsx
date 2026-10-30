@@ -1,4 +1,4 @@
-import { syncNow, toggleScope, toggleSync } from "@/app/admin/actions";
+import { setSourceKey, syncNow, toggleScope, toggleSync } from "@/app/admin/actions";
 import { RowMenu } from "@/components/admin/row-menu";
 import { errorKind, fullDate, humanError, relative, syncTone } from "@/lib/admin/format";
 
@@ -81,6 +81,20 @@ export function SourceRow({ s }: { s: Source }) {
             <input type="hidden" name="enabled" value={String(s.syncEnabled)} />
             <button type="submit">{s.syncEnabled ? "Pausar" : "Reanudar"}</button>
           </form>
+          {s.provider === "luma" && (
+            <form action={setSourceKey} className="menu-key">
+              <input type="hidden" name="id" value={s.id} />
+              <input
+                type="password"
+                name="apiKey"
+                placeholder={s.keyed ? "Reemplazar API key" : "API key de Luma"}
+                autoComplete="off"
+                required
+                aria-label="API key de Luma"
+              />
+              <button type="submit">{s.keyed ? "Cambiar y releer" : "Conectar y traer historia"}</button>
+            </form>
+          )}
           <a href={s.url} target="_blank" rel="noreferrer">
             Abrir en {PROVIDER[s.provider] ?? "origen"} ↗
           </a>

@@ -76,7 +76,11 @@ export default async function Communities() {
                     <b>{c.name}</b>
                     <small>{c.metros.slice(0, 3).join(" · ") || "online"}</small>
                     <span>
-                      {c.upcoming > 0 && <em>{c.upcoming} {c.upcoming === 1 ? "próximo" : "próximos"} · </em>}
+                      {c.upcoming > 0 && (
+                        <em>
+                          {c.upcoming} {c.upcoming === 1 ? "próximo" : "próximos"} ·{" "}
+                        </em>
+                      )}
                       {c.count} {c.count === 1 ? "evento" : "eventos"}
                     </span>
                   </Link>

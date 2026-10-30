@@ -66,6 +66,21 @@ export async function addSource(formData: FormData) {
   revalidatePath("/admin", "layout");
 }
 
+/** Connects a Luma calendar through its own API key and rereads it from scratch, history included. */
+export async function setSourceKey(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const apiKey = String(formData.get("apiKey") ?? "").trim();
+  if (!apiKey) return;
+  const claimed = await getDb()
+    .update(sources)
+    .set({ apiKeyCiphertext: encrypt(apiKey), lastSyncedAt: null, syncError: null, nextSyncAt: null, syncStatus: "queued" })
+    .where(and(eq(sources.id, id), eq(sources.provider, "luma"), notInArray(sources.syncStatus, ["queued", "running"])))
+    .returning({ id: sources.id });
+  if (claimed.length > 0) await start(syncSource, [id]);
+  revalidatePath("/admin", "layout");
+}
+
 export async function toggleScope(formData: FormData) {
   await requireAdmin();
   const latam = formData.get("scope") === "latam";
