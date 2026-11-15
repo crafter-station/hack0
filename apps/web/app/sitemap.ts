@@ -14,6 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...communities.map((c) => ({ url: `${SITE}/comunidades/${c.slug}`, changeFrequency: "weekly" as const, priority: 0.7 })),
     ...tags.map((h) => ({ url: `${SITE}/tema/${h.slug}`, changeFrequency: "weekly" as const, priority: 0.6 })),
     ...events.map((e) => ({ url: `${SITE}/eventos/${e.slug}`, lastModified: e.lastModified, priority: 0.8 })),
+    { url: `${SITE}/taste-hacking`, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE}/brand`, priority: 0.3 },
   ];
 }
