@@ -33,6 +33,13 @@ export async function getEntitlementByEmail(email: string, workshopId: string): 
   if (!pkg || !(hasEntitlement || pkg.free)) return { hasEntitlement, packageBundle: null };
   return {
     hasEntitlement,
-    packageBundle: { id: pkg.id, version: pkg.version, title: pkg.title, free: pkg.free, files: pkg.bundle.files ?? [], links: pkg.bundle.links ?? [] },
+    packageBundle: {
+      id: pkg.id,
+      version: pkg.version,
+      title: pkg.title,
+      free: pkg.free,
+      files: pkg.bundle.files ?? [],
+      links: pkg.bundle.links ?? [],
+    },
   };
 }
