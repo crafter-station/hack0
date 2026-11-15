@@ -1,11 +1,14 @@
+import { statSync } from "node:fs";
+import { join } from "node:path";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { JsonLd } from "@/components/json-ld";
 import { SITE } from "@/lib/site";
-import { GALLERY, GALLERY_TARGET } from "./gallery";
+import { Bench } from "./bench";
+import { GALLERY } from "./gallery";
 import { GalleryGrid } from "./gallery-grid";
-import { ScanGlobe } from "./globe";
-import { AGENDA, LAYERS, PROMPT, TAKEAWAYS, WORKSHOP } from "./workshop";
+import { Ticket } from "./ticket";
+import { AGENDA, LAYERS, TAKEAWAYS, WORKSHOP } from "./workshop";
 
 const DESCRIPTION = `${WORKSHOP.subtitle}. Workshop online de 90 minutos con Railly Hugo, el jueves 19 de noviembre.`;
 
@@ -33,131 +36,180 @@ const EVENT_LD = {
   performer: { "@type": "Person", name: "Railly Hugo" },
 };
 
+/** What this page is made of, for the third layer. The clip weight is read from disk at build time. */
+function madeOf(): string[] {
+  const loops = GALLERY.filter((g) => !g.sound);
+  const bytes = loops.reduce((sum, g) => sum + statSync(join(process.cwd(), "public", g.video)).size, 0);
+  return [
+    "Next.js 16 y React 19",
+    "CSS plano, sin librerías de animación",
+    "JetBrains Mono en 500, 700 y 800",
+    `${loops.length} clips en loop, ${Math.round(bytes / 1024)} kB entre todos`,
+  ];
+}
+
+function LookFigure() {
+  return (
+    <div className="th-fig th-fig-look" aria-hidden="true">
+      <span className="th-fig-word">Taste</span>
+      <span className="th-fig-note">mono 800 · tracking -0.05em</span>
+    </div>
+  );
+}
+
+function MotionFigure() {
+  return (
+    <div className="th-fig th-fig-motion" aria-hidden="true">
+      <p>
+        <span>ease-in</span>
+        <i />
+      </p>
+      <p>
+        <span>ease-out</span>
+        <i />
+      </p>
+    </div>
+  );
+}
+
+function MadeFigure() {
+  return (
+    <div className="th-fig th-fig-made">
+      <span className="th-fig-note">esta página, por debajo</span>
+      <ul>
+        {madeOf().map((f) => (
+          <li key={f}>{f}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+const FIGURES = { look: LookFigure, motion: MotionFigure, made: MadeFigure };
+
 export default function TasteHackingPage() {
   return (
     <main>
       <JsonLd data={EVENT_LD} />
 
       <section className="th-hero">
-        <ScanGlobe />
-        <p className="th-by">
-          <b>Railly Hugo</b>
-          <span>MTS en Vercel · founder de Crafter Station</span>
-        </p>
-        <h1>
-          Taste
-          <br />
-          hacking
-        </h1>
-        <p className="th-sub">{WORKSHOP.subtitle}.</p>
-        <dl className="th-facts">
-          <div>
-            <dt>fecha</dt>
-            <dd>{WORKSHOP.day}</dd>
-            <dd className="th-dim">90 minutos, en vivo</dd>
-          </div>
-          <div>
-            <dt>hora</dt>
-            {WORKSHOP.times.map((t) => (
-              <dd key={t.zone} className={t.zone === "GMT-3" ? undefined : "th-dim"}>
-                {t.time} {t.zone === "GMT-3" ? "GMT-3" : t.place}
-              </dd>
-            ))}
-          </div>
-          <div>
-            <dt>lugar</dt>
-            <dd>online</dd>
-            <dd className="th-dim">Google Meet</dd>
-          </div>
-          <div>
-            <dt>entrada</dt>
-            <dd>{WORKSHOP.price}</dd>
-            <dd className="th-dim">early bird {WORKSHOP.earlyBird}</dd>
-          </div>
-        </dl>
-        <a className="th-cta" href={WORKSHOP.luma}>
-          Inscríbete en Luma <span aria-hidden="true">→</span>
-        </a>
+        <div className="th-intro">
+          <p className="th-by">
+            con <b>Railly Hugo</b>, MTS en Vercel y founder de Crafter Station
+          </p>
+          <h1>Taste hacking</h1>
+          <p className="th-sub">{WORKSHOP.subtitle}.</p>
+        </div>
+        <Bench />
       </section>
 
       <section className="th-section" id="capas">
-        <h2>Todo lo que ves tiene tres capas</h2>
-        <p className="th-lead">Si nombras cada capa, se la puedes pedir a un agente.</p>
+        <header>
+          <p className="th-index">01 · la tesis</p>
+          <h2>Todo lo que ves tiene tres capas</h2>
+          <p className="th-lead">Si nombras cada capa, se la puedes pedir a un agente. Estas son las palabras.</p>
+        </header>
         <ol className="th-layers">
-          {LAYERS.map((l) => (
-            <li key={l.n}>
-              <span className="th-n">{l.n}</span>
-              <div>
-                <h3>{l.name}</h3>
+          {LAYERS.map((l) => {
+            const Figure = FIGURES[l.id];
+            return (
+              <li key={l.id}>
+                <h3>
+                  <span className="th-n">{l.n}</span>
+                  {l.name}
+                </h3>
                 <p>{l.ask}</p>
-              </div>
-              <ul>
-                {l.words.map((w) => (
-                  <li key={w}>{w}</li>
-                ))}
-              </ul>
-            </li>
-          ))}
+                <Figure />
+                <dl>
+                  {l.words.map((w) => (
+                    <div key={w.w}>
+                      <dt>{w.w}</dt>
+                      <dd>{w.d}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </li>
+            );
+          })}
         </ol>
-        <div className="th-prompt">
-          <p className="th-prompt-before">
-            <span>antes</span>
-            <s>hazlo bonito</s>
-          </p>
-          <p className="th-prompt-after">
-            <span>después</span>
-            <span>
-              <i aria-hidden="true">› </i>
-              {PROMPT.map((seg) => (seg.hl ? <mark key={seg.t}>{seg.t}</mark> : seg.t))}
-            </span>
-          </p>
-        </div>
-      </section>
-
-      <section className="th-section" id="agenda">
-        <h2>90 minutos</h2>
-        <p className="th-lead">Los casos van preparados. Si algo falla en vivo, el debugging es parte de la clase.</p>
-        <ol className="th-agenda">
-          {AGENDA.map((a) => (
-            <li key={a.min}>
-              <span className="th-min">{a.min} min</span>
-              <h3>{a.title}</h3>
-              {a.note ? <p>{a.note}</p> : null}
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section className="th-section" id="te-llevas">
-        <h2>Lo que te llevas</h2>
-        <ol className="th-take">
-          {TAKEAWAYS.map((t, i) => (
-            <li key={t.title}>
-              <span className="th-n">{String(i + 1).padStart(2, "0")}</span>
-              <h3>{t.title}</h3>
-              <p>{t.note}</p>
-            </li>
-          ))}
-        </ol>
-        <p className="th-lead">Con tu entrada tienes todo esto, más las recreaciones nuevas que sigamos haciendo.</p>
       </section>
 
       <section className="th-section" id="galeria">
-        <h2>Galería</h2>
-        <p className="th-lead">
-          {GALLERY.length} de {GALLERY_TARGET} recreaciones. El resto se suma antes del jueves 19.
-        </p>
-        <GalleryGrid />
+        <header>
+          <p className="th-index">02 · la galería</p>
+          <h2>Piezas desarmadas y vueltas a armar</h2>
+          <p className="th-lead">
+            Hay {GALLERY.length} en la galería. Cada una dice qué capa cambió y con qué palabras. Se suman más antes del jueves.
+          </p>
+          <p className="th-label th-swipe">desliza para ver las {GALLERY.length}</p>
+        </header>
+        <GalleryGrid more />
       </section>
 
-      <section className="th-close">
-        <h2>Nombra lo que ves. Pídeselo a tu agente.</h2>
-        <a className="th-cta" href={WORKSHOP.luma}>
-          Inscríbete en Luma <span aria-hidden="true">→</span>
-        </a>
-        <p>
-          ¿Ya compraste? <Link href="/taste-hacking/material">Entra al material</Link>
-        </p>
+      <section className="th-section" id="agenda">
+        <header>
+          <p className="th-index">03 · el workshop</p>
+          <h2>90 minutos, en vivo</h2>
+          <p className="th-lead">La mitad del tiempo se va en tres casos reales.</p>
+        </header>
+        <div className="th-plan">
+          <ol className="th-agenda">
+            {AGENDA.map((a) => (
+              <li key={a.from} style={{ "--min": a.min } as React.CSSProperties}>
+                <span className="th-min">
+                  {a.from}-{a.from + a.min} min
+                </span>
+                <div>
+                  <h3>{a.title}</h3>
+                  {a.note ? <p>{a.note}</p> : null}
+                  {a.cases ? (
+                    <ul>
+                      {a.cases.map((c) => (
+                        <li key={c.title}>
+                          <span className="th-tag">{c.layer}</span>
+                          {c.title}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ol>
+          <div className="th-take">
+            <h3>Te llevas</h3>
+            <ol>
+              {TAKEAWAYS.map((t, i) => (
+                <li key={t.title}>
+                  <span className="th-n">{String(i + 1).padStart(2, "0")}</span>
+                  <div>
+                    <h4>{t.title}</h4>
+                    <p>{t.note}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section className="th-section th-close">
+        <header>
+          <p className="th-index">04 · la entrada</p>
+          <h2>
+            Nombra lo que ves.
+            <br />
+            Pídeselo a tu agente.
+          </h2>
+          <p className="th-lead">
+            ¿Ya compraste? <Link href="/taste-hacking/material">Entra al material</Link>
+          </p>
+        </header>
+        <div className="th-plate th-ticks">
+          <div className="th-plate-stage">
+            <Ticket />
+          </div>
+        </div>
       </section>
     </main>
   );

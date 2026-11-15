@@ -86,55 +86,72 @@ function Material({ email, recording }: { email: string; recording: BundleLink |
       <section className="th-gate">
         <h1>Material</h1>
         <p>
-          Entraste como <b>{email}</b>. Tienes todo lo que compraste más las recreaciones nuevas que sigamos haciendo.
+          Entraste como <b>{email}</b>. Aquí está todo lo del workshop.
         </p>
       </section>
 
       <section className="th-section">
-        <h2>Instala la skill</h2>
-        <p className="th-lead">
-          Tu key llegó por email cuando te registraste, desde {WORKSHOP.keySender}. Empieza con h0_ y no se puede volver a mostrar.
-        </p>
-        <pre>
-          <code>
-            {CLI.login}
-            {"\n"}
-            {CLI.add}
-          </code>
-        </pre>
-        <p className="th-lead">¿Perdiste la key? Pide una nueva. Llega a tu email y la anterior deja de funcionar.</p>
-        <pre>
-          <code>{CLI.recover(email)}</code>
-        </pre>
+        <header>
+          <p className="th-index">01 · la skill</p>
+          <h2>Instala la skill</h2>
+        </header>
+        <div className="th-body">
+          <p className="th-lead">
+            Tu key llegó por email cuando te registraste, desde {WORKSHOP.keySender}. Empieza con h0_ y no se puede volver a mostrar.
+          </p>
+          <pre>
+            <code>
+              {CLI.login}
+              {"\n"}
+              {CLI.add}
+            </code>
+          </pre>
+          <p className="th-lead">¿Perdiste la key? Pide una nueva. Llega a tu email y la anterior deja de funcionar.</p>
+          <pre>
+            <code>{CLI.recover(email)}</code>
+          </pre>
+        </div>
       </section>
 
       <section className="th-section">
-        <h2>Sesiones</h2>
-        <p className="th-lead">Claude Code tal cual, sin editar. Se publican después del workshop.</p>
-        <ol className="th-agenda">
+        <header>
+          <p className="th-index">02 · las sesiones</p>
+          <h2>Sesiones</h2>
+          <p className="th-lead">Claude Code tal cual, sin editar. Se publican después del workshop.</p>
+        </header>
+        <ol className="th-sessions">
           {SESSIONS.map((s, i) => (
             <li key={s}>
-              <span className="th-min">sesión {String(i + 1).padStart(2, "0")}</span>
+              <span>sesión {String(i + 1).padStart(2, "0")}</span>
               <h3>{s}</h3>
-              <p>Pendiente</p>
+              <span>pendiente</span>
             </li>
           ))}
         </ol>
       </section>
 
       <section className="th-section">
-        <h2>Grabación</h2>
-        {recording ? (
-          <p className="th-lead">
-            <a href={recording.url}>{recording.title} ↗</a>
-          </p>
-        ) : (
-          <p className="th-lead">El link aparece aquí después del workshop del jueves 19.</p>
-        )}
+        <header>
+          <p className="th-index">03 · la grabación</p>
+          <h2>Grabación</h2>
+        </header>
+        <div className="th-body">
+          {recording ? (
+            <p className="th-lead">
+              <a href={recording.url}>{recording.title} ↗</a>
+            </p>
+          ) : (
+            <p className="th-lead">El link aparece aquí después del workshop del jueves 19.</p>
+          )}
+        </div>
       </section>
 
       <section className="th-section">
-        <h2>Galería completa</h2>
+        <header>
+          <p className="th-index">04 · la galería</p>
+          <h2>Galería completa</h2>
+          <p className="th-lead">La sesión de cada pieza aparece en su ficha cuando se publica.</p>
+        </header>
         <GalleryGrid />
       </section>
     </>
