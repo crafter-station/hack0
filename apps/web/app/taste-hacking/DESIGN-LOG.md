@@ -124,3 +124,43 @@ Owner review of `/taste-hacking/material`: too much empty space, code blocks glu
 4. A row of anchors under the title jumps to the four sections. The gallery runs five across at desktop width.
 
 Checks at 1440x900 and 390x844: no horizontal scroll; signed out, nothing is requested from the sessions route and the route answers 401; signed in, a session is requested only when its card nears the viewport; copy and play work from the keyboard (Tab, Enter, Space); with reduced motion nothing plays on its own and the new transitions are off.
+
+## Material page: breathing pass (2026-11-15)
+
+Owner review of the density pass: too dense now, and it repeats itself. A section had an index label ("02 · las sesiones"), a title ("Sesiones") and a chip at the top saying the same thing. Reference for the feel: emilkowal.ski and animations.dev. The principles were measured and then written in this page's language (dark, mono, one accent); nothing was copied.
+
+### Measured
+
+| | emilkowal.ski | animations.dev |
+|---|---|---|
+| Reading column | 692px box, 644px of text | 732px box, 700px of text |
+| Body | 16px / 26.4px (1.65), gray on near-white | 18px / 28.8px (1.6) |
+| Section title | 16px, weight 500: the size of the body, set apart by ink only | 26px / 32px, weight 500 |
+| Space above a section | about 130 to 150px | 80 to 200px |
+| Title to content | about 50px | 16 to 28px |
+| Between items | about 28px | 24px |
+| Elements with a border | 1 of 119 | |
+
+What carries over: one column near 680px, titles close to body size, a body line-height of 1.65, and three to five times more space between sections than inside them. Borders are the exception.
+
+### Decisions
+
+1. **One title per section.** The index labels are gone. Section numbers live in one place, the contents nav, because that is where order is useful: it says where you are out of four. The chip row is gone with them.
+2. **Contents nav.** A rail beside the column on wide screens and a bar pinned to the top under 1100px. It marks the section in view with the accent, lists the sessions with how far each was watched (not started, started, finished; kept on the device), and `j` / `k` step through the sessions. A restyled chip row was the alternative; it would still have been a second copy of the titles with nothing of its own to say.
+3. **The pass.** The header is the workshop ticket again, in paper: who it belongs to, what it opened (skill, sessions, recording, gallery) and one action, install the skill. It replaces "Entraste como…".
+4. **Sessions.** One per row: a quiet line (number, title, layer, length), the terminal at the full width of the wide grid, and the piece it produced as a small clip with one sentence under it. A session opens where it was left. The live cases follow as the same line set back, with the day they arrive.
+5. **Recording, before there is one.** A plate with how long until the workshop (counted in calendar days on the server), the date in both time zones, what it will contain, a link to the event and a way back to the sessions.
+6. **Gallery, here and on the public page.** The clip and one line (title, layer). Before, after and reference sit behind a native disclosure, one open at a time, so nothing is hover-only. Three across on desktop. Pieces without a session no longer carry a line saying so.
+7. **Fewer boxes.** Code plates, the copy button, the player bar and its buttons lost their borders; sections lost their hairline.
+
+### Three settings, shot side by side
+
+| | Column | Between sections | Between sessions | Sessions | Nav |
+|---|---|---|---|---|---|
+| Conservative | 720 | 88 | 48 | terminal with the result beside it, at 1200 | bar on every width |
+| Medium | 680 | 136 | 72 | terminal across the 944 grid, result under it | rail + bar |
+| Aggressive | 640 | 184 | 112 | everything inside the column | rail + bar |
+
+Medium shipped. Conservative still reads as the dense page with more margin, and its side column brings back a second thing to look at per session. Aggressive is the calmest still, but a terminal inside a 640px column renders at 8.7px, against 12.8px on the wide grid: the session stops being readable in place, which is the one thing this page is for.
+
+Checks at 1440x900 and 390x844: no horizontal scroll on either page; signed out, the sessions route is not requested and answers 401; `j` / `k`, play, copy and the gallery disclosure work from the keyboard; with reduced motion nothing plays on its own, the nav and disclosure transitions are off and `j` / `k` jump without smooth scrolling.

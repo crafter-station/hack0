@@ -4,6 +4,15 @@ export type ShellToken = { kind: ShellTokenKind; text: string };
 const RUNNERS = new Set(["npx", "bunx", "pnpx"]);
 const EMAIL = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
 
+/** What a word is by its shape alone, wherever it sits in the command. */
+function shapeOf(text: string): ShellTokenKind | null {
+  if (/^<.+>$/.test(text)) return "placeholder";
+  if (text.startsWith("-")) return "flag";
+  if (EMAIL.test(text)) return "email";
+  if (/^(~|\.{1,2})?\//.test(text) || /^[\w.-]+\/[\w./-]+$/.test(text)) return "path";
+  return null;
+}
+
 /** Splits one shell command into tokens for display. Joining the token texts gives the command back. */
 export function tokenizeShell(line: string): ShellToken[] {
   const out: ShellToken[] = [];
@@ -25,11 +34,9 @@ export function tokenizeShell(line: string): ShellToken[] {
     } else if (words === 2 && runner && !text.startsWith("-")) {
       kind = "pkg";
       subs = true;
-    } else if (/^<.+>$/.test(text)) kind = "placeholder";
-    else if (text.startsWith("-")) kind = "flag";
-    else if (EMAIL.test(text)) kind = "email";
-    else if (/^(~|\.{1,2})?\//.test(text) || /^[\w.-]+\/[\w./-]+$/.test(text)) kind = "path";
-    else if (subs && /^[a-z][a-z-]*$/.test(text)) kind = "sub";
+    } else {
+      kind = shapeOf(text) ?? (subs && /^[a-z][a-z-]*$/.test(text) ? "sub" : "arg");
+    }
     if (kind !== "sub" && kind !== "bin" && kind !== "pkg" && kind !== "flag") subs = false;
     out.push({ kind, text });
   }

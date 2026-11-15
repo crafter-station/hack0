@@ -3,13 +3,17 @@
 import "asciinema-player/dist/bundle/asciinema-player.css";
 import type { Player } from "asciinema-player";
 import { useEffect, useRef, useState } from "react";
+import { readSessionProgress, saveSessionProgress } from "./session-progress";
 
 const SPEEDS = [1, 2, 4, 8];
 const IDLE_LIMIT_S = 2;
 /** Mount a little before the card scrolls in. */
 const NEAR_MARGIN = "240px 0px";
 
-/** A session preview. Loads from the gated route when the card nears the viewport and stays on `poster` until played. */
+/**
+ * A session preview. Loads from the gated route when the card nears the viewport and stays on `poster` until played.
+ * It remembers where the viewer stopped and opens there next time.
+ */
 export function SessionPlayer({ slug, title, poster }: { slug: string; title: string; poster: string }) {
   const root = useRef<HTMLDivElement>(null);
   const host = useRef<HTMLDivElement>(null);
@@ -17,6 +21,7 @@ export function SessionPlayer({ slug, title, poster }: { slug: string; title: st
   const cast = useRef<string | null>(null);
   const resumeAt = useRef(0);
   const wasPlaying = useRef(false);
+  const watched = useRef(false);
   const [near, setNear] = useState(false);
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
@@ -42,6 +47,17 @@ export function SessionPlayer({ slug, title, poster }: { slug: string; title: st
     if (!near || !host.current) return;
     const el = host.current;
     let gone = false;
+    const stored = readSessionProgress(slug);
+    if (resumeAt.current === 0 && stored && !stored.done) resumeAt.current = stored.t;
+    let finished = false;
+    const save = (ended: boolean) => {
+      if (ended) finished = true;
+      else if (finished || !watched.current) return;
+      const t = player.current?.getCurrentTime();
+      if (typeof t === "number" && (ended || t > 0)) saveSessionProgress(slug, t, ended);
+    };
+    const onHide = () => save(false);
+    window.addEventListener("pagehide", onHide);
     (async () => {
       if (cast.current === null) {
         const res = await fetch(`/api/v1/sessions/${slug}`);
@@ -60,10 +76,20 @@ export function SessionPlayer({ slug, title, poster }: { slug: string; title: st
         theme: "asciinema",
         terminalFontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
       });
-      p.addEventListener("play", () => setPlaying(true));
+      p.addEventListener("play", () => {
+        finished = false;
+        watched.current = true;
+        setPlaying(true);
+      });
       p.addEventListener("playing", () => setPlaying(true));
-      p.addEventListener("pause", () => setPlaying(false));
-      p.addEventListener("ended", () => setPlaying(false));
+      p.addEventListener("pause", () => {
+        setPlaying(false);
+        save(false);
+      });
+      p.addEventListener("ended", () => {
+        setPlaying(false);
+        save(true);
+      });
       player.current = p;
       setReady(true);
     })().catch(() => {
@@ -71,6 +97,7 @@ export function SessionPlayer({ slug, title, poster }: { slug: string; title: st
     });
     return () => {
       gone = true;
+      window.removeEventListener("pagehide", onHide);
       resumeAt.current = player.current?.getCurrentTime() ?? resumeAt.current;
       player.current?.dispose();
       player.current = null;
@@ -100,13 +127,11 @@ export function SessionPlayer({ slug, title, poster }: { slug: string; title: st
           <i aria-hidden="true" data-playing={playing} />
           {playing ? "pausar" : "reproducir"}
         </button>
-        <span>velocidad</span>
         {SPEEDS.map((s) => (
-          <button key={s} type="button" aria-pressed={s === speed} onClick={() => changeSpeed(s)}>
+          <button key={s} type="button" aria-label={`Velocidad ${s}x`} aria-pressed={s === speed} onClick={() => changeSpeed(s)}>
             {s}x
           </button>
         ))}
-        <span>pausas de más de {IDLE_LIMIT_S} s se acortan</span>
       </fieldset>
       {failed ? <p className="th-cast-fail">{failed}</p> : <div ref={host} className="th-cast-host" data-ready={ready} />}
     </div>
