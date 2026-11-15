@@ -12,14 +12,19 @@ export const WORKSHOP = {
     { place: "Buenos Aires", time: "9:00 p.m." },
   ],
   price: "US$20",
+  /** Luma sells an early bird ticket below the general price. */
+  earlyBird: "US$15",
   /** Sender of the email that carries the license key. */
   keySender: "workshops@updates.hack0.dev",
 } as const;
 
 export type LayerId = "look" | "motion" | "made";
 
+/** A word with `probe` has a hands-on station on the word bench, under that number. */
+export type Word = { w: string; d: string; probe?: number };
+
 /** The thesis: three layers, and the words that ask for each one. */
-export const LAYERS: { id: LayerId; n: string; name: string; short: string; ask: string; words: { w: string; d: string }[] }[] = [
+export const LAYERS: { id: LayerId; n: string; name: string; short: string; ask: string; words: Word[] }[] = [
   {
     id: "look",
     n: "01",
@@ -29,7 +34,7 @@ export const LAYERS: { id: LayerId; n: string; name: string; short: string; ask:
     words: [
       { w: "jerarquía", d: "qué se lee primero" },
       { w: "escala tipográfica", d: "los tamaños y la razón entre ellos" },
-      { w: "tracking", d: "el espacio entre letras" },
+      { w: "tracking", d: "el espacio entre letras", probe: 1 },
       { w: "leading", d: "el espacio entre líneas" },
       { w: "grid", d: "a qué se alinea cada cosa" },
       { w: "contraste", d: "cuánto se separa la letra del fondo" },
@@ -44,9 +49,9 @@ export const LAYERS: { id: LayerId; n: string; name: string; short: string; ask:
     short: "se mueve",
     ask: "Qué entra, cuándo y con qué curva.",
     words: [
-      { w: "easing", d: "la curva de velocidad" },
+      { w: "easing", d: "la curva de velocidad", probe: 2 },
       { w: "spring", d: "movimiento con masa y resorte" },
-      { w: "stagger", d: "el retraso entre un elemento y el siguiente" },
+      { w: "stagger", d: "el retraso entre un elemento y el siguiente", probe: 3 },
       { w: "duration", d: "cuánto dura" },
       { w: "overshoot", d: "pasarse un poco y volver" },
       { w: "layout animation", d: "animar un cambio de posición o tamaño" },

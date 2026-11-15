@@ -33,7 +33,9 @@ export function Ticket() {
         </div>
         <div>
           <dt>entrada</dt>
-          <dd>{WORKSHOP.price}</dd>
+          <dd>
+            {WORKSHOP.price} <small>· early bird {WORKSHOP.earlyBird}</small>
+          </dd>
         </div>
       </dl>
       <a className="th-cta" href={WORKSHOP.luma} data-probe="4">

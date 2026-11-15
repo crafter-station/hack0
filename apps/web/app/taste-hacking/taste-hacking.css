@@ -280,6 +280,11 @@ html:has(.th) {
 .th-ticket dd span {
   display: block;
 }
+.th-ticket dd small {
+  font-size: inherit;
+  font-weight: 500;
+  color: var(--card-mute);
+}
 .th-cta {
   display: flex;
   justify-content: space-between;
@@ -356,7 +361,8 @@ html:has(.th) {
 
 /*
  * The same ticket, unnamed. Everything below is the slop a "hazlo bonito" prompt returns, kept on purpose:
- * system sans, a purple gradient, a glow, ease-in from scale(0), a pulse that never stops, transition: all.
+ * system sans, a purple gradient, a glow, one sparkle, an ease-in pop, a pulse that never stops, transition: all.
+ * It is turned down far enough to sit next to the real ticket and still read as slop at a glance.
  * These literals stay outside the tokens because they are the specimen, not the page.
  */
 [data-look="off"] .th-ticket {
@@ -364,9 +370,9 @@ html:has(.th) {
   font-family: Arial, Helvetica, sans-serif;
   text-align: center;
   color: #fff;
-  background: linear-gradient(135deg, #7c3aed, #c026d3 55%, #ec4899);
+  background: linear-gradient(135deg, #6d4fd0, #9550c8 55%, #c45fae);
   border-radius: 24px;
-  box-shadow: 0 0 48px #a855f799;
+  box-shadow: 0 0 28px #9b6fe066;
 }
 [data-look="off"] .th-ticket header {
   justify-content: center;
@@ -385,13 +391,10 @@ html:has(.th) {
   text-transform: capitalize;
 }
 [data-look="off"] .th-ticket-date::before {
-  content: "🚀 ";
-  position: static;
-  width: auto;
-  height: auto;
-  background: none;
+  content: none;
 }
 [data-look="off"] .th-ticket-sub,
+[data-look="off"] .th-ticket dd small,
 [data-look="off"] .th-ticket dt {
   color: #ffffffcc;
 }
@@ -416,11 +419,11 @@ html:has(.th) {
 [data-look="off"] .th-cta {
   justify-content: center;
   border-radius: 999px;
-  background: linear-gradient(90deg, #f472b6, #fb923c);
+  background: linear-gradient(90deg, #e07fb4, #ee9a6c);
   color: #fff;
   font-weight: 700;
   letter-spacing: 0;
-  box-shadow: 0 0 24px #f472b6aa;
+  box-shadow: 0 0 14px #e07fb466;
 }
 [data-look="off"] .th-cta span {
   display: none;
@@ -442,12 +445,13 @@ html:has(.th) {
 }
 @keyframes th-pop {
   from {
-    transform: scale(0) rotate(-8deg);
+    transform: scale(0.4);
+    opacity: 0;
   }
 }
 @keyframes th-pulse {
   50% {
-    transform: scale(1.035);
+    transform: scale(1.022);
   }
 }
 
@@ -608,7 +612,8 @@ html:has(.th) {
   justify-content: space-between;
   gap: 12px;
 }
-.th-prompt .th-label button {
+.th-prompt .th-label button,
+.th-station h3 button {
   padding: 0;
   background: none;
   border: 0;
@@ -667,6 +672,232 @@ html:has(.th) {
   color: var(--ink);
 }
 
+/* The word bench: three glossary words on a plate, a control each. Probe numbers tie a word to its station. */
+.th-thesis {
+  display: grid;
+  gap: 40px;
+  min-width: 0;
+}
+.th-probe {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  border: 1px solid var(--acc);
+  color: var(--acc);
+}
+.th-words .th-rm {
+  margin-top: 0;
+}
+.th-stations {
+  display: grid;
+  gap: 24px;
+}
+.th-station {
+  --out-lines: 1;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  scroll-margin-top: 24px;
+}
+.th-station + .th-station {
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+}
+.th-station h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--t-body);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.th-station h3 button {
+  margin: -12px 0 -12px auto;
+  padding: 12px 0 12px 16px;
+  font-size: var(--t-small);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.th-station-stage {
+  display: grid;
+  align-content: center;
+  height: 120px;
+  overflow: clip;
+  container-type: inline-size;
+}
+.th-station-stage .th-fig-word {
+  font-size: min(56px, 21cqw);
+}
+.th-ease {
+  gap: 12px;
+}
+.th-ease-track {
+  display: block;
+  height: 12px;
+  border-bottom: 1px solid var(--rule);
+  /* A tick where the dot comes to rest: 84% of the way, as in word-bench.tsx. */
+  background: linear-gradient(var(--hair), var(--hair)) calc((100% - 12px) * 0.84 + 12px) 0 / 1px 100% no-repeat;
+  container-type: inline-size;
+}
+.th-ease-track span {
+  display: block;
+  width: 12px;
+  height: 12px;
+  background: var(--acc);
+}
+.th-ease-graph {
+  position: relative;
+  display: block;
+  height: 84px;
+  container-type: inline-size;
+}
+.th-ease-graph svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.th-ease-graph path {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+.th-ease-graph .th-ease-rule {
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+/* The marker rests at progress 0 (70px down the 84px box) and rides the curve when the demo runs. */
+.th-ease-graph > span {
+  position: absolute;
+  top: 70px;
+  left: 0;
+}
+.th-ease-graph i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px;
+  background: var(--acc);
+}
+.th-rows {
+  gap: 9px;
+}
+.th-rows span {
+  display: block;
+  height: 8px;
+  background: var(--ink);
+}
+.th-rows span:nth-child(2) {
+  width: 72%;
+}
+.th-rows span:nth-child(3) {
+  width: 88%;
+}
+.th-rows span:nth-child(4) {
+  width: 56%;
+}
+.th-rows span:nth-child(5) {
+  width: 80%;
+}
+.th-range {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: 32px;
+  margin: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+.th-range::-webkit-slider-runnable-track {
+  height: 1px;
+  background: var(--hair);
+}
+.th-range::-moz-range-track {
+  height: 1px;
+  background: var(--hair);
+}
+.th-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 20px;
+  margin-top: -9.5px;
+  background: var(--acc);
+  border: 0;
+  border-radius: 0;
+}
+.th-range::-moz-range-thumb {
+  width: 12px;
+  height: 20px;
+  background: var(--acc);
+  border: 0;
+  border-radius: 0;
+}
+.th-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--t-micro);
+  color: var(--hair);
+  font-variant-numeric: tabular-nums;
+}
+.th-curves {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  align-self: start;
+}
+.th-curves label {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 40px;
+  border: 1px solid var(--rule);
+  font-size: var(--t-micro);
+  color: var(--mute);
+}
+.th-curves input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.th-curves label:has(:checked) {
+  border-color: var(--ink);
+  color: var(--ink);
+  box-shadow: inset 0 -2px var(--acc);
+}
+.th-curves label:has(:focus-visible) {
+  outline: 2px solid var(--acc);
+  outline-offset: 3px;
+}
+.th-station-out {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  font-size: var(--t-micro);
+  line-height: 1.5;
+  color: var(--mute);
+}
+.th-station-out > * {
+  min-height: calc(1.5em * var(--out-lines));
+}
+.th-station-out output {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
 /* Layers */
 .th-layers {
   display: grid;
@@ -684,6 +915,11 @@ html:has(.th) {
   margin-top: 4px;
   color: var(--mute);
   font-size: var(--t-small);
+}
+.th-layers a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 .th-layers dl {
   margin-top: 16px;
@@ -715,7 +951,7 @@ html:has(.th) {
 }
 .th-fig-word {
   justify-self: start;
-  font-size: 52px;
+  font-size: 46px;
   font-weight: 800;
   letter-spacing: -0.05em;
   line-height: 1;
@@ -724,47 +960,6 @@ html:has(.th) {
     linear-gradient(var(--hair), var(--hair)) 0 0.135em / 100% 1px no-repeat,
     linear-gradient(var(--acc), var(--acc)) 0 0.865em / 100% 1px no-repeat;
   padding-right: 28px;
-}
-.th-fig-motion p {
-  display: grid;
-  grid-template-columns: 72px 1fr;
-  align-items: center;
-  gap: 12px;
-  font-size: var(--t-micro);
-  color: var(--mute);
-}
-.th-fig-motion p:last-child {
-  color: var(--ink);
-}
-.th-fig-motion i {
-  display: block;
-  height: 12px;
-  border-bottom: 1px solid var(--rule);
-}
-.th-fig-motion i::after {
-  content: "";
-  display: block;
-  width: 12px;
-  height: 12px;
-  background: var(--hair);
-  animation: th-travel 2.4s ease-in infinite;
-}
-.th-fig-motion p:last-child i::after {
-  background: var(--acc);
-  animation-timing-function: var(--ease-out);
-}
-.th-fig-motion i {
-  container-type: inline-size;
-}
-@keyframes th-travel {
-  0%,
-  12% {
-    transform: translateX(0);
-  }
-  62%,
-  100% {
-    transform: translateX(calc(100cqw - 12px));
-  }
 }
 .th-fig-made ul {
   font-size: var(--t-small);
@@ -1082,10 +1277,10 @@ html:has(.th) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0 24px;
   }
-  /* Heading, ask, figure and glossary share rows across the three layers. */
+  /* Heading, ask and glossary share rows across the three layers. */
   .th-layers > li {
     display: grid;
-    grid-row: span 4;
+    grid-row: span 3;
     grid-template-rows: subgrid;
   }
   .th-plan {
@@ -1106,6 +1301,10 @@ html:has(.th) {
   .th-plate {
     grid-column: 2;
     grid-row: 1 / 4;
+  }
+  .th-words {
+    grid-column: auto;
+    grid-row: auto;
   }
   .th-switchbox {
     grid-column: 1;
@@ -1155,6 +1354,26 @@ html:has(.th) {
     grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
     gap: 0 48px;
   }
+  /* Three stations side by side, on the same rows, with room for a value that wraps. */
+  .th-stations {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 24px;
+  }
+  .th-station {
+    grid-row: span 4;
+    grid-template-rows: subgrid;
+    row-gap: 12px;
+  }
+  .th-station + .th-station {
+    padding-top: 0;
+    border-top: 0;
+  }
+  .th-curves {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .th-curves label {
+    min-height: 32px;
+  }
   .th-section > header {
     position: sticky;
     top: 24px;
@@ -1173,11 +1392,17 @@ html:has(.th) {
   }
 }
 
+/* Narrow three-up stations: the printed value wraps, so its two lines are reserved up front. */
+@media (min-width: 1000px) and (max-width: 1239px) {
+  .th-station {
+    --out-lines: 2;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .th [data-motion] .th-ticket,
   .th [data-motion] .th-ticket > *,
-  .th [data-motion] .th-ticket dl > div,
-  .th .th-fig-motion i::after {
+  .th [data-motion] .th-ticket dl > div {
     animation: none;
   }
   .th .th-scan {
@@ -1185,9 +1410,6 @@ html:has(.th) {
   }
   .th .th-rm {
     display: block;
-  }
-  .th .th-fig-motion p:last-child i::after {
-    transform: translateX(calc(100cqw - 12px));
   }
   .th .th-cta,
   .th .th-cta span,

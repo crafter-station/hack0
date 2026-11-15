@@ -8,6 +8,7 @@ import { Bench } from "./bench";
 import { GALLERY } from "./gallery";
 import { GalleryGrid } from "./gallery-grid";
 import { Ticket } from "./ticket";
+import { WordBench } from "./word-bench";
 import { AGENDA, LAYERS, TAKEAWAYS, WORKSHOP } from "./workshop";
 
 const DESCRIPTION = `${WORKSHOP.subtitle}. Workshop online de 90 minutos con Railly Hugo, el jueves 19 de noviembre.`;
@@ -48,30 +49,6 @@ function madeOf(): string[] {
   ];
 }
 
-function LookFigure() {
-  return (
-    <div className="th-fig th-fig-look" aria-hidden="true">
-      <span className="th-fig-word">Taste</span>
-      <span className="th-fig-note">mono 800 · tracking -0.05em</span>
-    </div>
-  );
-}
-
-function MotionFigure() {
-  return (
-    <div className="th-fig th-fig-motion" aria-hidden="true">
-      <p>
-        <span>ease-in</span>
-        <i />
-      </p>
-      <p>
-        <span>ease-out</span>
-        <i />
-      </p>
-    </div>
-  );
-}
-
 function MadeFigure() {
   return (
     <div className="th-fig th-fig-made">
@@ -84,8 +61,6 @@ function MadeFigure() {
     </div>
   );
 }
-
-const FIGURES = { look: LookFigure, motion: MotionFigure, made: MadeFigure };
 
 export default function TasteHackingPage() {
   return (
@@ -107,31 +82,42 @@ export default function TasteHackingPage() {
         <header>
           <p className="th-index">01 · la tesis</p>
           <h2>Todo lo que ves tiene tres capas</h2>
-          <p className="th-lead">Si nombras cada capa, se la puedes pedir a un agente. Estas son las palabras.</p>
+          <p className="th-lead">Si nombras cada capa, se la puedes pedir a un agente. Estas son las palabras, y tres se pueden tocar.</p>
         </header>
-        <ol className="th-layers">
-          {LAYERS.map((l) => {
-            const Figure = FIGURES[l.id];
-            return (
+        <div className="th-thesis">
+          <WordBench />
+          <ol className="th-layers">
+            {LAYERS.map((l) => (
               <li key={l.id}>
                 <h3>
                   <span className="th-n">{l.n}</span>
                   {l.name}
                 </h3>
                 <p>{l.ask}</p>
-                <Figure />
-                <dl>
-                  {l.words.map((w) => (
-                    <div key={w.w}>
-                      <dt>{w.w}</dt>
-                      <dd>{w.d}</dd>
-                    </div>
-                  ))}
-                </dl>
+                <div>
+                  <dl>
+                    {l.words.map((w) => (
+                      <div key={w.w}>
+                        <dt>
+                          {w.probe ? (
+                            <a href={`#probar-${w.w}`}>
+                              {w.w}
+                              <i className="th-probe">{w.probe}</i>
+                            </a>
+                          ) : (
+                            w.w
+                          )}
+                        </dt>
+                        <dd>{w.d}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  {l.id === "made" ? <MadeFigure /> : null}
+                </div>
               </li>
-            );
-          })}
-        </ol>
+            ))}
+          </ol>
+        </div>
       </section>
 
       <section className="th-section" id="galeria">

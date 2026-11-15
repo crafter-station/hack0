@@ -32,10 +32,10 @@ One sentence no goldenset site fits: *a black cutting mat where one paper ticket
 - Second voice: Arial, and only inside the unnamed ticket. The slop state is the second typeface.
 - Colour: `#111110` stage, `#f3f0e8` ink and paper, `#ff3d00` accent. Orange marks state (a switch that is on, the scan, the probes) and the ticket's bar. The purple gradient exists only in the unnamed ticket and inside the "antes" half of the clips.
 - Motion tokens in `tokens.css`: one easing family (`--ease-out`, `--ease-inout`), `--d-press` 150 ms, `--d-hover` 200 ms, `--d-reveal` 600 ms, `--d-stagger` 40 ms. The literals `ease-in`, `transition: all` and the pulse in the stylesheet are the specimen of bad motion, commented as such.
-- Restraint: body copy never animates. No scroll-linked motion. What moves: the ticket's entrance (once, and on each switch), the scan line that covers the swap, the two dots of the easing figure, the clips.
+- Restraint: body copy never animates. No scroll-linked motion. What moves: the ticket's entrance (once, and on each switch), the scan line that covers the swap, the word bench when a control is used, the clips.
 - Dropped from the brand inputs: the cobe globe. It competed with the plate for the focal point and it is already inside every clip.
 
-Signature moments:
+Signature moments (a third came in round 4: the word bench, below):
 1. Flipping a layer: the scan crosses the plate, the ticket re-enters in its new state, the prompt gains or loses the words.
 2. The inspector: numbered probes on the ticket and a readout of `getComputedStyle`, so "cómo está hecho" shows the values the browser is using at that moment. The readout cannot disagree with the piece.
 
@@ -61,10 +61,28 @@ Scores are Design / Usability / Creativity / Content.
 | 2 | 8 / 8 / 8 / 8 | 7.5 / 8 / 7 / 8.5 | 7.5 / 7.5 / 7 / 7.5 | 7.5 / 8 / 7 / 8 | 7.5 / 8 / 7 / 7 | Accent only on state. Also outside the budget: figures on a shared subgrid, closing mirrors the hero's 5/7 split |
 | Juror | 6 / 5 / 7 / 5 overall, 5.8 weighted | | | | | See below |
 | 3 | 8 / 7.5 / 8 / 8 | 7 / 7.5 / 6.5 / 8 | 7.5 / 7 / 7 / 7 | 7.5 / 8 / 7 / 7.5 | 7.5 / 8 / 7 / 7 | Juror fixes. Rescored lower where an objection survived |
+| 4 | 8 / 7.5 / 8 / 8 | 8 / 8 / 7.5 / 8.5 | 7.5 / 7 / 7 / 7 | 7.5 / 8 / 7 / 7.5 | 7.5 / 8 / 7 / 7 | Owner review. The word bench in Capas, a quieter slop ticket, the early bird price. See round 4 |
 
-Open gap after round 3: **Capas, Creativity 6.5.** The bench stops after the hero and the glossary is a list. The next single change would be to make three words operable (tracking, easing, stagger) on the same plate. Not done: it is a second interactive piece, and it needs the owner's call on whether it ships before Thursday.
+Open gap after round 3: **Capas, Creativity 6.5.** The bench stops after the hero and the glossary is a list. The next single change would be to make three words operable (tracking, easing, stagger) on the same plate. Closed in round 4 on the owner's call.
 
 Layout bugs fixed outside the rounds: the CTA's press transition was overridden by the link rule (`.th a` beat `.th-cta`, so the inspector read `text-decoration-color`); the unnamed ticket was taller than the stage; the time row wrapped mid-city.
+
+### Round 4: owner review
+
+The owner approved the page and asked for three changes.
+
+1. **Early bird.** Luma sells an early bird ticket at US$15 next to the general US$20. It sits in the ticket's price row in the muted weight, so the row still reads US$20 first. The home banner still shows US$20 only.
+2. **Slop ticket, turned down.** Two versions were shot side by side with the old one. *Subtle* (grey-violet gradient, no emoji, a flat translucent button, 16px glow) stopped reading as slop: it looks like a decent glass card. *Medium* shipped: the same three-stop purple gradient at lower saturation, one sparkle on the button and no rocket, the glow cut from 48px to 28px, the pop from `scale(0.4)` without the spin, the pulse at 1.022. It still has all four tells (purple gradient, Arial, pill button with an emoji, ease-in pop and a pulse that never stops).
+3. **The word bench.** A second plate, numbered 01 after the hero's 00, opens chapter 1 with three stations. The glossary words tracking, easing and stagger carry the station's probe number and link to it.
+   - *tracking*: a slider from -0.10em to 0.10em on the word "Taste" between its cap-height and baseline hairlines. Prints `letter-spacing: -0.05em`.
+   - *easing*: four curves (ease-in, linear, ease-out, spring). A dot crosses a track to a tick at 84% so the spring's overshoot has room to show, and a marker rides the plotted curve at the same time. Prints the `cubic-bezier(...)` and its duration, or the spring's stiffness and damping. The spring is simulated (stiffness 170, damping 14, mass 1) and its frames feed both the plot and the animation, so the drawing and the motion cannot disagree.
+   - *stagger*: a slider from 0 to 200 ms over five rows. Prints the step and the total.
+
+   The static tracking and easing figures in the glossary columns became the stations. "Esta página, por debajo" moved under the third column's shorter list, which evens the three columns.
+
+Checks. Heights: every value of every control was swept at 1440, 1000, 760 and 390 px and the stations, the plate and the document height did not change. At 1000 to 1239 px the printed value wraps, so two lines are reserved there. Keyboard: native range inputs and radios, arrows change the value, Tab reaches each "probar". Reduced motion: changing a value never starts a demo, only "probar" does, and the plate says so. Motion runs through the Web Animations API, so nothing loops and nothing autoplays.
+
+Juror objection 5 (the bench dies after the hero) is answered by the second plate. Not re-run through the juror.
 
 ### Seams
 
@@ -84,14 +102,13 @@ Run on a different model (gpt-6.1-sol through fx), read-only, with the code, the
 | 2 | The third switch does not behave like the other two, and "uno por capa" was false of the agenda | Partly. The switch now says it opens the inspector, and the claim is gone. It still is a different kind of control |
 | 3 | No element carried probe 3, and the probes stole the `::after` of the slop emoji, so inspecting changed the look | Fixed. Probe 3 is the rows, the emoji moved to `::before` |
 | 4 | The prompt promised staggered rows and "tracking apretado"; the stagger ran on the ticket's children and the value was vague | Fixed. The three rows stagger, the readout computes the step from their delays, the prompt says -0.06em |
-| 5 | The bench dies after the hero; chapter 2 is documentation | Stands. See the open gap |
+| 5 | The bench dies after the hero; chapter 2 is documentation | Fixed in round 4: the word bench |
 | 6 | The catalogue is videos, with no controls, prompt or provenance; the mobile rail has no affordance | Partly. A "desliza" line on mobile. Each plate has the slot for the session replay and the original, both empty until the sessions exist |
 | 7 | Loops cannot be paused outside reduced motion | Stands. Clips play only while on screen; the pulse is the specimen |
 | 8 | "premium", "viral" and "lo hice en una noche" are the fog the workshop argues against, and prerequisites are missing | Stands. That wording is the Luma listing's; changing the promise is the owner's call |
 
 ## Cut for time
 
-- Operable glossary words (the round 3 gap).
 - `cast.mjs` recordings and `measure.mjs` traces. There is no scrubbed motion to measure; the build and a production run stand in.
 - A designed 404, sound, a loader, a case study page.
 - A hand-made input (photo, drawn type). The only hand-made assets are the clips.
