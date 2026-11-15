@@ -22,6 +22,13 @@
       "when": 1793164237644,
       "tag": "0002_events_changes",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794725966119,
+      "tag": "0003_workshop_tables",
+      "breakpoints": true
     }
   ]
 }
