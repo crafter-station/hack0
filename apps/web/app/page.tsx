@@ -5,11 +5,14 @@ import { Globe } from "@/components/globe";
 import { JsonLd } from "@/components/json-ld";
 import { Wordmark } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { WorkshopBanner } from "@/components/workshop-banner";
 import { eventSpots } from "@/lib/calendar";
 import { mappedEvents, upcomingEvents } from "@/lib/catalog";
 import { SITE } from "@/lib/site";
 
 const LUMA = "https://luma.com/hack0";
+
+export const revalidate = 60;
 
 export default async function Home() {
   const [events, mapped] = await Promise.all([upcomingEvents(60), mappedEvents()]);
@@ -71,6 +74,7 @@ export default async function Home() {
           <span>próximos eventos</span>
           <Link href="/eventos">ver todos y el archivo</Link>
         </div>
+        <WorkshopBanner />
         {events && events.length > 0 ? (
           <EventList events={events} />
         ) : (
