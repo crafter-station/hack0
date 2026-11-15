@@ -113,3 +113,14 @@ Run on a different model (gpt-6.1-sol through fx), read-only, with the code, the
 - A designed 404, sound, a loader, a case study page.
 - A hand-made input (photo, drawn type). The only hand-made assets are the clips.
 - Step 7 of the skill (run file and FRICTION entries in the skill repo).
+
+## Material page: density pass (2026-11-15)
+
+Owner review of `/taste-hacking/material`: too much empty space, code blocks glued to the prose with no highlighting, and sessions that needed a click before showing anything.
+
+1. **Density.** The rail layout is gone on this page: each section is a hairline, a one-line head (index, title, lead) and content at the full 1200px. Spacing comes from four values (`--m-sec`, `--m-head`, `--m-card`, `--m-h1`). Three settings were shot side by side at 1440: *conservative* (64 / 24 / 44, h1 at the public scale), *medium* (44 / 18 / 30, h1 32-44) and *aggressive* (26 / 12 / 18, h1 28, sessions two per row). Medium shipped. Aggressive is the shortest page, but two terminals per row put the text near 8px, which is a thumbnail and not something to watch inline.
+2. **Code.** `code.tsx`: commands on a plate, one row each, an optional label chip, a copy button per command (native button, "copiado" announced through `aria-live`). `lib/shell-tokens.ts` splits a command into prompt, runner, package, subcommand, flag, placeholder, email, path and argument. The package takes the accent; a placeholder is italic with a dashed underline, because it is the part the reader fills in. The `$` is generated content, so selecting a row never copies it.
+3. **Sessions.** Each one is an open card: number, title, layer, reference and length in the head, the terminal on the left and the piece it produced on the right, so the session and its result read together. A card loads when it nears the viewport and shows a still until it is played. Play, pause and speed are native buttons in a bar above the terminal. On mobile the result drops under the terminal as a small clip beside its text.
+4. A row of anchors under the title jumps to the four sections. The gallery runs five across at desktop width.
+
+Checks at 1440x900 and 390x844: no horizontal scroll; signed out, nothing is requested from the sessions route and the route answers 401; signed in, a session is requested only when its card nears the viewport; copy and play work from the keyboard (Tab, Enter, Space); with reduced motion nothing plays on its own and the new transitions are off.

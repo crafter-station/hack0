@@ -10,6 +10,8 @@ type GalleryEntry = {
   credit?: string;
   /** Replay of the terminal session that rebuilt the piece, for buyers. Absent keeps the slot until it exists; null means there will be none. */
   session?: string | null;
+  /** Still shown before the session is played. Set with `session`. */
+  sessionPoster?: string;
   /** Paths under /public. Clips are muted loops; `sound` marks a video meant to be played with controls. */
   video: string;
   poster: string;
@@ -83,6 +85,7 @@ export const GALLERY: GalleryEntry[] = [
     original: "https://www.apple.com/newsroom/2025/06/apple-introduces-a-delightful-and-elegant-new-software-design/",
     credit: "Apple, nuevo diseño de software (2025)",
     session: `${material}#look-liquid-glass`,
+    sessionPoster: "npt:16:55",
     video: `${dir}/look-liquid-glass.mp4`,
     poster: `${dir}/look-liquid-glass.webp`,
     after: "Refracción en el borde, no solo blur: la barra de tabs curva la grilla que tiene detrás y un lente se levanta entre pestañas.",
@@ -94,6 +97,7 @@ export const GALLERY: GalleryEntry[] = [
     original: "https://benji.org/family-values",
     credit: "Benji Taylor, Family Values",
     session: `${material}#motion-family-morph`,
+    sessionPoster: "npt:16:30",
     video: `${dir}/motion-family-morph.mp4`,
     poster: `${dir}/motion-family-morph.webp`,
     after: "Un botón que cambia de texto con letras compartidas y una bandeja que crece desde él, con springs medidos cuadro a cuadro.",
@@ -105,6 +109,7 @@ export const GALLERY: GalleryEntry[] = [
     original: "https://landonorris.com",
     credit: "OFF+BRAND, landonorris.com",
     session: `${material}#made-lando-stack`,
+    sessionPoster: "npt:8:01",
     video: `${dir}/made-lando-stack.mp4`,
     poster: `${dir}/made-lando-stack.webp`,
     after: "El stack identificado en vivo (Lenis, GSAP, three.js) y un mecanismo rehecho: un busto 3D que gira con el scroll.",
@@ -116,6 +121,7 @@ export const GALLERY: GalleryEntry[] = [
     original: "https://www.youtube.com/watch?v=oRZ6PX8abfo",
     credit: "Nothing, film de producto de 30 s",
     session: `${material}#video-nothing-film`,
+    sessionPoster: "npt:7:50",
     video: `${dir}/video-nothing-film.mp4`,
     poster: `${dir}/video-nothing-film.webp`,
     after: "El oficio del film aplicado a un CLI: 18 segundos en Remotion con la salida real del comando.",
@@ -127,6 +133,7 @@ export const GALLERY: GalleryEntry[] = [
     original: "https://nubank.com.br",
     credit: "Koto y el equipo de Nubank, refresh 2026",
     session: `${material}#brand-nubank-system`,
+    sessionPoster: "npt:10:01",
     video: `${dir}/brand-nubank-system.mp4`,
     poster: `${dir}/brand-nubank-system.webp`,
     after: "El sistema medido en vivo y traducido a una plantilla de marca para hack0: reglas copiadas, colores no.",
