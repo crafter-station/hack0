@@ -158,7 +158,7 @@ const add = (id: string) => `npx @crafter/hack0 add ${id}`;
 const recover = (email: string) => `npx @crafter/hack0 auth recover ${email}`;
 
 /** The mail that carries a key: a first purchase (`workshop` set) or a rotation (`workshop` null). */
-export function keyMail(input: { email: string; key: string; workshop: string | null }, theme: MailTheme = SCANNER): Mail {
+export function keyMail(input: { email: string; key: string; workshop: string | null }, theme: MailTheme = THEMES.globe): Mail {
   const { email, key, workshop } = input;
   const meta = workshop ? WORKSHOPS[workshop] : undefined;
   const name = meta?.title ?? workshop;
@@ -213,7 +213,7 @@ export function keyMail(input: { email: string; key: string; workshop: string | 
 }
 
 /** A later purchase: the buyer keeps their key and gets one more workshop. */
-export function accessMail(workshop: string, theme: MailTheme = SCANNER): Mail {
+export function accessMail(workshop: string, theme: MailTheme = THEMES.globe): Mail {
   const meta = WORKSHOPS[workshop];
   const name = meta?.title ?? workshop;
   const text = [
