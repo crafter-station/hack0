@@ -104,7 +104,7 @@ export const GALLERY: GalleryEntry[] = [
     layer: "made",
     original: "https://landonorris.com",
     credit: "OFF+BRAND, landonorris.com",
-    session: null,
+    session: `${material}#made-lando-stack`,
     video: `${dir}/made-lando-stack.mp4`,
     poster: `${dir}/made-lando-stack.webp`,
     after: "El stack identificado en vivo (Lenis, GSAP, three.js) y un mecanismo rehecho: un busto 3D que gira con el scroll.",
