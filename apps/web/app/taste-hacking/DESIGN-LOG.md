@@ -177,3 +177,39 @@ The gallery said what changed in a piece; it had nowhere to say how. Each piece 
 6. **Vocabulary.** The word bench at the top on the wide grid, then a term per line under its layer. A term with a station links up to it; a term measured on a piece links to that piece by its short name.
 
 Checks at 1440x900 and 390x844: no horizontal scroll on the index, the vocabulary, the piece pages (signed out and as a buyer) or the material page; signed out, the piece's HTML carries the whole article and no session, and the access route answers 401.
+
+## The gate and the share cards (2026-11-15)
+
+Owner review: the signed-out material page was a title, one sentence and two links in the corner of an empty stage, and the share cards were a crop of the promo cover plus ten quick composites.
+
+### The gate
+
+`material/gate.tsx` is the material page for someone it cannot open for: signed out, or signed in with an email that has no purchase. Both use the same frame.
+
+1. **The pass, before it opens.** The buyer's paper pass sits on a plate, upright and torn along the line between who it is for and what it holds. Its four rows (skill, sessions, recording, gallery) carry the counts the public page already gives, with the squares empty. Pointing at the way in fills them one after the other, 40 ms apart: that is what the button opens.
+2. **One way in, one way to buy.** The primary action says which email to use. Luma is a bordered row with the price and the early bird. Signed in without a purchase, the primary action signs out and returns to sign-in, so changing account is one click instead of a paragraph about the avatar.
+3. **Help in view.** Which email, and what to do when the key did not arrive, with the recover command on the code plate. It is the only command on the gate.
+4. **A way forward.** The five pieces with a session, each linked to its public page. Nothing of a session is on the gate.
+5. **Order on a phone.** Title, the two actions, the pass, the help, the pieces. The plate lands in the first screen.
+
+Three layouts were shot side by side at 1440x900 and 390x844 (they share the phone layout):
+
+| | Layout | Pass | Pieces |
+|---|---|---|---|
+| Conservative | One 680 column | Flat, two columns, no plate | A list of rows |
+| Medium | 5/7 split, as in the hero | Upright on its plate | Five small posters in a row |
+| Bold | Plate across the top, title at the hero scale under it | Wide, 72px title | Five full posters, cut by the fold |
+
+Medium shipped. Conservative fixes the emptiness but the pass loses its plate, which is the page's language. Bold is the strongest still, but it puts the way in 620px down the page and the help below the fold, and this page has one job. Medium fits 1440x900 exactly: title, both actions, help, pass and the row of pieces end 20px above the fold.
+
+Checks at 1440x900 and 390x844, signed out and signed in without a purchase: no horizontal scroll; the page's HTML carries no session and no install command, and the sessions route answers 401; a buyer still gets the same pass and page as before. Sign-in and sign-up now take the visitor back to the page they came from.
+
+### Share cards
+
+Cards are drawn by code at build time (`_og/`, one `opengraph-image.tsx` per route), 1200x630, in JetBrains Mono on the stage colour with the one accent. The renderer reads neither WOFF2 nor WebP, so the three weights are kept as latin-subset TTF beside the cards and each poster is converted when its card is drawn. It writes PNG only; the cards are re-encoded as JPEG, which is 50 to 180 kB each.
+
+- **Workshop.** Three options: *conservative*, the title across the card with the thesis and the date under a rule; *medium*, the title beside the ticket on its plate; *bold*, the title beside three sheets pulled apart, one per layer, each with its label. Bold shipped: it is the only one where the picture is the thesis, and the three labels still read at feed size. Medium repeats the date and draws a button nobody can press.
+- **Pieces.** Chapter and layer (the layer takes the accent), the page's own title at 56 to 72px by length, and the piece's poster filling the right 504px edge to edge.
+- **Vocabulary.** It had none of its own. The title and three words per layer.
+
+Each card was read at full size and at 600x315.

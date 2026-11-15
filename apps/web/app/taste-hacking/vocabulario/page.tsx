@@ -19,6 +19,7 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: PATH },
   openGraph: { title: TITLE, description: DESCRIPTION, url: PATH, type: "article" },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
 const TERMS = VOCABULARY.flatMap((s) => s.groups.flatMap((g) => g.terms));

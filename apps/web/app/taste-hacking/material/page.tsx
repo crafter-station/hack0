@@ -19,6 +19,7 @@ import { pieceBySlug, pieceHref } from "../pieces";
 import { SessionPlayer } from "../session-player";
 import { SessionState } from "../session-state";
 import { CLI, WORKSHOP } from "../workshop";
+import { Gate } from "./gate";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -26,8 +27,6 @@ export const metadata: Metadata = {
   alternates: { canonical: "/taste-hacking/material" },
   robots: { index: false, follow: false },
 };
-
-const SIGN_IN = `/sign-in?redirect_url=${encodeURIComponent("/taste-hacking/material")}`;
 
 const RECORDED = GALLERY.filter((g) => g.session);
 
@@ -60,54 +59,6 @@ function recordingLink(links: unknown[]): BundleLink | null {
     if (typeof title === "string" && typeof url === "string" && /record|grabaci/i.test(title)) return { title, url };
   }
   return null;
-}
-
-function SignedOut() {
-  return (
-    <section className="th-gate">
-      <h1>Material</h1>
-      <p>Ingresa con el mismo email con el que te registraste en Luma. Ahí está tu compra.</p>
-      <div className="th-actions">
-        <Link className="th-cta" href={SIGN_IN}>
-          Ingresar <span aria-hidden="true">→</span>
-        </Link>
-        <a className="th-ghost" href={WORKSHOP.luma}>
-          Todavía no compré
-        </a>
-      </div>
-    </section>
-  );
-}
-
-function NotEntitled({ email }: { email: string }) {
-  return (
-    <section className="th-gate">
-      <h1>No encontramos tu compra</h1>
-      <p>
-        Entraste como <b>{email}</b>. Tu compra está en el email con el que te registraste en Luma.
-      </p>
-      <ol className="th-steps">
-        <li>
-          <h2>Si usaste otro email en Luma</h2>
-          <p>Cambia de cuenta desde tu avatar, arriba a la derecha, e ingresa con ese email.</p>
-        </li>
-        <li>
-          <h2>Si no recuerdas cuál fue</h2>
-          <p>
-            Busca un mail de {WORKSHOP.keySender}: llegó al email con el que compraste. O pide una key nueva. Llega solo si ese email tiene
-            una compra, y la key anterior deja de funcionar.
-          </p>
-          <Code label="pedir una key nueva" lines={[CLI.recover("tu@email.com")]} />
-        </li>
-        <li>
-          <h2>Si todavía no compraste</h2>
-          <p>
-            <a href={WORKSHOP.luma}>Inscríbete en Luma</a> y vuelve aquí con ese email.
-          </p>
-        </li>
-      </ol>
-    </section>
-  );
 }
 
 const SECTIONS = [
@@ -288,7 +239,7 @@ export default async function MaterialPage() {
   if (!user) {
     return (
       <main className="th-mat">
-        <SignedOut />
+        <Gate />
       </main>
     );
   }
@@ -308,7 +259,7 @@ export default async function MaterialPage() {
           when={workshopPhase(new Date(), WORKSHOP.startAt, WORKSHOP.endAt)}
         />
       ) : (
-        <NotEntitled email={email ?? primary?.emailAddress ?? "una cuenta sin email verificado"} />
+        <Gate email={email ?? primary?.emailAddress ?? "una cuenta sin email verificado"} />
       )}
     </main>
   );

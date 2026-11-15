@@ -14,6 +14,8 @@ export const WORKSHOP = {
   price: "US$20",
   /** Luma sells an early bird ticket below the general price. */
   earlyBird: "US$15",
+  /** Skills in the package besides taste-hacking itself. */
+  extraSkills: 7,
   /** Sender of the email that carries the license key. */
   keySender: "workshops@updates.hack0.dev",
 } as const;
