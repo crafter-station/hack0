@@ -16,6 +16,7 @@
     "@clerk/ui": "^1.41.2",
     "@modelcontextprotocol/server": "^2",
     "@neondatabase/serverless": "^1.2.0",
+    "asciinema-player": "3.18.0",
     "cobe": "2.0.1",
     "drizzle-orm": "^0.45.4",
     "flag-icons": "7.6.0",

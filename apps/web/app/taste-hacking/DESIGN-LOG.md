@@ -113,3 +113,67 @@ Run on a different model (gpt-6.1-sol through fx), read-only, with the code, the
 - A designed 404, sound, a loader, a case study page.
 - A hand-made input (photo, drawn type). The only hand-made assets are the clips.
 - Step 7 of the skill (run file and FRICTION entries in the skill repo).
+
+## Material page: density pass (2026-11-15)
+
+Owner review of `/taste-hacking/material`: too much empty space, code blocks glued to the prose with no highlighting, and sessions that needed a click before showing anything.
+
+1. **Density.** The rail layout is gone on this page: each section is a hairline, a one-line head (index, title, lead) and content at the full 1200px. Spacing comes from four values (`--m-sec`, `--m-head`, `--m-card`, `--m-h1`). Three settings were shot side by side at 1440: *conservative* (64 / 24 / 44, h1 at the public scale), *medium* (44 / 18 / 30, h1 32-44) and *aggressive* (26 / 12 / 18, h1 28, sessions two per row). Medium shipped. Aggressive is the shortest page, but two terminals per row put the text near 8px, which is a thumbnail and not something to watch inline.
+2. **Code.** `code.tsx`: commands on a plate, one row each, an optional label chip, a copy button per command (native button, "copiado" announced through `aria-live`). `lib/shell-tokens.ts` splits a command into prompt, runner, package, subcommand, flag, placeholder, email, path and argument. The package takes the accent; a placeholder is italic with a dashed underline, because it is the part the reader fills in. The `$` is generated content, so selecting a row never copies it.
+3. **Sessions.** Each one is an open card: number, title, layer, reference and length in the head, the terminal on the left and the piece it produced on the right, so the session and its result read together. A card loads when it nears the viewport and shows a still until it is played. Play, pause and speed are native buttons in a bar above the terminal. On mobile the result drops under the terminal as a small clip beside its text.
+4. A row of anchors under the title jumps to the four sections. The gallery runs five across at desktop width.
+
+Checks at 1440x900 and 390x844: no horizontal scroll; signed out, nothing is requested from the sessions route and the route answers 401; signed in, a session is requested only when its card nears the viewport; copy and play work from the keyboard (Tab, Enter, Space); with reduced motion nothing plays on its own and the new transitions are off.
+
+## Material page: breathing pass (2026-11-15)
+
+Owner review of the density pass: too dense now, and it repeats itself. A section had an index label ("02 · las sesiones"), a title ("Sesiones") and a chip at the top saying the same thing. Reference for the feel: emilkowal.ski and animations.dev. The principles were measured and then written in this page's language (dark, mono, one accent); nothing was copied.
+
+### Measured
+
+| | emilkowal.ski | animations.dev |
+|---|---|---|
+| Reading column | 692px box, 644px of text | 732px box, 700px of text |
+| Body | 16px / 26.4px (1.65), gray on near-white | 18px / 28.8px (1.6) |
+| Section title | 16px, weight 500: the size of the body, set apart by ink only | 26px / 32px, weight 500 |
+| Space above a section | about 130 to 150px | 80 to 200px |
+| Title to content | about 50px | 16 to 28px |
+| Between items | about 28px | 24px |
+| Elements with a border | 1 of 119 | |
+
+What carries over: one column near 680px, titles close to body size, a body line-height of 1.65, and three to five times more space between sections than inside them. Borders are the exception.
+
+### Decisions
+
+1. **One title per section.** The index labels are gone. Section numbers live in one place, the contents nav, because that is where order is useful: it says where you are out of four. The chip row is gone with them.
+2. **Contents nav.** A rail beside the column on wide screens and a bar pinned to the top under 1100px. It marks the section in view with the accent, lists the sessions with how far each was watched (not started, started, finished; kept on the device), and `j` / `k` step through the sessions. A restyled chip row was the alternative; it would still have been a second copy of the titles with nothing of its own to say.
+3. **The pass.** The header is the workshop ticket again, in paper: who it belongs to, what it opened (skill, sessions, recording, gallery) and one action, install the skill. It replaces "Entraste como…".
+4. **Sessions.** One per row: a quiet line (number, title, layer, length), the terminal at the full width of the wide grid, and the piece it produced as a small clip with one sentence under it. A session opens where it was left. The live cases follow as the same line set back, with the day they arrive.
+5. **Recording, before there is one.** A plate with how long until the workshop (counted in calendar days on the server), the date in both time zones, what it will contain, a link to the event and a way back to the sessions.
+6. **Gallery, here and on the public page.** The clip and one line (title, layer). Before, after and reference sit behind a native disclosure, one open at a time, so nothing is hover-only. Three across on desktop. Pieces without a session no longer carry a line saying so.
+7. **Fewer boxes.** Code plates, the copy button, the player bar and its buttons lost their borders; sections lost their hairline.
+
+### Three settings, shot side by side
+
+| | Column | Between sections | Between sessions | Sessions | Nav |
+|---|---|---|---|---|---|
+| Conservative | 720 | 88 | 48 | terminal with the result beside it, at 1200 | bar on every width |
+| Medium | 680 | 136 | 72 | terminal across the 944 grid, result under it | rail + bar |
+| Aggressive | 640 | 184 | 112 | everything inside the column | rail + bar |
+
+Medium shipped. Conservative still reads as the dense page with more margin, and its side column brings back a second thing to look at per session. Aggressive is the calmest still, but a terminal inside a 640px column renders at 8.7px, against 12.8px on the wide grid: the session stops being readable in place, which is the one thing this page is for.
+
+Checks at 1440x900 and 390x844: no horizontal scroll on either page; signed out, the sessions route is not requested and answers 401; `j` / `k`, play, copy and the gallery disclosure work from the keyboard; with reduced motion nothing plays on its own, the nav and disclosure transitions are off and `j` / `k` jump without smooth scrolling.
+
+## Piece pages and the chapter index (2026-11-15)
+
+The gallery said what changed in a piece; it had nowhere to say how. Each piece now has a public page, the vocabulary has its own, and the workshop reads as ten chapters: 00 the thesis, 01 the vocabulary, 02 to 04 the three live cases, 05 to 09 the pieces by layer.
+
+1. **One reading layout.** A piece and the vocabulary use the material page's column and rhythm (680px, 136px between sections, h2 at 20px) and its contents nav, without the session list. Nothing new was drawn for them: the clip sits on the gallery's plate, commands on the code plate, the session in the same player.
+2. **A piece's page.** Title and reference, the clip beside its before and after, the three layers named (a layer the sources do not cover says so), the measured values as a two-column table with hairlines between rows, the breakdown, the lesson at h2 weight, the questions, the pieces that share a word with it, then the session. Previous and next follow chapter order.
+3. **The end of the page.** Everyone gets the offer in the page's HTML: what the session contains, the price, the link to Luma and a way in. A signed-in visitor is checked against the gated route; a buyer gets the session player and the install commands in place of the offer. The page itself stays static, and nothing about a session is in it.
+4. **Chapter index.** A number, a title and one line per entry, two balanced columns on the public page and one in the material column. The live cases are numbered placeholders until the workshop ends (`lib/live-cases.ts`), and the public page is rebuilt every minute so they open without a deploy. Section labels on the public page lost their numbers, so chapter numbers are the only numbering.
+5. **Gallery cards.** The title is a link to the piece's page. The disclosure moved to the end of the same line, on the layer label and the plus.
+6. **Vocabulary.** The word bench at the top on the wide grid, then a term per line under its layer. A term with a station links up to it; a term measured on a piece links to that piece by its short name.
+
+Checks at 1440x900 and 390x844: no horizontal scroll on the index, the vocabulary, the piece pages (signed out and as a buyer) or the material page; signed out, the piece's HTML carries the whole article and no session, and the access route answers 401.

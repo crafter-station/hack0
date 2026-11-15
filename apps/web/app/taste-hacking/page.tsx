@@ -3,8 +3,10 @@ import { join } from "node:path";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { JsonLd } from "@/components/json-ld";
+import { liveCasesOpen } from "@/lib/live-cases";
 import { SITE } from "@/lib/site";
 import { Bench } from "./bench";
+import { ChapterIndex } from "./chapter-index";
 import { GALLERY } from "./gallery";
 import { GalleryGrid } from "./gallery-grid";
 import { Ticket } from "./ticket";
@@ -12,6 +14,9 @@ import { WordBench } from "./word-bench";
 import { AGENDA, LAYERS, TAKEAWAYS, WORKSHOP } from "./workshop";
 
 const DESCRIPTION = `${WORKSHOP.subtitle}. Workshop online de 90 minutos con Railly Hugo, el jueves 19 de noviembre.`;
+
+/** The live cases open on a date, so the page is rebuilt often enough to flip without a deploy. */
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Taste hacking · workshop de hack0",
@@ -37,15 +42,26 @@ const EVENT_LD = {
   performer: { "@type": "Person", name: "Railly Hugo" },
 };
 
-/** What this page is made of, for the third layer. The clip weight is read from disk at build time. */
+const LOOPS = GALLERY.filter((g) => !g.sound);
+
+/** Weight of the looping clips, read from disk; null where the page is rebuilt without the public folder beside it. */
+function loopsWeight(): number | null {
+  try {
+    return LOOPS.reduce((sum, g) => sum + statSync(join(process.cwd(), "public", g.video)).size, 0);
+  } catch {
+    // The count still reads without the weight, and a rebuild must not fail over a figure.
+    return null;
+  }
+}
+
+/** What this page is made of, for the third layer. */
 function madeOf(): string[] {
-  const loops = GALLERY.filter((g) => !g.sound);
-  const bytes = loops.reduce((sum, g) => sum + statSync(join(process.cwd(), "public", g.video)).size, 0);
+  const bytes = loopsWeight();
   return [
     "Next.js 16 y React 19",
     "CSS plano, sin librerías de animación",
     "JetBrains Mono en 500, 700 y 800",
-    `${loops.length} clips en loop, ${Math.round(bytes / 1024)} kB entre todos`,
+    bytes === null ? `${LOOPS.length} clips en loop` : `${LOOPS.length} clips en loop, ${Math.round(bytes / 1024)} kB entre todos`,
   ];
 }
 
@@ -80,7 +96,7 @@ export default function TasteHackingPage() {
 
       <section className="th-section" id="capas">
         <header>
-          <p className="th-index">01 · la tesis</p>
+          <p className="th-index">00 · la tesis</p>
           <h2>Todo lo que ves tiene tres capas</h2>
           <p className="th-lead">Si nombras cada capa, se la puedes pedir a un agente. Estas son las palabras, y tres se pueden tocar.</p>
         </header>
@@ -120,21 +136,27 @@ export default function TasteHackingPage() {
         </div>
       </section>
 
-      <section className="th-section" id="galeria">
+      <section className="th-section" id="indice">
         <header>
-          <p className="th-index">02 · la galería</p>
+          <p className="th-index">el índice</p>
           <h2>Piezas desarmadas y vueltas a armar</h2>
           <p className="th-lead">
-            Hay {GALLERY.length} en la galería. Cada una dice qué capa cambió y con qué palabras. Se suman más antes del jueves.
+            Cada pieza tiene su página con la referencia, las 3 capas nombradas, el clip, el antes y el después y los valores medidos. Hay{" "}
+            {GALLERY.length} y se suman más antes del jueves.
           </p>
-          <p className="th-label th-swipe">desliza para ver las {GALLERY.length}</p>
         </header>
-        <GalleryGrid more />
+        <div className="th-index-body">
+          <ChapterIndex open={liveCasesOpen()} />
+          <div id="galeria">
+            <p className="th-label th-swipe">desliza para ver las {GALLERY.length}</p>
+            <GalleryGrid more />
+          </div>
+        </div>
       </section>
 
       <section className="th-section" id="agenda">
         <header>
-          <p className="th-index">03 · el workshop</p>
+          <p className="th-index">el workshop</p>
           <h2>90 minutos, en vivo</h2>
           <p className="th-lead">La mitad del tiempo se va en tres casos reales.</p>
         </header>
@@ -181,7 +203,7 @@ export default function TasteHackingPage() {
 
       <section className="th-section th-close">
         <header>
-          <p className="th-index">04 · la entrada</p>
+          <p className="th-index">la entrada</p>
           <h2>
             Nombra lo que ves.
             <br />
