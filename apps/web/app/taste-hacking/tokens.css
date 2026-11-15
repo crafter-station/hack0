@@ -1,0 +1,28 @@
+/* Taste hacking tokens. Dark in both themes, so they are pinned on the route wrapper. */
+.th {
+  --paper: #111110;
+  --well: #171716;
+  --ink: #f3f0e8;
+  --mute: #a8a69d;
+  --hair: #6a6862;
+  --rule: #f3f0e822;
+  --card: #f3f0e8;
+  --card-ink: #111110;
+  --card-mute: #5d5b55;
+  --card-rule: #11111022;
+
+  --t-micro: 11px;
+  --t-small: 13px;
+  --t-body: 15px;
+  --t-lead: 17px;
+  --t-h3: 20px;
+  --t-h2: clamp(24px, 2.4vw, 30px);
+  --t-h1: clamp(38px, 4.3vw, 58px);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+  --d-press: 150ms;
+  --d-hover: 200ms;
+  --d-reveal: 600ms;
+  --d-stagger: 40ms;
+}
