@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-const FROM = process.env.HACK0_MAIL_FROM ?? "hack0 <workshops@hack0.dev>";
+const FROM = process.env.HACK0_MAIL_FROM ?? "hack0 <workshops@updates.hack0.dev>";
 
 export async function sendKey(email: string, key: string, workshop: string | null): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
