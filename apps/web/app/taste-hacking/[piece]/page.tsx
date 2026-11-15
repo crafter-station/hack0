@@ -29,7 +29,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const piece = pieceByPath((await params).piece);
   if (!piece) return {};
   const url = pieceHref(piece);
-  const image = { url: `/taste-hacking/og/${piece.slug}.jpg`, width: 1200, height: 630, alt: piece.title };
   return {
     title: piece.seoTitle,
     description: piece.metaDescription,
@@ -41,9 +40,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "article",
       publishedTime: PIECES_PUBLISHED,
       authors: ["Railly Hugo"],
-      images: [image],
     },
-    twitter: { card: "summary_large_image", title: piece.seoTitle, description: piece.metaDescription, images: [image.url] },
+    twitter: { card: "summary_large_image", title: piece.seoTitle, description: piece.metaDescription },
   };
 }
 

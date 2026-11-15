@@ -1221,31 +1221,6 @@ html:has(.th) {
   justify-content: flex-end;
   padding-top: 8px;
 }
-.th-gate {
-  padding: clamp(24px, 4vw, 48px) 0 0;
-}
-.th-gate:only-child,
-.th-account + .th-gate:last-child {
-  padding-bottom: clamp(48px, 8vw, 96px);
-}
-.th-gate h1 {
-  font-size: var(--t-h1);
-  font-weight: 800;
-  letter-spacing: -0.055em;
-  line-height: 0.95;
-  text-wrap: balance;
-}
-.th-gate > p {
-  margin-top: 16px;
-  max-width: 36em;
-  color: var(--mute);
-  text-wrap: pretty;
-}
-.th-gate b {
-  color: var(--ink);
-  font-weight: 700;
-  overflow-wrap: anywhere;
-}
 .th-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1265,36 +1240,6 @@ html:has(.th) {
     color: #fff;
   }
 }
-.th-ghost {
-  color: var(--mute);
-  font-size: var(--t-small);
-}
-.th-steps {
-  margin-top: 32px;
-  max-width: 720px;
-  border-top: 1px solid var(--rule);
-}
-.th-steps > li {
-  padding: 18px 0;
-  border-bottom: 1px solid var(--rule);
-}
-.th-steps h2 {
-  font-size: var(--t-body);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-.th-steps p {
-  margin-top: 4px;
-  color: var(--mute);
-  font-size: var(--t-small);
-}
-.th-steps p a {
-  color: var(--ink);
-}
-.th-steps .th-code {
-  margin-top: 12px;
-}
-
 /* Material: one reading column beside its contents. Space sits between blocks, not inside them. */
 .th:has(.th-mat) {
   --m-col: 680px;
@@ -1319,16 +1264,6 @@ html:has(.th) {
   top: 0;
   right: 0;
   padding-top: 8px;
-}
-.th-mat .th-gate {
-  padding-top: 8px;
-}
-.th-mat .th-gate h1 {
-  font-size: var(--m-h1);
-  padding-right: 44px;
-}
-.th-mat .th-gate > p {
-  margin-top: 10px;
 }
 .th-mat-body {
   min-width: 0;
@@ -1393,7 +1328,8 @@ html:has(.th) {
   font-size: var(--t-micro);
   font-weight: 700;
 }
-.th-pass h1 {
+.th-pass h1,
+.th-pass h2 {
   position: relative;
   margin-top: 22px;
   padding-top: 14px;
@@ -1402,7 +1338,8 @@ html:has(.th) {
   letter-spacing: -0.06em;
   line-height: 0.95;
 }
-.th-pass h1::before {
+.th-pass h1::before,
+.th-pass h2::before {
   content: "";
   position: absolute;
   inset: 0 auto auto 0;
@@ -1457,6 +1394,296 @@ html:has(.th) {
     display: grid;
     border-top: 0;
     border-left: 1px dashed #11111055;
+  }
+}
+
+/* The gate: the material page for someone it cannot open for yet. The pass sits on its plate with every row empty. */
+.th-gate {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding-top: 28px;
+}
+/* On a phone the pass comes right after the way in, and the help after the pass. */
+.th-gate-intro {
+  display: contents;
+}
+.th-gate-plate {
+  margin-top: 32px;
+}
+.th-gate-help {
+  order: 1;
+}
+.th-gate-glimpse {
+  order: 2;
+  margin-top: 40px;
+}
+.th-gate h1 {
+  max-width: 13em;
+  padding-right: 44px;
+  font-size: var(--m-h1);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 1;
+  text-wrap: balance;
+}
+.th-gate-lead {
+  margin-top: 16px;
+  max-width: 34em;
+  color: var(--mute);
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+.th-gate-lead b {
+  color: var(--ink);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.th-gate-actions {
+  display: grid;
+  gap: 10px;
+  max-width: 488px;
+  margin-top: 28px;
+}
+.th-gate-actions .th-cta {
+  width: 100%;
+  margin-top: 0;
+  border: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.th-gate-buy {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 16px;
+  padding: 13px 16px;
+  box-shadow: inset 0 0 0 1px var(--rule);
+  font-size: var(--t-small);
+  touch-action: manipulation;
+  transition:
+    box-shadow var(--d-hover) var(--ease-out),
+    transform var(--d-press) var(--ease-out);
+}
+.th .th-gate-buy {
+  text-decoration: none;
+}
+.th-gate-buy:active {
+  transform: scale(0.97);
+}
+.th-gate-buy span {
+  font-size: var(--t-body);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.th-gate-buy i {
+  display: inline-block;
+  font-style: normal;
+  color: var(--mute);
+}
+.th-gate-buy small {
+  font-size: inherit;
+  color: var(--mute);
+}
+.th-gate-help {
+  max-width: 488px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+  font-size: var(--t-small);
+}
+.th-gate-help dl {
+  display: grid;
+  gap: 14px;
+  line-height: 1.55;
+}
+.th-gate-help dt {
+  font-weight: 700;
+}
+.th-gate-help dd {
+  margin-top: 2px;
+  color: var(--mute);
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+.th-gate-help .th-code {
+  margin-top: 16px;
+}
+.th-gate-plate .th-plate-stage {
+  min-height: 0;
+  padding: 28px 12px;
+}
+
+/* The pass before it opens: an upright ticket, torn along the line between who it is for and what it holds. */
+.th-pass.th-pass-locked {
+  grid-template-columns: minmax(0, 1fr);
+  width: min(100%, 344px);
+}
+.th-pass-locked .th-pass-status {
+  position: relative;
+  display: block;
+  border-left: 0;
+  border-top: 1px dashed #11111055;
+}
+.th-pass-locked .th-pass-status::before,
+.th-pass-locked .th-pass-status::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--well);
+}
+.th-pass-locked .th-pass-status::before {
+  left: -8px;
+}
+.th-pass-locked .th-pass-status::after {
+  right: -8px;
+}
+.th-pass-locked .th-pass-status div::before {
+  transition: background-color var(--d-hover) var(--ease-out);
+}
+.th-pass-locked .th-pass-status div:nth-child(2)::before {
+  transition-delay: var(--d-stagger);
+}
+.th-pass-locked .th-pass-status div:nth-child(3)::before {
+  transition-delay: calc(var(--d-stagger) * 2);
+}
+.th-pass-locked .th-pass-status div:nth-child(4)::before {
+  transition-delay: calc(var(--d-stagger) * 3);
+}
+
+/* A way forward for someone who has not bought: the pieces with a session, each on its public page. */
+.th-gate-glimpse {
+  min-width: 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+}
+.th-gate-glimpse header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  font-size: var(--t-small);
+}
+.th-gate-glimpse h2 {
+  font-size: inherit;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.th-gate-glimpse header p {
+  color: var(--mute);
+}
+.th-gate-glimpse ul {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 216px;
+  gap: 20px;
+  margin: 18px -20px 0;
+  padding-inline: 20px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 20px;
+  scrollbar-width: none;
+}
+.th-gate-glimpse ul::-webkit-scrollbar {
+  display: none;
+}
+.th-gate-glimpse li {
+  min-width: 0;
+  scroll-snap-align: start;
+}
+.th .th-gate-glimpse a {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: end;
+  gap: 14px;
+  text-decoration: none;
+}
+.th-gate-glimpse img {
+  display: block;
+  width: 72px;
+  height: 90px;
+  object-fit: cover;
+  background: var(--well);
+  box-shadow: 0 0 0 1px var(--rule);
+}
+.th-gate-glimpse a span {
+  display: grid;
+  gap: 2px;
+  font-size: var(--t-small);
+}
+.th-gate-glimpse b {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.th-gate-glimpse small {
+  font-size: inherit;
+  color: var(--mute);
+}
+.th-gate-glimpse a i {
+  margin-top: 6px;
+  font-style: normal;
+  color: var(--hair);
+  transition:
+    transform var(--d-hover) var(--ease-out),
+    color var(--d-hover) var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .th-gate-buy:hover {
+    box-shadow: inset 0 0 0 1px var(--ink);
+  }
+  .th-gate-glimpse a:hover i {
+    transform: translateX(4px);
+    color: var(--acc);
+  }
+  /* Pointing at the way in fills the rows of the pass, one after the other: this is what it opens. */
+  .th-gate:has(.th-gate-actions .th-cta:hover) .th-pass-locked .th-pass-status div::before {
+    background: var(--card-ink);
+  }
+}
+@media (min-width: 1000px) {
+  .th-gate {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 48px 56px;
+    padding-top: 36px;
+  }
+  .th-gate-intro {
+    display: block;
+    min-width: 0;
+  }
+  .th-gate-plate,
+  .th-gate-glimpse {
+    margin-top: 0;
+  }
+  .th-gate .th-gate-plate {
+    grid-column: 2;
+    grid-row: 1;
+    grid-template-rows: auto minmax(0, 1fr);
+    align-content: stretch;
+  }
+  .th-gate-plate .th-plate-stage {
+    padding-block: 36px;
+  }
+  .th-gate-glimpse {
+    grid-column: 1 / -1;
+  }
+  .th-gate-glimpse ul {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    margin-inline: 0;
+    padding-inline: 0;
+    overflow: visible;
+  }
+  /* The account button sits in the corner above the plate. */
+  .th-account + .th-gate {
+    padding-top: 56px;
   }
 }
 
@@ -2350,7 +2577,10 @@ html:has(.th) {
   .th .th-rail a,
   .th .th-rail a::after,
   .th .th-read-nav a,
-  .th .th-piece summary i {
+  .th .th-piece summary i,
+  .th .th-gate-buy,
+  .th .th-gate-glimpse a i,
+  .th .th-pass-locked .th-pass-status div::before {
     transition: none;
   }
 }

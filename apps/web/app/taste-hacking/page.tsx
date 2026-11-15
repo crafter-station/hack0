@@ -23,6 +23,7 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: "/taste-hacking" },
   openGraph: { title: "Taste hacking", description: DESCRIPTION, url: "/taste-hacking", type: "website" },
+  twitter: { card: "summary_large_image", title: "Taste hacking", description: DESCRIPTION },
 };
 
 const EVENT_LD = {
@@ -34,7 +35,7 @@ const EVENT_LD = {
   eventStatus: "https://schema.org/EventScheduled",
   eventAttendanceMode: "https://schema.org/OnlineEventAttendanceMode",
   location: { "@type": "VirtualLocation", url: WORKSHOP.luma },
-  image: [`${SITE}/taste-hacking/opengraph-image.jpg`],
+  image: [`${SITE}/taste-hacking/opengraph-image`],
   description: DESCRIPTION,
   url: `${SITE}/taste-hacking`,
   offers: { "@type": "Offer", url: WORKSHOP.luma, price: "20", priceCurrency: "USD", availability: "https://schema.org/InStock" },
