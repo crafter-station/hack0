@@ -114,7 +114,7 @@ export const PIECES: Piece[] = [
       "La sorpresa fue el blur. El de Apple ronda los 3 pt, contra los 20 a 40 px del glassmorphism. Aun con los valores medidos, el primer intento parecía vidrio esmerilado porque las líneas de la grilla entraban derechas al borde. Se arregló con una banda de borde más ancha y una distorsión de barril con caída cúbica, que curva las líneas cerca del rim y deja el centro plano.",
     ],
     lesson: "Blur solo es glassmorphism. Liquid Glass sale de la refracción concentrada en el borde.",
-    paidTeaser: "La sesión completa muestra los prompts, las tres rondas de crítica y los archivos de la página, en unos 54 minutos.",
+    paidTeaser: "La sesión completa muestra los prompts, las tres rondas de crítica y los archivos de la página, en unos 47 minutos.",
     faq: [
       {
         q: "¿Liquid Glass funciona en Safari y Firefox?",
@@ -215,7 +215,7 @@ export const PIECES: Piece[] = [
     ],
     lesson: "La coreografía también se mide. Compara la secuencia completa además de cada curva.",
     paidTeaser:
-      "La sesión completa muestra cómo se siguió cada clip cuadro a cuadro, cómo se ajustaron los springs y los archivos del resultado, en unos 44 minutos.",
+      "La sesión completa muestra cómo se siguió cada clip cuadro a cuadro, cómo se ajustaron los springs y los archivos del resultado, en unos 37 minutos.",
     faq: [
       {
         q: "¿Qué valores de spring usa la animación de Family?",
@@ -394,7 +394,7 @@ export const PIECES: Piece[] = [
     ],
     lesson: "Los globals mienten por omisión. Verifica cada librería en el bundle y en el runtime.",
     paidTeaser:
-      "La sesión completa muestra el fingerprint paso a paso, las cuatro rondas de crítica y el código del mecanismo rehecho, en unos 31 minutos.",
+      "La sesión completa muestra el fingerprint paso a paso, las cuatro rondas de crítica y el código del mecanismo rehecho, en unos 27 minutos.",
     faq: [
       {
         q: "¿Con qué está hecho landonorris.com?",
@@ -454,7 +454,7 @@ export const PIECES: Piece[] = [
     ],
     lesson: "Mide antes de escribir el brief. El estilo que recuerdas puede no estar en el video.",
     paidTeaser:
-      "La sesión completa muestra la medición del film, la receta de estilo, las dos rondas de crítica y el proyecto de Remotion, en unos 67 minutos.",
+      "La sesión completa muestra la medición del film, la receta de estilo, las dos rondas de crítica y el proyecto de Remotion, en unos 62 minutos.",
     faq: [
       {
         q: "¿Cuántos cortes por minuto tiene un video de producto?",
@@ -567,7 +567,7 @@ export const PIECES: Piece[] = [
     ],
     lesson: "Mide, no recuerdes. Los computed styles le ganan a lo que crees saber de una marca.",
     paidTeaser:
-      "La sesión completa muestra la extracción del sistema, la plantilla de marca llena dos veces y las dos rondas de crítica, en unos 66 minutos.",
+      "La sesión completa muestra la extracción del sistema, la plantilla de marca llena dos veces y las dos rondas de crítica, en unos 43 minutos.",
     faq: [
       {
         q: "¿Cuál es el código del color morado de Nubank?",
