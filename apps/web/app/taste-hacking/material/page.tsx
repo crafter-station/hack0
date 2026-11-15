@@ -2,8 +2,12 @@ import { UserButton } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { sql } from "@/lib/db";
 import { getEntitlementByEmail } from "@/lib/entitlements";
+import { verifiedPrimaryEmail } from "@/lib/session-access";
+import { GALLERY, LAYER_LABEL } from "../gallery";
 import { GalleryGrid } from "../gallery-grid";
+import { SessionPlayer } from "../session-player";
 import { CLI, WORKSHOP } from "../workshop";
 
 export const dynamic = "force-dynamic";
@@ -15,8 +19,23 @@ export const metadata: Metadata = {
 
 const SIGN_IN = `/sign-in?redirect_url=${encodeURIComponent("/taste-hacking/material")}`;
 
-/** The three live cases; their sessions arrive in the package bundle after the workshop. */
-const SESSIONS = ["Una animación viral de X", "Una landing premium", "Un estilo de edición de video"];
+/** The three live cases; their sessions arrive after the workshop. */
+const LIVE_CASES = ["Una animación viral de X", "Una landing premium", "Un estilo de edición de video"];
+
+const RECORDED = GALLERY.filter((g) => g.session);
+
+/** Playback length in seconds per recorded session; a missing row means it is not uploaded yet. */
+async function durations(): Promise<Map<string, number>> {
+  const rows = (await sql()`select slug, duration_s from sessions where workshop_id = ${WORKSHOP.id}`) as {
+    slug: string;
+    duration_s: number;
+  }[];
+  return new Map(rows.map((r) => [r.slug, r.duration_s]));
+}
+
+function minutes(seconds: number): string {
+  return `${Math.max(1, Math.round(seconds / 60))} min`;
+}
 
 type BundleLink = { title: string; url: string };
 
@@ -80,7 +99,7 @@ function NotEntitled({ email }: { email: string }) {
   );
 }
 
-function Material({ email, recording }: { email: string; recording: BundleLink | null }) {
+function Material({ email, recording, lengths }: { email: string; recording: BundleLink | null; lengths: Map<string, number> }) {
   return (
     <>
       <section className="th-gate">
@@ -117,12 +136,29 @@ function Material({ email, recording }: { email: string; recording: BundleLink |
         <header>
           <p className="th-index">02 · las sesiones</p>
           <h2>Sesiones</h2>
-          <p className="th-lead">Claude Code tal cual, sin editar. Se publican después del workshop.</p>
+          <p className="th-lead">
+            Claude Code tal cual, con las pausas largas acortadas. Las piezas de la galería ya están; los casos en vivo llegan después del
+            workshop.
+          </p>
         </header>
         <ol className="th-sessions">
-          {SESSIONS.map((s, i) => (
+          {RECORDED.map((g, i) => {
+            const length = lengths.get(g.slug);
+            return (
+              <li key={g.slug} id={g.slug}>
+                <span>sesión {String(i + 1).padStart(2, "0")}</span>
+                <h3>{g.title}</h3>
+                <span>{length ? minutes(length) : "pendiente"}</span>
+                <p className="th-session-meta">
+                  {LAYER_LABEL[g.layer]} · ref: {g.credit}
+                </p>
+                {length ? <SessionPlayer slug={g.slug} title={g.title} /> : null}
+              </li>
+            );
+          })}
+          {LIVE_CASES.map((s, i) => (
             <li key={s}>
-              <span>sesión {String(i + 1).padStart(2, "0")}</span>
+              <span>sesión {String(RECORDED.length + i + 1).padStart(2, "0")}</span>
               <h3>{s}</h3>
               <span>pendiente</span>
             </li>
@@ -150,7 +186,7 @@ function Material({ email, recording }: { email: string; recording: BundleLink |
         <header>
           <p className="th-index">04 · la galería</p>
           <h2>Galería completa</h2>
-          <p className="th-lead">La sesión de cada pieza aparece en su ficha cuando se publica.</p>
+          <p className="th-lead">Cada ficha con sesión lleva a ella.</p>
         </header>
         <GalleryGrid />
       </section>
@@ -168,7 +204,7 @@ export default async function MaterialPage() {
     );
   }
   const primary = user.primaryEmailAddress;
-  const email = primary?.verification?.status === "verified" ? primary.emailAddress : null;
+  const email = verifiedPrimaryEmail(user);
   const access = email ? await getEntitlementByEmail(email, WORKSHOP.id) : null;
   return (
     <main>
@@ -176,7 +212,7 @@ export default async function MaterialPage() {
         <UserButton />
       </div>
       {email && access?.hasEntitlement ? (
-        <Material email={email} recording={recordingLink(access.packageBundle?.links ?? [])} />
+        <Material email={email} recording={recordingLink(access.packageBundle?.links ?? [])} lengths={await durations()} />
       ) : (
         <NotEntitled email={email ?? primary?.emailAddress ?? "una cuenta sin email verificado"} />
       )}

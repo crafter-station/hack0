@@ -1417,3 +1417,90 @@ html:has(.th) {
     transition: none;
   }
 }
+
+/* Session replays on the material page. */
+.th-cast-open,
+.th-cast-bar button {
+  font: inherit;
+  font-size: var(--t-small);
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  transition:
+    transform var(--d-press) var(--ease-out),
+    border-color var(--d-hover) var(--ease-out);
+}
+.th-cast-open {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 14px;
+  font-weight: 800;
+}
+.th-cast-open:active,
+.th-cast-bar button:active {
+  transform: scale(0.97);
+}
+.th-cast-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  font-size: var(--t-micro);
+  color: var(--mute);
+}
+.th-cast-bar button {
+  padding: 3px 9px;
+}
+.th-cast-bar button[aria-pressed="true"] {
+  border-color: var(--acc);
+  color: var(--acc);
+}
+.th-cast-bar span:last-child {
+  margin-left: auto;
+}
+.th-cast-host {
+  border: 1px solid var(--rule);
+  background: var(--well);
+}
+.th-cast-host .ap-wrapper .ap-player {
+  background: var(--well);
+}
+.th-cast-host .ap-progressbar .ap-bar {
+  background: var(--acc);
+}
+.th-cast-fail {
+  padding: 12px 0;
+  color: var(--mute);
+}
+.th-sessions li {
+  scroll-margin-top: 24px;
+}
+.th-sessions li:target h3 {
+  color: var(--acc);
+}
+.th-sessions li {
+  grid-template-columns: 84px 1fr auto;
+}
+.th-sessions .th-session-meta,
+.th-sessions .th-cast {
+  grid-column: 2 / -1;
+}
+.th-session-meta {
+  font-size: var(--t-micro);
+  color: var(--mute);
+}
+fieldset.th-cast-bar {
+  border: 0;
+  margin: 0;
+  min-width: 0;
+}
+.th-cast-bar .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}

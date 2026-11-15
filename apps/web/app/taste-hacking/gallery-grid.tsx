@@ -28,6 +28,12 @@ export function GalleryGrid({ more = false }: { more?: boolean }) {
               <dt>{g.before ? "después" : "pieza"}</dt>
               <dd>{g.after}</dd>
             </div>
+            {g.credit ? (
+              <div>
+                <dt>ref</dt>
+                <dd>{g.credit}</dd>
+              </div>
+            ) : null}
           </dl>
           <p className="th-piece-links">
             {g.session ? (
@@ -35,7 +41,7 @@ export function GalleryGrid({ more = false }: { more?: boolean }) {
                 ver la sesión <span aria-hidden="true">→</span>
               </a>
             ) : (
-              <span>sesión: después del workshop</span>
+              <span>{g.session === null ? "" : "sesión: después del workshop"}</span>
             )}
             {g.original ? (
               <a href={g.original} rel="noreferrer">
