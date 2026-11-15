@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { communityIndex, hubIndex, sitemapEvents } from "@/lib/catalog";
 import { SITE } from "@/lib/site";
+import { PIECES, pieceHref } from "./taste-hacking/pieces";
 
 export const revalidate = 3600;
 
@@ -15,6 +16,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...tags.map((h) => ({ url: `${SITE}/tema/${h.slug}`, changeFrequency: "weekly" as const, priority: 0.6 })),
     ...events.map((e) => ({ url: `${SITE}/eventos/${e.slug}`, lastModified: e.lastModified, priority: 0.8 })),
     { url: `${SITE}/taste-hacking`, changeFrequency: "daily", priority: 0.9 },
+    { url: `${SITE}/taste-hacking/vocabulario`, changeFrequency: "weekly", priority: 0.8 },
+    ...PIECES.map((p) => ({ url: `${SITE}${pieceHref(p)}`, changeFrequency: "weekly" as const, priority: 0.8 })),
     { url: `${SITE}/brand`, priority: 0.3 },
   ];
 }

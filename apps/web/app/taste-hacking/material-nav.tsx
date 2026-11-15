@@ -6,6 +6,8 @@ import { useSessionProgress } from "./session-progress";
 type Section = { id: string; label: string };
 type SessionLink = { slug: string; title: string };
 
+const NO_SESSIONS: SessionLink[] = [];
+
 /** A block counts as current once its top passes this share of the viewport. */
 const READ_LINE = 0.35;
 
@@ -26,9 +28,9 @@ function typing(target: EventTarget | null): boolean {
 
 /**
  * The page's contents: a rail beside the column on desktop, a bar pinned to the top on small screens.
- * It marks the section in view and how far each session was watched; j and k step through the sessions.
+ * It marks the section in view and, on a page with sessions, how far each was watched; j and k step through them.
  */
-export function MaterialNav({ sections, sessions }: { sections: Section[]; sessions: SessionLink[] }) {
+export function MaterialNav({ sections, sessions = NO_SESSIONS }: { sections: Section[]; sessions?: SessionLink[] }) {
   const [section, setSection] = useState(-1);
   const [session, setSession] = useState(-1);
   const progress = useSessionProgress();
@@ -100,10 +102,12 @@ export function MaterialNav({ sections, sessions }: { sections: Section[]; sessi
           </li>
         ))}
       </ol>
-      <p className="th-rail-keys">
-        <kbd>j</kbd>
-        <kbd>k</kbd> entre sesiones
-      </p>
+      {sessions.length > 0 ? (
+        <p className="th-rail-keys">
+          <kbd>j</kbd>
+          <kbd>k</kbd> entre sesiones
+        </p>
+      ) : null}
     </nav>
   );
 }

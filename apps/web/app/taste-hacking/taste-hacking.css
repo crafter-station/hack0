@@ -1001,27 +1001,35 @@ html:has(.th) {
   height: 100%;
   object-fit: cover;
 }
-.th-piece details {
+/* The title is the way into the piece's page; the disclosure sits at the end of the same line. */
+.th-piece-body {
+  position: relative;
   margin-top: 4px;
 }
+.th-piece-body h3 {
+  margin-right: 116px;
+  padding: 11px 0;
+  font-size: var(--t-body);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.th-piece-body h3 a {
+  color: var(--ink);
+}
 .th-piece summary {
+  position: absolute;
+  top: 0;
+  right: 0;
   display: flex;
   align-items: baseline;
   gap: 10px;
-  padding: 11px 0;
+  padding: 11px 0 11px 12px;
   list-style: none;
   cursor: pointer;
   touch-action: manipulation;
 }
 .th-piece summary::-webkit-details-marker {
   display: none;
-}
-.th-piece summary h3 {
-  flex: 1;
-  min-width: 0;
-  font-size: var(--t-body);
-  font-weight: 800;
-  letter-spacing: -0.02em;
 }
 .th-piece-layer {
   font-size: var(--t-small);
@@ -1082,6 +1090,61 @@ html:has(.th) {
   display: grid;
   gap: 6px;
   max-width: 14em;
+}
+
+/* Chapters: the workshop as a contents list. A number, a line, and the pieces under their layer. */
+.th-index-body {
+  display: grid;
+  gap: 64px;
+  min-width: 0;
+}
+.th-index-body > div {
+  min-width: 0;
+}
+.th-chapters > li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 12px;
+  break-inside: avoid;
+}
+.th-chapters > li + li {
+  margin-top: 22px;
+}
+.th-ch-n {
+  font-size: var(--t-small);
+  color: var(--hair);
+  font-variant-numeric: tabular-nums;
+}
+.th-chapters h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  font-size: var(--t-body);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.th-chapters a {
+  color: var(--ink);
+}
+.th-chapters p {
+  margin-top: 3px;
+  font-size: var(--t-small);
+  line-height: 1.5;
+  color: var(--mute);
+  text-wrap: pretty;
+}
+.th-chapters ul {
+  display: grid;
+  gap: 14px;
+  margin-top: 12px;
+}
+.th-chapters [data-wait="true"] h3 {
+  color: var(--mute);
+}
+.th-mat-section > .th-chapters {
+  margin-top: 40px;
 }
 
 /* Agenda: a row is as tall as its share of the 90 minutes */
@@ -1859,6 +1922,258 @@ html:has(.th) {
   margin-top: 40px;
 }
 
+/* Reading pages: a piece or the vocabulary, in the material page's column and rhythm. */
+.th-read .th-mat-body > .th-read-bench,
+.th-read .th-mat-section > .th-paid-open {
+  max-width: none;
+}
+.th-read-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: var(--t-small);
+  color: var(--mute);
+}
+.th-read-kicker a,
+.th-read-ref a {
+  color: var(--ink);
+}
+.th-read-head h1 {
+  margin-top: 16px;
+  font-size: var(--m-h1);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 1;
+  text-wrap: balance;
+}
+.th-read-ref {
+  margin-top: 16px;
+  font-size: var(--t-small);
+  line-height: 1.6;
+  color: var(--mute);
+}
+.th-read-head .th-prose {
+  margin-top: 20px;
+}
+.th-read-figure {
+  display: grid;
+  gap: 20px;
+  margin-top: 48px;
+}
+.th-read-diff {
+  display: grid;
+  gap: 18px;
+}
+.th-read-diff div,
+.th-read-layers div,
+.th-terms div,
+.th-related li {
+  display: grid;
+  gap: 4px 24px;
+}
+.th-read-diff dt,
+.th-related span,
+.th-term-group h3 {
+  font-size: var(--t-small);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--mute);
+}
+.th-read-diff dd {
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+.th-read-diff s {
+  color: var(--mute);
+  text-decoration-color: var(--hair);
+}
+.th-read-layers,
+.th-related {
+  display: grid;
+  gap: 20px;
+  margin-top: var(--m-head);
+}
+.th-read-layers dt,
+.th-terms dt,
+.th-faq h3,
+.th-paid-open h3 {
+  font-size: var(--t-body);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.th-read-layers dd,
+.th-terms dd {
+  color: var(--mute);
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+.th-read-layers [data-empty="true"] dt {
+  color: var(--mute);
+}
+/* Measured values: a label, the value, and where it was read. */
+.th-spec {
+  width: 100%;
+  margin-top: var(--m-head);
+  border-collapse: collapse;
+  font-size: var(--t-small);
+  line-height: 1.5;
+}
+.th-spec tr + tr {
+  border-top: 1px solid var(--rule);
+}
+.th-spec th,
+.th-spec td {
+  padding: 11px 0;
+  text-align: left;
+  vertical-align: top;
+}
+.th-spec th {
+  width: 44%;
+  padding-right: 20px;
+  font-weight: 500;
+  color: var(--mute);
+}
+.th-spec td {
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.th-spec small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--mute);
+}
+.th-read .th-mat-section > h2 + .th-prose {
+  margin-top: 20px;
+}
+.th-read .th-prose + .th-prose {
+  margin-top: 18px;
+}
+.th-lesson {
+  margin-top: 48px;
+  font-size: var(--t-h3);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+.th-lesson span {
+  display: block;
+  margin-bottom: 8px;
+  font-size: var(--t-small);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--mute);
+}
+.th-faq {
+  margin-top: 32px;
+}
+.th-faq .th-prose {
+  margin-top: 8px;
+}
+.th-related a {
+  color: var(--ink);
+}
+.th-paid .th-actions {
+  margin-top: 28px;
+}
+.th-paid-enter {
+  font-size: var(--t-small);
+}
+.th-paid-open > * {
+  max-width: var(--m-col);
+}
+.th-paid-open > .th-cast {
+  max-width: none;
+  margin-top: 24px;
+}
+.th-paid-open h3 {
+  margin-top: 48px;
+}
+.th-read-nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px 24px;
+  margin-top: var(--m-sec);
+  font-size: var(--t-small);
+  line-height: 1.45;
+}
+.th-read-nav a {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.th-read-nav a > span:first-child,
+.th-read-nav .th-read-up {
+  color: var(--mute);
+}
+.th-read-nav [rel="next"] {
+  text-align: right;
+}
+.th-read-nav .th-read-up {
+  display: block;
+  grid-column: 1 / -1;
+}
+/* The vocabulary: the bench on the wide grid, then a term per line. */
+.th-read-bench {
+  margin-top: 56px;
+}
+.th-term-group {
+  margin-top: 40px;
+}
+.th-terms {
+  display: grid;
+  gap: 18px;
+  margin-top: 14px;
+}
+.th-terms div {
+  scroll-margin-top: 72px;
+}
+.th-term-links {
+  font-size: var(--t-small);
+}
+.th-term-links a {
+  margin-left: 12px;
+  white-space: nowrap;
+}
+@media (hover: hover) and (pointer: fine) {
+  .th-read-nav a:hover,
+  .th-term-links a:hover {
+    color: var(--ink);
+  }
+}
+@media (max-width: 1099px) {
+  .th-rail > ol {
+    gap: 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+}
+@media (min-width: 720px) {
+  .th-read-figure {
+    grid-template-columns: 264px minmax(0, 1fr);
+    align-items: end;
+    gap: 32px;
+  }
+  .th-read-layers div,
+  .th-terms div,
+  .th-related li {
+    grid-template-columns: 168px minmax(0, 1fr);
+  }
+}
+@media (min-width: 1000px) {
+  .th-index-body .th-chapters {
+    columns: 2;
+    column-gap: 48px;
+  }
+  .th-read-bench .th-station {
+    --out-lines: 2;
+  }
+}
+
 @media (max-width: 999px) {
   [data-made="off"] .th-readout {
     display: none;
@@ -2034,6 +2349,7 @@ html:has(.th) {
   .th .th-cast-bar button,
   .th .th-rail a,
   .th .th-rail a::after,
+  .th .th-read-nav a,
   .th .th-piece summary i {
     transition: none;
   }

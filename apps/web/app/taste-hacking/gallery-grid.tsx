@@ -1,7 +1,14 @@
+import Link from "next/link";
 import { Clip } from "./clip";
 import { GALLERY, LAYER_LABEL } from "./gallery";
+import { pieceBySlug, pieceHref } from "./pieces";
 
-/** The catalogue of pieces taken apart: the clip and one line each, with the rest behind "detalle". `more` adds the plate that says more are coming. */
+function PieceTitle({ slug, title }: { slug: string; title: string }) {
+  const piece = pieceBySlug(slug);
+  return <h3>{piece ? <Link href={pieceHref(piece)}>{title}</Link> : title}</h3>;
+}
+
+/** The catalogue of pieces taken apart: the clip and one line each. The title opens the piece's page; the rest sits behind the disclosure. `more` adds the plate that says more are coming. */
 export function GalleryGrid({ more = false }: { more?: boolean }) {
   return (
     <ul className="th-gallery">
@@ -10,47 +17,49 @@ export function GalleryGrid({ more = false }: { more?: boolean }) {
           <div className="th-piece-clip">
             <Clip src={g.video} poster={g.poster} label={g.title} sound={g.sound} />
           </div>
-          <details name="th-piece">
-            <summary>
-              <h3>{g.title}</h3>
-              <span className="th-piece-layer">{LAYER_LABEL[g.layer]}</span>
-              <i aria-hidden="true" />
-            </summary>
-            <dl className="th-piece-diff">
-              {g.before ? (
-                <div>
-                  <dt>antes</dt>
-                  <dd>
-                    <s>{g.before}</s>
-                  </dd>
-                </div>
-              ) : null}
-              <div>
-                <dt>{g.before ? "después" : "pieza"}</dt>
-                <dd>{g.after}</dd>
-              </div>
-              {g.credit ? (
-                <div>
-                  <dt>ref</dt>
-                  <dd>{g.credit}</dd>
-                </div>
-              ) : null}
-            </dl>
-            {g.session || g.original ? (
-              <p className="th-piece-links">
-                {g.session ? (
-                  <a href={g.session}>
-                    ver la sesión <span aria-hidden="true">→</span>
-                  </a>
+          <div className="th-piece-body">
+            <PieceTitle slug={g.slug} title={g.title} />
+            <details name="th-piece">
+              <summary aria-label={`Detalle de ${g.title}`}>
+                <span className="th-piece-layer">{LAYER_LABEL[g.layer]}</span>
+                <i aria-hidden="true" />
+              </summary>
+              <dl className="th-piece-diff">
+                {g.before ? (
+                  <div>
+                    <dt>antes</dt>
+                    <dd>
+                      <s>{g.before}</s>
+                    </dd>
+                  </div>
                 ) : null}
-                {g.original ? (
-                  <a href={g.original} rel="noreferrer">
-                    original <span aria-hidden="true">↗</span>
-                  </a>
+                <div>
+                  <dt>{g.before ? "después" : "pieza"}</dt>
+                  <dd>{g.after}</dd>
+                </div>
+                {g.credit ? (
+                  <div>
+                    <dt>ref</dt>
+                    <dd>{g.credit}</dd>
+                  </div>
                 ) : null}
-              </p>
-            ) : null}
-          </details>
+              </dl>
+              {g.session || g.original ? (
+                <p className="th-piece-links">
+                  {g.session ? (
+                    <a href={g.session}>
+                      ver la sesión <span aria-hidden="true">→</span>
+                    </a>
+                  ) : null}
+                  {g.original ? (
+                    <a href={g.original} rel="noreferrer">
+                      original <span aria-hidden="true">↗</span>
+                    </a>
+                  ) : null}
+                </p>
+              ) : null}
+            </details>
+          </div>
         </li>
       ))}
       {more ? (

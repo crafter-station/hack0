@@ -5,16 +5,20 @@ import Link from "next/link";
 import { Mark } from "@/components/logo";
 import { sql } from "@/lib/db";
 import { getEntitlementByEmail } from "@/lib/entitlements";
+import { liveCasesOpen } from "@/lib/live-cases";
 import { verifiedPrimaryEmail } from "@/lib/session-access";
 import { type WorkshopPhase, workshopPhase } from "@/lib/workshop-clock";
+import { ChapterIndex } from "../chapter-index";
+import { LIVE_CASES } from "../chapters";
 import { Clip } from "../clip";
 import { Code } from "../code";
 import { GALLERY, LAYER_LABEL } from "../gallery";
 import { GalleryGrid } from "../gallery-grid";
 import { MaterialNav } from "../material-nav";
+import { pieceBySlug, pieceHref } from "../pieces";
 import { SessionPlayer } from "../session-player";
 import { SessionState } from "../session-state";
-import { AGENDA, CLI, WORKSHOP } from "../workshop";
+import { CLI, WORKSHOP } from "../workshop";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -24,9 +28,6 @@ export const metadata: Metadata = {
 };
 
 const SIGN_IN = `/sign-in?redirect_url=${encodeURIComponent("/taste-hacking/material")}`;
-
-/** The three live cases; their sessions arrive after the workshop. */
-const LIVE_CASES = AGENDA.flatMap((a) => a.cases ?? []);
 
 const RECORDED = GALLERY.filter((g) => g.session);
 
@@ -41,6 +42,12 @@ async function durations(): Promise<Map<string, number>> {
 
 function minutes(seconds: number): string {
   return `${Math.max(1, Math.round(seconds / 60))} min`;
+}
+
+/** A session's title, linked to the page of the piece it rebuilt. */
+function SessionTitle({ slug, title }: { slug: string; title: string }) {
+  const piece = pieceBySlug(slug);
+  return piece ? <Link href={pieceHref(piece)}>{title}</Link> : title;
 }
 
 type BundleLink = { title: string; url: string };
@@ -104,6 +111,7 @@ function NotEntitled({ email }: { email: string }) {
 }
 
 const SECTIONS = [
+  { id: "indice", label: "Índice" },
   { id: "skill", label: "Skill" },
   { id: "sesiones", label: "Sesiones" },
   { id: "grabacion", label: "Grabación" },
@@ -189,6 +197,12 @@ function Material({
           </dl>
         </header>
 
+        <section className="th-mat-section" id="indice">
+          <h2>Índice</h2>
+          <p className="th-prose">El workshop por capítulos. Cada pieza abre su página, con el desarme y su sesión.</p>
+          <ChapterIndex open={liveCasesOpen()} thesis="/taste-hacking#capas" />
+        </section>
+
         <section className="th-mat-section" id="skill">
           <h2>Instala la skill</h2>
           <p className="th-prose">Tu key llegó desde {WORKSHOP.keySender} cuando te registraste. Empieza con h0_.</p>
@@ -207,7 +221,9 @@ function Material({
                 <li key={g.slug} id={g.slug} className="th-session" tabIndex={-1}>
                   <header>
                     <span className="th-session-n">{String(i + 1).padStart(2, "0")}</span>
-                    <h3>{g.title}</h3>
+                    <h3>
+                      <SessionTitle slug={g.slug} title={g.title} />
+                    </h3>
                     <span className="th-session-meta">
                       {LAYER_LABEL[g.layer]} · {length ? minutes(length) : "pendiente"}
                     </span>

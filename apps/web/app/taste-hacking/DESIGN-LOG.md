@@ -164,3 +164,16 @@ What carries over: one column near 680px, titles close to body size, a body line
 Medium shipped. Conservative still reads as the dense page with more margin, and its side column brings back a second thing to look at per session. Aggressive is the calmest still, but a terminal inside a 640px column renders at 8.7px, against 12.8px on the wide grid: the session stops being readable in place, which is the one thing this page is for.
 
 Checks at 1440x900 and 390x844: no horizontal scroll on either page; signed out, the sessions route is not requested and answers 401; `j` / `k`, play, copy and the gallery disclosure work from the keyboard; with reduced motion nothing plays on its own, the nav and disclosure transitions are off and `j` / `k` jump without smooth scrolling.
+
+## Piece pages and the chapter index (2026-11-15)
+
+The gallery said what changed in a piece; it had nowhere to say how. Each piece now has a public page, the vocabulary has its own, and the workshop reads as ten chapters: 00 the thesis, 01 the vocabulary, 02 to 04 the three live cases, 05 to 09 the pieces by layer.
+
+1. **One reading layout.** A piece and the vocabulary use the material page's column and rhythm (680px, 136px between sections, h2 at 20px) and its contents nav, without the session list. Nothing new was drawn for them: the clip sits on the gallery's plate, commands on the code plate, the session in the same player.
+2. **A piece's page.** Title and reference, the clip beside its before and after, the three layers named (a layer the sources do not cover says so), the measured values as a two-column table with hairlines between rows, the breakdown, the lesson at h2 weight, the questions, the pieces that share a word with it, then the session. Previous and next follow chapter order.
+3. **The end of the page.** Everyone gets the offer in the page's HTML: what the session contains, the price, the link to Luma and a way in. A signed-in visitor is checked against the gated route; a buyer gets the session player and the install commands in place of the offer. The page itself stays static, and nothing about a session is in it.
+4. **Chapter index.** A number, a title and one line per entry, two balanced columns on the public page and one in the material column. The live cases are numbered placeholders until the workshop ends (`lib/live-cases.ts`), and the public page is rebuilt every minute so they open without a deploy. Section labels on the public page lost their numbers, so chapter numbers are the only numbering.
+5. **Gallery cards.** The title is a link to the piece's page. The disclosure moved to the end of the same line, on the layer label and the plus.
+6. **Vocabulary.** The word bench at the top on the wide grid, then a term per line under its layer. A term with a station links up to it; a term measured on a piece links to that piece by its short name.
+
+Checks at 1440x900 and 390x844: no horizontal scroll on the index, the vocabulary, the piece pages (signed out and as a buyer) or the material page; signed out, the piece's HTML carries the whole article and no session, and the access route answers 401.
