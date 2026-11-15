@@ -2,8 +2,7 @@ import { UserButton } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 import Link from "next/link";
-// Swap for "@/lib/entitlements" when railly/workshop-infra lands; the signature is the same.
-import { getEntitlementByEmail } from "../entitlements";
+import { getEntitlementByEmail } from "@/lib/entitlements";
 import { GalleryGrid } from "../gallery-grid";
 import { CLI, WORKSHOP } from "../workshop";
 
