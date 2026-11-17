@@ -36,6 +36,13 @@
       "when": 1794800000000,
       "tag": "0004_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794889171566,
+      "tag": "0005_organizations",
+      "breakpoints": true
     }
   ]
 }
