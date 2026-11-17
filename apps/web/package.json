@@ -18,6 +18,7 @@
     "@neondatabase/serverless": "^1.2.0",
     "@ui-sdk/core": "0.1.0-beta.6",
     "@ui-sdk/react": "0.1.0-beta.6",
+    "@vercel/analytics": "^2.0.1",
     "asciinema-player": "3.18.0",
     "cobe": "2.0.1",
     "drizzle-orm": "^0.45.4",
