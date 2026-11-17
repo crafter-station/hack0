@@ -127,6 +127,92 @@ export const PIECES: Piece[] = [
     ],
   },
   {
+    slug: "look-lit-room",
+    path: "lit-room-html-in-canvas",
+    blurb: "Una página HTML viva que ilumina su cuarto con 32 luces de área, un rebote y sombras de contacto de 2 mm.",
+    related: [
+      { slug: "made-lando-stack", term: "webgl" },
+      { slug: "look-liquid-glass", term: "grain" },
+    ],
+    chapter: 5,
+    layer: "look",
+    title: "Lit Room de Felix Rieseberg, una página que ilumina su cuarto",
+    seoTitle: "Cómo hacer que una página HTML ilumine una escena 3D",
+    metaDescription:
+      "Lit Room rehecho en WebGL2. Una página HTML viva es la única luz de un escritorio de noche, con luces de área, rebote y sombras de contacto medidos.",
+    reference: {
+      name: "Lit Room",
+      author: "Felix Rieseberg",
+      url: "https://claude.ai/artifact/D5pdvChFfvxBsvVNb5KNCJ",
+    },
+    layers: {
+      seVe: "Un escritorio de noche donde la pantalla es la única luz. Deja un charco cálido delante del monitor, sombras suaves, madera barnizada y una pared que toma el color del cartel. Encima van profundidad de campo, viñeta y grain.",
+      seMueve:
+        "Editas el CSS del cartel y el escritorio y la pared cambian de color en el cuadro siguiente. La cámara orbita con límites y el clip es un loop de 6 s.",
+      estaHecho:
+        "WebGL2 a mano, sin dependencias. El monitor es una página HTML real dibujada dentro del canvas con HTML-in-Canvas. La pieza viva necesita Chrome 157 o más nuevo, de escritorio, y en los demás navegadores muestra la página plana.",
+    },
+    antes:
+      "En el primer intento el escritorio estaba iluminado parejo, el teclado y la taza flotaban y la pared caía a negro a medio metro del monitor.",
+    despues: "Una página HTML viva que ilumina su propio cuarto. Cambias el CSS del cartel y el escritorio y la pared cambian de color.",
+    measured: [
+      { label: "Página dentro del monitor", value: "1280 × 800 px", note: "un solo elemento HTML, subido como textura en cada cuadro" },
+      {
+        label: "Luces de área de la pantalla",
+        value: "32, en una grilla de 8 × 4",
+        note: "toman su color de un mip bajo de la textura de la página",
+      },
+      { label: "Contraste entre el charco y el borde", value: "9:1 en la referencia", note: "el primer intento daba 4:1" },
+      {
+        label: "Charco de luz",
+        value: "L 70, S 73, tono 35",
+        note: "referencia L 77, S 80, tono 30, sobre los mismos recortes",
+      },
+      { label: "Escritorio fuera del charco", value: "L 35, S 40, tono 20", note: "referencia L 57, S 46, tono 24" },
+      { label: "Pared", value: "L 29, S 46, tono 13", note: "referencia L 24, S 38, tono 17" },
+      {
+        label: "Saturación del charco con la curva de tono nueva",
+        value: "de 63 a 73",
+        note: "cerró 10 de los 17 puntos que faltaban",
+      },
+      { label: "Ambiente del cuarto", value: "0.06", note: "75% de su color sale del promedio de la pantalla" },
+      { label: "Sombra de contacto", value: "una línea de 2 mm", note: "más una caída ancha que crece con la altura del objeto" },
+      { label: "Sombra suave", value: "24 muestras de búsqueda y 48 de filtro", note: "en un disco de Vogel rotado por pixel" },
+      { label: "Lente", value: "42 grados", note: "a 58 los audífonos medían 0.57 del ancho del monitor, a 42 miden 0.46" },
+      {
+        label: "Altura del ojo",
+        value: "1.35 m",
+        note: "el borde superior del monitor cae en y 280 de 900, en la referencia cerca de 276",
+      },
+      { label: "Rendimiento del loop", value: "120 fps a 2592 × 1620", note: "con las 72 muestras de sombra" },
+      { label: "Prueba de interacción", value: "13 de 13", note: "clics, tipeo, selección y foco con puntero y teclado reales" },
+      { label: "Loop del resultado", value: "6 s" },
+      { label: "Cercanía a la referencia", value: "8.5 de 10", note: "6.5 y 8 en las dos sesiones anteriores" },
+    ],
+    breakdown: [
+      "Lit Room es un demo de HTML-in-Canvas que Felix Rieseberg publicó el 15 de noviembre de 2026. Lo capturamos solo con screenshots y clics por coordenadas, 14 cuadros en total, sin leer su código ni su DOM. Lo que rehicimos se llama Luz propia. Es una escena original de un escritorio de noche, con formas procedurales, sin modelos ni texturas. La página del monitor tiene cuatro pestañas, un editor de CSS y presets, y sigue siendo HTML real. Los clics, el tipeo y la selección llegan al DOM mientras la cámara orbita.",
+      "Con los cuadros a la vista nombramos las capas. La pantalla es una luz de área que deja un charco delante del monitor. Los objetos se apoyan con dos sombras, una caída ancha que dice que el objeto pesa y una línea de 2 mm que dice que toca. La primera sorpresa fue la pared. La pantalla no la mira, así que esa luz es un rebote. Tratamos el charco del escritorio como una segunda luz, más tenue, con el color promedio de la pantalla, y la pared empezó a tomar el color del cartel.",
+      "La segunda sorpresa fue el color. La curva de tono es parte de la paleta. ACES le quita saturación a las luces altas, y una curva que la devuelve solo ahí llevó el charco de 63 a 73. Un ambiente neutro al mismo nivel se leía como luz de día, y tomado del color de la pantalla volvió a ser de noche. La pieza tomó tres sesiones y quedó en 8.5 de 10. Lo que falta es el alcance de la luz. En la referencia todo el escritorio brilla color miel y en el nuestro cae a L 35 a una mano del charco.",
+    ],
+    lesson: "Una pantalla en un cuarto oscuro es una luz. El look aparece cuando los pixeles de la página iluminan la escena.",
+    paidTeaser:
+      "La pieza tomó tres sesiones. La que se abre aquí es la primera, de la captura de la referencia al cuarto funcionando con dos rondas de crítica, en unos 70 minutos.",
+    faq: [
+      {
+        q: "¿En qué navegadores funciona esta pieza?",
+        a: "La pieza viva necesita Chrome 157 o más nuevo, de escritorio. En cualquier otro navegador, y en el teléfono, la página saca el HTML del canvas y muestra la versión plana con un aviso. El clip de esta página se ve en todos.",
+      },
+      {
+        q: "¿Qué es HTML-in-Canvas?",
+        a: "Es una API de Chrome que deja a un canvas dibujar sus propios elementos hijos. Los elementos siguen en el DOM, así que un botón dentro de una escena 3D todavía recibe clics, foco y selección de texto. En esta pieza el monitor es una página de 1280 × 800 px con un editor de CSS donde se puede tipear.",
+      },
+      {
+        q: "¿Cómo hago que una pantalla ilumine una escena 3D?",
+        a: "Trátala como una luz de área y no como una textura que brilla. Aquí la pantalla son 32 luces que toman su color de la página, con un mapa de sombras desde la pantalla y un rebote del escritorio a la pared. Cambiar el cartel cambia la luz en el cuadro siguiente.",
+      },
+    ],
+  },
+  {
     slug: "landing",
     path: "landing-hecha-con-ia",
     blurb: "De todo centrado sobre un gradiente morado a grilla y leading 0.95.",
