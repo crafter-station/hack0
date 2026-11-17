@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/json-ld";
-import { SITE } from "@/lib/site";
 import { chapterNumber } from "../chapters";
 import { Clip } from "../clip";
 import { GALLERY } from "../gallery";
 import { MaterialNav } from "../material-nav";
 import { PieceAccess } from "../piece-access";
+import { articleLd, LAYER_ROWS } from "../piece-ld";
 import { CHAPTER_BY_LAYER, PIECES, PIECES_PUBLISHED, type Piece, pieceByPath, pieceBySlug, pieceHref } from "../pieces";
 import { WORKSHOP } from "../workshop";
 
@@ -42,50 +42,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       authors: ["Railly Hugo"],
     },
     twitter: { card: "summary_large_image", title: piece.seoTitle, description: piece.metaDescription },
-  };
-}
-
-const LAYER_ROWS = [
-  { key: "seVe", name: "Cómo se ve" },
-  { key: "seMueve", name: "Cómo se mueve" },
-  { key: "estaHecho", name: "Cómo está hecho" },
-] as const;
-
-function articleLd(piece: Piece, poster: string) {
-  const url = `${SITE}${pieceHref(piece)}`;
-  const layers = LAYER_ROWS.filter((l) => piece.layers[l.key]).map((l) => ({ "@type": "Thing", name: l.name }));
-  const reference = piece.reference
-    ? [
-        {
-          "@type": "CreativeWork",
-          name: piece.reference.name,
-          url: piece.reference.url,
-          author: { "@type": "Organization", name: piece.reference.author },
-        },
-      ]
-    : [];
-  return {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: piece.title,
-    description: piece.metaDescription,
-    inLanguage: "es",
-    image: [`${SITE}${poster}`],
-    url,
-    mainEntityOfPage: url,
-    datePublished: PIECES_PUBLISHED,
-    author: { "@type": "Person", name: "Railly Hugo", url: "https://railly.dev" },
-    publisher: { "@type": "Organization", name: "hack0", url: SITE },
-    about: [...reference, ...layers],
-    isPartOf: {
-      "@type": "Event",
-      name: `${WORKSHOP.title}: ${WORKSHOP.subtitle}`,
-      startDate: WORKSHOP.startAt,
-      endDate: WORKSHOP.endAt,
-      eventAttendanceMode: "https://schema.org/OnlineEventAttendanceMode",
-      location: { "@type": "VirtualLocation", url: WORKSHOP.luma },
-      url: `${SITE}/taste-hacking`,
-    },
   };
 }
 

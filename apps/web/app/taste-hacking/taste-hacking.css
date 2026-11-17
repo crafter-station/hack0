@@ -1978,6 +1978,21 @@ html:has(.th) {
   margin-left: auto;
   font-variant-numeric: tabular-nums;
 }
+.th-take {
+  margin-top: 24px;
+}
+.th-take-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding-bottom: 10px;
+}
+.th-take-title {
+  font-size: var(--t-small);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
 .th-session-result {
   display: grid;
   grid-template-columns: var(--m-result) minmax(0, 1fr);
@@ -2317,6 +2332,14 @@ html:has(.th) {
 }
 .th-paid-open h3 {
   margin-top: 48px;
+}
+.th-paid-open > .th-take {
+  max-width: none;
+  margin-top: 32px;
+}
+.th-paid-open .th-take-title {
+  margin-top: 0;
+  font-size: var(--t-small);
 }
 .th-read-nav {
   display: grid;

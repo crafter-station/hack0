@@ -185,6 +185,19 @@ function Material({
                   ) : (
                     <p className="th-cast-fail">La sesión todavía no está subida.</p>
                   )}
+                  {(g.takes ?? []).map((t) => {
+                    const takeLength = lengths.get(t.slug);
+                    return takeLength ? (
+                      <div key={t.slug} className="th-take">
+                        <div className="th-take-head">
+                          <h4 className="th-take-title">{t.title}</h4>
+                          <span className="th-session-meta">{minutes(takeLength)}</span>
+                          <SessionState slug={t.slug} />
+                        </div>
+                        <SessionPlayer slug={t.slug} title={t.title} poster={t.poster} />
+                      </div>
+                    ) : null;
+                  })}
                   <aside className="th-session-result" aria-label={`Resultado de ${g.title}`}>
                     <div className="th-piece-clip">
                       <Clip src={g.video} poster={g.poster} label={`Resultado: ${g.title}`} sound={g.sound} />
