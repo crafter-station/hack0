@@ -2,12 +2,14 @@ import { EcoExplorer } from "@/components/eco-explorer";
 import type { MapPlace } from "@/components/eco-map";
 import { JsonLd } from "@/components/json-ld";
 import { Shell } from "@/components/shell";
-import { ORG_TYPES, type Org, typeInfo } from "@/lib/ecosistema";
+import { hubSummary, ORG_TYPES, type Org, typeInfo } from "@/lib/ecosistema";
 import { SITE } from "@/lib/site";
 
 type Props = {
   title: string;
   path: string;
+  /** The place the hub covers, as prose says it: "Perú", "Lima", "Latinoamérica". */
+  place: string;
   intro: string;
   crumbs: { href: string; label: string }[];
   orgs: Org[];
@@ -22,7 +24,7 @@ type Props = {
 const GLYPH: Record<string, string> = { startup: "S", investor: "$", incubator: "I", university: "U", coworking: "C" };
 
 /** Every /ecosistema hub: the full-screen explorer over server-rendered data, plus its ItemList. */
-export function EcoHub({ title, path, intro, crumbs, orgs, places, placeBase, view, chips, more = [] }: Props) {
+export function EcoHub({ title, path, place, intro, crumbs, orgs, places, placeBase, view, chips, more = [] }: Props) {
   const types = ORG_TYPES.filter((t) => orgs.some((o) => o.type === t.type)).map((t) => ({
     type: t.type,
     plural: t.plural,
@@ -60,6 +62,8 @@ export function EcoHub({ title, path, intro, crumbs, orgs, places, placeBase, vi
         placeBase={placeBase}
         view={view}
         listTitle={title}
+        place={place}
+        about={hubSummary(orgs, place)}
         links={chips}
         more={more}
         orgs={orgs.map((o) => ({

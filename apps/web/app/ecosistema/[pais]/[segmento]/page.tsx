@@ -19,8 +19,13 @@ const STARTUP_DEMONYM: Record<string, string> = { PE: "peruanas", CO: "colombian
 /** Search titles under 60 characters, led by the phrase people type; the H1 stays the plain hub name. */
 function seoTitle(segment: string, code: string, country: string, orgs: { city: string | null }[]) {
   const n = orgs.length;
-  const cities = [...new Set(orgs.map((o) => o.city).filter(Boolean))];
-  const place = cities.length === 1 ? cities[0] : country;
+  const byCity = Map.groupBy(
+    orgs.filter((o) => o.city),
+    (o) => o.city ?? "",
+  );
+  const [top] = [...byCity.entries()].sort((a, b) => b[1].length - a[1].length);
+  // Search asks for the city ("coworking lima"); name it when most of the list sits there.
+  const place = byCity.size === 1 ? top[0] : top && top[1].length * 2 > n ? `${top[0]} y ${country}` : country;
   if (segment === "startups") return `${n} startups ${STARTUP_DEMONYM[code] ?? `de ${country}`}: directorio y mapa`;
   if (segment === "inversionistas") return `Venture capital en ${country}: ${n} fondos e inversionistas`;
   if (segment === "incubadoras") return `Aceleradoras e incubadoras en ${country}: ${n} programas`;
@@ -34,7 +39,7 @@ const TYPE_INTRO: Record<string, (country: string, n: number) => string> = {
     `${n} fondos de venture capital, redes de inversionistas ángeles y brazos de inversión corporativa que invierten en startups de ${c}.`,
   incubadoras: (c, n) => `${n} incubadoras, aceleradoras y hubs de innovación que apoyan a startups en ${c}.`,
   universidades: (c, n) => `${n} universidades de ${c} con programas, incubadoras y comunidades de tecnología.`,
-  coworkings: (c, n) => `${n} coworkings de ${c} donde trabajan startups y comunidades tech.`,
+  coworkings: (c, n) => `${n} espacios de coworking en ${c}, contando cada sede, donde trabajan startups y comunidades tech.`,
 };
 
 /** The segment after the country is a reserved type name or a city slug; types win. */
@@ -104,6 +109,7 @@ export default async function Segment({ params }: Props) {
     return (
       <EcoHub
         path={`/ecosistema/${pais}/${segmento}`}
+        place={hub.name}
         title={hub.title}
         intro={hub.intro}
         crumbs={crumbs}
@@ -127,6 +133,7 @@ export default async function Segment({ params }: Props) {
   return (
     <EcoHub
       path={`/ecosistema/${pais}/${segmento}`}
+      place={hub.city.name}
       title={hub.title}
       intro={hub.intro}
       crumbs={crumbs}

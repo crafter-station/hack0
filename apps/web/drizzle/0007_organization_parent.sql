@@ -1,0 +1,1 @@
+ALTER TABLE "organizations" ADD COLUMN "parent_slug" text;
