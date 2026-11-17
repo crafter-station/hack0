@@ -207,6 +207,10 @@ export const organizations = pgTable(
     /** Width over height of the trimmed logo, so wide marks get a wide tile. */
     logoAspect: doublePrecision("logo_aspect"),
     hiringUrl: text("hiring_url"),
+    /** For a branch (one site of a coworking chain): the brand's slug. Its profile defers to the brand's for search. */
+    parentSlug: text("parent_slug"),
+    /** Whole-word phrases that name this org in an event's title or description; empty when the name is a common word. */
+    eventTerms: text("event_terms").array().notNull().default([]),
     /** Only places with a public address get a pin; the rest show in their city's list. */
     lat: doublePrecision("lat"),
     lng: doublePrecision("lng"),

@@ -43,6 +43,20 @@
       "when": 1794889171566,
       "tag": "0005_organizations",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794891964820,
+      "tag": "0006_organization_event_terms",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794892540943,
+      "tag": "0007_organization_parent",
+      "breakpoints": true
     }
   ]
 }

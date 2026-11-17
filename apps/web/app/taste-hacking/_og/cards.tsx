@@ -35,7 +35,7 @@ function Mark({ size, bg = C.stage, ink = C.ink }: { size: number; bg?: string; 
   );
 }
 
-function Wordmark({ size }: { size: number }) {
+export function Wordmark({ size }: { size: number }) {
   return (
     <div style={{ display: "flex", alignItems: "center", fontSize: size, fontWeight: 800, letterSpacing: "-0.05em" }}>
       hack

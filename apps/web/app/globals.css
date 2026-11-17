@@ -2050,6 +2050,23 @@ main.immersive > header.top {
 .eco-list-title {
   font-weight: 500;
 }
+.eco-about {
+  margin-top: 28px;
+}
+.eco-about h2 {
+  font-weight: 500;
+}
+.eco-about p {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--mute);
+  margin-bottom: 10px;
+}
+.eco-faq h3 {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 16px 0 4px;
+}
 .eco-more {
   margin-top: 28px;
 }
@@ -2321,6 +2338,13 @@ main.immersive > header.top {
   height: 320px;
   margin-top: 40px;
   border: 1px solid var(--rule);
+}
+.org-section {
+  font-weight: 500;
+}
+.org-hero .org-context {
+  margin-top: 8px;
+  font-size: 14px;
 }
 .org-source {
   margin-top: 48px;

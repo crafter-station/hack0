@@ -37,12 +37,15 @@ type Props = {
   more: { href: string; label: string; count: number }[];
   /** Heading of the org list, so each hub's list is named in the outline. */
   listTitle: string;
+  place: string;
+  /** Prose and answers about this hub, server-written from its rows. */
+  about: { paragraphs: string[]; faq: { q: string; a: string }[] };
 };
 
 const plainClick = (e: MouseEvent) => e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
 
 /** Full-screen directory: the map is the page, the panel holds search, type filters and the crawlable list. */
-export function EcoExplorer({ title, intro, crumbs, orgs, types, places, placeBase, view, links, more, listTitle }: Props) {
+export function EcoExplorer({ title, intro, crumbs, orgs, types, places, placeBase, view, links, more, listTitle, place, about }: Props) {
   const [active, setActive] = useState<string[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const shown = useMemo(() => (active.length === 0 ? orgs : orgs.filter((o) => active.includes(o.type))), [orgs, active]);
@@ -216,6 +219,22 @@ export function EcoExplorer({ title, intro, crumbs, orgs, types, places, placeBa
                 ))}
               </ul>
               {orgs.length === 0 && <p className="eco-empty">Todavía no mapeamos organizaciones aquí.</p>}
+              {about.paragraphs.length > 0 && (
+                <section className="eco-about" aria-labelledby="eco-about-title">
+                  <h2 id="eco-about-title" className="label">
+                    <span>sobre el ecosistema de {place}</span>
+                  </h2>
+                  {about.paragraphs.map((p) => (
+                    <p key={p}>{p}</p>
+                  ))}
+                  {about.faq.map((f) => (
+                    <div key={f.q} className="eco-faq">
+                      <h3>{f.q}</h3>
+                      <p>{f.a}</p>
+                    </div>
+                  ))}
+                </section>
+              )}
               {more.length > 0 && (
                 <>
                   <div className="label eco-more">

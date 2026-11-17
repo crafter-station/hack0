@@ -20,6 +20,7 @@ export default async function Ecosistema() {
   return (
     <EcoHub
       path="/ecosistema"
+      place="Latinoamérica"
       title="Ecosistema tech de LATAM"
       intro={INTRO}
       crumbs={[{ href: "/", label: "hack0" }]}

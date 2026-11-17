@@ -43,6 +43,7 @@ export default async function Country({ params }: Props) {
   return (
     <EcoHub
       path={`/ecosistema/${pais}`}
+      place={hub.name}
       title={`Ecosistema tech de ${hub.name}`}
       intro={intro(hub.name, hub.orgs.length)}
       crumbs={[{ href: "/ecosistema", label: "ecosistema" }]}

@@ -32,7 +32,29 @@ const Record = z.object({
   hiringUrl: url,
   sourceUrl: z.url(),
   verifiedAt: z.iso.date().nullable(),
+  /** Overrides the phrases that link the org to events; `[]` turns linking off. */
+  eventTerms: z.array(z.string().min(3)).optional(),
+  /** Slug of the brand this record is a branch of. */
+  parent: z.string().optional(),
 });
+
+/** Spanish words that are also org names here; a name like these matches unrelated events. */
+const COMMON = new Set(["lucha", "comunal", "enfoca", "impulsa", "semillero", "tecnológica", "andino", "equipo", "wichay"]);
+const english = new Set(
+  (await Bun.file("/usr/share/dict/words")
+    .text()
+    .catch(() => ""))
+    .split("\n")
+    .map((w) => w.toLowerCase()),
+);
+
+/** A one-word name that is also a dictionary word ("Scale", "Equip") would match any event using that word. */
+function eventTerms(r: z.infer<typeof Record>) {
+  if (r.eventTerms) return r.eventTerms;
+  const word = r.name.trim().toLowerCase();
+  if (!word.includes(" ") && (COMMON.has(word) || english.has(word))) return [];
+  return [r.name];
+}
 
 const args = process.argv.slice(2);
 const dir = args.find((a) => !a.startsWith("--"));
@@ -43,6 +65,9 @@ const files = (await readdir(seed)).filter((f) => f.endsWith(".json"));
 const rows = (await Promise.all(files.map(async (f) => z.array(Record).parse(await Bun.file(join(seed, f)).json())))).flat();
 const dupes = rows.map((r) => r.slug).filter((s, i, all) => all.indexOf(s) !== i);
 if (dupes.length > 0) throw new Error(`duplicate slugs: ${[...new Set(dupes)].join(", ")}`);
+const slugs = new Set(rows.map((r) => r.slug));
+const orphans = rows.filter((r) => r.parent && !slugs.has(r.parent)).map((r) => r.slug);
+if (orphans.length > 0) throw new Error(`parent not in seed: ${orphans.join(", ")}`);
 
 type Logo = { png: Buffer; hash: string; tone: "light" | "dark" | null; aspect: number | null };
 const logos = new Map<string, Logo>();
@@ -75,6 +100,8 @@ const values = rows.map((r) => {
     logoTone: logo?.tone ?? null,
     logoAspect: logo?.aspect ?? null,
     hiringUrl: r.hiringUrl,
+    eventTerms: eventTerms(r),
+    parentSlug: r.parent ?? null,
     lat: r.lat,
     lng: r.lng,
     sourceUrl: r.sourceUrl,
@@ -101,6 +128,8 @@ const saved = await db
       logoTone: excluded("logo_tone"),
       logoAspect: excluded("logo_aspect"),
       hiringUrl: excluded("hiring_url"),
+      eventTerms: excluded("event_terms"),
+      parentSlug: excluded("parent_slug"),
       lat: excluded("lat"),
       lng: excluded("lng"),
       sourceUrl: excluded("source_url"),

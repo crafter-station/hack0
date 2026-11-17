@@ -1,8 +1,10 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, or, type SQL, sql } from "drizzle-orm";
 import { cache } from "react";
+import type { CalendarEvent } from "@/lib/calendar";
 import { slugify } from "@/lib/calendar";
+import { rowToEvent } from "@/lib/catalog-db";
 import { getDb } from "@/lib/db/client";
-import { organizations } from "@/lib/db/schema";
+import { canonicalEvents, organizationLogos, organizations } from "@/lib/db/schema";
 import { LATAM_COUNTRIES } from "@/lib/latam";
 import { countryName } from "@/lib/search";
 
@@ -20,6 +22,8 @@ export type Org = Pick<
   | "logoTone"
   | "logoAspect"
   | "hiringUrl"
+  | "eventTerms"
+  | "parentSlug"
   | "lat"
   | "lng"
   | "sourceUrl"
@@ -103,6 +107,8 @@ export const listedOrgs = cache(async (): Promise<Org[]> => {
       logoTone: organizations.logoTone,
       logoAspect: organizations.logoAspect,
       hiringUrl: organizations.hiringUrl,
+      eventTerms: organizations.eventTerms,
+      parentSlug: organizations.parentSlug,
       lat: organizations.lat,
       lng: organizations.lng,
       sourceUrl: organizations.sourceUrl,
@@ -176,3 +182,107 @@ export const pins = (orgs: Org[]) =>
         ]
       : [],
   );
+
+/** A phrase as a case-insensitive whole-word Postgres regex: `\m` and `\M` are word boundaries. */
+const wholeWord = (term: string) => `\\m${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\M`;
+
+/** Events on hack0 that name the org in their title or description, newest first. */
+export async function orgEvents(terms: string[], limit = 8): Promise<CalendarEvent[]> {
+  if (!process.env.DATABASE_URL || terms.length === 0) return [];
+  const match = or(
+    ...terms.flatMap((t) => [sql`${canonicalEvents.name} ~* ${wholeWord(t)}`, sql`${canonicalEvents.description} ~* ${wholeWord(t)}`]),
+  ) as SQL;
+  const rows = await getDb()
+    .select()
+    .from(canonicalEvents)
+    .where(and(eq(canonicalEvents.listed, true), eq(canonicalEvents.active, true), match))
+    .orderBy(desc(canonicalEvents.startAt))
+    .limit(limit);
+  return rows.map(rowToEvent);
+}
+
+type Summary = { paragraphs: string[]; faq: { q: string; a: string }[] };
+
+const listEs = (items: string[]) => (items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} y ${items.at(-1)}`);
+
+/** Cities with a hub of their own, largest first; an HQ abroad doesn't count as one of the country's cities. */
+function topCities(orgs: Org[], n: number) {
+  const by = Map.groupBy(
+    orgs.filter((o) => o.city && CITY_CENTER[slugify(o.city)]),
+    (o) => o.city ?? "",
+  );
+  return [...by.entries()].sort((a, b) => b[1].length - a[1].length).slice(0, n);
+}
+
+/** What a hub says about its own orgs, written from the data so every hub reads differently and stays true as rows change. */
+export function hubSummary(orgs: Org[], place: string): Summary {
+  const paragraphs: string[] = [];
+  const faq: Summary["faq"] = [];
+  const counts = ORG_TYPES.map((t) => ({ ...t, list: orgs.filter((o) => o.type === t.type) })).filter((t) => t.list.length > 0);
+  if (counts.length === 0) return { paragraphs, faq };
+
+  const kinds = listEs(counts.map((t) => `${t.list.length} ${(t.list.length === 1 ? t.singular : t.plural).toLowerCase()}`));
+  paragraphs.push(`El directorio de hack0 reúne ${orgs.length} organizaciones del ecosistema tech de ${place}: ${kinds}.`);
+
+  const cities = topCities(orgs, 3);
+  if (cities.length > 1) {
+    paragraphs.push(
+      `La mayoría está en ${cities[0][0]} (${cities[0][1].length}), seguida de ${listEs(cities.slice(1).map(([c, l]) => `${c} (${l.length})`))}.`,
+    );
+  }
+  const hiring = orgs.filter((o) => o.hiringUrl);
+  if (hiring.length > 0) {
+    paragraphs.push(
+      `${hiring.length === 1 ? "Una está" : `${hiring.length} están`} contratando y enlazan su página de empleos: ${listEs(hiring.slice(0, 6).map((o) => o.name))}.`,
+    );
+  }
+  const verified = orgs.filter((o) => o.verifiedAt).length;
+  paragraphs.push(`Cada perfil guarda de dónde salió su dato; ${verified} de ${orgs.length} tienen la web verificada.`);
+
+  const startups = orgs.filter((o) => o.type === "startup");
+  if (startups.length > 0) {
+    const where = topCities(startups, 2).map(([c, l]) => `${l.length} en ${c}`);
+    faq.push({
+      q: `¿Cuántas startups hay en ${place}?`,
+      a: `hack0 lista ${startups.length} startups de ${place}${where.length ? `, ${listEs(where)}` : ""}. Entre ellas ${listEs(startups.slice(0, 5).map((o) => o.name))}.`,
+    });
+  }
+  const investors = orgs.filter((o) => o.type === "investor");
+  if (investors.length > 0) {
+    faq.push({
+      q: `¿Qué fondos invierten en startups de ${place}?`,
+      a: `Hay ${investors.length} inversionistas en el directorio: ${listEs(investors.slice(0, 8).map((o) => o.name))}.`,
+    });
+  }
+  const support = orgs.filter((o) => o.type === "incubator");
+  if (support.length > 0) {
+    faq.push({
+      q: `¿Qué incubadoras y aceleradoras hay en ${place}?`,
+      a: `${support.length} programas de incubación y aceleración, entre ellos ${listEs(support.slice(0, 6).map((o) => o.name))}.`,
+    });
+  }
+  const spaces = orgs.filter((o) => o.type === "coworking" && !o.parentSlug);
+  if (spaces.length > 0) {
+    const sites = (o: Org) => orgs.filter((b) => b.parentSlug === o.slug).length;
+    faq.push({
+      q: `¿Dónde hay coworkings en ${place}?`,
+      a: `${listEs(spaces.slice(0, 10).map((o) => (sites(o) > 0 ? `${o.name} (${sites(o)} sedes)` : o.city ? `${o.name} (${o.city})` : o.name)))}.`,
+    });
+  }
+  return { paragraphs, faq };
+}
+
+/** Stored logos as data URIs for share images, in the order given; orgs without a logo are skipped. */
+export async function logoDataUris(slugs: string[]): Promise<{ slug: string; uri: string; light: boolean }[]> {
+  if (!process.env.DATABASE_URL || slugs.length === 0) return [];
+  const rows = await getDb()
+    .select({ slug: organizations.slug, bytes: organizationLogos.bytes, tone: organizations.logoTone })
+    .from(organizationLogos)
+    .innerJoin(organizations, eq(organizations.id, organizationLogos.organizationId))
+    .where(inArray(organizations.slug, slugs));
+  const by = new Map(rows.map((r) => [r.slug, r]));
+  return slugs.flatMap((slug) => {
+    const r = by.get(slug);
+    return r ? [{ slug, uri: `data:image/png;base64,${Buffer.from(r.bytes).toString("base64")}`, light: r.tone === "light" }] : [];
+  });
+}

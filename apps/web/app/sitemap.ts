@@ -34,7 +34,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...events.map((e) => ({ url: `${SITE}/eventos/${e.slug}`, lastModified: e.lastModified, priority: 0.8 })),
     { url: `${SITE}/ecosistema`, changeFrequency: "weekly", priority: 0.8 },
     ...eco.map((path) => ({ url: `${SITE}${path}`, changeFrequency: "weekly" as const, priority: 0.7 })),
-    ...orgs.map((o) => ({ url: `${SITE}/org/${o.slug}`, changeFrequency: "monthly" as const, priority: 0.6 })),
+    // Branches defer to their brand's profile, so only brands and standalone orgs are submitted.
+    ...orgs.filter((o) => !o.parentSlug).map((o) => ({ url: `${SITE}/org/${o.slug}`, changeFrequency: "monthly" as const, priority: 0.6 })),
     { url: `${SITE}/taste-hacking`, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE}/taste-hacking/vocabulario`, changeFrequency: "weekly", priority: 0.8 },
     ...PIECES.map((p) => ({ url: `${SITE}${pieceHref(p)}`, changeFrequency: "weekly" as const, priority: 0.8 })),

@@ -1,0 +1,1 @@
+ALTER TABLE "organizations" ADD COLUMN "event_terms" text[] DEFAULT '{}' NOT NULL;
