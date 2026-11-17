@@ -2047,6 +2047,9 @@ main.immersive > header.top {
     border-color: var(--ink);
   }
 }
+.eco-list-title {
+  font-weight: 500;
+}
 .eco-more {
   margin-top: 28px;
 }
@@ -2326,4 +2329,159 @@ main.immersive > header.top {
 }
 .org-source-link {
   color: inherit;
+}
+
+/* Site header: links on wide screens, a menu on phones. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.site-bar {
+  display: none;
+  align-items: center;
+  gap: 12px;
+}
+.site-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 12px;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  cursor: pointer;
+}
+.site-menu-trigger[data-open] {
+  border-color: var(--ink);
+}
+.site-menu-icon {
+  width: 14px;
+  height: 10px;
+  border-top: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  position: relative;
+}
+.site-menu-icon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 2px;
+  border-top: 2px solid currentColor;
+}
+.site-menu-panel {
+  z-index: 30;
+  min-width: 220px;
+  padding: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  transition:
+    opacity 140ms ease-out,
+    translate 140ms ease-out;
+}
+.site-menu-panel[data-starting-style],
+.site-menu-panel[data-ending-style] {
+  opacity: 0;
+  translate: 0 -4px;
+}
+header.top .site-menu-links {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+header.top .site-menu-links a {
+  color: var(--ink);
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--rule);
+  outline-offset: -2px;
+}
+header.top .site-menu-links a:focus-visible {
+  outline: 2px solid var(--acc);
+}
+@media (max-width: 720px) {
+  header.top {
+    padding-bottom: 32px;
+  }
+  header.top .site-nav {
+    display: none;
+  }
+  .site-bar {
+    display: flex;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-menu-panel {
+    transition: none;
+  }
+}
+
+/* Landing entry to the ecosystem directory. */
+.home-eco {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 32px;
+  align-items: center;
+  padding: 28px;
+  border: 1px solid var(--rule);
+  color: inherit;
+  text-decoration: none;
+}
+.home-eco h2 {
+  font-size: clamp(26px, 4.4vw, 40px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.home-eco-copy p {
+  margin: 12px 0 20px;
+  color: var(--mute);
+  max-width: 460px;
+}
+.home-eco-faces {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 352px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .home-eco:hover {
+    border-color: var(--ink);
+  }
+  .home-eco:hover .btn.primary {
+    background: var(--acc);
+    border-color: var(--acc);
+    color: #fff;
+  }
+}
+.home-eco-links {
+  margin-top: 16px;
+}
+@media (max-width: 720px) {
+  .home-eco {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+  .home-eco {
+    min-width: 0;
+  }
+  /* One row of faces on a phone: whatever doesn't fit wraps out of sight. */
+  .home-eco-faces {
+    order: -1;
+    max-width: none;
+    height: 44px;
+    overflow: hidden;
+  }
 }

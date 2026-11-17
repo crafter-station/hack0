@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const hub = await load(pais);
   if (!hub) return {};
   return {
-    title: `Ecosistema tech de ${hub.name}: startups, inversionistas e incubadoras | hack0`,
+    title: `Startups y ecosistema tech de ${hub.name}: ${hub.orgs.length} organizaciones | hack0`,
     description: intro(hub.name, hub.orgs.length),
     alternates: { canonical: `/ecosistema/${pais}` },
   };
@@ -42,6 +42,7 @@ export default async function Country({ params }: Props) {
   const cities = cityPlaces(hub.orgs);
   return (
     <EcoHub
+      path={`/ecosistema/${pais}`}
       title={`Ecosistema tech de ${hub.name}`}
       intro={intro(hub.name, hub.orgs.length)}
       crumbs={[{ href: "/ecosistema", label: "ecosistema" }]}

@@ -35,12 +35,14 @@ type Props = {
   view: [number, number, number];
   links: { href: string; label: string; count: number }[];
   more: { href: string; label: string; count: number }[];
+  /** Heading of the org list, so each hub's list is named in the outline. */
+  listTitle: string;
 };
 
 const plainClick = (e: MouseEvent) => e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
 
 /** Full-screen directory: the map is the page, the panel holds search, type filters and the crawlable list. */
-export function EcoExplorer({ title, intro, crumbs, orgs, types, places, placeBase, view, links, more }: Props) {
+export function EcoExplorer({ title, intro, crumbs, orgs, types, places, placeBase, view, links, more, listTitle }: Props) {
   const [active, setActive] = useState<string[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const shown = useMemo(() => (active.length === 0 ? orgs : orgs.filter((o) => active.includes(o.type))), [orgs, active]);
@@ -181,10 +183,10 @@ export function EcoExplorer({ title, intro, crumbs, orgs, types, places, placeBa
                   ))}
                 </nav>
               )}
-              <div className="label">
-                <span>{active.length === 0 ? "todas" : "filtradas"}</span>
+              <h2 className="label eco-list-title">
+                <span>{active.length === 0 ? listTitle.replace(/^Ecosistema tech de /, "Organizaciones en ") : "filtradas"}</span>
                 <span>{shown.length}</span>
-              </div>
+              </h2>
               <ul className="eco-list">
                 {shown.map((o) => (
                   <li key={o.slug}>
