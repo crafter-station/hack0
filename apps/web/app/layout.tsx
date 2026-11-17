@@ -1,5 +1,6 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { shadcn } from "@clerk/ui/themes";
+import { Analytics } from "@vercel/analytics/next";
 import type { Viewport } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import "flag-icons/css/flag-icons.min.css";
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           {children}
         </ClerkProvider>
+        <Analytics />
       </body>
     </html>
   );
