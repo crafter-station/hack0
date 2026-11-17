@@ -1,5 +1,18 @@
 import { sql } from "drizzle-orm";
-import { bigint, boolean, doublePrecision, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import {
+  bigint,
+  boolean,
+  customType,
+  doublePrecision,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 import type { EventEnrichment } from "@/lib/canonical/canonical-events";
 
 const timestamps = {
@@ -173,3 +186,50 @@ export const contentDrafts = pgTable(
   },
   (t) => [uniqueIndex("content_drafts_key_key").on(t.key)],
 );
+
+/** A startup, fund, incubator, university or coworking in the ecosystem directory. Public once `listed`. */
+export const organizations = pgTable(
+  "organizations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    slug: text("slug").notNull(),
+    name: text("name").notNull(),
+    type: text("type", { enum: ["startup", "investor", "incubator", "university", "coworking"] }).notNull(),
+    description: text("description"),
+    /** ISO 3166-1 alpha-2. */
+    country: text("country").notNull(),
+    city: text("city"),
+    websiteUrl: text("website_url"),
+    /** Public path of the logo, `/org/<slug>/logo?v=<hash>`; the bytes live in `organization_logos`. */
+    logoUrl: text("logo_url"),
+    /** `light` when the logo vanishes on white and needs a dark tile; measured by scripts/logo-tones.ts. */
+    logoTone: text("logo_tone", { enum: ["light", "dark"] }),
+    /** Width over height of the trimmed logo, so wide marks get a wide tile. */
+    logoAspect: doublePrecision("logo_aspect"),
+    hiringUrl: text("hiring_url"),
+    /** Only places with a public address get a pin; the rest show in their city's list. */
+    lat: doublePrecision("lat"),
+    lng: doublePrecision("lng"),
+    /** Where the record came from, and when someone last confirmed it against that source. */
+    sourceUrl: text("source_url").notNull(),
+    verifiedAt: timestamp("verified_at", { withTimezone: true }),
+    status: text("status", { enum: ["pending", "listed", "rejected"] })
+      .notNull()
+      .default("pending"),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex("organizations_slug_key").on(t.slug), index("organizations_country_status_idx").on(t.country, t.status)],
+);
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
+
+/** Each org's logo as a PNG, served by /org/[slug]/logo. Kept here, not hotlinked, so a site that blocks bots can't break it. */
+export const organizationLogos = pgTable("organization_logos", {
+  organizationId: uuid("organization_id")
+    .primaryKey()
+    .references(() => organizations.id, { onDelete: "cascade" }),
+  bytes: bytea("bytes").notNull(),
+  /** First 12 hex chars of the SHA-256, used as the URL's cache-busting version. */
+  hash: text("hash").notNull(),
+  ...timestamps,
+});

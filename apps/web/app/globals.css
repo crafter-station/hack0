@@ -1711,3 +1711,619 @@ button.btn,
     display: none;
   }
 }
+
+/* Ecosystem directory: the map is the page, the panel floats over it. */
+main.immersive {
+  max-width: none;
+  padding: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+main.immersive > header.top {
+  padding: 14px max(20px, env(safe-area-inset-right, 0px)) 14px max(20px, env(safe-area-inset-left, 0px));
+  background: var(--paper);
+  position: relative;
+  z-index: 3;
+}
+.eco {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+/* Beats maplibre's own .maplibregl-map { position: relative } on the same element. */
+.eco .eco-map,
+.org-profile-map .eco-map {
+  position: absolute;
+  inset: 0;
+  background: var(--paper);
+}
+.eco-map .maplibregl-ctrl-group {
+  border-radius: 0;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+}
+.eco-map .maplibregl-ctrl-group button + button {
+  border-top: 1px solid var(--rule);
+}
+:root[data-theme="dark"] .eco-map .maplibregl-ctrl-icon {
+  filter: invert(1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .eco-map .maplibregl-ctrl-icon {
+    filter: invert(1);
+  }
+}
+.eco-map .maplibregl-ctrl-attrib {
+  font-size: 10px;
+  background: var(--paper);
+  color: var(--mute);
+}
+.eco-map .maplibregl-ctrl-attrib a {
+  color: inherit;
+}
+.eco-panel {
+  position: absolute;
+  z-index: 2;
+  top: 16px;
+  left: 16px;
+  bottom: 16px;
+  width: min(400px, calc(100% - 32px));
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+}
+.eco-head {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--rule);
+}
+.eco-head .crumbs {
+  margin-bottom: 10px;
+}
+.eco-head h1 {
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+}
+.eco-intro {
+  margin-top: 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--mute);
+}
+.eco-search {
+  display: block;
+  padding: 12px 20px 0;
+}
+.eco-search-input {
+  width: 100%;
+  font: inherit;
+  font-size: 16px;
+  padding: 10px 12px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  outline: none;
+}
+.eco-search-input:focus-visible {
+  border-color: var(--ink);
+}
+.eco-search-pop {
+  z-index: 20;
+  width: var(--anchor-width, 360px);
+  max-height: min(360px, var(--available-height, 360px));
+  overflow: auto;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  padding: 4px;
+}
+.eco-search-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.eco-search-kind {
+  color: var(--mute);
+  font-size: 11px;
+}
+.eco-search-item[data-highlighted] {
+  background: var(--ink);
+  color: var(--paper);
+}
+.eco-search-item[data-highlighted] .eco-search-kind {
+  color: inherit;
+}
+.eco-search-pop [data-slot="combobox-empty"] {
+  padding: 10px;
+  font-size: 13px;
+  color: var(--mute);
+}
+.eco-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--rule);
+}
+.eco-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 8px 4px 4px;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  transition:
+    transform 120ms ease-out,
+    background-color 120ms ease-out;
+}
+.eco-type:active {
+  transform: scale(0.97);
+}
+.eco-glyph {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  color: var(--mute);
+  font-weight: 800;
+  font-size: 11px;
+}
+.eco-count {
+  color: var(--mute);
+}
+.eco-type[data-pressed] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+.eco-type[data-pressed] .eco-glyph {
+  color: inherit;
+}
+.eco-type[data-pressed] .eco-count {
+  color: inherit;
+}
+.eco-type:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
+.eco-card {
+  position: relative;
+  margin: 12px 20px 0;
+  padding: 14px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  animation: eco-in 160ms ease-out;
+}
+@keyframes eco-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eco-card {
+    animation: none;
+  }
+}
+.eco-card-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding-right: 24px;
+}
+.eco-card h2 {
+  font-size: 18px;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.eco-card-head p {
+  font-size: 12px;
+  color: var(--mute);
+  margin-top: 2px;
+}
+.eco-card-desc {
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.eco-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.eco-card-actions .btn {
+  padding: 7px 12px;
+  font-size: 12px;
+}
+.eco-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  background: none;
+  border: 0;
+  color: var(--mute);
+  cursor: pointer;
+  padding: 4px;
+}
+.eco-scroll {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin-top: 12px;
+}
+.eco-viewport {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 0 20px 20px;
+}
+.eco-viewport::-webkit-scrollbar {
+  display: none;
+}
+.eco-bar {
+  width: 6px;
+  right: 2px;
+  top: 2px;
+  bottom: 2px;
+}
+.eco-thumb {
+  background: var(--ink);
+}
+.eco-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.eco-link {
+  font-size: 12px;
+  padding: 4px 8px;
+  border: 1px solid var(--rule);
+  color: inherit;
+  text-decoration: none;
+}
+.eco-link-count {
+  color: var(--mute);
+  font-weight: 700;
+}
+.eco-list {
+  list-style: none;
+  padding: 0;
+}
+.eco-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 6px;
+  margin: 0 -6px;
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+.eco-row > span:last-child {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.eco-row-name {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eco-row-kind {
+  font-size: 11.5px;
+  color: var(--mute);
+}
+.eco-row[aria-current="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+.eco-row[aria-current="true"] .eco-row-kind {
+  color: inherit;
+}
+@media (hover: hover) and (pointer: fine) {
+  .eco-row:hover .eco-row-name {
+    color: var(--acc);
+  }
+  .eco-link:hover {
+    border-color: var(--ink);
+  }
+}
+.eco-more {
+  margin-top: 28px;
+}
+.eco-empty {
+  font-size: 13px;
+  color: var(--mute);
+}
+.org-logo {
+  flex: none;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--rule);
+  color: #111;
+  font-weight: 800;
+  font-size: 12px;
+}
+.org-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 3px;
+}
+/* Phones: the map keeps the top, the panel becomes a sheet you scroll. */
+@media (max-width: 720px) {
+  main.immersive > header.top nav {
+    gap: 12px;
+    font-size: 12px;
+  }
+  .eco-panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: 52dvh;
+    border-width: 1px 0 0;
+  }
+  .eco-head {
+    padding: 14px 16px 12px;
+  }
+  .eco-head h1 {
+    font-size: 24px;
+  }
+  .eco-intro {
+    display: none;
+  }
+  .eco-search,
+  .eco-types {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .eco-types {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .eco-type {
+    flex: none;
+  }
+  .eco-viewport {
+    padding: 0 16px 16px;
+  }
+  .eco-card {
+    margin: 10px 16px 0;
+  }
+}
+/* Map markers: HTML over the canvas so they follow the theme tokens. Orange marks only the selected org. */
+.eco-marker {
+  font: inherit;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+}
+.eco-fly {
+  display: block;
+  transition:
+    transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 240ms ease-out;
+}
+/* The fly layer stands in for the button's box, so a transform mid-animation doesn't move the fan's anchor. */
+.eco-cluster > .eco-fly {
+  position: absolute;
+  inset: 0;
+}
+.eco-place > .eco-fly,
+.eco-places > .eco-fly {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.eco-marker:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 3px;
+}
+.eco-tile {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #11111133;
+  box-shadow: 0 1px 6px #0000002e;
+  color: #111;
+  font-weight: 800;
+  font-size: 11px;
+}
+/* A light logo vanishes on white: it sits on ink instead, in both themes. */
+.eco-tile[data-tone="light"],
+.org-logo[data-tone="light"] {
+  background: #111;
+  border-color: #ffffff33;
+}
+.eco-tile[data-wide] {
+  width: 64px;
+}
+.eco-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 3px;
+}
+.eco-org-body {
+  position: relative;
+  display: block;
+  transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.eco-org-name {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  translate: -50% 0;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease-out;
+}
+.eco-map[data-names] .eco-org-name,
+.eco-org:hover .eco-org-name,
+.eco-org:focus-visible .eco-org-name,
+.eco-org.is-on .eco-org-name {
+  opacity: 1;
+}
+.eco-org.is-on {
+  z-index: 2;
+}
+.eco-org.is-on .eco-tile {
+  border-color: var(--acc);
+  outline: 2px solid var(--acc);
+}
+.eco-cluster {
+  position: relative;
+  width: 76px;
+  height: 50px;
+}
+.eco-fan {
+  position: absolute;
+  inset: 0;
+}
+.eco-fan-tile {
+  position: absolute;
+  top: 5px;
+  left: 18px;
+  width: 40px;
+  height: 40px;
+  transition:
+    rotate 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    translate 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.eco-fan-tile:nth-child(1) {
+  rotate: -12deg;
+  translate: -16px 3px;
+}
+.eco-fan-tile:nth-child(2) {
+  z-index: 1;
+}
+.eco-fan-tile:nth-child(3) {
+  rotate: 12deg;
+  translate: 16px 3px;
+  z-index: 2;
+}
+@media (hover: hover) and (pointer: fine) {
+  .eco-cluster:hover .eco-fan-tile:nth-child(1) {
+    rotate: -20deg;
+    translate: -28px 6px;
+  }
+  .eco-cluster:hover .eco-fan-tile:nth-child(3) {
+    rotate: 20deg;
+    translate: 28px 6px;
+  }
+}
+.eco-badge {
+  position: absolute;
+  z-index: 3;
+  top: -8px;
+  right: -2px;
+  min-width: 22px;
+  padding: 2px 5px;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+  background: var(--ink);
+  color: var(--paper);
+}
+.eco-place,
+.eco-places {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.eco-place-count {
+  display: grid;
+  place-items: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 8px;
+  font-size: 15px;
+  font-weight: 800;
+  background: var(--ink);
+  color: var(--paper);
+  transition: scale 120ms ease-out;
+}
+.eco-place:hover .eco-place-count,
+.eco-places:hover .eco-place-count {
+  scale: 1.06;
+}
+.eco-place-name {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  background: var(--paper);
+}
+@media (prefers-reduced-motion: reduce) {
+  .eco-fly,
+  .eco-org-body,
+  .eco-fan-tile {
+    transition: none;
+  }
+}
+/* Org profile */
+.org-head {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.org-hero .org-meta {
+  margin-top: 8px;
+  color: var(--mute);
+  font-size: 14px;
+}
+.org-hero .org-meta a {
+  color: inherit;
+}
+.org-profile-map {
+  position: relative;
+  height: 320px;
+  margin-top: 40px;
+  border: 1px solid var(--rule);
+}
+.org-source {
+  margin-top: 48px;
+  font-size: 12px;
+  color: var(--mute);
+}
+.org-source-link {
+  color: inherit;
+}
