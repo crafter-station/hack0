@@ -10,7 +10,7 @@ import { inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/lib/db/client";
 import { organizationLogos, organizations } from "@/lib/db/schema";
-import { measureLogo, toPng } from "@/lib/ecosistema-logo";
+import { prepareLogo } from "@/lib/ecosistema-logo";
 
 const url = z.url({ protocol: /^https?$/ }).nullable();
 
@@ -73,13 +73,12 @@ type Logo = { png: Buffer; hash: string; tone: "light" | "dark" | null; aspect: 
 const logos = new Map<string, Logo>();
 for (const r of rows) {
   if (!r.logo) continue;
-  const png = await toPng(Buffer.from(await Bun.file(join(seed, r.logo)).arrayBuffer()));
-  const measured = await measureLogo(png);
+  const { png, tone, aspect } = await prepareLogo(Buffer.from(await Bun.file(join(seed, r.logo)).arrayBuffer()));
   logos.set(r.slug, {
     png,
     hash: createHash("sha256").update(png).digest("hex").slice(0, 12),
-    tone: measured?.tone ?? null,
-    aspect: measured?.aspect ?? null,
+    tone,
+    aspect,
   });
 }
 
