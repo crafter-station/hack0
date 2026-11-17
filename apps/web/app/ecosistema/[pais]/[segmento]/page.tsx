@@ -13,6 +13,21 @@ export function generateStaticParams() {
 
 type Props = { params: Promise<{ pais: string; segmento: string }> };
 
+/** How each country's startups are searched, e.g. "startups peruanas". */
+const STARTUP_DEMONYM: Record<string, string> = { PE: "peruanas", CO: "colombianas", MX: "mexicanas", CL: "chilenas", AR: "argentinas" };
+
+/** Search titles under 60 characters, led by the phrase people type; the H1 stays the plain hub name. */
+function seoTitle(segment: string, code: string, country: string, orgs: { city: string | null }[]) {
+  const n = orgs.length;
+  const cities = [...new Set(orgs.map((o) => o.city).filter(Boolean))];
+  const place = cities.length === 1 ? cities[0] : country;
+  if (segment === "startups") return `${n} startups ${STARTUP_DEMONYM[code] ?? `de ${country}`}: directorio y mapa`;
+  if (segment === "inversionistas") return `Venture capital en ${country}: ${n} fondos e inversionistas`;
+  if (segment === "incubadoras") return `Aceleradoras e incubadoras en ${country}: ${n} programas`;
+  if (segment === "universidades") return `Universidades con incubadoras en ${country}`;
+  return `Coworking en ${place}: espacios para startups`;
+}
+
 const TYPE_INTRO: Record<string, (country: string, n: number) => string> = {
   startups: (c, n) => `${n} startups de ${c}: qué construyen, dónde están y cuáles están contratando.`,
   inversionistas: (c, n) =>
@@ -38,6 +53,7 @@ async function load(pais: string, segmento: string) {
       country,
       orgs,
       title: `${type.plural} en ${name}`,
+      seo: seoTitle(type.segment, code, name, orgs),
       intro: TYPE_INTRO[type.segment](name, orgs.length),
     };
   }
@@ -51,6 +67,7 @@ async function load(pais: string, segmento: string) {
     orgs,
     city,
     title: `Ecosistema tech de ${city.name}`,
+    seo: `Startups y ecosistema tech de ${city.name}: ${orgs.length} organizaciones`,
     intro: `${orgs.length} startups, inversionistas, incubadoras, universidades y coworkings de ${city.name}, ${name}.`,
   };
 }
@@ -59,7 +76,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { pais, segmento } = await params;
   const hub = await load(pais, segmento);
   if (!hub) return {};
-  return { title: `${hub.title} | hack0`, description: hub.intro, alternates: { canonical: `/ecosistema/${pais}/${segmento}` } };
+  return {
+    title: `${hub.seo} | hack0`,
+    description: `${hub.intro} Con su web, su ciudad y su ubicación en el mapa.`,
+    alternates: { canonical: `/ecosistema/${pais}/${segmento}` },
+  };
 }
 
 export default async function Segment({ params }: Props) {
@@ -82,6 +103,7 @@ export default async function Segment({ params }: Props) {
       .filter((t) => t.count > 0);
     return (
       <EcoHub
+        path={`/ecosistema/${pais}/${segmento}`}
         title={hub.title}
         intro={hub.intro}
         crumbs={crumbs}
@@ -104,6 +126,7 @@ export default async function Segment({ params }: Props) {
   if (events) types.push({ href: `/ciudad/${events.slug}`, label: `Eventos en ${hub.city.name}`, count: events.count });
   return (
     <EcoHub
+      path={`/ecosistema/${pais}/${segmento}`}
       title={hub.title}
       intro={hub.intro}
       crumbs={crumbs}

@@ -8,8 +8,9 @@ const INTRO =
   "Startups, inversionistas, incubadoras, universidades y coworkings que construyen tecnología en Latinoamérica. Elige un país para ver sus ciudades y quién está detrás de cada evento.";
 
 export const metadata: Metadata = {
-  title: "Ecosistema tech de LATAM: startups, inversionistas e incubadoras | hack0",
-  description: INTRO,
+  title: "Ecosistema tech de LATAM: startups y fondos por país | hack0",
+  description:
+    "Startups, fondos, incubadoras, universidades y coworkings que construyen tecnología en Latinoamérica, en un mapa por país y ciudad.",
   alternates: { canonical: "/ecosistema" },
 };
 
@@ -18,6 +19,7 @@ export default async function Ecosistema() {
   const countries = countryPlaces(orgs);
   return (
     <EcoHub
+      path="/ecosistema"
       title="Ecosistema tech de LATAM"
       intro={INTRO}
       crumbs={[{ href: "/", label: "hack0" }]}

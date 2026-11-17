@@ -7,6 +7,7 @@ import { SITE } from "@/lib/site";
 
 type Props = {
   title: string;
+  path: string;
   intro: string;
   crumbs: { href: string; label: string }[];
   orgs: Org[];
@@ -21,7 +22,7 @@ type Props = {
 const GLYPH: Record<string, string> = { startup: "S", investor: "$", incubator: "I", university: "U", coworking: "C" };
 
 /** Every /ecosistema hub: the full-screen explorer over server-rendered data, plus its ItemList. */
-export function EcoHub({ title, intro, crumbs, orgs, places, placeBase, view, chips, more = [] }: Props) {
+export function EcoHub({ title, path, intro, crumbs, orgs, places, placeBase, view, chips, more = [] }: Props) {
   const types = ORG_TYPES.filter((t) => orgs.some((o) => o.type === t.type)).map((t) => ({
     type: t.type,
     plural: t.plural,
@@ -29,6 +30,18 @@ export function EcoHub({ title, intro, crumbs, orgs, places, placeBase, view, ch
   }));
   return (
     <Shell immersive>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [...crumbs.filter((c) => c.href !== "/"), { href: path, label: title }].map((c, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: c.label,
+            item: `${SITE}${c.href}`,
+          })),
+        }}
+      />
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -46,6 +59,7 @@ export function EcoHub({ title, intro, crumbs, orgs, places, placeBase, view, ch
         places={places}
         placeBase={placeBase}
         view={view}
+        listTitle={title}
         links={chips}
         more={more}
         orgs={orgs.map((o) => ({

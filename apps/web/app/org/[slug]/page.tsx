@@ -52,6 +52,18 @@ export default async function OrgPage({ params }: Props) {
       <JsonLd
         data={{
           "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { name: "ecosistema", item: `${SITE}/ecosistema` },
+            { name: countryName(o.country), item: `${SITE}${country}` },
+            { name: t.plural, item: `${SITE}${country}/${t.segment}` },
+            { name: o.name, item: `${SITE}/org/${o.slug}` },
+          ].map((c, i) => ({ "@type": "ListItem", position: i + 1, ...c })),
+        }}
+      />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
           "@type": o.type === "university" ? "CollegeOrUniversity" : "Organization",
           name: o.name,
           url: o.websiteUrl ?? `${SITE}/org/${o.slug}`,
@@ -66,7 +78,7 @@ export default async function OrgPage({ params }: Props) {
           <Link href={`${country}/${t.segment}`}>{t.segment}</Link>
         </p>
         <div className="org-head">
-          <OrgLogo org={o} size={72} />
+          <OrgLogo org={o} size={72} alt={`Logo de ${o.name}`} />
           <h1>{o.name}</h1>
         </div>
         <p>{summary(o)}</p>
