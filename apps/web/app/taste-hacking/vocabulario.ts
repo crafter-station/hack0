@@ -110,8 +110,8 @@ export const VOCABULARY: { id: string; title: string; groups: { title: string | 
           },
           {
             term: "Grain",
-            text: "es ruido fino sobre un relleno. En Liquid Glass no encontramos ninguno, el relleno es plano.",
-            pieces: ["look-liquid-glass"],
+            text: "es ruido fino sobre un relleno. En Liquid Glass no encontramos ninguno, el relleno es plano. Lit Room lo lleva en su pase final.",
+            pieces: ["look-liquid-glass", "look-lit-room"],
           },
           {
             term: "Gradiente o ruido",
@@ -127,6 +127,41 @@ export const VOCABULARY: { id: string; title: string; groups: { title: string | 
             term: "Rim light",
             text: "es una luz que dibuja solo el borde del objeto. El film de Nothing ilumina así su producto.",
             pieces: ["video-nothing-film"],
+          },
+        ],
+      },
+      {
+        title: "Luz",
+        terms: [
+          {
+            term: "Luz de área",
+            text: "es una luz que sale de una superficie y no de un punto. La pantalla de Lit Room son 32, en una grilla de 8 × 4, y toman su color de la página.",
+            pieces: ["look-lit-room"],
+          },
+          {
+            term: "Rebote",
+            text: "es la luz que llega a una superficie después de tocar otra. En Lit Room la pantalla no mira a la pared, y la pared se ilumina con lo que rebota del escritorio.",
+            pieces: ["look-lit-room"],
+          },
+          {
+            term: "Sombra de contacto",
+            text: "es la línea oscura donde un objeto toca la superficie. En Lit Room mide 2 mm y va junto a una caída ancha que crece con la altura del objeto.",
+            pieces: ["look-lit-room"],
+          },
+          {
+            term: "Curva de tono",
+            text: "es cómo se comprimen las luces altas al pasar a la pantalla. ACES les quita saturación, y la curva de Lit Room la devuelve y lleva la saturación del charco de 63 a 73.",
+            pieces: ["look-lit-room"],
+          },
+          {
+            term: "Luz de relleno",
+            text: "es una luz baja que levanta las sombras. En Lit Room vale 0.06 y toma el 75% de su color de la pantalla, porque en neutro se leía como luz de día.",
+            pieces: ["look-lit-room"],
+          },
+          {
+            term: "Distancia focal",
+            text: "decide cuánto ángulo abarca el lente. Lit Room pasó de 58 a 42 grados para que los audífonos del primer plano dejaran de verse hinchados.",
+            pieces: ["look-lit-room"],
           },
         ],
       },
@@ -340,7 +375,17 @@ export const VOCABULARY: { id: string; title: string; groups: { title: string | 
           {
             term: "WebGL",
             text: "es la tecnología del navegador para dibujar 3D en un canvas. landonorris.com usa un solo canvas a pantalla completa.",
-            pieces: ["made-lando-stack"],
+            pieces: ["made-lando-stack", "look-lit-room"],
+          },
+          {
+            term: "HTML-in-Canvas",
+            text: "es una API de Chrome que deja a un canvas dibujar sus propios elementos HTML sin sacarlos del DOM. El monitor de Lit Room es una página de 1280 × 800 px que todavía recibe clics y tipeo. Necesita Chrome 157 o más nuevo, de escritorio.",
+            pieces: ["look-lit-room"],
+          },
+          {
+            term: "Homografía",
+            text: "es la transformación que lleva un plano a otro en perspectiva. En Lit Room una sola dibuja la pantalla y ubica los clics sobre la página mientras la cámara orbita.",
+            pieces: ["look-lit-room"],
           },
         ],
       },

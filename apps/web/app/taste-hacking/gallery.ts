@@ -138,4 +138,16 @@ export const GALLERY: GalleryEntry[] = [
     poster: `${dir}/brand-nubank-system.webp`,
     after: "El sistema medido en vivo y traducido a una plantilla de marca para hack0: reglas copiadas, colores no.",
   },
+  {
+    slug: "look-lit-room",
+    title: "Lit Room",
+    layer: "look",
+    original: "https://claude.ai/artifact/D5pdvChFfvxBsvVNb5KNCJ",
+    credit: "Felix Rieseberg, Lit Room (2026)",
+    session: `${material}#look-lit-room`,
+    sessionPoster: "npt:45:00",
+    video: `${dir}/look-lit-room.mp4`,
+    poster: `${dir}/look-lit-room.webp`,
+    after: "Una página HTML viva que ilumina su propio cuarto: cambias el CSS del cartel y el escritorio y la pared cambian de color.",
+  },
 ];
