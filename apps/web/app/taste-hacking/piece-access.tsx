@@ -5,9 +5,14 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Code } from "./code";
 import { SessionPlayer } from "./session-player";
+import { SessionState } from "./session-state";
 import { CLI } from "./workshop";
 
-type Access = { email: string; session: { poster: string; seconds: number } | null };
+type Access = {
+  email: string;
+  session: { poster: string; seconds: number } | null;
+  takes: { slug: string; title: string; poster: string; seconds: number }[];
+};
 type Checked = { slug: string; access: Access | null };
 
 const MATERIAL = "/taste-hacking/material";
@@ -18,10 +23,20 @@ function Buyer({ slug, title, access }: { slug: string; title: string; access: A
       {access.session ? (
         <>
           <p className="th-prose">
-            Entraste como {access.email}. La sesión dura unos {Math.max(1, Math.round(access.session.seconds / 60))} minutos y abre donde la
-            dejaste.
+            Entraste como {access.email}. La {access.takes.length ? "primera sesión" : "sesión"} dura unos{" "}
+            {Math.max(1, Math.round(access.session.seconds / 60))} minutos y abre donde la dejaste.
           </p>
           <SessionPlayer slug={slug} title={title} poster={access.session.poster} />
+          {access.takes.map((t) => (
+            <div key={t.slug} className="th-take">
+              <div className="th-take-head">
+                <h3 className="th-take-title">{t.title}</h3>
+                <span className="th-session-meta">{Math.max(1, Math.round(t.seconds / 60))} min</span>
+                <SessionState slug={t.slug} />
+              </div>
+              <SessionPlayer slug={t.slug} title={t.title} poster={t.poster} />
+            </div>
+          ))}
         </>
       ) : (
         <p className="th-prose">

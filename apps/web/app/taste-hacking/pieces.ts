@@ -26,7 +26,7 @@ export type Piece = {
   /** 155 characters or fewer. */
   metaDescription: string;
   /** Null for the specimens built for the promo, which have no outside reference. */
-  reference: { name: string; author: string; url: string } | null;
+  reference: { name: string; author: string; authorType?: "Person"; url: string } | null;
   layers: {
     seVe: string | null;
     seMueve: string | null;
@@ -143,7 +143,8 @@ export const PIECES: Piece[] = [
     reference: {
       name: "Lit Room",
       author: "Felix Rieseberg",
-      url: "https://claude.ai/artifact/D5pdvChFfvxBsvVNb5KNCJ",
+      authorType: "Person",
+      url: "https://x.com/felixrieseberg/status/2122036839238492493",
     },
     layers: {
       seVe: "Un escritorio de noche donde la pantalla es la única luz. Deja un charco cálido delante del monitor, sombras suaves, madera barnizada y una pared que toma el color del cartel. Encima van profundidad de campo, viñeta y grain.",
@@ -196,7 +197,7 @@ export const PIECES: Piece[] = [
     ],
     lesson: "Una pantalla en un cuarto oscuro es una luz. El look aparece cuando los pixeles de la página iluminan la escena.",
     paidTeaser:
-      "La pieza tomó tres sesiones. La que se abre aquí es la primera, de la captura de la referencia al cuarto funcionando con dos rondas de crítica, en unos 70 minutos.",
+      "La pieza tomó tres sesiones y aquí se abren las tres. La primera va de la captura de la referencia al cuarto funcionando con dos rondas de crítica, en unos 70 minutos. La segunda cierra bordes, objetos y materiales en unos 46. La tercera ajusta el color, la cámara y el encuadre 4:5 en unos 40.",
     faq: [
       {
         q: "¿En qué navegadores funciona esta pieza?",
@@ -271,6 +272,7 @@ export const PIECES: Piece[] = [
     reference: {
       name: "Family Values",
       author: "Benji Taylor",
+      authorType: "Person",
       url: "https://benji.org/family-values",
     },
     layers: {

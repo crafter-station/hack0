@@ -1,5 +1,7 @@
 import type { Layer } from "./pieces";
 
+type Take = { slug: string; title: string; poster: string };
+
 type GalleryEntry = {
   slug: string;
   title: string;
@@ -12,6 +14,8 @@ type GalleryEntry = {
   session?: string;
   /** Still shown before the session is played. Set with `session`. */
   sessionPoster?: string;
+  /** Later sessions on the same piece, in order, listed under the first. Each is stored under its own slug. */
+  takes?: Take[];
   /** Paths under /public. Clips are muted loops; `sound` marks a video meant to be played with controls. */
   video: string;
   poster: string;
@@ -142,10 +146,14 @@ export const GALLERY: GalleryEntry[] = [
     slug: "look-lit-room",
     title: "Lit Room",
     layer: "look",
-    original: "https://claude.ai/artifact/D5pdvChFfvxBsvVNb5KNCJ",
+    original: "https://x.com/felixrieseberg/status/2122036839238492493",
     credit: "Felix Rieseberg, Lit Room (2026)",
     session: `${material}#look-lit-room`,
     sessionPoster: "npt:45:00",
+    takes: [
+      { slug: "look-lit-room-2", title: "Sesión 2 · bordes, objetos y materiales", poster: "npt:30:00" },
+      { slug: "look-lit-room-3", title: "Sesión 3 · color, cámara y encuadre 4:5", poster: "npt:25:00" },
+    ],
     video: `${dir}/look-lit-room.mp4`,
     poster: `${dir}/look-lit-room.webp`,
     after: "Una página HTML viva que ilumina su propio cuarto: cambias el CSS del cartel y el escritorio y la pared cambian de color.",
