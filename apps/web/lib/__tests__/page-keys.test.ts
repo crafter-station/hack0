@@ -21,3 +21,10 @@ test("a venue district with the group's city as region joins that metro, unless 
   expect(eventMetro("Sesion Online")).toBeNull();
   expect(eventMetro("CABA, Ch")).toBe("Buenos Aires");
 });
+
+test("Lima districts sent as a bare city join Lima, accents and case aside", () => {
+  expect(eventMetro("Miraflores")).toBe("Lima");
+  expect(eventMetro("Jesús María")).toBe("Lima");
+  expect(eventMetro("VILLA EL SALVADOR")).toBe("Lima");
+  expect(eventMetro("Surquillo, al")).toBe("Lima");
+});

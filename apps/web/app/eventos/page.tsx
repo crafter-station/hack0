@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Fragment } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { EventFilters } from "@/components/event-filters";
 import { EventList } from "@/components/event-list";
 import { Shell } from "@/components/shell";
 import { ARCHIVE_PAGE, hubIndex } from "@/lib/catalog";
 import { filterHref, isFiltered, parseFilters, searchEvents } from "@/lib/search";
+import { isListedTopic, topicLabel } from "@/lib/topics";
 
 const TITLE = "Eventos tech en LATAM";
 const INTRO = "Hackathones, conferencias, workshops y meetups de tecnología en Latinoamérica, con fechas, lugares y registro.";
@@ -81,11 +83,15 @@ export default async function Eventos({ searchParams }: Props) {
           [tags, "/tema"],
         ].map(([list, base]) => (
           <p className="chips" key={base as string}>
-            {(list as typeof cities).map((l) => (
-              <Link key={l.slug} href={`${base}/${l.slug}`}>
-                {l.name} <span>{l.count}</span>
-              </Link>
-            ))}
+            {(list as typeof cities)
+              .filter((l) => base !== "/tema" || isListedTopic(l.name))
+              .map((l) => (
+                <Fragment key={l.slug}>
+                  <Link href={`${base}/${l.slug}`}>
+                    {base === "/tema" ? topicLabel(l.name) : l.name} <span>{l.count}</span>
+                  </Link>{" "}
+                </Fragment>
+              ))}
           </p>
         ))}
       </section>

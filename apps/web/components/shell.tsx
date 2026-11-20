@@ -11,10 +11,11 @@ export function Shell({ children, immersive = false }: { children: React.ReactNo
         <footer>
           <span>
             hack0 by <a href="https://crafter.run">Crafter Station</a>
-          </span>
+          </span>{" "}
           <span>
             <Link href="/eventos">eventos</Link> · <Link href="/comunidades">comunidades</Link> · <Link href="/ecosistema">ecosistema</Link>{" "}
-            · <Link href="/brand">brand</Link> · <a href="https://github.com/crafter-station/hack0">github</a>
+            · <Link href="/about">about</Link> · <Link href="/brand">brand</Link> ·{" "}
+            <a href="https://github.com/crafter-station/hack0">github</a>
           </span>
         </footer>
       )}

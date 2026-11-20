@@ -66,15 +66,13 @@ export default async function Communities() {
         byCity(list).map(([city, members]) => (
           <section key={city}>
             <div className="label">
-              <span>{city}</span>
-              <span>{members.length}</span>
+              <span>{city}</span> <span>{members.length}</span>
             </div>
             <ul className="communities">
               {members.map((c) => (
                 <li key={c.slug}>
                   <Link href={`/comunidades/${c.slug}`}>
-                    <b>{c.name}</b>
-                    <small>{c.metros.slice(0, 3).join(" · ") || "online"}</small>
+                    <b>{c.name}</b> <small>{c.metros.slice(0, 3).join(" · ") || "online"}</small>{" "}
                     <span>
                       {c.upcoming > 0 && (
                         <em>

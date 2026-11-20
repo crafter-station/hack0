@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AutoSubmitForm } from "@/components/auto-submit";
 import { Flag } from "@/components/flag";
 import { countryName, type Filters, filterHref, type SearchResult } from "@/lib/search";
+import { topicLabel } from "@/lib/topics";
 
 type Props = { filters: Filters; result: SearchResult };
 
@@ -52,7 +53,7 @@ export function EventFilters({ filters: f, result }: Props) {
           <option value="">Todos los temas</option>
           {result.facets.temas.map((t) => (
             <option key={t.value} value={t.value}>
-              {t.label} ({t.count})
+              {topicLabel(t.label)} ({t.count})
             </option>
           ))}
         </select>

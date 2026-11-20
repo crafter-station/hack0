@@ -8,9 +8,7 @@ import { WorkshopBanner } from "@/components/workshop-banner";
 import { eventSpots } from "@/lib/calendar";
 import { mappedEvents, upcomingEvents } from "@/lib/catalog";
 import { listedOrgs, ORG_TYPES } from "@/lib/ecosistema";
-import { SITE } from "@/lib/site";
-
-const LUMA = "https://luma.com/hack0";
+import { LUMA, ORGANIZATION_LD } from "@/lib/site";
 
 export const revalidate = 60;
 
@@ -22,16 +20,7 @@ export default async function Home() {
   const spots = await eventSpots(mapped);
   return (
     <main>
-      <JsonLd
-        data={{
-          "@context": "https://schema.org",
-          "@type": "Organization",
-          name: "hack0",
-          url: SITE,
-          logo: `${SITE}/icon.svg`,
-          sameAs: [LUMA, "https://github.com/crafter-station/hack0"],
-        }}
-      />
+      <JsonLd data={ORGANIZATION_LD} />
       <SiteHeader />
 
       <div className="hero">
@@ -64,8 +53,7 @@ export default async function Home() {
       {orgs.length > 0 && (
         <section id="ecosistema">
           <div className="label">
-            <span>ecosistema</span>
-            <b>{orgs.length}</b>
+            <span>ecosistema</span> <b>{orgs.length}</b>
           </div>
           <Link href="/ecosistema" className="home-eco">
             <div className="home-eco-copy">
@@ -96,8 +84,7 @@ export default async function Home() {
 
       <section id="eventos">
         <div className="label">
-          <span>próximos eventos</span>
-          <Link href="/eventos">ver todos y el archivo</Link>
+          <span>próximos eventos</span> <Link href="/eventos">ver todos y el archivo</Link>
         </div>
         <WorkshopBanner />
         {events && events.length > 0 ? (
@@ -126,19 +113,22 @@ export default async function Home() {
 
       <section id="workshops">
         <div className="label">
-          <span>workshops online</span>
-          <b>pronto</b>
+          <span>workshops online</span> <Link href="/taste-hacking">taste hacking</Link>
         </div>
-        <p className="soon">Workshops prácticos con lo mejor que pueda contar el ponente de turno. Te llevas algo que funciona.</p>
+        <p className="soon">
+          Workshops prácticos, en vivo y en español. El primero es <Link href="/taste-hacking">Taste hacking</Link>: desarma cualquier web,
+          animación o video y reconstrúyelo con IA.
+        </p>
       </section>
 
       <footer>
         <span>
           hack0 by <a href="https://crafter.run">Crafter Station</a>
-        </span>
+        </span>{" "}
         <span>
           <Link href="/eventos">eventos</Link> · <Link href="/comunidades">comunidades</Link> · <Link href="/ecosistema">ecosistema</Link> ·{" "}
-          <Link href="/brand">brand</Link> · <a href="https://github.com/crafter-station/hack0">github</a>
+          <Link href="/about">about</Link> · <Link href="/brand">brand</Link> ·{" "}
+          <a href="https://github.com/crafter-station/hack0">github</a>
         </span>
       </footer>
     </main>

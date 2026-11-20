@@ -72,8 +72,14 @@ async function load(pais: string, segmento: string) {
     orgs,
     city,
     title: `Ecosistema tech de ${city.name}`,
-    seo: `Startups y ecosistema tech de ${city.name}: ${orgs.length} organizaciones`,
-    intro: `${orgs.length} startups, inversionistas, incubadoras, universidades y coworkings de ${city.name}, ${name}.`,
+    seo:
+      orgs.length === 1
+        ? `Startups y ecosistema tech de ${city.name}`
+        : `Startups y ecosistema tech de ${city.name}: ${orgs.length} organizaciones`,
+    intro:
+      orgs.length === 1
+        ? `Una organización del ecosistema tech de ${city.name}, ${name}.`
+        : `${orgs.length} startups, inversionistas, incubadoras, universidades y coworkings de ${city.name}, ${name}.`,
   };
 }
 
@@ -85,6 +91,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${hub.seo} | hack0`,
     description: `${hub.intro} Con su web, su ciudad y su ubicación en el mapa.`,
     alternates: { canonical: `/ecosistema/${pais}/${segmento}` },
+    // A city with a single org is a thinner copy of that org's profile.
+    robots: hub.kind === "city" && hub.orgs.length === 1 ? { index: false, follow: true } : undefined,
   };
 }
 

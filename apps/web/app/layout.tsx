@@ -29,8 +29,9 @@ export const metadata = {
   twitter: { card: "summary_large_image" },
   alternates: { canonical: "/" },
   openGraph: { siteName: "hack0", locale: "es_419", type: "website" },
-  title: "hack0 · Mapeando el ecosistema tech de LATAM",
-  description: "Damos visibilidad a comunidades y eventos tech de LATAM: hackathones, conferencias, workshops y meetups.",
+  title: "hack0 · Eventos tech de LATAM, por Crafter Station",
+  description:
+    "El calendario abierto de Crafter Station: hackathones, meetups, workshops y conferencias de tecnología en Latinoamérica, con sus comunidades.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { EventList } from "@/components/event-list";
 import { JsonLd } from "@/components/json-ld";
@@ -7,6 +7,7 @@ import { Shell } from "@/components/shell";
 import type { CalendarEvent } from "@/lib/calendar";
 import { ARCHIVE_PAGE, type HubLink } from "@/lib/catalog";
 import { LUMA, SITE } from "@/lib/site";
+import { topicLabel } from "@/lib/topics";
 
 /** Hubs page as /ciudad/lima/2 so ISR can cache each page; the whole-catalog archive keeps ?pagina=2. */
 function pageHref(path: string, n: number) {
@@ -67,8 +68,7 @@ export function HubPage({
       </div>
       <section>
         <div className="label">
-          <span>próximos</span>
-          <span>{upcoming.length}</span>
+          <span>próximos</span> <span>{upcoming.length}</span>
         </div>
         {upcoming.length > 0 ? (
           <EventList events={upcoming} />
@@ -89,8 +89,7 @@ export function HubPage({
       {past.length > 0 && (
         <section>
           <div className="label">
-            <span>realizados</span>
-            <span>{pastTotal}</span>
+            <span>realizados</span> <span>{pastTotal}</span>
           </div>
           <EventList events={past} />
           {pages > 1 && (
@@ -116,9 +115,11 @@ export function HubPage({
             (list as HubLink[]).length > 0 ? (
               <p className="chips" key={base as string}>
                 {(list as HubLink[]).map((l) => (
-                  <Link key={l.slug} href={`${base}/${l.slug}`}>
-                    {l.name} <span>{l.count}</span>
-                  </Link>
+                  <Fragment key={l.slug}>
+                    <Link href={`${base}/${l.slug}`}>
+                      {base === "/tema" ? topicLabel(l.name) : l.name} <span>{l.count}</span>
+                    </Link>{" "}
+                  </Fragment>
                 ))}
               </p>
             ) : null,
