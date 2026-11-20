@@ -29,16 +29,22 @@ export const ORGANIZATION_LD = {
   "@type": "Organization",
   "@id": `${SITE}/#organization`,
   name: "hack0",
-  alternateName: "hack0 by Crafter Station",
+  alternateName: ["hack0.dev", "hack0 by Crafter Station"],
   url: SITE,
   logo: `${SITE}/icon.svg`,
   description: TAGLINE,
   disambiguatingDescription:
     "Calendario de eventos y comunidades tech de Latinoamérica creado por Crafter Station. No tiene relación con el nodo Hack0 de BTCPay Server.",
-  parentOrganization: { "@type": "Organization", "@id": `${CRAFTER}/#organization`, name: "Crafter Station", url: CRAFTER },
+  parentOrganization: {
+    "@type": "Organization",
+    "@id": `${CRAFTER}/#organization`,
+    name: "Crafter Station",
+    url: CRAFTER,
+    sameAs: ["https://www.linkedin.com/company/crafter-station"],
+  },
   founder: AUTHORS.map((a) => ({ "@type": "Person", name: a.name, url: a.url, sameAs: [a.github] })),
   areaServed: { "@type": "Place", name: "Latin America" },
-  sameAs: [LUMA, GITHUB],
+  sameAs: [LUMA, "https://www.linkedin.com/company/hack0-dev", GITHUB],
 };
 
 export function formatDate(e: CalendarEvent) {
