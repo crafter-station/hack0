@@ -26,8 +26,7 @@ export default async function Home() {
       <div className="hero">
         <div className="hero-copy">
           <h1>
-            Mapeando el ecosistema{" "}
-            <br />
+            Mapeando el ecosistema <br />
             tech de <em>LATAM.</em>
           </h1>
           <p>Damos visibilidad a comunidades y eventos tech. Hackathones, conferencias, workshops y meetups, todo en un solo lugar.</p>
