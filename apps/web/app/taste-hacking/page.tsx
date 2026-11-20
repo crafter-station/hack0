@@ -206,7 +206,7 @@ export default function TasteHackingPage() {
         <header>
           <p className="th-index">la entrada</p>
           <h2>
-            Nombra lo que ves.
+            Nombra lo que ves.{" "}
             <br />
             Pídeselo a tu agente.
           </h2>

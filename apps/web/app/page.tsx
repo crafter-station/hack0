@@ -26,7 +26,7 @@ export default async function Home() {
       <div className="hero">
         <div className="hero-copy">
           <h1>
-            Mapeando el ecosistema
+            Mapeando el ecosistema{" "}
             <br />
             tech de <em>LATAM.</em>
           </h1>
