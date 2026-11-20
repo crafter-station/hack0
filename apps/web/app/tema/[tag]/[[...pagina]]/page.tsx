@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { HubPage } from "@/components/hub-page";
 import { hubEvents, hubIndex } from "@/lib/catalog";
 import { pastPage } from "@/lib/hub-params";
+import { isListedTopic, topicIntro, topicTitle } from "@/lib/topics";
 
 export const revalidate = 3600;
 
@@ -20,9 +21,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const hub = await hubEvents("tema", tag);
   if (!hub?.name) return {};
   return {
-    title: `Eventos de ${hub.name} en LATAM | hack0`,
-    description: `Meetups, hackathones y workshops sobre ${hub.name} en Latinoamérica, con fechas, lugares y registro.`,
+    title: `${topicTitle(hub.name)} | hack0`,
+    description: topicIntro(hub.name),
     alternates: { canonical: path },
+    robots: isListedTopic(hub.name) ? undefined : { index: false, follow: true },
   };
 }
 
@@ -33,14 +35,14 @@ export default async function Page({ params }: Props) {
   if (!hub?.name) notFound();
   return (
     <HubPage
-      title={`Eventos de ${hub.name} en LATAM`}
-      intro={`Meetups, hackathones y workshops sobre ${hub.name} en Latinoamérica, con fechas, lugares y registro.`}
+      title={topicTitle(hub.name)}
+      intro={topicIntro(hub.name)}
       path={`/tema/${tag}`}
       upcoming={hub.upcoming}
       past={hub.past}
       pastTotal={hub.pastTotal}
       page={page}
-      links={links.filter((h) => h.slug !== tag).slice(0, 24)}
+      links={links.filter((h) => h.slug !== tag && isListedTopic(h.name)).slice(0, 24)}
       linkPath="/tema"
     />
   );

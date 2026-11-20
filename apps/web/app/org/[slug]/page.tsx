@@ -33,6 +33,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: summary(o),
     // A branch is one site of a chain; search should rank the brand's profile, which lists every site.
     alternates: { canonical: `/org/${o.parentSlug ?? slug}` },
+    // Without a description the profile is a name and a link; search gets the directory pages instead.
+    robots: o.description ? undefined : { index: false, follow: true },
   };
 }
 

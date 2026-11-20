@@ -18,7 +18,7 @@ The map of tech events in Latin America.
 
 </div>
 
-hack0 reads hackathons, meetups, workshops and conferences from Luma calendars, profiles and single events, Meetup groups and Eventbrite organizers, merges the same event seen in several places into one, and publishes a page for every event, city and topic. Curators feature the best ones for a weekly agenda; apps and agents read the same catalog through a REST API and an MCP server.
+hack0 is the open calendar of [Crafter Station](https://crafter.run), created by Railly Hugo and Ignacio Velásquez. It reads hackathons, meetups, workshops and conferences from Luma calendars, profiles and single events, Meetup groups and Eventbrite organizers, merges the same event seen in several places into one, and publishes a page for every event, city and topic. Curators feature the best ones for a weekly agenda; apps and agents read the same catalog through a REST API and an MCP server.
 
 ## Develop
 
@@ -79,4 +79,4 @@ docs/              architecture and the workshop distribution contract
 - [docs/architecture.md](docs/architecture.md): how sources become pages, and what decides a listing
 - [docs/contract.md](docs/contract.md): workshop distribution
 
-Built by [Crafter Station](https://crafter.run). [Apache-2.0](LICENSE)
+Built by [Crafter Station](https://crafter.run): [Railly Hugo](https://github.com/Railly) and [Ignacio Velásquez](https://github.com/TheVeller). [Apache-2.0](LICENSE)

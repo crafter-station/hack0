@@ -25,7 +25,7 @@ export default function TasteHackingLayout({ children }: { children: React.React
       <footer className="th-foot">
         <span>
           hack0 by <a href="https://crafter.run">Crafter Station</a>
-        </span>
+        </span>{" "}
         <span>
           <Link href="/taste-hacking">taste hacking</Link> · <Link href="/taste-hacking/material">material</Link> ·{" "}
           <Link href="/eventos">eventos</Link>

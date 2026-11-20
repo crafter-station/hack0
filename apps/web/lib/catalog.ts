@@ -4,9 +4,11 @@ import { allEvents, type CalendarEvent, cityKey, eventDescription, slugify } fro
 import { rowToEvent } from "@/lib/catalog-db";
 import { getDb } from "@/lib/db/client";
 import { canonicalEvents, eventSources, sources } from "@/lib/db/schema";
+import { eventMetro } from "@/lib/page-keys";
 import { LUMA } from "@/lib/site";
 
-export type HubLink = { slug: string; name: string; count: number };
+/** `names` are the stored spellings a city hub gathers ("Lima", "LIMA", "Miraflores"). */
+export type HubLink = { slug: string; name: string; count: number; names?: string[] };
 type HubKind = "ciudad" | "tema";
 export type Community = HubLink & { id: string; url: string; upcoming: number; metros: string[] };
 type EventPage = { event: CalendarEvent; description: string | null; curated: boolean };
@@ -43,8 +45,10 @@ async function dbEvent(slug: string): Promise<{ page: EventPage | null; movedTo:
   return { page: null, movedTo: moved?.slug ?? null };
 }
 
-function hubFilter(kind: HubKind, name: string): SQL {
-  return kind === "ciudad" ? sql`lower(${canonicalEvents.metro}) = lower(${name})` : sql`${name} = any(${canonicalEvents.tags})`;
+function hubFilter(kind: HubKind, link: HubLink): SQL {
+  if (kind === "tema") return sql`${link.name} = any(${canonicalEvents.tags})`;
+  const names = (link.names ?? [link.name]).map((n) => sql`${n.toLowerCase()}`);
+  return sql`lower(${canonicalEvents.metro}) in (${sql.join(names, sql`, `)})`;
 }
 
 async function dbHubIndex(kind: HubKind): Promise<HubLink[]> {
@@ -63,12 +67,20 @@ async function dbHubIndex(kind: HubKind): Promise<HubLink[]> {
           .groupBy(sql`1`)
           .orderBy(desc(count()));
   // "Lima" and "LIMA" share a slug: one hub, named by the most common spelling, counting both.
+  // Cities stored before the current place rules ("Miraflores", "Sesion Online") resolve to their metro, or drop out.
   const bySlug = new Map<string, HubLink>();
   for (const r of rows) {
     if (!r.name) continue;
-    const slug = slugify(r.name);
+    const name = kind === "ciudad" ? eventMetro(r.name) : r.name;
+    if (!name) continue;
+    const slug = slugify(name);
     const hub = bySlug.get(slug);
-    bySlug.set(slug, hub ? { ...hub, count: hub.count + r.count } : { slug, name: r.name, count: r.count });
+    bySlug.set(
+      slug,
+      hub
+        ? { ...hub, count: hub.count + r.count, names: [...(hub.names ?? []), r.name] }
+        : { slug, name: kind === "ciudad" ? name : r.name, count: r.count, names: [r.name] },
+    );
   }
   return [...bySlug.values()].sort((a, b) => b.count - a.count);
 }
@@ -156,13 +168,19 @@ export async function hubIndex(kind: HubKind): Promise<HubLink[]> {
   return hasDatabase() ? dbHubIndex(kind) : lumaHubIndex(await lumaEvents(), kind);
 }
 
+/** The city hub an older city slug now belongs to, e.g. "miraflores" to "lima". */
+export async function cityHubFor(slug: string): Promise<string | null> {
+  const hub = (await hubIndex("ciudad")).find((h) => h.names?.some((n) => slugify(n) === slug));
+  return hub && hub.slug !== slug ? hub.slug : null;
+}
+
 /** A hub's events: every upcoming one and one page of past ones. `slug` null means the whole catalog. */
 export async function hubEvents(kind: HubKind | null, slug: string | null, pastPage = 0) {
   if (hasDatabase()) {
     if (!kind || !slug) return { name: null, ...(await dbHubEvents(live, pastPage)) };
     const link = (await dbHubIndex(kind)).find((h) => h.slug === slug);
     if (!link) return null;
-    return { name: link.name, ...(await dbHubEvents(and(live, hubFilter(kind, link.name)) as SQL, pastPage)) };
+    return { name: link.name, ...(await dbHubEvents(and(live, hubFilter(kind, link)) as SQL, pastPage)) };
   }
   const events = await lumaEvents();
   const link = kind && slug ? lumaHubIndex(events, kind).find((h) => h.slug === slug) : null;

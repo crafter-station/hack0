@@ -2,6 +2,44 @@ import { type CalendarEvent, placeLabel } from "./calendar";
 
 export const SITE = "https://hack0.dev";
 export const LUMA = "https://luma.com/hack0";
+export const GITHUB = "https://github.com/crafter-station/hack0";
+export const CRAFTER = "https://crafter.run";
+
+/** One line that says what hack0 is, used in metadata, /about and llms.txt. */
+export const TAGLINE = "hack0 es el calendario abierto de Crafter Station: eventos, comunidades y ecosistema tech de Latinoamérica.";
+
+export const AUTHORS = [
+  {
+    name: "Railly Hugo",
+    role: "Fundador de Crafter Station",
+    url: `${CRAFTER}/es/team/railly`,
+    github: "https://github.com/Railly",
+  },
+  {
+    name: "Ignacio Velásquez",
+    role: "Growth y automatización en Crafter Station",
+    url: `${CRAFTER}/es/team/nacho`,
+    github: "https://github.com/TheVeller",
+  },
+];
+
+/** schema.org Organization for hack0, tied to Crafter Station's own node on crafter.run. */
+export const ORGANIZATION_LD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": `${SITE}/#organization`,
+  name: "hack0",
+  alternateName: "hack0 by Crafter Station",
+  url: SITE,
+  logo: `${SITE}/icon.svg`,
+  description: TAGLINE,
+  disambiguatingDescription:
+    "Calendario de eventos y comunidades tech de Latinoamérica creado por Crafter Station. No tiene relación con el nodo Hack0 de BTCPay Server.",
+  parentOrganization: { "@type": "Organization", "@id": `${CRAFTER}/#organization`, name: "Crafter Station", url: CRAFTER },
+  founder: AUTHORS.map((a) => ({ "@type": "Person", name: a.name, url: a.url, sameAs: [a.github] })),
+  areaServed: { "@type": "Place", name: "Latin America" },
+  sameAs: [LUMA, GITHUB],
+};
 
 export function formatDate(e: CalendarEvent) {
   const d = new Date(e.startAt);

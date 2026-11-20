@@ -33,8 +33,7 @@ function Section({ id, n, title, children }: { id: string; n: string; title: str
   return (
     <section id={id}>
       <div className="label">
-        <span>{title}</span>
-        <b>{n}</b>
+        <span>{title}</span> <b>{n}</b>
       </div>
       {children}
     </section>

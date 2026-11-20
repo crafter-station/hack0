@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { HubPage } from "@/components/hub-page";
-import { hubEvents, hubIndex } from "@/lib/catalog";
+import { cityHubFor, hubEvents, hubIndex } from "@/lib/catalog";
 import { pastPage } from "@/lib/hub-params";
 
 export const revalidate = 3600;
@@ -30,7 +30,12 @@ export default async function Page({ params }: Props) {
   const { city, pagina } = await params;
   const page = pastPage({ pagina: pagina?.[0] });
   const [hub, links] = await Promise.all([hubEvents("ciudad", city, page), hubIndex("ciudad")]);
-  if (!hub?.name) notFound();
+  if (!hub?.name) {
+    // District slugs from before the current place rules, e.g. /ciudad/miraflores, live on their metro now.
+    const metro = await cityHubFor(city);
+    if (metro) permanentRedirect(`/ciudad/${metro}`);
+    notFound();
+  }
   return (
     <HubPage
       title={`Eventos tech en ${hub.name}`}
