@@ -4,13 +4,14 @@ import { AdminTabs } from "@/components/admin/tabs";
 import { Shell } from "@/components/shell";
 import { requireAdmin } from "@/lib/admin/auth";
 import { adminCounts } from "@/lib/admin/queries";
+import { pendingTestimonials } from "@/lib/testimonials";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Admin | hack0", robots: { index: false, follow: false } };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireAdmin();
-  const c = await adminCounts();
+  const [c, pending] = await Promise.all([adminCounts(), pendingTestimonials()]);
   return (
     <Shell>
       <header className="admin-head">
@@ -29,6 +30,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           { href: "/admin", label: "Fuentes", count: c.failing || undefined },
           { href: "/admin/curacion", label: "Curación", count: c.upcoming - c.curated || undefined },
           { href: "/admin/contenido", label: "Contenido", count: c.drafts || undefined },
+          { href: "/admin/testimonios", label: "Testimonios", count: pending || undefined },
           { href: "/admin/api", label: "API" },
         ]}
       />

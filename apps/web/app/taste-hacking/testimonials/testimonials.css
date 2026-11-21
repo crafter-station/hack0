@@ -1,0 +1,379 @@
+/* Testimonials: one question on the left, the card it becomes on the right. Sized to fit one screen. */
+.th:has(.th-t) .th-foot {
+  margin-top: 28px;
+}
+.th-t {
+  display: grid;
+  align-content: center;
+  padding-block: 8px 24px;
+}
+.th-t-intro h1,
+.th-t-thanks h1 {
+  margin-top: 8px;
+  font-size: clamp(28px, 2.6vw, 38px);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+.th-t-lead {
+  margin-top: 8px;
+  max-width: 40em;
+  color: var(--mute);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+.th-t-grid {
+  display: grid;
+  gap: 32px;
+}
+.th-t-main {
+  min-width: 0;
+}
+
+/* Form */
+.th-t-form {
+  display: grid;
+  gap: 22px;
+}
+.th-t-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+.th-t-row > :first-child {
+  grid-column: 1 / -1;
+}
+.th-t-field {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-width: 0;
+}
+.th-t-field label {
+  font-size: var(--t-small);
+  font-weight: 700;
+}
+.th-t-intro h1 label {
+  font: inherit;
+  cursor: text;
+}
+.th-t-field input,
+.th-t-field textarea {
+  width: 100%;
+  border: 1px solid var(--hair);
+  border-radius: 0;
+  background: var(--well);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.55;
+  padding: 10px 12px;
+  transition: border-color var(--d-hover) var(--ease-out);
+}
+.th-t-field textarea {
+  min-height: 104px;
+  max-height: 232px;
+  resize: vertical;
+  field-sizing: content;
+}
+.th-t-field input::placeholder,
+.th-t-field textarea::placeholder {
+  color: var(--mute);
+  opacity: 0.75;
+}
+.th-t-field input:focus-visible,
+.th-t-field textarea:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 0;
+  border-color: transparent;
+}
+.th-t-field [aria-invalid="true"] {
+  border-color: var(--acc);
+}
+.th-t-err {
+  font-size: var(--t-small);
+  color: #ff8a65;
+  line-height: 1.5;
+}
+.th-t-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 20px;
+  font-size: var(--t-small);
+  color: var(--mute);
+}
+.th-t-count {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+.th-t-count[data-near="true"] {
+  color: var(--ink);
+}
+.th-t-starters {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-inline: -20px;
+  padding-inline: 20px;
+}
+.th-t-starters::-webkit-scrollbar {
+  display: none;
+}
+.th-t-starters button {
+  flex: none;
+  white-space: nowrap;
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--mute);
+  font: inherit;
+  font-size: var(--t-small);
+  padding: 5px 9px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    color var(--d-hover) var(--ease-out),
+    border-color var(--d-hover) var(--ease-out),
+    transform var(--d-press) var(--ease-out);
+}
+.th-t-starters button:active {
+  transform: scale(0.97);
+}
+@media (hover: hover) and (pointer: fine) {
+  .th-t-starters button:hover {
+    color: var(--ink);
+    border-color: var(--hair);
+  }
+}
+
+/* Send */
+.th-t-send {
+  display: grid;
+  gap: 10px;
+  align-items: center;
+}
+.th-t-send .th-cta,
+.th-t-thanks .th-cta {
+  width: 100%;
+  margin-top: 0;
+  border: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.th-t-send .th-cta:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+.th-t-send > p {
+  font-size: var(--t-small);
+  color: var(--mute);
+  line-height: 1.5;
+}
+.th-t-send > .th-t-err {
+  grid-column: 1 / -1;
+}
+.th-t-send kbd {
+  font: inherit;
+  font-size: var(--t-micro);
+  border: 1px solid var(--rule);
+  padding: 1px 5px;
+  color: var(--ink);
+}
+.th-t-main > .th-t-send {
+  max-width: 420px;
+  margin-top: 28px;
+}
+
+/* Thanks */
+.th-t-thanks {
+  display: grid;
+  gap: 12px;
+  max-width: 460px;
+  animation: th-t-in var(--d-reveal) var(--ease-out) both;
+}
+.th-t-thanks > p:not(.th-label) {
+  color: var(--mute);
+  line-height: 1.6;
+}
+.th-t-thanks-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+.th-t-ghost {
+  justify-self: start;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--t-small);
+  text-decoration: underline;
+  text-decoration-color: var(--hair);
+  text-underline-offset: 4px;
+  padding: 6px 0;
+  cursor: pointer;
+}
+@keyframes th-t-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Preview card */
+.th-t-plate .th-plate-stage {
+  min-height: 0;
+  padding: 32px 20px;
+}
+.th-t-card {
+  width: min(100%, 420px);
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  background: var(--card);
+  color: var(--card-ink);
+  box-shadow:
+    0 1px 0 #0006,
+    0 12px 24px -12px #000c,
+    0 32px 56px -28px #000;
+}
+.th-t-card header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--t-micro);
+  font-weight: 700;
+}
+.th-t-card blockquote {
+  position: relative;
+  padding-top: 14px;
+  font-size: var(--t-lead);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.45;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+  max-height: 12lh;
+  overflow: hidden;
+}
+.th-t-card blockquote::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 36px;
+  height: 3px;
+  background: var(--acc);
+}
+.th-t-card[data-empty="true"] blockquote {
+  color: var(--card-mute);
+  font-weight: 500;
+}
+.th-t-card figcaption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px dashed #11111055;
+  font-size: var(--t-small);
+}
+.th-t-card figcaption > span:nth-child(2) {
+  display: grid;
+  min-width: 0;
+}
+.th-t-card figcaption b {
+  overflow-wrap: anywhere;
+}
+.th-t-card figcaption small {
+  font-size: inherit;
+  color: var(--card-mute);
+}
+.th-t-avatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  object-fit: cover;
+  background: var(--card-ink);
+  color: var(--card);
+  font-size: var(--t-micro);
+  font-weight: 800;
+}
+.th-t-card figcaption i {
+  margin-left: auto;
+  flex: none;
+  font-style: normal;
+  font-size: var(--t-micro);
+  border: 1px solid var(--card-rule);
+  padding: 2px 6px;
+}
+
+@media (pointer: coarse) {
+  .th-t-kbd {
+    display: none;
+  }
+}
+/* On a phone the form is the whole screen; the card shows once it is sent. */
+@media (max-width: 999px) {
+  .th-t-grid {
+    gap: 24px;
+  }
+  .th-t-grid[data-mode="form"] .th-t-plate {
+    display: none;
+  }
+  .th-t-plate .th-plate-stage {
+    padding: 16px 0;
+  }
+  .th:has(.th-t) .th-foot {
+    margin-top: 20px;
+  }
+}
+@media (min-width: 720px) {
+  .th-t-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .th-t-row > :first-child {
+    grid-column: auto;
+  }
+  .th-t-send {
+    grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+    gap: 18px;
+  }
+  .th-t-starters {
+    flex-wrap: wrap;
+    margin-inline: 0;
+    padding-inline: 0;
+    overflow: visible;
+  }
+}
+@media (min-width: 1000px) {
+  .th-t-grid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 64px;
+    align-items: center;
+  }
+  .th-t-intro {
+    margin-bottom: 6px;
+  }
+  .th-t-plate {
+    position: sticky;
+    top: 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .th-t-thanks {
+    animation: none;
+  }
+  .th-t-starters button,
+  .th-t-field input,
+  .th-t-field textarea {
+    transition: none;
+  }
+}

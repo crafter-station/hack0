@@ -11,6 +11,7 @@ import { getDb } from "@/lib/db/client";
 import { canonicalEvents, contentDrafts, sources } from "@/lib/db/schema";
 import { lumaPageKind } from "@/lib/ingest/luma-public";
 import { refreshListing } from "@/lib/ingest/persist";
+import { decideTestimonial } from "@/lib/testimonials";
 import { syncSource } from "@/workflows/sync-source";
 
 export async function syncNow(formData: FormData) {
@@ -121,6 +122,14 @@ export async function decideDraft(formData: FormData) {
     .update(contentDrafts)
     .set({ status })
     .where(eq(contentDrafts.id, String(formData.get("id"))));
+  revalidatePath("/admin", "layout");
+}
+
+export async function decideTestimonialAction(formData: FormData) {
+  await requireAdmin();
+  const raw = formData.get("status");
+  const status = raw === "approved" || raw === "hidden" ? raw : "pending";
+  await decideTestimonial(String(formData.get("id")), status);
   revalidatePath("/admin", "layout");
 }
 
