@@ -14,13 +14,10 @@ const config: NextConfig = {
         destination: "/",
         permanent: true,
       })),
-      // Taste hacking moved to its own domain. Testimonials stay here: they use hack0's database and sign-in.
+      // Taste hacking moved to its own domain, testimonials and their review included.
       { source: "/taste-hacking", destination: "https://tastehacking.dev", permanent: true },
-      {
-        source: "/taste-hacking/:path((?!testimonials(?:/|$)).*)",
-        destination: "https://tastehacking.dev/:path",
-        permanent: true,
-      },
+      { source: "/taste-hacking/:path*", destination: "https://tastehacking.dev/:path*", permanent: true },
+      { source: "/admin/testimonios", destination: "https://tastehacking.dev/admin/testimonios", permanent: true },
     ];
   },
 };
