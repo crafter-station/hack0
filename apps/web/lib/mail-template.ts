@@ -7,7 +7,7 @@ const WORKSHOPS: Record<string, Workshop> = {
     day: "jue 19 nov",
     hours: "19:00 Lima · 21:00 Buenos Aires",
     event: "https://luma.com/hack0-lfc2",
-    material: "https://hack0.dev/taste-hacking/material",
+    material: "https://tastehacking.dev/material",
   },
 };
 

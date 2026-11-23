@@ -11,7 +11,7 @@ test("the purchase mail carries the key, both commands and the recover command i
     expect(body).toContain("npx @crafter/hack0 add 01-taste-hacking");
     expect(body).toContain("npx @crafter/hack0 auth recover ana@ejemplo.com");
     expect(body).toContain("https://luma.com/hack0-lfc2");
-    expect(body).toContain("hack0.dev/taste-hacking/material");
+    expect(body).toContain("tastehacking.dev/material");
   }
 });
 
