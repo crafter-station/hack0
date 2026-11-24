@@ -2,12 +2,31 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import opentype, { type Font } from "opentype.js";
 
-const BADGE_THEMES = ["claro", "oscuro", "compacto"] as const;
-type BadgeTheme = (typeof BADGE_THEMES)[number];
+const SURFACES = ["claro", "oscuro", "naranja"] as const;
 
-export const badgeTheme = (value: string | null): BadgeTheme => BADGE_THEMES.find((t) => t === value) ?? "claro";
+/** The brand's variants from /brand, picked independently: surface, one ink or color, app icon or bare symbol, full or compact. */
+type BadgeStyle = {
+  tema: (typeof SURFACES)[number];
+  tinta: "color" | "una";
+  logo: "icono" | "simbolo";
+  forma: "normal" | "compacto";
+};
 
-/** What a badge says: a small kicker over a bold title, with an orange accent after it. */
+const pick = <T extends string>(value: string | null, options: readonly T[], fallback: T): T =>
+  options.find((o) => o === value) ?? fallback;
+
+/** Reads ?tema=&tinta=&logo=&forma=; anything unknown keeps the default, and the older ?tema=compacto still means the compact form. */
+export function badgeStyle(query: URLSearchParams): BadgeStyle {
+  const tema = query.get("tema");
+  return {
+    tema: pick(tema, SURFACES, "claro"),
+    tinta: pick(query.get("tinta"), ["color", "una"] as const, "color"),
+    logo: pick(query.get("logo"), ["icono", "simbolo"] as const, "icono"),
+    forma: tema === "compacto" ? "compacto" : pick(query.get("forma"), ["normal", "compacto"] as const, "normal"),
+  };
+}
+
+/** What a badge says: a small kicker over a bold title, with an accent after it. */
 type BadgeCopy = {
   label: string;
   kicker: string;
@@ -15,20 +34,49 @@ type BadgeCopy = {
   accent: string;
   /** The accent continues the title as one phrase ("ecosistema tech LATAM") instead of standing apart as a figure. */
   inline?: boolean;
-  /** The single line the compact theme shows instead of kicker and title. */
+  /** The single line the compact form shows instead of kicker and title. */
   compact: { text: string; accent: string; after?: string };
 };
 
 type Fonts = { medium: Font; bold: Font; heavy: Font };
 
-const INK = "#111";
+const INK = "#111111";
+const NIGHT = "#111110";
 const PAPER = "#f3f0e8";
 const ACC = "#ff3d00";
 
-const PALETTE = {
-  claro: { bg: PAPER, stroke: INK, mute: "#6b6b63", ink: INK },
-  oscuro: { bg: INK, stroke: "#3a3a37", mute: "#9a988f", ink: PAPER },
+type Colors = {
+  bg: string;
+  stroke: string;
+  ink: string;
+  mute: string;
+  muteOpacity: number;
+  accent: string;
+  /** The app icon tile: its fill, the 0's ring, the gap around the bar and the bar. */
+  tile: { bg: string; ring: string; gap: string; bar: string };
+  /** The bare symbol drawn on the surface. */
+  mark: { ring: string; gap: string; bar: string };
 };
+
+const SURFACE = {
+  claro: { bg: PAPER, stroke: INK, ink: INK, mute: "#6b6b63", muteOpacity: 1 },
+  oscuro: { bg: NIGHT, stroke: "#3a3a37", ink: PAPER, mute: "#9a988f", muteOpacity: 1 },
+  naranja: { bg: ACC, stroke: INK, ink: INK, mute: INK, muteOpacity: 0.72 },
+};
+
+function tileColors(tema: BadgeStyle["tema"], one: boolean, s: (typeof SURFACE)[keyof typeof SURFACE]): Colors["tile"] {
+  if (one) return { bg: s.ink, ring: s.bg, gap: s.ink, bar: s.bg };
+  if (tema === "naranja") return { bg: INK, ring: PAPER, gap: INK, bar: ACC };
+  return { bg: ACC, ring: "#fff", gap: ACC, bar: INK };
+}
+
+/** Colors per the brand's versions: orange is the accent unless the badge is one ink, and on the orange surface the accent turns paper. */
+export function badgeColors(style: Pick<BadgeStyle, "tema" | "tinta">): Colors {
+  const s = SURFACE[style.tema];
+  const one = style.tinta === "una";
+  const accent = one ? s.ink : style.tema === "naranja" ? PAPER : ACC;
+  return { ...s, accent, tile: tileColors(style.tema, one, s), mark: { ring: s.ink, gap: s.bg, bar: accent } };
+}
 
 let loaded: Promise<Fonts> | null = null;
 
@@ -61,29 +109,47 @@ function run(font: Font, text: string, x: number, y: number, size: number, track
 
 const escapeXml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] ?? c);
 
-/** The hack0 mark from app/icon.svg, scaled to a square of `size` at (x, y). */
-const logo = (x: number, y: number, size: number) =>
-  `<g transform="translate(${x} ${y}) scale(${size / 64})"><rect width="64" height="64" fill="${ACC}"/><rect x="19" y="9" width="26" height="46" rx="13" fill="none" stroke="#fff" stroke-width="9"/><line x1="14" y1="57" x2="50" y2="7" stroke="${ACC}" stroke-width="15"/><line x1="14" y1="57" x2="50" y2="7" stroke="${INK}" stroke-width="8" stroke-linecap="square"/></g>`;
+/** The app icon (app/icon.svg) in a square of `size` at (x, y). */
+const icon = (x: number, y: number, size: number, t: Colors["tile"]) =>
+  `<g transform="translate(${x} ${y}) scale(${size / 64})"><rect width="64" height="64" fill="${t.bg}"/><rect x="19" y="9" width="26" height="46" rx="13" fill="none" stroke="${t.ring}" stroke-width="9"/><line x1="14" y1="57" x2="50" y2="7" stroke="${t.gap}" stroke-width="15"/><line x1="14" y1="57" x2="50" y2="7" stroke="${t.bar}" stroke-width="8" stroke-linecap="square"/></g>`;
+
+/** The bare symbol (public/brand/hack0-mark-*.svg) in a square of `size` at (x, y). */
+const symbol = (x: number, y: number, size: number, m: Colors["mark"]) =>
+  `<g transform="translate(${x} ${y}) scale(${size / 64})"><rect x="17" y="6" width="30" height="52" rx="15" fill="none" stroke="${m.ring}" stroke-width="8"/><line x1="10" y1="60" x2="54" y2="4" stroke="${m.gap}" stroke-width="15"/><line x1="10" y1="60" x2="54" y2="4" stroke="${m.bar}" stroke-width="8" stroke-linecap="square"/></g>`;
 
 const svg = (width: number, height: number, label: string, body: string) =>
   `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeXml(label)}"><title>${escapeXml(label)}</title>${body}</svg>`;
 
-function full(fonts: Fonts, copy: BadgeCopy, theme: "claro" | "oscuro") {
-  const p = PALETTE[theme];
-  const kicker = run(fonts.medium, copy.kicker, 54, 18, 9, 0.6);
-  const title = run(fonts.heavy, copy.title, 54, 33, copy.inline ? 12 : 13);
+/** The logo for a badge of `height`, and where its text starts. */
+function logoFor(style: BadgeStyle, c: Colors, height: number) {
+  if (style.logo === "simbolo") {
+    const size = height - (height > 30 ? 10 : 4);
+    const x = height > 30 ? 8 : 3;
+    return { markup: symbol(x, (height - size) / 2, size, c.mark), textX: x + size + (height > 30 ? 8 : 5) };
+  }
+  const inset = height > 30 ? 1 : 0;
+  return { markup: icon(inset, inset, height - inset * 2, c.tile), textX: height + (height > 30 ? 10 : 8) };
+}
+
+function full(fonts: Fonts, copy: BadgeCopy, style: BadgeStyle) {
+  const c = badgeColors(style);
+  const logo = logoFor(style, c, 44);
+  const kicker = run(fonts.medium, copy.kicker, logo.textX, 18, 9, 0.6);
+  const title = run(fonts.heavy, copy.title, logo.textX, 33, copy.inline ? 12 : 13);
   const accent = copy.inline ? run(fonts.heavy, copy.accent, title.end, 33, 12) : run(fonts.bold, copy.accent, title.end + 10, 33, 11);
   const width = Math.ceil(Math.max(kicker.end, accent.end) + 12);
   return svg(
     width,
     44,
     copy.label,
-    `<rect x=".5" y=".5" width="${width - 1}" height="43" fill="${p.bg}" stroke="${p.stroke}"/>${logo(1, 1, 42)}<path fill="${p.mute}" d="${kicker.d}"/><path fill="${p.ink}" d="${title.d}"/><path fill="${ACC}" d="${accent.d}"/>`,
+    `<rect x=".5" y=".5" width="${width - 1}" height="43" fill="${c.bg}" stroke="${c.stroke}"/>${logo.markup}<path fill="${c.mute}" fill-opacity="${c.muteOpacity}" d="${kicker.d}"/><path fill="${c.ink}" d="${title.d}"/><path fill="${c.accent}" d="${accent.d}"/>`,
   );
 }
 
-function compact(fonts: Fonts, copy: BadgeCopy) {
-  const lead = run(fonts.bold, copy.compact.text, 30, 15, 10.5);
+function compact(fonts: Fonts, copy: BadgeCopy, style: BadgeStyle) {
+  const c = badgeColors(style);
+  const logo = logoFor(style, c, 22);
+  const lead = run(fonts.bold, copy.compact.text, logo.textX, 15, 10.5);
   const accent = run(fonts.bold, copy.compact.accent, lead.end, 15, 10.5);
   const after = run(fonts.bold, copy.compact.after ?? "", accent.end, 15, 10.5);
   const width = Math.ceil(after.end + 10);
@@ -91,12 +157,12 @@ function compact(fonts: Fonts, copy: BadgeCopy) {
     width,
     22,
     copy.label,
-    `<rect width="${width}" height="22" fill="${INK}"/>${logo(0, 0, 22)}<path fill="${PAPER}" d="${lead.d}${after.d}"/><path fill="${ACC}" d="${accent.d}"/>`,
+    `<rect x=".5" y=".5" width="${width - 1}" height="21" fill="${c.bg}" stroke="${c.stroke}"/>${logo.markup}<path fill="${c.ink}" d="${lead.d}${after.d}"/><path fill="${c.accent}" d="${accent.d}"/>`,
   );
 }
 
-export function renderBadge(fonts: Fonts, copy: BadgeCopy, theme: BadgeTheme) {
-  return theme === "compacto" ? compact(fonts, copy) : full(fonts, copy, theme);
+export function renderBadge(fonts: Fonts, copy: BadgeCopy, style: BadgeStyle) {
+  return style.forma === "compacto" ? compact(fonts, copy, style) : full(fonts, copy, style);
 }
 
 const eventos = (n: number) => (n === 1 ? "1 evento" : `${n.toLocaleString("es")} eventos`);
