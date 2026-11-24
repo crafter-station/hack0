@@ -109,9 +109,12 @@ function run(font: Font, text: string, x: number, y: number, size: number, track
 
 const escapeXml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] ?? c);
 
-/** The app icon (app/icon.svg) in a square of `size` at (x, y). */
+/** Room inside the app icon tile: the favicon's glyph runs edge to edge for 16 px, and at badge size its bar would touch the tile's corners. */
+const TILE_PAD = 0.14;
+
+/** The app icon (app/icon.svg) in a square of `size` at (x, y): the tile fills the square, the glyph sits inside with room around it. */
 const icon = (x: number, y: number, size: number, t: Colors["tile"]) =>
-  `<g transform="translate(${x} ${y}) scale(${size / 64})"><rect width="64" height="64" fill="${t.bg}"/><rect x="19" y="9" width="26" height="46" rx="13" fill="none" stroke="${t.ring}" stroke-width="9"/><line x1="14" y1="57" x2="50" y2="7" stroke="${t.gap}" stroke-width="15"/><line x1="14" y1="57" x2="50" y2="7" stroke="${t.bar}" stroke-width="8" stroke-linecap="square"/></g>`;
+  `<rect x="${x}" y="${y}" width="${size}" height="${size}" fill="${t.bg}"/><g transform="translate(${x + size * TILE_PAD} ${y + size * TILE_PAD}) scale(${(size * (1 - TILE_PAD * 2)) / 64})"><rect x="19" y="9" width="26" height="46" rx="13" fill="none" stroke="${t.ring}" stroke-width="9"/><line x1="14" y1="57" x2="50" y2="7" stroke="${t.gap}" stroke-width="15"/><line x1="14" y1="57" x2="50" y2="7" stroke="${t.bar}" stroke-width="8" stroke-linecap="square"/></g>`;
 
 /** The bare symbol (public/brand/hack0-mark-*.svg) in a square of `size` at (x, y). */
 const symbol = (x: number, y: number, size: number, m: Colors["mark"]) =>
@@ -123,9 +126,9 @@ const svg = (width: number, height: number, label: string, body: string) =>
 /** The logo for a badge of `height`, and where its text starts. */
 function logoFor(style: BadgeStyle, c: Colors, height: number) {
   if (style.logo === "simbolo") {
-    const size = height - (height > 30 ? 10 : 4);
-    const x = height > 30 ? 8 : 3;
-    return { markup: symbol(x, (height - size) / 2, size, c.mark), textX: x + size + (height > 30 ? 8 : 5) };
+    const size = height > 30 ? 30 : 15;
+    const x = height > 30 ? 9 : 5;
+    return { markup: symbol(x, (height - size) / 2, size, c.mark), textX: x + size + (height > 30 ? 9 : 6) };
   }
   const inset = height > 30 ? 1 : 0;
   return { markup: icon(inset, inset, height - inset * 2, c.tile), textX: height + (height > 30 ? 10 : 8) };
