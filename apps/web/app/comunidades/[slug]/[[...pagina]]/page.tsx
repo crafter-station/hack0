@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { HubPage } from "@/components/hub-page";
 import { communityEvents, communityIndex } from "@/lib/catalog";
@@ -51,9 +52,14 @@ export default async function Page({ params }: Props) {
       path={`/comunidades/${slug}`}
       crumb={{ href: "/comunidades", label: "comunidades" }}
       action={
-        <a className="btn" href={c.url} rel="noopener">
-          Ver en {providerName(c.url)} <span aria-hidden="true">↗</span>
-        </a>
+        <>
+          <a className="btn" href={c.url} rel="noopener">
+            Ver en {providerName(c.url)} <span aria-hidden="true">↗</span>
+          </a>
+          <Link className="btn" href={`/comunidades/${slug}/badge`}>
+            Badge para tu web
+          </Link>
+        </>
       }
       upcoming={hub.upcoming}
       past={hub.past}

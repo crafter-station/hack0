@@ -136,6 +136,9 @@ export default async function OrgPage({ params }: Props) {
               Ver empleos <span aria-hidden="true">↗</span>
             </a>
           )}
+          <Link className="btn" href={`/org/${o.slug}/badge`}>
+            Badge para tu web
+          </Link>
         </div>
       </div>
       {pin.length > 0 && (

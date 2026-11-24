@@ -5,15 +5,34 @@ const widthOf = (svg: string) => Number(svg.match(/^<svg[^>]* width="(\d+)"/)?.[
 const style = (qs = "") => badgeStyle(new URLSearchParams(qs));
 
 test("query params pick each axis; unknown values keep the default", () => {
-  expect(style()).toEqual({ tema: "claro", tinta: "color", logo: "icono", forma: "normal" });
+  expect(style()).toEqual({ tema: "claro", tinta: "color", logo: "icono", forma: "normal", custom: {} });
   expect(style("tema=naranja&tinta=una&logo=simbolo&forma=compacto")).toEqual({
     tema: "naranja",
     tinta: "una",
     logo: "simbolo",
     forma: "compacto",
+    custom: {},
   });
   expect(style("tema=neon&logo=x")).toEqual(style());
   expect(style("tema=compacto")).toEqual({ ...style(), forma: "compacto" });
+});
+
+test("the host's colors come in as hex without #; anything else is ignored", () => {
+  expect(style("fondo=0A0A0A&texto=fff&acento=%237c3aed&borde=nope").custom).toEqual({
+    fondo: "#0a0a0a",
+    texto: "#fff",
+    acento: "#7c3aed",
+  });
+});
+
+test("custom colors replace the surface: the accent fills the icon, the text color draws the rest", async () => {
+  const s = style("fondo=0a0a0a&texto=fafafa&acento=7c3aed");
+  const c = badgeColors(s);
+  expect([c.bg, c.ink, c.accent, c.stroke, c.tile.bg]).toEqual(["#0a0a0a", "#fafafa", "#7c3aed", "#fafafa", "#7c3aed"]);
+  expect(badgeColors({ ...s, tinta: "una" }).accent).toBe("#fafafa");
+  const svg = renderBadge(await badgeFonts(), communityCopy("A", 3), s);
+  expect(svg).toContain('fill="#0a0a0a"');
+  expect(svg).not.toContain("#ff3d00");
 });
 
 test("one ink drops the orange; the orange surface turns the accent paper", () => {

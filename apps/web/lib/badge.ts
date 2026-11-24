@@ -10,7 +10,23 @@ type BadgeStyle = {
   tinta: "color" | "una";
   logo: "icono" | "simbolo";
   forma: "normal" | "compacto";
+  /** The host site's own colors, when given; each one overrides the surface's. */
+  custom: CustomColors;
 };
+
+type CustomColors = Partial<Record<"fondo" | "texto" | "acento" | "borde", string>>;
+
+const HEX = /^[0-9a-f]{3}([0-9a-f]{3})?$/i;
+
+/** ?fondo=f5f5f5&texto=0a0a0a&acento=7c3aed&borde=0a0a0a, hex without the #; anything else is ignored. */
+function customColors(query: URLSearchParams): CustomColors {
+  const out: CustomColors = {};
+  for (const key of ["fondo", "texto", "acento", "borde"] as const) {
+    const value = query.get(key)?.replace(/^#/, "");
+    if (value && HEX.test(value)) out[key] = `#${value.toLowerCase()}`;
+  }
+  return out;
+}
 
 const pick = <T extends string>(value: string | null, options: readonly T[], fallback: T): T =>
   options.find((o) => o === value) ?? fallback;
@@ -23,6 +39,7 @@ export function badgeStyle(query: URLSearchParams): BadgeStyle {
     tinta: pick(query.get("tinta"), ["color", "una"] as const, "color"),
     logo: pick(query.get("logo"), ["icono", "simbolo"] as const, "icono"),
     forma: tema === "compacto" ? "compacto" : pick(query.get("forma"), ["normal", "compacto"] as const, "normal"),
+    custom: customColors(query),
   };
 }
 
@@ -71,11 +88,29 @@ function tileColors(tema: BadgeStyle["tema"], one: boolean, s: (typeof SURFACE)[
 }
 
 /** Colors per the brand's versions: orange is the accent unless the badge is one ink, and on the orange surface the accent turns paper. */
-export function badgeColors(style: Pick<BadgeStyle, "tema" | "tinta">): Colors {
+export function badgeColors(style: Pick<BadgeStyle, "tema" | "tinta"> & { custom?: CustomColors }): Colors {
+  if (style.custom && Object.keys(style.custom).length > 0) return customPalette(style.custom, SURFACE[style.tema], style.tinta === "una");
   const s = SURFACE[style.tema];
   const one = style.tinta === "una";
   const accent = one ? s.ink : style.tema === "naranja" ? PAPER : ACC;
   return { ...s, accent, tile: tileColors(style.tema, one, s), mark: { ring: s.ink, gap: s.bg, bar: accent } };
+}
+
+/** The host's colors over the chosen surface: its accent fills the icon and marks the figure, its text color draws the rest. */
+function customPalette(c: CustomColors, base: (typeof SURFACE)[keyof typeof SURFACE], one: boolean): Colors {
+  const bg = c.fondo ?? base.bg;
+  const ink = c.texto ?? base.ink;
+  const accent = one ? ink : (c.acento ?? ACC);
+  return {
+    bg,
+    ink,
+    stroke: c.borde ?? ink,
+    mute: ink,
+    muteOpacity: 0.65,
+    accent,
+    tile: one ? { bg: ink, ring: bg, gap: ink, bar: bg } : { bg: accent, ring: bg, gap: accent, bar: ink },
+    mark: { ring: ink, gap: bg, bar: accent },
+  };
 }
 
 let loaded: Promise<Fonts> | null = null;
