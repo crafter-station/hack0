@@ -26,6 +26,7 @@ test("official, English and suburb names join one metro hub", () => {
   expect(eventMetro("Ciudad Autónoma de Buenos Aires")).toBe("Buenos Aires");
   expect(eventMetro("palermo")).toBe("Buenos Aires");
   expect(eventMetro("Mexico City")).toBe("Ciudad de México");
+  expect(eventMetro("Cuauhtémoc")).toBe("Ciudad de México");
   expect(eventMetro("Guatemala city")).toBe("Ciudad de Guatemala");
   expect(eventMetro("Zapopan, Jalisco")).toBe("Guadalajara");
   expect(eventMetro("José Luis Bustamante")).toBe("Arequipa");

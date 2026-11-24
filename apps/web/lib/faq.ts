@@ -1,4 +1,5 @@
 import type { CalendarEvent } from "./calendar";
+import { eventMetro } from "./page-keys";
 import type { SearchResult } from "./search";
 import { LUMA, SITE } from "./site";
 
@@ -38,15 +39,27 @@ export function agendaFrom(result: SearchResult): Agenda {
   return {
     total: result.total,
     countries: result.facets.paises.length,
-    cities: result.facets.ciudades.map((c) => c.label),
+    cities: metroRanking(result.facets.ciudades),
     next: result.events,
   };
+}
+
+/** Facet cities merged into their metro hub ("Zapopan" counts for Guadalajara), busiest first. */
+function metroRanking(cities: { label: string; count: number }[]) {
+  const counts = new Map<string, number>();
+  for (const c of cities) {
+    const metro = eventMetro(c.label);
+    if (metro) counts.set(metro, (counts.get(metro) ?? 0) + c.count);
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([name]) => name);
 }
 
 /** One sentence with the agenda's real numbers, for intros. */
 export function agendaSentence(a: Agenda) {
   const top = listEs(a.cities.slice(0, 5));
-  return `Ahora mismo hay ${a.total} eventos tech próximos en ${a.countries} países y ${a.cities.length} ciudades${top ? `, con más agenda en ${top}` : ""}.`;
+  const countries = a.countries === 1 ? "1 país" : `${a.countries} países`;
+  const cities = a.cities.length === 1 ? "1 ciudad" : `${a.cities.length} ciudades`;
+  return `Ahora mismo hay ${a.total} eventos tech próximos en ${countries} y ${cities}${top ? `, con más agenda en ${top}` : ""}.`;
 }
 
 /** Questions people search about tech events in LATAM, answered from the live catalog so the numbers stay true. */
