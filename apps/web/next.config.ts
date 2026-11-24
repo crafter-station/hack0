@@ -4,6 +4,8 @@ import { IMAGE_HOSTS } from "./lib/images";
 
 const config: NextConfig = {
   images: { remotePatterns: IMAGE_HOSTS.map((hostname) => ({ protocol: "https", hostname })) },
+  // Badges read JetBrains Mono at request time to draw their text as paths.
+  outputFileTracingIncludes: { "/badge/**": ["./app/taste-hacking/_og/fonts/*.ttf"] },
   // Public routes of the previous app that search engines still list. /c/* is a route handler.
   async redirects() {
     return [
