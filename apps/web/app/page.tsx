@@ -6,14 +6,23 @@ import { OrgLogo } from "@/components/org-logo";
 import { SiteHeader } from "@/components/site-header";
 import { WorkshopBanner } from "@/components/workshop-banner";
 import { eventSpots } from "@/lib/calendar";
-import { mappedEvents, upcomingEvents } from "@/lib/catalog";
+import { communityIndex, mappedEvents, upcomingEvents } from "@/lib/catalog";
 import { listedOrgs, ORG_TYPES } from "@/lib/ecosistema";
+import { agendaFrom, faqJsonLd, homeFaq, WEBSITE_LD } from "@/lib/faq";
+import { parseFilters, searchEvents } from "@/lib/search";
 import { LUMA, ORGANIZATION_LD } from "@/lib/site";
 
 export const revalidate = 60;
 
 export default async function Home() {
-  const [events, mapped, orgs] = await Promise.all([upcomingEvents(60), mappedEvents(), listedOrgs()]);
+  const [events, mapped, orgs, agenda, communities] = await Promise.all([
+    upcomingEvents(60),
+    mappedEvents(),
+    listedOrgs(),
+    searchEvents(parseFilters({})).then(agendaFrom),
+    communityIndex(),
+  ]);
+  const faq = homeFaq(agenda, communities.length, orgs.length);
   // The most recognisable faces first: orgs with a logo, universities and funds before the long tail of startups.
   const faces = orgs.filter((o) => o.logoUrl && o.logoTone !== "light").slice(0, 14);
   const byType = ORG_TYPES.map((t) => ({ ...t, count: orgs.filter((o) => o.type === t.type).length })).filter((t) => t.count > 0);
@@ -21,15 +30,20 @@ export default async function Home() {
   return (
     <main>
       <JsonLd data={ORGANIZATION_LD} />
+      <JsonLd data={WEBSITE_LD} />
+      <JsonLd data={faqJsonLd(faq)} />
       <SiteHeader />
 
       <div className="hero">
         <div className="hero-copy">
           <h1>
-            Mapeando el ecosistema <br />
-            tech de <em>LATAM.</em>
+            Eventos tech <br />
+            en <em>LATAM.</em>
           </h1>
-          <p>Damos visibilidad a comunidades y eventos tech. Hackathones, conferencias, workshops y meetups, todo en un solo lugar.</p>
+          <p>
+            Mapeando el ecosistema tech de LATAM. Hackathones, conferencias, workshops y meetups de toda Latinoamérica, con sus comunidades,
+            en un solo lugar.
+          </p>
           <div className="actions">
             <a className="btn primary" href={LUMA}>
               Suscríbete al calendario
@@ -107,6 +121,20 @@ export default async function Home() {
           <a className="btn primary" href={LUMA}>
             Subir evento
           </a>
+        </div>
+      </section>
+
+      <section id="preguntas">
+        <div className="label">
+          <span>preguntas frecuentes</span>
+        </div>
+        <div className="faq">
+          {faq.map((f) => (
+            <div key={f.q}>
+              <h3>{f.q}</h3>
+              <p>{f.a}</p>
+            </div>
+          ))}
         </div>
       </section>
 

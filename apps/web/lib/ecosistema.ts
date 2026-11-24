@@ -5,6 +5,7 @@ import { slugify } from "@/lib/calendar";
 import { rowToEvent } from "@/lib/catalog-db";
 import { getDb } from "@/lib/db/client";
 import { canonicalEvents, organizationLogos, organizations } from "@/lib/db/schema";
+import { listEs } from "@/lib/faq";
 import { LATAM_COUNTRIES } from "@/lib/latam";
 import { countryName } from "@/lib/search";
 
@@ -91,6 +92,10 @@ type Place = { slug: string; name: string; count: number; lng: number; lat: numb
 const countrySlug = (code: string) => slugify(countryName(code));
 export const countryFromSlug = (slug: string) => LATAM_COUNTRIES.find((c) => countrySlug(c) === slug) ?? null;
 export const countryPath = (code: string) => `/ecosistema/${countrySlug(code)}`;
+
+/** Below this many orgs a country hub is a thin list, kept out of search until the directory covers it. */
+export const MIN_INDEXED_COUNTRY = 10;
+export const thinCountry = (orgs: Org[], code: string) => orgs.filter((o) => o.country === code).length < MIN_INDEXED_COUNTRY;
 
 export const listedOrgs = cache(async (): Promise<Org[]> => {
   if (!process.env.DATABASE_URL) return [];
@@ -203,8 +208,6 @@ export async function orgEvents(terms: string[], limit = 8): Promise<CalendarEve
 
 type Summary = { paragraphs: string[]; faq: { q: string; a: string }[] };
 
-const listEs = (items: string[]) => (items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} y ${items.at(-1)}`);
-
 /** Cities with a hub of their own, largest first; an HQ abroad doesn't count as one of the country's cities. */
 function topCities(orgs: Org[], n: number) {
   const by = Map.groupBy(
@@ -212,6 +215,13 @@ function topCities(orgs: Org[], n: number) {
     (o) => o.city ?? "",
   );
   return [...by.entries()].sort((a, b) => b[1].length - a[1].length).slice(0, n);
+}
+
+/** "Por país: Perú (307), Argentina (1)" when a hub spans more than one country. */
+function countryBreakdown(orgs: Org[]) {
+  const by = [...Map.groupBy(orgs, (o) => o.country).entries()].sort((a, b) => b[1].length - a[1].length);
+  if (by.length < 2) return null;
+  return `Por país: ${listEs(by.map(([code, list]) => `${countryName(code)} (${list.length})`))}.`;
 }
 
 /** What a hub says about its own orgs, written from the data so every hub reads differently and stays true as rows change. */
@@ -223,6 +233,9 @@ export function hubSummary(orgs: Org[], place: string): Summary {
 
   const kinds = listEs(counts.map((t) => `${t.list.length} ${(t.list.length === 1 ? t.singular : t.plural).toLowerCase()}`));
   paragraphs.push(`El directorio de hack0 reúne ${orgs.length} organizaciones del ecosistema tech de ${place}: ${kinds}.`);
+
+  const byCountry = countryBreakdown(orgs);
+  if (byCountry) paragraphs.push(byCountry);
 
   const cities = topCities(orgs, 3);
   if (cities.length > 1) {

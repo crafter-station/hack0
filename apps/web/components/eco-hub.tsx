@@ -3,6 +3,7 @@ import type { MapPlace } from "@/components/eco-map";
 import { JsonLd } from "@/components/json-ld";
 import { Shell } from "@/components/shell";
 import { hubSummary, ORG_TYPES, type Org, typeInfo } from "@/lib/ecosistema";
+import { faqJsonLd } from "@/lib/faq";
 import { SITE } from "@/lib/site";
 
 type Props = {
@@ -30,8 +31,10 @@ export function EcoHub({ title, path, place, intro, crumbs, orgs, places, placeB
     plural: t.plural,
     glyph: GLYPH[t.type],
   }));
+  const about = hubSummary(orgs, place);
   return (
     <Shell immersive>
+      {about.faq.length > 0 && <JsonLd data={faqJsonLd(about.faq)} />}
       <JsonLd
         data={{
           "@context": "https://schema.org",
@@ -63,7 +66,7 @@ export function EcoHub({ title, path, place, intro, crumbs, orgs, places, placeB
         view={view}
         listTitle={title}
         place={place}
-        about={hubSummary(orgs, place)}
+        about={about}
         links={chips}
         more={more}
         orgs={orgs.map((o) => ({

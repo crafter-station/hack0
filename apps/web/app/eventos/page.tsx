@@ -4,9 +4,12 @@ import { Fragment } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { EventFilters } from "@/components/event-filters";
 import { EventList } from "@/components/event-list";
+import { JsonLd } from "@/components/json-ld";
 import { Shell } from "@/components/shell";
 import { ARCHIVE_PAGE, hubIndex } from "@/lib/catalog";
+import { agendaFrom, agendaSentence } from "@/lib/faq";
 import { filterHref, isFiltered, parseFilters, searchEvents } from "@/lib/search";
+import { eventListJsonLd } from "@/lib/site";
 import { isListedTopic, topicLabel } from "@/lib/topics";
 
 const TITLE = "Eventos tech en LATAM";
@@ -29,11 +32,14 @@ export default async function Eventos({ searchParams }: Props) {
   const filters = parseFilters(await searchParams);
   const [result, cities, tags] = await Promise.all([searchEvents(filters), hubIndex("ciudad"), hubIndex("tema")]);
   const pages = Math.ceil(result.total / ARCHIVE_PAGE);
+  const canonical = !isFiltered(filters);
   return (
     <Shell>
+      {canonical && <JsonLd data={eventListJsonLd(TITLE, result.events)} />}
       <div className="hero-copy hub">
         <h1>{TITLE}</h1>
         <p>{INTRO}</p>
+        {canonical && result.total > 0 && <p>{agendaSentence(agendaFrom(result))}</p>}
       </div>
 
       <EventFilters filters={filters} result={result} />

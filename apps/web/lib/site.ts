@@ -1,4 +1,5 @@
 import { type CalendarEvent, placeLabel } from "./calendar";
+import { eventMetro } from "./page-keys";
 
 export const SITE = "https://hack0.dev";
 export const LUMA = "https://luma.com/hack0";
@@ -56,6 +57,24 @@ export function formatDate(e: CalendarEvent) {
 
 /** JSON-LD for an event, per schema.org/Event. */
 export function eventJsonLd(e: CalendarEvent, description?: string | null, hosts: { name: string; slug: string }[] = []) {
+  return { "@context": "https://schema.org", ...eventNode(e, description, hosts) };
+}
+
+/** ItemList for a listing: upcoming events carry their full Event so search can show them as events; past ones are links. */
+export function eventListJsonLd(name: string, upcoming: CalendarEvent[], past: CalendarEvent[] = []) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    numberOfItems: upcoming.length + past.length,
+    itemListElement: [
+      ...upcoming.map((e, i) => ({ "@type": "ListItem", position: i + 1, item: eventNode(e) })),
+      ...past.map((e, i) => ({ "@type": "ListItem", position: upcoming.length + i + 1, url: `${SITE}/eventos/${e.slug}` })),
+    ],
+  };
+}
+
+function eventNode(e: CalendarEvent, description?: string | null, hosts: { name: string; slug: string }[] = []) {
   const place = e.online
     ? { "@type": "VirtualLocation", url: e.url }
     : {
@@ -64,12 +83,11 @@ export function eventJsonLd(e: CalendarEvent, description?: string | null, hosts
         address: {
           "@type": "PostalAddress",
           streetAddress: e.address ?? undefined,
-          addressLocality: e.metro ?? undefined,
+          addressLocality: eventMetro(e.metro) ?? undefined,
           addressCountry: e.country ?? undefined,
         },
       };
   return {
-    "@context": "https://schema.org",
     "@type": "Event",
     name: e.name,
     startDate: e.startAt,

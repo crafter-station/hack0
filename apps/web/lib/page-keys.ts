@@ -50,15 +50,51 @@ const LIMA_DISTRICTS = [
   "villa-maria-del-triunfo",
 ];
 
-/** Abbreviations and districts that name a metro, keyed by slug. */
+/** Abbreviations, official names, English names and suburbs that name a metro, keyed by slug. */
 const ALIASES: Record<string, string> = {
   caba: "Buenos Aires",
+  "ciudad-autonoma-de-buenos-aires": "Buenos Aires",
+  "capital-federal": "Buenos Aires",
+  palermo: "Buenos Aires",
+  "mexico-city": "Ciudad de México",
+  cdmx: "Ciudad de México",
+  "guatemala-city": "Ciudad de Guatemala",
+  zapopan: "Guadalajara",
+  "san-pedro-garza-garcia": "Monterrey",
+  "godoy-cruz": "Mendoza",
+  providencia: "Santiago",
+  "santa-tecla": "San Salvador",
+  soyapango: "San Salvador",
+  samborondon: "Guayaquil",
+  sangolqui: "Quito",
+  "jose-luis-bustamante": "Arequipa",
+  "jose-luis-bustamante-y-rivero": "Arequipa",
+  "la-punta": "Lima",
+  yucatan: "Mérida",
   ...Object.fromEntries(LIMA_DISTRICTS.map((d) => [d, "Lima"])),
 };
 
+/** Countries and states that providers send in the city field; a hub named after one is not a city. */
+const NOT_A_CITY = new Set([
+  "argentina",
+  "bolivia",
+  "brasil",
+  "brazil",
+  "chile",
+  "chiapas",
+  "colombia",
+  "ecuador",
+  "latam",
+  "latinoamerica",
+  "paraguay",
+  "peru",
+  "uruguay",
+  "venezuela",
+]);
+
 export function eventMetro(rawCity: string | null | undefined, region?: string | null) {
   const split = splitCity(rawCity);
-  if (!split.city || NOT_A_PLACE.test(split.city)) return null;
+  if (!split.city || NOT_A_PLACE.test(split.city) || NOT_A_CITY.has(slugify(split.city))) return null;
   const alias = ALIASES[slugify(split.city)];
   if (alias) return alias;
   return metroOf(split.city, split.region ?? region ?? undefined);
