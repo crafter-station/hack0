@@ -6,7 +6,7 @@ import { JsonLd } from "@/components/json-ld";
 import { Shell } from "@/components/shell";
 import type { CalendarEvent } from "@/lib/calendar";
 import { ARCHIVE_PAGE, type HubLink } from "@/lib/catalog";
-import { LUMA, SITE } from "@/lib/site";
+import { eventListJsonLd, LUMA } from "@/lib/site";
 import { topicLabel } from "@/lib/topics";
 
 /** Hubs page as /ciudad/lima/2 so ISR can cache each page; the whole-catalog archive keeps ?pagina=2. */
@@ -46,18 +46,7 @@ export function HubPage({
   const pages = Math.ceil(pastTotal / ARCHIVE_PAGE);
   return (
     <Shell>
-      <JsonLd
-        data={{
-          "@context": "https://schema.org",
-          "@type": "ItemList",
-          name: title,
-          itemListElement: [...upcoming, ...past].map((e, i) => ({
-            "@type": "ListItem",
-            position: i + 1,
-            url: `${SITE}/eventos/${e.slug}`,
-          })),
-        }}
-      />
+      <JsonLd data={eventListJsonLd(title, upcoming, past)} />
       <div className="hero-copy hub">
         <p className="crumbs">
           <Link href={crumb.href}>{crumb.label}</Link>

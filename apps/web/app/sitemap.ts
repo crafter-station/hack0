@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { communityIndex, hubIndex, sitemapEvents } from "@/lib/catalog";
-import { cityPlaces, countryPath, listedOrgs, ORG_TYPES } from "@/lib/ecosistema";
+import { cityPlaces, countryPath, listedOrgs, ORG_TYPES, thinCountry } from "@/lib/ecosistema";
 import { SITE } from "@/lib/site";
 import { isListedTopic } from "@/lib/topics";
 import { PIECES, pieceHref } from "./taste-hacking/pieces";
@@ -15,7 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     communityIndex(),
     listedOrgs(),
   ]);
-  const countries = [...new Set(orgs.map((o) => o.country))];
+  const countries = [...new Set(orgs.map((o) => o.country))].filter((code) => !thinCountry(orgs, code));
   const eco = countries.flatMap((code) => {
     const list = orgs.filter((o) => o.country === code);
     const base = countryPath(code);

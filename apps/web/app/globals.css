@@ -2067,6 +2067,19 @@ main.immersive > header.top {
   font-weight: 700;
   margin: 16px 0 4px;
 }
+.faq {
+  max-width: 760px;
+}
+.faq h3 {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 18px 0 6px;
+}
+.faq p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--mute);
+}
 .eco-more {
   margin-top: 28px;
 }

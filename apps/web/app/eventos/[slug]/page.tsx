@@ -9,10 +9,11 @@ import { JsonLd } from "@/components/json-ld";
 import { Markdown } from "@/components/markdown";
 import { ShareButton } from "@/components/share-button";
 import { Shell } from "@/components/shell";
-import { cityKey, placeLabel, slugify } from "@/lib/calendar";
+import { placeLabel, slugify } from "@/lib/calendar";
 import { eventCommunities, findEvent, indexable, relatedEvents } from "@/lib/catalog";
 import { bodyOf, eventWhen, googleCalendarUrl, providerName } from "@/lib/event-view";
 import { optimizable } from "@/lib/images";
+import { eventMetro } from "@/lib/page-keys";
 import { eventJsonLd, formatDate, SITE } from "@/lib/site";
 import { eventTint } from "@/lib/tint";
 
@@ -71,7 +72,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   const { event: e, description } = page;
   const when = eventWhen(e);
   const past = new Date(e.endAt ?? e.startAt).getTime() < Date.now();
-  const city = cityKey(e);
+  const metro = eventMetro(e.metro);
   const provider = providerName(e.url);
   const [related, tint, communities] = await Promise.all([relatedEvents(e), eventTint(e.url, e.coverUrl), eventCommunities(e.slug)]);
   const body = bodyOf(e.name, description);
@@ -94,10 +95,10 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
       <article className="event" style={style}>
         <p className="crumbs">
           <Link href="/eventos">eventos</Link>
-          {city && e.metro && (
+          {metro && (
             <>
               {" / "}
-              <Link href={`/ciudad/${city}`}>{e.metro}</Link>
+              <Link href={`/ciudad/${slugify(metro)}`}>{metro}</Link>
             </>
           )}
         </p>

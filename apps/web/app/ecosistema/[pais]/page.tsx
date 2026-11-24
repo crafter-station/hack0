@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { EcoHub } from "@/components/eco-hub";
-import { cityPlaces, countryFromSlug, countryPlaces, listedOrgs, ORG_TYPES } from "@/lib/ecosistema";
+import { cityPlaces, countryFromSlug, countryPlaces, listedOrgs, MIN_INDEXED_COUNTRY, ORG_TYPES } from "@/lib/ecosistema";
 import { countryName } from "@/lib/search";
 
 export const revalidate = 3600;
@@ -12,8 +12,12 @@ export function generateStaticParams() {
 
 type Props = { params: Promise<{ pais: string }> };
 
+const orgCount = (n: number) => (n === 1 ? "1 organización" : `${n} organizaciones`);
+
 const intro = (name: string, count: number) =>
-  `${count} startups, inversionistas, incubadoras, universidades y coworkings del ecosistema tech de ${name}, con su web, su ciudad y los eventos en los que participan.`;
+  count === 1
+    ? `Una organización del ecosistema tech de ${name}, con su web, su ciudad y los eventos en los que participa.`
+    : `${count} startups, inversionistas, incubadoras, universidades y coworkings del ecosistema tech de ${name}, con su web, su ciudad y los eventos en los que participan.`;
 
 async function load(pais: string) {
   const code = countryFromSlug(pais);
@@ -27,9 +31,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const hub = await load(pais);
   if (!hub) return {};
   return {
-    title: `Startups y ecosistema tech de ${hub.name}: ${hub.orgs.length} organizaciones | hack0`,
+    title: `Startups y ecosistema tech de ${hub.name}: ${orgCount(hub.orgs.length)} | hack0`,
     description: intro(hub.name, hub.orgs.length),
     alternates: { canonical: `/ecosistema/${pais}` },
+    robots: hub.orgs.length < MIN_INDEXED_COUNTRY ? { index: false, follow: true } : undefined,
   };
 }
 

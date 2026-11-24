@@ -2,7 +2,16 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { EcoHub } from "@/components/eco-hub";
 import { hubIndex } from "@/lib/catalog";
-import { cityPlaces, countryFromSlug, countryPlaces, inCity, listedOrgs, ORG_TYPES, typeBySegment } from "@/lib/ecosistema";
+import {
+  cityPlaces,
+  countryFromSlug,
+  countryPlaces,
+  inCity,
+  listedOrgs,
+  MIN_INDEXED_COUNTRY,
+  ORG_TYPES,
+  typeBySegment,
+} from "@/lib/ecosistema";
 import { countryName } from "@/lib/search";
 
 export const revalidate = 3600;
@@ -91,8 +100,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${hub.seo} | hack0`,
     description: `${hub.intro} Con su web, su ciudad y su ubicación en el mapa.`,
     alternates: { canonical: `/ecosistema/${pais}/${segmento}` },
-    // A city with a single org is a thinner copy of that org's profile.
-    robots: hub.kind === "city" && hub.orgs.length === 1 ? { index: false, follow: true } : undefined,
+    // A city with a single org is a thinner copy of that org's profile, and a barely covered country has no hub worth ranking yet.
+    robots:
+      (hub.kind === "city" && hub.orgs.length === 1) || hub.country.length < MIN_INDEXED_COUNTRY
+        ? { index: false, follow: true }
+        : undefined,
   };
 }
 
