@@ -40,6 +40,11 @@ export default async function Eventos({ searchParams }: Props) {
         <h1>{TITLE}</h1>
         <p>{INTRO}</p>
         {canonical && result.total > 0 && <p>{agendaSentence(agendaFrom(result))}</p>}
+        {canonical && (
+          <p>
+            ¿Planeando el año? Revisa el <Link href="/calendario-2027">calendario de conferencias tech LATAM 2026–2027</Link>.
+          </p>
+        )}
       </div>
 
       <EventFilters filters={filters} result={result} />

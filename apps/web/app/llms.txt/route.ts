@@ -12,6 +12,7 @@ hack0 is part of [Crafter Station](${CRAFTER}), the open source community of bui
 
 ## Pages
 
+- [Calendario 2026–2027](${SITE}/calendario-2027): chronological calendar of flagship 2026-2027 LATAM tech, AI and startup conferences
 - [Eventos](${SITE}/eventos): every upcoming and past event, searchable by country, city and topic
 - [Eventos tech en Lima](${SITE}/ciudad/lima): one hub per city, e.g. /ciudad/<city>
 - [Comunidades](${SITE}/comunidades): the communities that organize the events, grouped by city
