@@ -18,7 +18,7 @@ export const AUTHORS = [
     github: "https://github.com/Railly",
   },
   {
-    id: "https://crafter.run/en/team/ignacio#person",
+    id: "https://crafter.run/en/team/nacho#person",
     name: "Ignacio Velásquez",
     role: "Growth y automatización en Crafter Station",
     url: `${CRAFTER}/es/team/nacho`,
