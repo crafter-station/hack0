@@ -11,12 +11,14 @@ export const TAGLINE = "hack0 es el calendario abierto de Crafter Station: event
 
 export const AUTHORS = [
   {
+    id: "https://www.railly.dev/#person",
     name: "Railly Hugo",
     role: "Fundador de Crafter Station",
     url: `${CRAFTER}/es/team/railly`,
     github: "https://github.com/Railly",
   },
   {
+    id: "https://crafter.run/en/team/ignacio#person",
     name: "Ignacio Velásquez",
     role: "Growth y automatización en Crafter Station",
     url: `${CRAFTER}/es/team/nacho`,
@@ -43,7 +45,7 @@ export const ORGANIZATION_LD = {
     url: CRAFTER,
     sameAs: ["https://www.linkedin.com/company/crafter-station"],
   },
-  founder: AUTHORS.map((a) => ({ "@type": "Person", name: a.name, url: a.url, sameAs: [a.github] })),
+  founder: AUTHORS.map((a) => ({ "@type": "Person", "@id": a.id, name: a.name, url: a.url, sameAs: [a.github] })),
   areaServed: { "@type": "Place", name: "Latin America" },
   sameAs: [LUMA, "https://www.linkedin.com/company/hack0-dev", GITHUB],
 };
