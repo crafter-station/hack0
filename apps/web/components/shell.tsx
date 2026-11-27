@@ -16,9 +16,9 @@ export function Shell({ children, immersive = false, fit = false }: { children: 
             hack0 by <a href="https://crafter.run">Crafter Station</a>
           </span>{" "}
           <span>
-            <Link href="/eventos">eventos</Link> · <Link href="/comunidades">comunidades</Link> · <Link href="/ecosistema">ecosistema</Link>{" "}
-            · <Link href="/about">about</Link> · <Link href="/brand">brand</Link> ·{" "}
-            <a href="https://github.com/crafter-station/hack0">github</a>
+            <Link href="/eventos">eventos</Link> · <Link href="/calendario-2027">calendario 2027</Link> ·{" "}
+            <Link href="/comunidades">comunidades</Link> · <Link href="/ecosistema">ecosistema</Link> · <Link href="/about">about</Link> ·{" "}
+            <Link href="/brand">brand</Link> · <a href="https://github.com/crafter-station/hack0">github</a>
           </span>
         </footer>
       )}

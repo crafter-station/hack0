@@ -2801,3 +2801,41 @@ header.top .site-menu-links a:focus-visible {
     min-height: 160px;
   }
 }
+
+.cal-table-wrap {
+  margin-top: 24px;
+  overflow-x: auto;
+  border: 1.5px solid var(--rule);
+}
+.cal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.cal-table th,
+.cal-table td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+.cal-table th {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.cal-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.cal-table a {
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.cal-table .cal-date {
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 12.5px;
+}

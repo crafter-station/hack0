@@ -29,6 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
   return [
     { url: SITE, changeFrequency: "daily", priority: 1 },
+    { url: `${SITE}/calendario-2027`, changeFrequency: "weekly", priority: 0.95 },
     { url: `${SITE}/eventos`, changeFrequency: "daily", priority: 0.9 },
     ...cities.map((h) => ({ url: `${SITE}/ciudad/${h.slug}`, changeFrequency: "weekly" as const, priority: 0.7 })),
     { url: `${SITE}/comunidades`, changeFrequency: "weekly", priority: 0.8 },
