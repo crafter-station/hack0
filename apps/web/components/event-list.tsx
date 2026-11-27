@@ -12,14 +12,13 @@ export function EventList({ events }: { events: CalendarEvent[] }) {
           <li key={e.id}>
             <Link href={`/eventos/${e.slug}`}>
               <span className="date">
-                {day}
-                <span>{time}</span>
-              </span>
-              <span className="name">{e.name}</span>
+                {day} <span>{time}</span>
+              </span>{" "}
+              <span className="name">{e.name}</span>{" "}
               <span className="where">
                 <Flag code={e.country} /> {placeLabel(e)}
               </span>
-            </Link>
+            </Link>{" "}
           </li>
         );
       })}
